@@ -6,10 +6,12 @@ import React from 'react';
 import { CssBaseline } from '@mui/material';
 import { ThemeProvider, StyledEngineProvider } from '@mui/material/styles';
 import { useTracker } from 'meteor/react-meteor-data';
+import { BrowserRouter } from 'react-router-dom';
 import PropTypes from 'prop-types';
 // ORO modules
 import theme from './Styles';
-// import Routes from '../imports/client/oro/RoutesDashboards';
+import Routes from './oro/Routes';
+import ErrorBoundary from './oro/ErrorBoundary';
 
 const App = () => {
   const userId = Meteor.userId;
@@ -26,9 +28,11 @@ const App = () => {
   }, [userId]);
 
   return (
-    <div>
-      <h1>Hello {!userDoc ? "anonymous" : userDoc.profile?.name}</h1>
-    </div>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <Routes />
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 }
 
