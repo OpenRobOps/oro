@@ -17,8 +17,15 @@ typescript@5.9.3              # Enable TypeScript syntax in .ts and .tsx modules
 shell-server@0.7.0            # Server-side component of the `meteor shell` command
 hot-module-replacement@0.5.4  # Update client in development without reloading the page
 
-
 static-html@1.5.0             # Define static page content in .html files
 react-meteor-data       # React higher-order component for reactively tracking Meteor data
 
 rspack@1.0.0                  # Integrate Rspack into Meteor for client and server app bundling
+aldeed:collection2
+aldeed:simple-schema
+percolate:migrations
+reywood:publish-composite
+meteortesting:mocha
+lmieulet:meteor-coverage
+http
+

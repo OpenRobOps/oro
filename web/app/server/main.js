@@ -1,54 +1,93 @@
-import { Meteor } from "meteor/meteor";
-import { LinksCollection } from "/imports/api/links";
-import { Random } from "meteor/random";
+/**
+ * Main ORO app entry point
+ *
+ */
 
-async function insertLink({ title, url }) {
-  await LinksCollection.insertAsync({ title, url, createdAt: new Date() });
-}
+import { Meteor } from 'meteor/meteor';
+import { isObject } from 'lodash';
+import { v4 as uuidv4 } from 'uuid';
+// This must happen before any collection.attachSchema() in our managers
+// See https://github.com/Meteor-Community-Packages/meteor-collection2/tree/master?tab=readme-ov-file#import-using-static-imports
+import 'meteor/aldeed:collection2/static';
+// ORO modules
+// impo
 
-Meteor.startup(async () => {
-  // If the Links collection is empty, add some data.
-  if ((await LinksCollection.find().countAsync()) === 0) {
-    await insertLink({
-      title: "Do the Tutorial",
-      url: "https://docs.meteor.com/tutorials/react/",
-    });
+// Module object to keep App Server instance-level variables.
+// - serverId: Unique ID representing this App Server instance
+const instanceValues = {};
 
-    await insertLink({
-      title: "Follow the Guide",
-      url: "https://docs.meteor.com/tutorials/application-structure/",
-    });
+// Pointers to instantiated app-server side modules
+// TODO(adamantivm) Expose this through a proper interface
+const moduleInstances = {};
 
-    await insertLink({
-      title: "Read the Docs",
-      url: "https://docs.meteor.com",
-    });
+// code to run on server at startup
+// Ignore the `new SomeManager()` with side effects to init modules:
+/* eslint-disable no-new */
+const oroAppMain = async () => {
+  // Set-up instance ID
+  instanceValues.serverId = process.env.POD_ID || uuidv4();
+  // if (Meteor.isDevelopment && !process.env.POD_ID) {
+  //   logger.setupForLocal();
+  // }
+  console.log('Application Server Starting: serverId: ' + instanceValues.serverId);
 
-    await insertLink({
-      title: "Discussions",
-      url: "https://forums.meteor.com",
-    });
-
-    await insertLink({
-      title: "Join us on Discord",
-      url: "https://discord.gg/6mS3wHNg",
-    });
-
-    await insertLink({
-      title: "Deploying in Galaxy",
-      url: "https://www.meteor.com/hosting",
-    });
+  // Database migrations:
+  // Unlocks control for database to migrate
+  Migrations.unlock();
+  // Migrate database to desired version
+  try {
+    Migrations.migrateTo('latest');
+  } catch (e) {
+    // If there is an exception in migrateTo(), it can be because of the situation
+    // explained above (future migration) or in our migration code itself.
+    // Warn about the first one, but fail on the other.
+    if (e.message.match(/Can\'t find migration/)) {
+      console.warn('***********************************************************************************************');
+      console.warn('*** Running on a _future_ migration. This may be wrong! Please update this app-server ASAP ***');
+      console.warn(`** Exception message: ${e.message} **`);
+      console.warn('***********************************************************************************************');
+    } else {
+      throw e;
+    }
   }
 
-  // We publish the entire Links collection to all clients.
-  // In order to be fetched in real-time to the clients
-  Meteor.publish("links", function () {
-    return LinksCollection.find();
-  });
-});
+  // TODO add and initialize modules
 
-Meteor.methods({
-  about() {
-    return `This is a Meteor application running React with React Router. this is a generated id: ${Random.id()}`;
-  },
-});
+};
+
+// Allow CORS for configured origins in settings
+const { allowedOrigins } = Meteor.settings;
+const allowedHeaders = Meteor.settings.allowedHeaders || [];
+if (Array.isArray(allowedOrigins)) {
+  // eslint-disable-next-line prefer-arrow-callback
+  WebApp.rawConnectHandlers.use(function (req, res, next) {
+    // Only one origin is permitted in this header. The server must return the origin for the specific client making the request.
+    // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Origin
+    const { origin } = req.headers;
+    if (allowedOrigins.includes(origin)) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+    }
+
+    // For a pre-flight request, we only need to determine
+    // which are the allowed headers and respond, with no further processing.
+    // Reference for allowing headers: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Headers
+    // Reference for pre-flight requests: https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS#Preflighted_requests
+    if (req.method === 'OPTIONS') {
+      res.setHeader('Access-Control-Allow-Headers', allowedHeaders.join(', '));
+      res.writeHead(200);
+      res.end();
+    }
+    return next();
+  });
+}
+
+// Run main entry point unless we're running a unit test
+if (!Meteor.isTest) {
+  Meteor.startup(async () => {
+    await oroAppMain();
+  });
+} else {
+  console.log('Running unit tests, skipping execution of Meteor.startup method');
+}
+
+export { moduleInstances };
