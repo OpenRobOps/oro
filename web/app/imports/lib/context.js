@@ -7,7 +7,7 @@
  *
  * The context is divided into *slots*. Currently we have four slots:
  *   - Robot slot (for the moment, only robotId)
- *   - Fleet slot (tagId, robotStatus, metricStatus, groupBy, sortBy)
+ *   - Fleet slot (robotStatus, metricStatus, groupBy, sortBy)
  *   - Incident slot (for the moment, only incidentId)
  *   - Time slot (start, end, focus)
  *
@@ -15,7 +15,6 @@
  *   {
  *     robot: { robotId : '576896174' },
  *     fleet: {
- *       tagId: '9NiSA0epgtBTrMjK',
  *       robotStatus: 'e',
  *       metricStatus: { cpuLoadPct: 'w' },
  *       groupBy: 'hardware',
@@ -73,7 +72,6 @@ const CTX_PROPS = {
   // Ros diagnostics properties
   DIAGNOSTICS_LEVEL: 'RosDiagnosticsLevel',
   // Fleet slot properties
-  TAG_ID: 'tagId',
   ROBOT_STATUS: 'robotStatus',
   ATTR_STATUS: 'attrStatus',
   GROUP_BY: 'groupBy',
@@ -131,9 +129,9 @@ const readCtx = ({ ctx = {}, scope, slot, prop, type }) => {
  * property from it. This function ensures no empty slots or scopes remain
  * once a property is removed. For example, for the context:
  *
- *   ctx = { scope_0: fleet: { tagId: '123' } }
+ *   ctx = { scope_0: fleet: { fleetId: '123' } }
  *
- * After calling deleteCtx({ scope: 'scope_0', slot: 'fleet', prop: 'tagId' })(ctx)
+ * After calling deleteCtx({ scope: 'scope_0', slot: 'fleet', prop: 'fleetId' })(ctx)
  * we will get {} as the resulting context, since fleet (and transitively, scope_0)
  * become empty.
  *
@@ -328,8 +326,8 @@ const uriEncodeCtxStr = str => encodeURIComponent(str).replace('(', '%28').repla
  * Context serialization. Mimics its json representation, but avoiding
  * quotes around values and using only url-safe characters. For example:
  *
- *   { a: { fleet: { tagId: '123', sortBy: 'i' } } } serializes to:
- *     (a:(fleet:(tagId:123,sortBy:i)))
+ *   { a: { fleet: { sortBy: 'i' } } } serializes to:
+ *     (a:(fleet:(sortBy:i)))
  *
  *   { robot: { robotId: '123' }, fleet: { status: ['e', 'o'] } } serializes to:
  *     (robot:(robotId:123),fleet:(status:!(e,o)))

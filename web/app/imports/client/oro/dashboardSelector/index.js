@@ -12,6 +12,9 @@ import { Meteor } from 'meteor/meteor';
 import { withTracker } from 'meteor/react-meteor-data';
 import sortBy from 'lodash/sortBy';
 // ORO modules
+// import ConfigManager, { ID_TYPE_USER } from '../../../lib/configManager';
+// import { UIPreferences } from '../../../lib/collections';
+import { Dashboards } from '../../../lib/dashboards';
 import DashboardSelector from './DashboardSelector';
 import Dashboard from '../Dashboard';
 // import NotificationsClient from '../Notifications';
@@ -38,6 +41,35 @@ const DashboardSelectorContainer = withTracker(({ urlPathParams }) => {
   const userId = Meteor.userId();
   // Get dashboardId from url
   const { dashboardId } = urlPathParams || {};
+
+  // if (!userId) { // TODO(herchu) re-enable when log in is implemented
+  //   return { isLoading: true };
+  // }
+
+  // Note on this subscription and the getConfig below: The companyId for which this Dashbaords
+  // view is loaded (it is mandatory) is passed as parameter to getConfig. This way, the
+  // 'inheritance chain' of getConfig can go up to that company and not the user's default
+  // companyId. This is what allows viewing _any_ company (provided the user has access to it)
+  // const uiPreferencesHandle = Meteor.subscribe('ui.preferences', {
+  //   entityId: userId,
+  //   entityType: ID_TYPE_USER,
+  //   companyId,
+  //   widget: 'dashboards'
+  // });
+
+  // if (!uiPreferencesHandle.ready()) {
+  //   return { isLoading: true };
+  // }
+
+  // Get user dashboard Ids
+  // const configManager = new ConfigManager(UIPreferences);
+  // const dashboardCfg = (companyId && configManager.getEntityConfig({
+  //   entityId: userId,
+  //   entityType: ID_TYPE_USER,
+  //   namespaceId: companyId,
+  //   fields: ['dashboards']
+  // })) || {};
+
   const dashboardCfg = {};
 
   // Compute list of dashboard Ids for the current user by grabbing
@@ -51,7 +83,8 @@ const DashboardSelectorContainer = withTracker(({ urlPathParams }) => {
     return { isLoading: true };
   }
 
-  const userDashboardSpecs = Dashboards.find({ _id: { $in: dashboardIds } }).fetch();
+  const userDashboardSpecs = Dashboards.find({}).fetch();
+  console.log("Subscribed",userDashboardSpecs );
 
   // Dashboard sorting:
   // Attempt to use an integer "order" property for sorting. If

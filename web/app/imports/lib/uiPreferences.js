@@ -48,7 +48,7 @@ const NAVIGATION_DETAIL_LAYOUT_DEFAULTS = {
 };
 
 /**
- * Constants for widget type IDs. These correspond to the _id field in GC_WIDGET_TYPES_LIST
+ * Constants for widget type IDs. These correspond to the _id field in WIDGET_TYPES_LIST
  *
  * These can have any string value... as long as we always use the same.
  */
@@ -232,7 +232,7 @@ const WIDGET_TYPES_LIST = [
     imgLocation: '/images/thumbnails/thumb_navigation detail.svg'
   },
   {
-    _id: GC_WIDGET_TYPES.LOCALIZATION,
+    _id: WIDGET_TYPES.LOCALIZATION,
     label: 'Map',
     default: true,
     unique: true,
@@ -247,7 +247,7 @@ const WIDGET_TYPES_LIST = [
     imgLocation: '/images/thumbnails/thumb_map.svg'
   },
   {
-    _id: GC_WIDGET_TYPES.ROS_DIAGNOSTICS,
+    _id: WIDGET_TYPES.ROS_DIAGNOSTICS,
     label: 'ROS Diagnostics',
     default: true,
     unique: true,
@@ -261,7 +261,7 @@ const WIDGET_TYPES_LIST = [
     imgLocation: '/images/thumbnails/thumb_ros diagnostic.svg'
   },
   {
-    _id: GC_WIDGET_TYPES.DATA_BAGS,
+    _id: WIDGET_TYPES.DATA_BAGS,
     label: 'Data Bags',
     default: true,
     unique: true,
@@ -275,7 +275,7 @@ const WIDGET_TYPES_LIST = [
     imgLocation: '/images/thumbnails/thumb_data bags.svg'
   },
   {
-    _id: GC_WIDGET_TYPES.KEY_VALUES,
+    _id: WIDGET_TYPES.KEY_VALUES,
     label: 'Key-value Sources',
     unique: true,
     default: true,
@@ -313,7 +313,7 @@ const WIDGET_TYPES_LIST = [
     imgLocation: '/images/thumbnails/thumb_custom image.svg'
   },
   {
-    _id: GC_WIDGET_TYPES.LOGS,
+    _id: WIDGET_TYPES.LOGS,
     label: 'ROS out',
     unique: true,
     defaultLayout: {
@@ -326,7 +326,7 @@ const WIDGET_TYPES_LIST = [
     imgLocation: '/images/thumbnails/thumb_ros out.svg'
   },
   {
-    _id: GC_WIDGET_TYPES.ACTIONS,
+    _id: WIDGET_TYPES.ACTIONS,
     label: 'Robot Actions',
     unique: true,
     defaultLayout: {
@@ -339,7 +339,7 @@ const WIDGET_TYPES_LIST = [
     imgLocation: '/images/thumbnails/thumb_robot actions.svg'
   },
   {
-    _id: GC_WIDGET_TYPES.CAMERA,
+    _id: WIDGET_TYPES.CAMERA,
     label: 'Camera',
     configurable: true,
     defaultLayout: {
@@ -382,7 +382,7 @@ const WIDGET_TYPES_LIST = [
     imgLocation: '/images/thumbnails/thumb_audit log.svg'
   },
   {
-    _id: GC_WIDGET_TYPES.LIST_DATA,
+    _id: WIDGET_TYPES.LIST_DATA,
     label: 'List Data',
     configurable: true,
     defaultLayout: {
@@ -398,7 +398,6 @@ const WIDGET_TYPES_LIST = [
     _id: WIDGET_TYPES_IDS.MISSION_TRACKER,
     label: 'Missions',
     configurable: false,
-    featureFlag: FEATURES.MISSION_TRACKING,
     defaultLayout: {
       grid: WIDGET_CONFIG.SMALL_GRID,
       chroma: true,
@@ -412,7 +411,6 @@ const WIDGET_TYPES_LIST = [
     _id: WIDGET_TYPES_IDS.FLEET_MISSION_TRACKER,
     label: 'Missions',
     configurable: false,
-    featureFlag: FEATURES.MISSION_TRACKING,
     defaultLayout: {
       grid: WIDGET_CONFIG.SMALL_GRID,
       chroma: true,

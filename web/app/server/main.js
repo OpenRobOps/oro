@@ -10,7 +10,7 @@ import { v4 as uuidv4 } from 'uuid';
 // See https://github.com/Meteor-Community-Packages/meteor-collection2/tree/master?tab=readme-ov-file#import-using-static-imports
 import 'meteor/aldeed:collection2/static';
 // ORO modules
-// impo
+import DashboardsManager from '../imports/server/dashboards';
 
 // Module object to keep App Server instance-level variables.
 // - serverId: Unique ID representing this App Server instance
@@ -52,6 +52,8 @@ const oroAppMain = async () => {
   }
 
   // TODO add and initialize modules
+  await new DashboardsManager().init();
+
 
 };
 

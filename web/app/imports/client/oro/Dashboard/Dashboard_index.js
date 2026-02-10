@@ -7,11 +7,11 @@ import PropTypes from 'prop-types';
 import fp from 'lodash/fp';
 import detectMobile from 'ismobilejs';
 // ORO modules
-// import { FullscreenProvider } from '../contexts/FullscreenContext';
-// import { DarkModeProvider } from '../contexts/DarkModeContext';
-// import { NowTimeProvider, NowTimeContext } from '../util/timeUtils/NowTimeContext';
+import { FullscreenProvider } from '../contexts/FullscreenContext';
+import { DarkModeProvider } from '../contexts/DarkModeContext';
+import { NowTimeProvider, NowTimeContext } from '../util/timeUtils/NowTimeContext';
 // import { validateStartTime } from '../util/timeUtils';
-// import DashboardComponent from './DashboardComponent';
+import DashboardComponent from './DashboardComponent';
 // import ListData from '../robotWidgets/ListDataWidget';
 // import NavigationToolbar from './widgetToolbars/NavigationToolbar';
 // import SettingsToolbar from './widgetToolbars/SettingsToolbar';
@@ -35,7 +35,6 @@ import { WIDGET_TYPES, WIDGET_TYPES_IDS } from '../../../lib/uiPreferences';
 // import ActionsWidget from '../robotWidgets/ActionsWidget';
 // import RobotMissionsTracker from '../robotWidgets/RobotMissionsTracker';
 // import RobotSearch from '../util/RobotSearch';
-// import { computeEffectiveDashboard } from './helpers';
 import {
   CTX_PROPS,
   CONTEXT_SLOTS,
@@ -90,7 +89,6 @@ import {
 // import { RobotsDataProvider } from '../contexts/RobotsDataContext/RobotsDataContext';
 // import { LOCALIZATION_VARIANTS } from '../robotWidgets/LocalizationWidget/Localization';
 // import { useZeroData } from '../util/hooks';
-// import { useValidateTagIdTaxonomy } from '../util/meteorUtils';
 // import { MissionControlBarComponentWithMissionCtx } from '../missionWidgets/MissionControlBar';
 
 // Sets the robot id in the robotId local storage if the robotId
@@ -127,12 +125,6 @@ const setRobotId = (setContext, scope = {}) => (
 );
 
 // Convenience functions for operating on context fleet props
-const getFleetTagId = (context, scope = {}) => (
-  readFleetProp({ ctx: context, scope: scope.read, prop: CTX_PROPS.TAG_ID })
-);
-const setFleetTagId = (setContext, scope = {}) => (
-  fp.compose(setContext, writeFleetProp({ scope: scope.write, prop: CTX_PROPS.TAG_ID }))
-);
 const getFleetGroupBy = (context, scope = {}) => (
   readFleetProp({ ctx: context, scope: scope.read, prop: CTX_PROPS.GROUP_BY })
 );
@@ -342,20 +334,14 @@ const LocalizationWidgetWithContext = ({
   context,
   scope,
   setContext,
-  companyId,
   isZeroData,
   config
   /* eslint-enable react/prop-types */
 }) => {
-  const tagId = getFleetTagId(context, scope);
-  const tagIsLocation = useValidateTagIdTaxonomy(companyId, tagId, TAXONOMY_TYPES.LOCATION);
-  const localizationFilter = useMemo(() => (
-    tagIsLocation ? { locationId: tagId } : {}
-  ), [tagId, tagIsLocation]);
+  const localizationFilter = useMemo(() => {});
   return (
     <RobotsDataProvider dataSources={DEFAULT_DATA_SOURCES}>
       <LocalizationAdapter
-        companyId={companyId}
         variant={LOCALIZATION_VARIANTS.MAP_WIDGET}
         selectedRobotId={getRobotId(context, scope)}
         selectRobotCallback={setRobotId(setContext, scope)}
@@ -384,18 +370,11 @@ const NavigationDetailWithContext = ({ context, scope, companyId, setContext, is
       sequencedCallbacks: true
     });
   }
-  const tagId = getFleetTagId(context, scope);
-  const tagIsLocation = useValidateTagIdTaxonomy(companyId, tagId, TAXONOMY_TYPES.LOCATION);
-  const localizationFilter = useMemo(() => (
-    tagIsLocation ? { locationId: tagId, sameSublocation: true } : { sameSublocation: true }
-  ), [tagId, tagIsLocation]);
   return (
     <NavigationDetail
-      options={localizationFilter}
       robotId={robotId}
       isMobile={isMobile}
       selectRobotCallback={setRobotId(setContext, scope)}
-      companyId={companyId}
       mapLabel={getNavigationMap(context, scope)}
       setMapLabel={setNavigationMap(setContext, scope)}
       isZeroData={isZeroData}
@@ -410,7 +389,7 @@ const NavigationDetailWithContext = ({ context, scope, companyId, setContext, is
 /* eslint-disable react/prop-types */
 /* eslint-disable no-unused-vars */
 const TOOLBAR_FACTORY = {
-  // [GC_WIDGET_TYPES.DATA_BAGS]: ({ setContext, scope, context, isZeroData }) => (
+  // [WIDGET_TYPES.DATA_BAGS]: ({ setContext, scope, context, isZeroData }) => (
   //   <DataBagsToolbar
   //     robotId={getRobotId(context, scope)}
   //     startTs={getStartTime(context, scope)}
@@ -420,19 +399,18 @@ const TOOLBAR_FACTORY = {
   //     isZeroData={isZeroData}
   //   />
   // ),
-  // [GC_WIDGET_TYPES.KEY_VALUES]: ({ companyId, isZeroData }) => (
+  // [WIDGET_TYPES.KEY_VALUES]: ({ companyId, isZeroData }) => (
   //   <SettingsToolbar
-  //     companyId={companyId}
   //     settingsPage={SECTION_ROBOT_DATA}
   //     isZeroData={isZeroData}
   //   />
   // ),
-  // [GC_WIDGET_TYPES.LOCALIZATION]: ({ switchTo }) => (
+  // [WIDGET_TYPES.LOCALIZATION]: ({ switchTo }) => (
   //   <NavigationToolbar
   //     navigationDetailCallback={() => switchTo({ scope: CONTEXT_SLOTS.NAVIGATION })}
   //   />
   // ),
-  // [WIDGET_TYPES_IDS.CHART]: ({ companyId, config, widgetId, setContext, context, scope }) => (
+  // [WIDGET_TYPES_IDS.CHART]: ({ config, widgetId, setContext, context, scope }) => (
   //   <NowTimeContext.Consumer>
   //     {nowTs => (
   //       <TimelineFilter
@@ -442,7 +420,6 @@ const TOOLBAR_FACTORY = {
   //         setTimeRangeMs={setTimeRangeMs(setContext, scope)}
   //         robotId={getRobotId(context, scope)}
   //         onTimeFocusChange={setTimeFocus(setContext, scope)}
-  //         companyId={companyId}
   //         widgetId={widgetId}
   //         config={config}
   //         nowTs={nowTs}
@@ -450,11 +427,10 @@ const TOOLBAR_FACTORY = {
   //     )}
   //   </NowTimeContext.Consumer>
   // ),
-  // [WIDGET_TYPES_IDS.INCIDENT_LIST]: ({ companyId, context, setContext, scope, isZeroData }) => (
+  // [WIDGET_TYPES_IDS.INCIDENT_LIST]: ({ context, setContext, scope, isZeroData }) => (
   //   <NowTimeContext.Consumer>
   //     {nowTs => (
   //       <IncidentsFilter
-  //         companyId={companyId}
   //         selectedIncidentComponentFilter={getIncidentComponent(context, scope)}
   //         setSelectedIncidentComponentFilter={setIncidentComponent(setContext, scope)}
   //         selectedSeverityFilter={getIncidentSeverity(context, scope)}
@@ -473,7 +449,6 @@ const TOOLBAR_FACTORY = {
   //   <NowTimeContext.Consumer>
   //     {nowTs => (
   //       <IncidentTimelineFilter
-  //         companyId={companyId}
   //         startTs={getStartTime(context, scope)}
   //         setStartTime={setStartTime(setContext, scope)}
   //         timeRangeMs={getTimeRangeMs(context, scope)}
@@ -487,7 +462,7 @@ const TOOLBAR_FACTORY = {
   //     )}
   //   </NowTimeContext.Consumer>
   // ),
-  // [GC_WIDGET_TYPES.ROS_DIAGNOSTICS]: ({ context, setContext, scope, isZeroData }) => (
+  // [WIDGET_TYPES.ROS_DIAGNOSTICS]: ({ context, setContext, scope, isZeroData }) => (
   //   <ROSDiagnosticsFilter
   //     robotId={getRobotId(context, scope)}
   //     isZeroData={isZeroData}
@@ -496,9 +471,8 @@ const TOOLBAR_FACTORY = {
   //     alwaysLive
   //   />
   // ),
-  // [GC_WIDGET_TYPES.ACTIONS]: ({ companyId, isZeroData }) => (
+  // [WIDGET_TYPES.ACTIONS]: ({ isZeroData }) => (
   //   <SettingsToolbar
-  //     companyId={companyId}
   //     settingsPage={SECTION_INSIGHTS}
   //     isZeroData={isZeroData}
   //   />
@@ -510,11 +484,10 @@ const TOOLBAR_FACTORY = {
   //     setVerbosityLevel={setVerbosityLevel(setContext, scope)}
   //   />
   // ),
-  // [WIDGET_TYPES_IDS.AUDIT_LOG]: ({ companyId, setContext, context, scope, isZeroData }) => (
+  // [WIDGET_TYPES_IDS.AUDIT_LOG]: ({ setContext, context, scope, isZeroData }) => (
   //   <NowTimeContext.Consumer>
   //     {nowTs => (
   //       <RobotLogFilter
-  //         companyId={companyId}
   //         robotId={getRobotId(context, scope)}
   //         startTs={getStartTime(context, scope)}
   //         setStartTime={setStartTime(setContext, scope)}
@@ -526,11 +499,10 @@ const TOOLBAR_FACTORY = {
   //     )}
   //   </NowTimeContext.Consumer>
   // ),
-  // [WIDGET_TYPES_IDS.AUDIT_LOG_FLEET]: ({ companyId, setContext, context, scope, isZeroData }) => (
+  // [WIDGET_TYPES_IDS.AUDIT_LOG_FLEET]: ({ setContext, context, scope, isZeroData }) => (
   //   <NowTimeContext.Consumer>
   //     {nowTs => (
   //       <FleetLogFilter
-  //         companyId={companyId}
   //         robotId={getRobotId(context, scope)}
   //         setRobotId={setRobotId(setContext, scope)}
   //         startTs={getStartTime(context, scope)}
@@ -551,9 +523,8 @@ const TOOLBAR_FACTORY = {
   //     )}
   //   </NowTimeContext.Consumer>
   // ),
-  // [WIDGET_TYPES_IDS.CUSTOM_DATA_TEXT]: ({ companyId, isZeroData }) => (
+  // [WIDGET_TYPES_IDS.CUSTOM_DATA_TEXT]: ({ isZeroData }) => (
   //   <SettingsToolbar
-  //     companyId={companyId}
   //     settingsPage={SECTION_ROBOT_DATA}
   //     isZeroData={isZeroData}
   //   />
@@ -620,11 +591,8 @@ const TOOLBAR_FACTORY = {
  *   - scope: { read: string?, write: string? } optional obj for the widget's read and write scopes
  */
 const WIDGET_FACTORY = {
-  // [WIDGET_TYPES_IDS.ROBOT_CONTROL_BAR]: ({ companyId, context, setContext, scope, switchTo }) => (
+  // [WIDGET_TYPES_IDS.ROBOT_CONTROL_BAR]: ({ context, setContext, scope, switchTo }) => (
   //   <RobotControlBar
-  //     companyId={companyId}
-  //     selectedCollectionId={getFleetTagId(context, scope)}
-  //     setCollectionId={setFleetTagId(setContext, scope)}
   //     selectRobotCallback={setRobotId(setContext, scope)}
   //     navigationDetailCallback={() => switchTo({ scope: CONTEXT_SLOTS.NAVIGATION })}
   //     robotId={getRobotId(context, scope)}
@@ -632,17 +600,15 @@ const WIDGET_FACTORY = {
   // ),
 
   // [WIDGET_TYPES_IDS.INCIDENT_LIST]: ({
-  //   companyId, context, setContext, scope, switchTo, isZeroData
+  //   context, setContext, scope, switchTo, isZeroData
   // }) => (
   //   <NowTimeContext.Consumer>
   //     {nowTs => (
   //       <IncidentList
-  //         companyId={companyId}
   //         selectedIncident={getIncidentId(context, scope)}
   //         selectedComponentFilter={getIncidentComponent(context, scope)}
   //         selectedSeverityFilter={getIncidentSeverity(context, scope)}
   //         onSelectedIncidentChange={setIncidentId(setContext, scope)}
-  //         tagId={getFleetTagId(context, scope)}
   //         robotId={getRobotId(context, scope)}
   //         selectStartTimeCallback={setStartTime(setContext, scope)}
   //         selectTimeRangeMsCallback={setTimeRangeMs(setContext, scope)}
@@ -659,16 +625,14 @@ const WIDGET_FACTORY = {
   //   </NowTimeContext.Consumer>
   // ),
 
-  // [WIDGET_TYPES_IDS.INCIDENT_TIMELINE]: ({ companyId, setContext, context, scope, isZeroData }) => (
+  // [WIDGET_TYPES_IDS.INCIDENT_TIMELINE]: ({ setContext, context, scope, isZeroData }) => (
   //   <NowTimeContext.Consumer>
   //     {nowTs => (
   //       <IncidentTimeline
-  //         companyId={companyId}
   //         selectedIncident={getIncidentId(context, scope)}
   //         selectedComponentFilter={getIncidentComponent(context, scope)}
   //         selectedSeverityFilter={getIncidentSeverity(context, scope)}
   //         onSelectedIncidentChange={setIncidentId(setContext, scope)}
-  //         tagId={getFleetTagId(context, scope)}
   //         robotId={getRobotId(context, scope)}
   //         startTs={getStartTime(context, scope)}
   //         nowTs={nowTs}
@@ -681,30 +645,26 @@ const WIDGET_FACTORY = {
   //   </NowTimeContext.Consumer>
   // ),
 
-  // [WIDGET_TYPES_IDS.NAVIGATION]: ({ context, scope, setContext, companyId, isZeroData }) => (
+  // [WIDGET_TYPES_IDS.NAVIGATION]: ({ context, scope, setContext, isZeroData }) => (
   //   <NavigationDetailWithContext
   //     context={context}
   //     scope={scope}
-  //     companyId={companyId}
   //     setContext={setContext}
   //     isZeroData={isZeroData}
   //   />
   // ),
 
   // [WIDGET_TYPES_IDS.FLEET_STATUS]: ({
-  //   companyId, config, context, setContext, scope, isZeroData
+  //   config, context, setContext, scope, isZeroData
   // }) => (
   //   <FleetStatusWidget
-  //     companyId={companyId}
   //     robotId={getRobotId(context, scope)}
   //     onRobotSelected={setRobotId(setContext, scope)}
-  //     tagIds={getFleetTagId(context, scope)}
   //     sortBy={getFleetSortBy(context, scope)}
   //     groupBy={getFleetGroupBy(context, scope)}
   //     attributeStatus={getFleetAttributeStatus(context, scope)}
   //     robotStatus={getFleetRobotStatus(context, scope)}
   //     onRobotStatusSelected={setFleetRobotStatus(setContext, scope)}
-  //     onTagSelected={setFleetTagId(setContext, scope)}
   //     showSummaryView={getSummary(context, scope)}
   //     onShowSummaryView={setSummary(setContext, scope)}
   //     isZeroData={isZeroData}
@@ -713,23 +673,19 @@ const WIDGET_FACTORY = {
   // ),
 
   // [WIDGET_TYPES_IDS.ROBOT_SEARCH]: ({
-  //   companyId, config, context, setContext, scope, isZeroData
+  //   config, context, setContext, scope, isZeroData
   // }) => (
   //   <RobotSearch
   //     selectedRobotId={getRobotId(context, scope)}
-  //     companyId={companyId}
   //     selectRobotCallback={setRobotId(setContext, scope)}
   //     config={config}
   //     isZeroData={isZeroData}
   //   />
   // ),
 
-  // [WIDGET_TYPES_IDS.FLEET_CONTROL]: ({ companyId, config, context, setContext, scope }) => (
+  // [WIDGET_TYPES_IDS.FLEET_CONTROL]: ({ config, context, setContext, scope }) => (
   //   <FleetControlWidget
-  //     companyId={companyId}
   //     config={config}
-  //     tagIds={getFleetTagId(context, scope)}
-  //     onTagIdsSelected={setFleetTagId(setContext, scope)}
   //     sortBy={getFleetSortBy(context, scope)}
   //     onSortBySelected={setFleetSortBy(setContext, scope)}
   //     groupBy={getFleetGroupBy(context, scope)}
@@ -745,19 +701,17 @@ const WIDGET_FACTORY = {
   //   />
   // ),
 
-  // [WIDGET_TYPES_IDS.IMAGE]: ({ config, companyId, isZeroData }) => (
+  // [WIDGET_TYPES_IDS.IMAGE]: ({ config, isZeroData }) => (
   //   <ImageWidget
-  //     companyId={companyId}
   //     config={config}
   //     isZeroData={isZeroData}
   //   />
   // ),
 
-  // [GC_WIDGET_TYPES.LIST_DATA]: ({ config, context, scope, companyId, isZeroData }) => (
+  // [WIDGET_TYPES.LIST_DATA]: ({ config, context, scope, isZeroData }) => (
   //   <NowTimeContext.Consumer>
   //     {nowTs => (
   //       <ListData
-  //         companyId={companyId}
   //         robotId={getRobotId(context, scope)}
   //         config={config}
   //         isZeroData={isZeroData}
@@ -767,12 +721,11 @@ const WIDGET_FACTORY = {
   //   </NowTimeContext.Consumer>
   // ),
 
-  // [WIDGET_TYPES_IDS.CHART]: ({ companyId, setContext, config, context, scope, isZeroData }) => (
+  // [WIDGET_TYPES_IDS.CHART]: ({ setContext, config, context, scope, isZeroData }) => (
   //   <NowTimeContext.Consumer>
   //     {nowTs => (
   //       <TimelineWidget
   //         robotId={getRobotId(context, scope)}
-  //         companyId={companyId}
   //         config={config}
   //         startTs={getStartTime(context, scope)}
   //         setStartTime={setStartTime(setContext, scope)}
@@ -788,20 +741,18 @@ const WIDGET_FACTORY = {
   //   </NowTimeContext.Consumer>
   // ),
 
-  // [GC_WIDGET_TYPES.VITALS]: ({ companyId, config, context, scope, isZeroData }) => (
+  // [WIDGET_TYPES.VITALS]: ({ config, context, scope, isZeroData }) => (
   //   <VitalsWidget
   //     robotId={getRobotId(context, scope)}
-  //     companyId={companyId}
   //     config={config}
   //     isZeroData={isZeroData}
   //   />
   // ),
 
-  // [GC_WIDGET_TYPES.LOCALIZATION]: ({
+  // [WIDGET_TYPES.LOCALIZATION]: ({
   //   context,
   //   scope,
   //   setContext,
-  //   companyId,
   //   isZeroData,
   //   config
   // }) => (
@@ -809,15 +760,13 @@ const WIDGET_FACTORY = {
   //     context={context}
   //     scope={scope}
   //     setContext={setContext}
-  //     companyId={companyId}
   //     isZeroData={isZeroData}
   //     config={config}
   //   />
   // ),
 
-  // [GC_WIDGET_TYPES.ROS_DIAGNOSTICS]: ({ context, setContext, scope, companyId, isZeroData }) => (
+  // [WIDGET_TYPES.ROS_DIAGNOSTICS]: ({ context, setContext, scope, isZeroData }) => (
   //   <DiagnosticsWidget
-  //     companyId={companyId}
   //     robotId={getRobotId(context, scope)}
   //     selectedRosDiagnosticsLevel={getRosDiagnosticsLevel(context, scope)}
   //     setRosDiagnosticsLevel={setRosDiagnosticsLevel(setContext, scope)}
@@ -825,11 +774,10 @@ const WIDGET_FACTORY = {
   //   />
   // ),
 
-  // [GC_WIDGET_TYPES.DATA_BAGS]: ({ context, scope, companyId, isZeroData }) => (
+  // [WIDGET_TYPES.DATA_BAGS]: ({ context, scope, isZeroData }) => (
   //   <NowTimeContext.Consumer>
   //     {nowTs => (
   //       <DataBagWidget
-  //         companyId={companyId}
   //         robotId={getRobotId(context, scope)}
   //         filterStartTs={getStartTime(context, scope)}
   //         timeRangeMs={getTimeRangeMs(context, scope)}
@@ -841,18 +789,16 @@ const WIDGET_FACTORY = {
   //   </NowTimeContext.Consumer>
   // ),
 
-  // [GC_WIDGET_TYPES.KEY_VALUES]: ({ context, scope, companyId, isZeroData }) => (
+  // [WIDGET_TYPES.KEY_VALUES]: ({ context, scope, isZeroData }) => (
   //   <CustomDataWidget
-  //     companyId={companyId}
   //     robotId={getRobotId(context, scope)}
   //     config={{ mapping: { source: 'key_value' } }}
   //     isZeroData={isZeroData}
   //   />
   // ),
 
-  // [WIDGET_TYPES_IDS.LOGS]: ({ context, setContext, scope, companyId, isZeroData }) => (
+  // [WIDGET_TYPES_IDS.LOGS]: ({ context, setContext, scope, isZeroData }) => (
   //   <LogsWidget
-  //     companyId={companyId}
   //     robotId={getRobotId(context, scope)}
   //     selectedVerbosityLevel={getVerbosityLevel(context, scope)}
   //     setVerbosityLevel={setVerbosityLevel(setContext, scope)}
@@ -860,9 +806,8 @@ const WIDGET_FACTORY = {
   //   />
   // ),
 
-  // [GC_WIDGET_TYPES.CAMERA]: ({ config, context, scope, companyId, isZeroData }) => (
+  // [WIDGET_TYPES.CAMERA]: ({ config, context, scope, isZeroData }) => (
   //   <CameraView
-  //     companyId={companyId}
   //     robotId={getRobotId(context, scope)}
   //     config={config}
   //     standalone
@@ -870,21 +815,19 @@ const WIDGET_FACTORY = {
   //   />
   // ),
 
-  // [GC_WIDGET_TYPES.ACTIONS]: ({ companyId, config, context, scope, isZeroData }) => (
+  // [WIDGET_TYPES.ACTIONS]: ({ config, context, scope, isZeroData }) => (
   //   <ActionsWidget
   //     robotId={getRobotId(context, scope)}
-  //     companyId={companyId}
   //     config={config}
   //     isZeroData={isZeroData}
   //   />
   // ),
 
-  // [WIDGET_TYPES_IDS.AUDIT_LOG]: ({ companyId, setContext, context, scope, isZeroData }) => (
+  // [WIDGET_TYPES_IDS.AUDIT_LOG]: ({ setContext, context, scope, isZeroData }) => (
   //   <NowTimeContext.Consumer>
   //     {nowTs => (
   //       <AuditLogsRobot
   //         robotId={getRobotId(context, scope)}
-  //         companyId={companyId}
   //         startTs={getStartTime(context, scope)}
   //         timeRangeMs={getTimeRangeMs(context, scope)}
   //         nowTs={nowTs}
@@ -894,11 +837,10 @@ const WIDGET_FACTORY = {
   //   </NowTimeContext.Consumer>
   // ),
 
-  // [WIDGET_TYPES_IDS.AUDIT_LOG_FLEET]: ({ companyId, setContext, context, scope, isZeroData }) => (
+  // [WIDGET_TYPES_IDS.AUDIT_LOG_FLEET]: ({ setContext, context, scope, isZeroData }) => (
   //   <NowTimeContext.Consumer>
   //     {nowTs => (
   //       <AuditLogsFleet
-  //         companyId={companyId}
   //         robotId={getRobotId(context, scope)}
   //         setRobotId={setRobotId(setContext, scope)}
   //         startTs={getStartTime(context, scope)}
@@ -918,18 +860,16 @@ const WIDGET_FACTORY = {
   //   </NowTimeContext.Consumer>
   // ),
 
-  // [WIDGET_TYPES_IDS.CUSTOM_DATA_TEXT]: ({ config, context, scope, companyId, isZeroData }) => (
+  // [WIDGET_TYPES_IDS.CUSTOM_DATA_TEXT]: ({ config, context, scope, isZeroData }) => (
   //   <CustomDataWidget
-  //     companyId={companyId}
   //     robotId={getRobotId(context, scope)}
   //     config={config}
   //     isZeroData={isZeroData}
   //   />
   // ),
 
-  // [WIDGET_TYPES_IDS.CUSTOM_DATA_IMAGE]: ({ config, context, scope, companyId, isZeroData }) => (
+  // [WIDGET_TYPES_IDS.CUSTOM_DATA_IMAGE]: ({ config, context, scope, isZeroData }) => (
   //   <CustomDataWidget
-  //     companyId={companyId}
   //     robotId={getRobotId(context, scope)}
   //     config={config}
   //     isZeroData={isZeroData}
@@ -937,13 +877,10 @@ const WIDGET_FACTORY = {
   // ),
 
   // [WIDGET_TYPES_IDS.NAVIGATION_CONTROL_BAR]: ({
-  //   companyId, context, setContext, scope
+  //   context, setContext, scope
   // }) => (
   //   <NavigationControlBar
-  //     companyId={companyId}
   //     robotId={getRobotId(context, scope)}
-  //     selectedCollectionId={getFleetTagId(context, scope)}
-  //     setCollectionId={setFleetTagId(setContext, scope)}
   //     selectRobotCallback={setRobotId(setContext, scope)}
   //     mapLabel={getNavigationMap(context, scope)}
   //     setMapLabel={setNavigationMap(setContext, scope)}
@@ -971,13 +908,11 @@ const WIDGET_FACTORY = {
   // ),
 
   // [WIDGET_TYPES_IDS.FLEET_MISSION_TRACKER]: ({
-  //   context, setContext, scope, switchTo, companyId, isZeroData
+  //   context, setContext, scope, switchTo, compad, isZeroData
   // }) => (
   //   <NowTimeContext.Consumer>
   //     {nowTs => (
   //       <RobotMissionsTracker
-  //         companyId={companyId}
-  //         tagId={getFleetTagId(context, scope)}
   //         robotId={getRobotId(context, scope)}
   //         setRobotId={setRobotId(setContext, scope)}
   //         missionLabelFilter={getMissionFilter(context, scope)}
@@ -993,20 +928,17 @@ const WIDGET_FACTORY = {
   // ),
 
   // [WIDGET_TYPES_IDS.MISSION_CONTROL_BAR]: ({
-  //   companyId
   // }) => (
   //   <MissionControlBarComponentWithMissionCtx
-  //     companyId={companyId}
   //   />
   // ),
 
-  // [WIDGET_TYPES_IDS.HISTORY]: ({ config, context, scope, companyId, isZeroData, setContext }) => (
+  // [WIDGET_TYPES_IDS.HISTORY]: ({ config, context, scope, isZeroData, setContext }) => (
   //   <NowTimeContext.Consumer>
   //     {nowTs => (
   //       <HistoryWidget
   //         config={config}
   //         robotId={getRobotId(context, scope)}
-  //         companyId={companyId}
   //         isZeroData={isZeroData}
   //         nowTs={nowTs}
   //         startTs={getStartTime(context, scope)}
@@ -1047,34 +979,18 @@ const Dashboard = ({ dashboardSpec, context, setContext, switchTo, companyId, th
     }
   }, [context]);
 
-  // Check if the user is under zero data experience or not
-  const isZeroData = useZeroData(companyId);
-  const guideBanner = <GuideBanner />;
-
-  const spec = useMemo(() => (
-    computeEffectiveDashboard(dashboardSpec)
-  ), [dashboardSpec]); // Add here any other criteria that could impact conditional rendering, e.g.
-  // context data, current robot etc.
-
   return (
     <NowTimeProvider intervalMs={60000}>
       <DarkModeProvider>
         <FullscreenProvider>
-          <EditingProvider>
-            <TagsConfigProvider companyId={companyId} theme={theme}>
-              <DashboardComponent
-                dashboardSpec={spec}
-                context={context}
-                setContext={setContext}
-                switchTo={switchTo}
-                widgetFactory={WIDGET_FACTORY}
-                toolbarFactory={TOOLBAR_FACTORY}
-                companyId={companyId}
-                isZeroData={isZeroData}
-                guideBanner={guideBanner}
-              />
-            </TagsConfigProvider>
-          </EditingProvider>
+          <DashboardComponent
+            dashboardSpec={dashboardSpec}
+            context={context}
+            setContext={setContext}
+            switchTo={switchTo}
+            widgetFactory={WIDGET_FACTORY}
+            toolbarFactory={TOOLBAR_FACTORY}
+          />
         </FullscreenProvider>
       </DarkModeProvider>
     </NowTimeProvider>
@@ -1086,7 +1002,6 @@ Dashboard.propTypes = {
   context: PropTypes.object.isRequired,
   setContext: PropTypes.func.isRequired,
   switchTo: PropTypes.func.isRequired,
-  companyId: PropTypes.string.isRequired,
   theme: PropTypes.object.isRequired
 };
 

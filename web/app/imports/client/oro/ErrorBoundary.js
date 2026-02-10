@@ -65,8 +65,7 @@ class ErrorBoundary extends React.Component {
             <h1>⚠️ Something went wrong with the app</h1>
           )}
           <p>
-            Reach out to our support team for help:
-            <a href="mailto: support@inorbit.ai">support@inorbit.ai</a>
+            Reach out to our support team for help.
           </p>
           <p>
             If reloading does not work, clearing cookies and browser cache and try again.

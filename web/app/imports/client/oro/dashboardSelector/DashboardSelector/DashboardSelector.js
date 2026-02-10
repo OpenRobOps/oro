@@ -18,11 +18,11 @@ import { isObject } from 'lodash';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import HistoryIcon from '@mui/icons-material/History';
 // ORO modules
-// import { DashboardUrl, EmbedDashboardUrl } from '../../../../lib/urlBuilder';
+import { DashboardUrl } from '../../../../lib/urlBuilder';
 import Loading from '../../util/Loading';
 import { useUrlContext } from '../../contexts/UrlContextContext';
-// import { SECTION_SCOPES } from '../../../../shared/uiPreferences';
-// import { countDashboardSectionsWithScopes } from '../../../../shared/dashboards';
+import { SECTION_SCOPES } from '../../../../shared/uiPreferences';
+import { countDashboardSectionsWithScopes } from '../../../../shared/dashboards';
 // import { writeCtx } from '../../../../lib/context';
 
 const StyledTabs = styled(Tabs)(({ theme }) => ({
@@ -95,13 +95,12 @@ const DashboardPanelsWrapper = styled('div')({
  * Update the current url to reflect the currently selected dashboard
  * and its context.
  */
-const updateUrl = ({ location, navigate, companyId, dashboardId, usingEmbedUrl }) => {
+const updateUrl = ({ location, navigate, companyId, dashboardId }) => {
   if (!location) {
     console.error('updateUrl: location is undefined', location);
   }
-  const UrlClass = usingEmbedUrl ? EmbedDashboardUrl : DashboardUrl;
   const pathname = dashboardId
-    ? new UrlClass().company(companyId).dashboard(dashboardId).build()
+    ? new DashboardUrl().company(companyId).dashboard(dashboardId).build()
     : location && location.pathname;
   if (location && pathname != location.pathname) {
     navigate(`${pathname}${location.search}`);
@@ -176,8 +175,6 @@ const DashboardSelector = (props) => {
     Dashboard,
     hideTabs,
     muteNotifications = localStorage.getItem('muteNotifications') === 'true',
-    usingEmbedUrl,
-    enablePostMessageApi,
     RobotOfflineBar,
     sidePanel,
   } = props;
@@ -187,44 +184,12 @@ const DashboardSelector = (props) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  useEffect(() => {
-    if (!enablePostMessageApi) {
-      return;
-    }
-    const messageListener = (msg) => {
-      if (msg && isObject(msg.data) && ('inOrbit' in msg.data)) {
-        const writeContext = msg?.data?.writeContext;
-        if (Array.isArray(writeContext) && writeContext.every(isObject)) {
-          const newContext = writeContext.reduce((acc, { prop, slot, value }) => (
-            writeCtx({ prop, slot })(value)(acc)
-          ), context);
-          setContext(newContext);
-        } else if (isObject(writeContext)) {
-          const { prop, slot, value } = writeContext;
-          setContext(writeCtx({ prop, slot })(value)(context));
-        }
-      }
-    };
-    window.addEventListener('message', messageListener, false);
-    console.log('[q] Context control via message passing is enabled');
-    return () => {
-      window.removeEventListener('message', messageListener, false);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!enablePostMessageApi) {
-      return;
-    }
-    window.parent && window.parent.postMessage({ inOrbit: true, context }, '*');
-  }, [context]);
-
   const updateStateAndUrl = useCallback((newTabIndex = 0) => {
     setTabIndex(newTabIndex);
     updateUrl({
-      location, navigate, companyId, dashboardId: dashboardSpecs[newTabIndex]._id, usingEmbedUrl
+      location, navigate, companyId, dashboardId: dashboardSpecs[newTabIndex]._id
     });
-  }, [location, companyId, dashboardSpecs, usingEmbedUrl]);
+  }, [location, companyId, dashboardSpecs]);
 
   const handleTabChange = useCallback(
     (_, newTabIndex) => updateStateAndUrl(newTabIndex),
@@ -320,7 +285,6 @@ const DashboardSelector = (props) => {
 DashboardSelector.propTypes = {
   classes: PropTypes.object.isRequired,
   isLoading: PropTypes.bool.isRequired,
-  companyId: PropTypes.string,
   dashboardSpecs: PropTypes.array,
   initialDashboardId: PropTypes.string,
   dashboardId: PropTypes.string,
@@ -328,8 +292,6 @@ DashboardSelector.propTypes = {
   Dashboard: PropTypes.func,
   hideTabs: PropTypes.bool,
   muteNotifications: PropTypes.bool,
-  usingEmbedUrl: PropTypes.bool,
-  enablePostMessageApi: PropTypes.bool,
   RobotOfflineBar: PropTypes.func,
   sidePanel: PropTypes.node,
 };

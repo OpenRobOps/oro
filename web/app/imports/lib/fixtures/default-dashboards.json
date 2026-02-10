@@ -1,0 +1,451 @@
+[
+  {
+    "label": "Fleet",
+    "order": 1,
+    "sections": [
+      {
+        "label": "Fleet",
+        "scope": "fleet",
+        "withControlWidget": true,
+        "widgets": [
+          {
+            "index": 1,
+            "label": "Fleet Status",
+            "type": "fleetStatus",
+            "config": {},
+            "layout": {
+              "grid": 12,
+              "chroma": true
+            },
+            "isExpanded": false
+          }
+        ],
+        "layout": {
+          "chroma": true
+        },
+        "isExpanded": true
+      },
+      {
+        "label": "Details",
+        "scope": "fleet",
+        "withControlWidget": false,
+        "widgets": [
+          {
+            "index": 0,
+            "label": "Fleet Log",
+            "type": "auditLogFleet",
+            "config": {},
+            "layout": {
+              "grid": 4,
+              "chroma": true,
+              "height": 1
+            },
+            "isExpanded": false
+          },
+          {
+            "index": 1,
+            "label": "Incident List",
+            "type": "incidentList",
+            "config": {
+              "elementList": [
+                "cpuLoadPercentage",
+                "diskUsagePercentage",
+                "networkTotalRate"
+              ],
+              "elementValues": {
+                "cpuLoadPercentage": {
+                  "label": "CPU usage",
+                  "modeId": "mode::0",
+                  "precision": 1,
+                  "unit": "%"
+                },
+                "diskUsagePercentage": {
+                  "label": "Disk usage",
+                  "precision": 1,
+                  "unit": "%"
+                },
+                "networkInOrbitRate": null,
+                "networkTotalRate": {
+                  "label": "Network rate",
+                  "precision": 0,
+                  "unit": "kbps"
+                }
+              }
+            },
+            "layout": {
+              "grid": 8,
+              "chroma": true,
+              "height": 1
+            },
+            "isExpanded": false
+          },
+          {
+            "index": 2,
+            "label": "Incident Timeline",
+            "type": "incidentTimeline",
+            "config": {},
+            "layout": {
+              "grid": 12,
+              "chroma": true,
+              "height": 1
+            },
+            "isExpanded": false
+          }
+        ],
+        "layout": {
+          "chroma": true
+        },
+        "isExpanded": true
+      }
+    ],
+    "layout": {}
+  },
+  {
+    "label": "Robot",
+    "order": 2,
+    "sections": [
+      {
+        "label": "Health",
+        "scope": "robot",
+        "withControlWidget": true,
+        "widgets": [
+          {
+            "index": 1,
+            "label": "Vitals",
+            "type": "vitals",
+            "config": {
+              "elementList": [
+                "cpuLoadPercentage",
+                "diskUsagePercentage",
+                "networkTotalRate",
+                "networkInOrbitRate"
+              ],
+              "elementValues": {
+                "cpuLoadPercentage": {
+                  "type": "gauge",
+                  "label": "CPU usage",
+                  "precision": 1,
+                  "unit": "%"
+                },
+                "diskUsagePercentage": {
+                  "type": "gauge",
+                  "label": "Disk usage",
+                  "precision": 1,
+                  "unit": "%"
+                },
+                "networkTotalRate": {
+                  "type": "text",
+                  "label": "Network rate",
+                  "precision": 0,
+                  "unit": "kbps"
+                },
+                "networkInOrbitRate": {
+                  "type": "text",
+                  "label": "InOrbit network rate",
+                  "precision": 0,
+                  "unit": "kbps"
+                }
+              }
+            },
+            "layout": {
+              "chroma": true,
+              "grid": 4,
+              "height": 1
+            },
+            "isExpanded": false
+          },
+          {
+            "index": 2,
+            "label": "Modes and Tags",
+            "type": "tagsAndModes",
+            "config": {},
+            "layout": {
+              "chroma": true,
+              "grid": 4,
+              "height": 1
+            },
+            "isExpanded": false
+          },
+          {
+            "index": 3,
+            "label": "ROS Diagnostics",
+            "config": {},
+            "layout": {
+              "chroma": true,
+              "grid": 4,
+              "height": 1
+            },
+            "isExpanded": false,
+            "type": "diagnostics"
+          }
+        ],
+        "layout": {},
+        "isExpanded": true
+      },
+      {
+        "label": "Details",
+        "scope": "robot",
+        "withControlWidget": false,
+        "widgets": [
+          {
+            "index": 0,
+            "label": "Timeline",
+            "type": "chart",
+            "config": {
+              "elementList": [
+                "cpuLoadPercentage",
+                "diskUsagePercentage"
+              ],
+              "elementValues": {
+                "cpuLoadPercentage": {
+                  "label": "CPU usage",
+                  "precision": 1,
+                  "scale": 100
+                },
+                "diskUsagePercentage": {
+                  "label": "Disk usage",
+                  "precision": 1,
+                  "scale": 100
+                }
+              },
+              "chartType": "linechart",
+              "min": 0,
+              "max": 100
+            },
+            "layout": {
+              "chroma": true,
+              "grid": 8,
+              "height": 1
+            },
+            "isExpanded": false
+          },
+          {
+            "index": 2,
+            "label": "Map",
+            "type": "localization",
+            "config": {},
+            "layout": {
+              "chroma": true,
+              "grid": 4,
+              "height": 1
+            },
+            "isExpanded": false
+          },
+          {
+            "index": 3,
+            "label": "Network",
+            "type": "chart",
+            "config": {
+              "elementList": [
+                "networkInOrbitRate",
+                "networkTotalRate"
+              ],
+              "elementValues": {
+                "networkInOrbitRate": {
+                  "label": "InOrbit network rate",
+                  "precision": 0
+                },
+                "networkTotalRate": {
+                  "label": "Network rate",
+                  "precision": 0
+                }
+              },
+              "chartType": "linechart",
+              "min": 0,
+              "max": 100
+            },
+            "layout": {
+              "chroma": true,
+              "grid": 8,
+              "height": 1
+            },
+            "isExpanded": false
+          },
+          {
+            "index": 4,
+            "label": "Actions",
+            "type": "actionsWidget",
+            "config": {},
+            "layout": {
+              "chroma": true,
+              "grid": 4,
+              "height": 1
+            },
+            "isExpanded": false
+          },
+          {
+            "index": 5,
+            "label": "Data Bags",
+            "type": "dataBags",
+            "config": {},
+            "layout": {
+              "chroma": true,
+              "grid": 4,
+              "height": 1
+            },
+            "isExpanded": true
+          },
+          {
+            "index": 6,
+            "label": "Robot Log",
+            "type": "auditLog",
+            "config": {},
+            "layout": {
+              "chroma": true,
+              "grid": 4,
+              "height": 1
+            },
+            "isExpanded": false
+          },
+          {
+            "index": 7,
+            "label": "Key Value pairs",
+            "type": "keyValues",
+            "config": {},
+            "layout": {
+                "chroma": true,
+                "grid": 4,
+                "height": 1
+            },
+            "isExpanded": false
+          }
+        ],
+        "layout": {},
+        "isExpanded": true
+      }
+    ],
+    "layout": {}
+  },
+  {
+    "label": "Navigation",
+    "order": 3,
+    "sections": [
+      {
+        "label": "Robot Navigation",
+        "scope": "navigation",
+        "withControlWidget": true,
+        "widgets": [
+          {
+            "label": "Navigation",
+            "type": "navigation",
+            "config": {},
+            "layout": {
+              "grid": 12,
+              "height": 2
+            }
+          }
+        ],
+        "layout": {
+          "height": 2
+        },
+        "isExpanded": true
+      },
+      {
+        "label": "Details",
+        "scope": "robot",
+        "withControlWidget": false,
+        "widgets": [
+          {
+            "index": 1,
+            "label": "Vitals",
+            "type": "vitals",
+            "config": {
+              "elementList": [
+                "cpuLoadPercentage",
+                "diskUsagePercentage",
+                "networkTotalRate",
+                "distanceLinear"
+              ],
+              "elementValues": {
+                "cpuLoadPercentage": {
+                  "type": "gauge",
+                  "label": "CPU usage",
+                  "precision": 1,
+                  "unit": "%"
+                },
+                "diskUsagePercentage": {
+                  "type": "gauge",
+                  "label": "Disk usage",
+                  "precision": 1,
+                  "unit": "%"
+                },
+                "networkTotalRate": {
+                  "type": "text",
+                  "label": "Network rate",
+                  "precision": 0,
+                  "unit": "kbps"
+                },
+                "distanceLinear": {
+                  "type": "text",
+                  "label": "Linear distance",
+                  "precision": 3,
+                  "unit": "m"
+                }
+              }
+            },
+            "layout": {
+              "grid": 4,
+              "chroma": true,
+              "height": 1
+            },
+            "isExpanded": false
+          },
+          {
+            "index": 2,
+            "label": "Data Bags",
+            "type": "dataBags",
+            "config": {},
+            "layout": {
+              "chroma": true,
+              "grid": 4,
+              "height": 1
+            },
+            "isExpanded": true
+          },
+          {
+            "index": 3,
+            "label": "Modes and Tags",
+            "type": "tagsAndModes",
+            "config": {},
+            "layout": {
+              "chroma": true,
+              "grid": 4,
+              "height": 1
+            },
+            "isExpanded": false
+          }
+        ],
+        "layout": {},
+        "isExpanded": true
+      }
+    ],
+    "layout": {}
+  },
+  {
+    "label": "Locations",
+    "order": 0,
+    "sections": [
+      {
+        "label": "Locations",
+        "scope": "location",
+        "withControlWidget": true,
+        "widgets": [
+          {
+            "label": "Locations",
+            "type": "locationsEditor",
+            "config": {},
+            "layout": {
+              "grid": 12,
+              "chroma": true,
+              "height": 2
+            }
+          }
+        ],
+        "layout": {
+          "chroma": true
+        },
+        "isExpanded": true
+      }
+    ]
+  }
+]
