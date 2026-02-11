@@ -11,6 +11,7 @@ import { v4 as uuidv4 } from 'uuid';
 import 'meteor/aldeed:collection2/static';
 // ORO modules
 import DashboardsManager from '../imports/server/dashboards';
+import SearchManager from '../imports/server/searchManager';
 
 // Module object to keep App Server instance-level variables.
 // - serverId: Unique ID representing this App Server instance
@@ -53,8 +54,7 @@ const oroAppMain = async () => {
 
   // TODO add and initialize modules
   await new DashboardsManager().init();
-
-
+  await new SearchManager().init();
 };
 
 // Allow CORS for configured origins in settings

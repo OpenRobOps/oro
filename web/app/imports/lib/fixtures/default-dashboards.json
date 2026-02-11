@@ -420,32 +420,5 @@
       }
     ],
     "layout": {}
-  },
-  {
-    "label": "Locations",
-    "order": 0,
-    "sections": [
-      {
-        "label": "Locations",
-        "scope": "location",
-        "withControlWidget": true,
-        "widgets": [
-          {
-            "label": "Locations",
-            "type": "locationsEditor",
-            "config": {},
-            "layout": {
-              "grid": 12,
-              "chroma": true,
-              "height": 2
-            }
-          }
-        ],
-        "layout": {
-          "chroma": true
-        },
-        "isExpanded": true
-      }
-    ]
   }
 ]

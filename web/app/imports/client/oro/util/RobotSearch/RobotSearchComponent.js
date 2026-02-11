@@ -211,9 +211,6 @@ class RobotSearch extends React.Component {
     const filters = {
       companyId
     };
-    // When multiple robots is enabled, if a company search by tag in fleet status,
-    // robots in RobotSearchComponent is going to show only a list of robots that
-    // include the selectedCollectionId.
     const entityTypes = [ID_TYPE_ROBOT];
     if (searchEntitiesMeteorCall) {
       searchEntitiesMeteorCall({
