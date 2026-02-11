@@ -200,7 +200,7 @@ const Section = (props) => {
         if (widgetSpec.type == WIDGET_TYPE_GROUP) {
           const { layout = {}, widgets: renderWidgets } = widgetSpec;
           return (
-            <Grid item xs={12} md={layout.width || 4}>
+            <Grid xs={12} md={layout.width || 4}>
               {render(renderWidgets)}
             </Grid>
           );
@@ -223,7 +223,7 @@ const Section = (props) => {
       // <LayoutProvider>
         <Grid container className={classes.section} key={id}>
           {label && (
-            <Grid item xs={12} className={classes.labelContainer}>
+            <Grid xs={12} className={classes.labelContainer}>
               <div
                 className={
                   classnames(classes.titleButtons, { [classes.titleMobile]: isMobile })
@@ -243,7 +243,7 @@ const Section = (props) => {
               </div>
             </Grid>
           )}
-          <Grid item xs={12}>
+          <Grid xs={12}>
             {render(widgets)}
           </Grid>
         </Grid>

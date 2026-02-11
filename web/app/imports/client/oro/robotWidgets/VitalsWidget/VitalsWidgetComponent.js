@@ -118,7 +118,7 @@ class VitalsWidgetComponent extends Component {
       );
     } else {
       return (
-        <Grid item xs={6} key={ix}>
+        <Grid xs={6} key={ix}>
           <div>
             Invalid type: {config.type}
           </div>

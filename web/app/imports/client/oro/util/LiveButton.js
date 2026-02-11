@@ -72,7 +72,6 @@ const LiveButton = ({ startTs, setStartTime, alwaysLive, timeRangeMs, isLive }) 
 
   return (
     <Grid
-      item
       className={
         classnames(
           classes.liveButtonContainer,

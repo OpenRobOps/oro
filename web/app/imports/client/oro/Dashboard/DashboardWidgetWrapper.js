@@ -140,7 +140,6 @@ const DashboardWidgetWrapper = (props) => {
 
   return (
     <Grid
-      item
       xs={12}
       md={width || 4}
       key={id}

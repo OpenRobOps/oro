@@ -102,7 +102,7 @@ const createWidget = widgetFactory => (
       isZeroData
     });
   } else {
-    console.error('Dashboard: Do not know how to render widget of type ' + type);
+    console.info('Dashboard: Do not know how to render widget of type ' + type);
     return (
       <Typography>
         {`Unknown widget type: ${type}`}
@@ -138,7 +138,6 @@ const styles = theme => ({
 const Dashboard = (props) => {
   const {
     classes,
-    theme,
     dashboardSpec,
     context,
     setContext,
@@ -180,7 +179,6 @@ const Dashboard = (props) => {
               <Section
                 {...section}
                 key={`${dashboardSpec._id}-${section._id || ix}`}
-                theme={theme}
                 widgetRenderer={widgetRenderer}
                 toolbarRenderer={toolbarRenderer}
                 context={context}
@@ -206,7 +204,6 @@ Dashboard.defaultProps = {
 
 Dashboard.propTypes = {
   classes: PropTypes.object,
-  theme: PropTypes.object,
   dashboardSpec: PropTypes.object,
   context: PropTypes.object.isRequired,
   setContext: PropTypes.func.isRequired,

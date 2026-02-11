@@ -87,7 +87,6 @@ const DashboardSelectorContainer = withTracker(({ urlDashboardId }) => {
   }
 
   const userDashboardSpecs = Dashboards.find({}).fetch();
-  console.log("Subscribed",userDashboardSpecs );
 
   // Dashboard sorting:
   // Attempt to use an integer "order" property for sorting. If
