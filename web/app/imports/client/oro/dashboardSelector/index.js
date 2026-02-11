@@ -11,6 +11,7 @@ import React from 'react';
 import { Meteor } from 'meteor/meteor';
 import { withTracker } from 'meteor/react-meteor-data';
 import sortBy from 'lodash/sortBy';
+import PropTypes from 'prop-types';
 // ORO modules
 // import ConfigManager, { ID_TYPE_USER } from '../../../lib/configManager';
 import { UIPreferences } from '../../../lib/collections';
@@ -37,10 +38,12 @@ const DashboardContainer = props => (
  * Dashboard selector container, fetching dashboards for the current user
  * (if any), and passing down them to a DashboardSelector widget.
  */
-const DashboardSelectorContainer = withTracker(({ urlPathParams }) => {
+const DashboardSelectorContainer = withTracker(({ urlDashboardId }) => {
+
+  const dashboardId = urlDashboardId || null;
   const userId = Meteor.userId();
   // Get dashboardId from url
-  const { dashboardId } = urlPathParams || {};
+  // const { dashboardId } = urlPathParams || {};
 
   // if (!userId) { // TODO(herchu) re-enable when log in is implemented
   //   return { isLoading: true };
@@ -96,5 +99,9 @@ const DashboardSelectorContainer = withTracker(({ urlPathParams }) => {
 
   return { isLoading: false, dashboardSpecs, dashboardId, initialDashboardId };
 })(DashboardContainer);
+
+DashboardSelectorContainer.propTypes = {
+  urlDashboardId: PropTypes.string, // dashboardId obtained from the URL (initial dashboard)
+};
 
 export default DashboardSelectorContainer;
