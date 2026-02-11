@@ -13,7 +13,7 @@ import { withTracker } from 'meteor/react-meteor-data';
 import sortBy from 'lodash/sortBy';
 // ORO modules
 // import ConfigManager, { ID_TYPE_USER } from '../../../lib/configManager';
-// import { UIPreferences } from '../../../lib/collections';
+import { UIPreferences } from '../../../lib/collections';
 import { Dashboards } from '../../../lib/dashboards';
 import DashboardSelector from './DashboardSelector';
 import Dashboard from '../Dashboard';

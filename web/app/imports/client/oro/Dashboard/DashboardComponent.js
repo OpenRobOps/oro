@@ -29,7 +29,6 @@ import Section from './SectionComponent';
  *   toolbar element, or null if toolbarFactory define no toolbar element for widgetSpec.type
  */
 const createToolbar = toolbarFactory => (
-  companyId,
   widgetSpec,
   context,
   setContext,
@@ -39,7 +38,6 @@ const createToolbar = toolbarFactory => (
   const { type, scope = {}, id: widgetId, config } = widgetSpec;
   if (toolbarFactory && (type in toolbarFactory)) {
     return toolbarFactory[type]({
-      companyId,
       config,
       widgetId,
       context,
@@ -87,7 +85,6 @@ const createToolbar = toolbarFactory => (
  *   and write properties from/to the dashboard context.
  */
 const createWidget = widgetFactory => (
-  companyId,
   widgetSpec,
   context,
   setContext,
@@ -97,7 +94,6 @@ const createWidget = widgetFactory => (
   const { type, config, scope = {} } = widgetSpec;
   if (widgetFactory && type in widgetFactory) {
     return widgetFactory[type]({
-      companyId,
       config,
       context,
       setContext,
@@ -149,7 +145,6 @@ const Dashboard = (props) => {
     switchTo,
     widgetFactory,
     toolbarFactory,
-    companyId,
     isZeroData,
     guideBanner = null,
   } = props;
@@ -186,7 +181,6 @@ const Dashboard = (props) => {
                 {...section}
                 key={`${dashboardSpec._id}-${section._id || ix}`}
                 theme={theme}
-                companyId={companyId}
                 widgetRenderer={widgetRenderer}
                 toolbarRenderer={toolbarRenderer}
                 context={context}
@@ -219,7 +213,6 @@ Dashboard.propTypes = {
   switchTo: PropTypes.func.isRequired,
   widgetFactory: PropTypes.object,
   toolbarFactory: PropTypes.object,
-  companyId: PropTypes.string,
   isZeroData: PropTypes.bool,
   guideBanner: PropTypes.object
 };

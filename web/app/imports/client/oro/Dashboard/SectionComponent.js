@@ -143,7 +143,7 @@ const widgetCssHeight = (layout = {}) => {
 const Section = (props) => {
   const {
     // common widget props
-    classes, companyId,
+    classes,
     // section props
     id, label, widgets, scope, withControlWidget,
     // dashboard and context specific props
@@ -160,7 +160,6 @@ const Section = (props) => {
    */
   const renderWidget = (widgetSpec, controlWidget = false, index = '') => {
     const widget = widgetRenderer(
-      companyId,
       widgetSpec,
       context,
       setContext,
@@ -181,7 +180,7 @@ const Section = (props) => {
         width={width}
         chroma={layout.chroma}
         toolbar={
-          toolbarRenderer(companyId, widgetSpec, context, setContext, switchTo, isZeroData)
+          toolbarRenderer(widgetSpec, context, setContext, switchTo, isZeroData)
         }
         dataTest={`dashboard-widget-${initialTitle}`}
         controlWidget={controlWidget}
@@ -260,7 +259,6 @@ Section.defaultProps = {
 Section.propTypes = {
   // common widget props
   classes: PropTypes.object,
-  companyId: PropTypes.string.isRequired,
   // section props
   id: PropTypes.string,
   label: PropTypes.string,

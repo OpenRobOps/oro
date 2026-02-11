@@ -95,12 +95,12 @@ const DashboardPanelsWrapper = styled('div')({
  * Update the current url to reflect the currently selected dashboard
  * and its context.
  */
-const updateUrl = ({ location, navigate, companyId, dashboardId }) => {
+const updateUrl = ({ location, navigate, dashboardId }) => {
   if (!location) {
     console.error('updateUrl: location is undefined', location);
   }
   const pathname = dashboardId
-    ? new DashboardUrl().company(companyId).dashboard(dashboardId).build()
+    ? new DashboardUrl().dashboard(dashboardId).build()
     : location && location.pathname;
   if (location && pathname != location.pathname) {
     navigate(`${pathname}${location.search}`);
@@ -167,7 +167,6 @@ const DashboardSelector = (props) => {
   const {
     classes,
     isLoading,
-    companyId,
     dashboardSpecs,
     initialDashboardId,
     dashboardId,
@@ -187,9 +186,9 @@ const DashboardSelector = (props) => {
   const updateStateAndUrl = useCallback((newTabIndex = 0) => {
     setTabIndex(newTabIndex);
     updateUrl({
-      location, navigate, companyId, dashboardId: dashboardSpecs[newTabIndex]._id
+      location, navigate, dashboardId: dashboardSpecs[newTabIndex]._id
     });
-  }, [location, companyId, dashboardSpecs]);
+  }, [location, dashboardSpecs]);
 
   const handleTabChange = useCallback(
     (_, newTabIndex) => updateStateAndUrl(newTabIndex),
@@ -251,7 +250,7 @@ const DashboardSelector = (props) => {
         <DashboardPanelsWrapper>
           {!muteNotifications
             && NotificationsClient && (
-              <NotificationsClient companyId={companyId} />
+              <NotificationsClient />
           )}
           {dashboardSpecs.map((dashboardSpec, i) => (
             <TabPanel
@@ -272,7 +271,6 @@ const DashboardSelector = (props) => {
                 context={context}
                 setContext={setContext}
                 switchTo={switchTo}
-                companyId={companyId}
               />
             </TabPanel>
           ))}

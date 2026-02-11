@@ -16,7 +16,7 @@ import DashboardComponent from './DashboardComponent';
 // import NavigationToolbar from './widgetToolbars/NavigationToolbar';
 // import SettingsToolbar from './widgetToolbars/SettingsToolbar';
 // import DataBagsToolbar from './widgetToolbars/DataBagsToolbar';
-// import LiveButtonToolbar from './widgetToolbars/LiveButtonToolbar';
+import LiveButtonToolbar from './widgetToolbars/LiveButtonToolbar';
 // import ListDataToolbar from './widgetToolbars/ListDataToolbar';
 // import IncidentsFilter from './widgetToolbars/ToolbarFilters/IncidentsFilter';
 // import LocalizationAdapter from '../robotWidgets/LocalizationWidget/LocalizationAdapter';
@@ -25,7 +25,7 @@ import DashboardComponent from './DashboardComponent';
 import { WIDGET_TYPES, WIDGET_TYPES_IDS } from '../../../lib/uiPreferences';
 // import NavigationDetail from '../navigationWidgets/NavigationDetail';
 // import TimelineWidget from '../robotWidgets/TimelineWidget';
-// import VitalsWidget from '../robotWidgets/VitalsWidget';
+import VitalsWidget from '../robotWidgets/VitalsWidget';
 // import DiagnosticsWidget from '../robotWidgets/DiagnosticsWidget';
 // import DataBagWidget from '../robotWidgets/DataBagWidget';
 // import LogsWidget from '../robotWidgets/LogsWidget';
@@ -60,8 +60,7 @@ import {
 } from '../../../lib/context';
 // import FleetControlWidget from '../fleetWidgets/FleetControlWidget';
 // import FleetStatusWidget from '../fleetWidgets/FleetStatusWidget';
-// import ClientMetrics from '../util/clientMetrics';
-// import RobotControlBar from '../robotWidgets/RobotControlBar';
+import RobotControlBar from '../robotWidgets/RobotControlBar';
 // import ROSDiagnosticsFilter from './widgetToolbars/ToolbarFilters/ROSDiagnosticsFilter';
 // import MissionToolbar from './widgetToolbars/MissionToolbar';
 // import NavigationControlBar from '../navigationWidgets/NavigationControlBar';
@@ -356,23 +355,9 @@ const LocalizationWidgetWithContext = ({
 
 // eslint-disable-next-line react/prop-types
 const NavigationDetailWithContext = ({ context, scope, companyId, setContext, isZeroData }) => {
-  const robotId = getRobotId(context, scope);
-  // TODO (franguerini): In the future we should check that all metrics are working
-  //                     so, this block of code is ok for now but it needs to be tested
-  if (robotId) {
-    // Start recording the time it will take to show robot pose data
-    new ClientMetrics().timers().startTimer({
-      name: 'nav-detail-robot-pose-latency',
-      id: 'nav-detail-robot-pose-latency' + robotId,
-      timeoutMs: 120000, // two minutes timeout
-      timeoutValue: -10, // for easy display of timed out data
-      callbacks: 2, // callbacks in sequence
-      sequencedCallbacks: true
-    });
-  }
   return (
     <NavigationDetail
-      robotId={robotId}
+      robotId={getRobotId(context, scope)}
       isMobile={isMobile}
       selectRobotCallback={setRobotId(setContext, scope)}
       mapLabel={getNavigationMap(context, scope)}
@@ -558,7 +543,7 @@ const TOOLBAR_FACTORY = {
   //   />
   // ),
   // [WIDGET_TYPES_IDS.FLEET_STATUS]: () => <LiveButtonToolbar alwaysLive />,
-  // [WIDGET_TYPES_IDS.VITALS]: () => <LiveButtonToolbar alwaysLive />,
+  [WIDGET_TYPES_IDS.VITALS]: () => <LiveButtonToolbar alwaysLive />,
   // [WIDGET_TYPES_IDS.CAMERA]: () => <LiveButtonToolbar alwaysLive />,
   // [WIDGET_TYPES_IDS.LIST_DATA]: ({ config, context, scope }) => (
   //   <NowTimeContext.Consumer>
@@ -591,13 +576,13 @@ const TOOLBAR_FACTORY = {
  *   - scope: { read: string?, write: string? } optional obj for the widget's read and write scopes
  */
 const WIDGET_FACTORY = {
-  // [WIDGET_TYPES_IDS.ROBOT_CONTROL_BAR]: ({ context, setContext, scope, switchTo }) => (
-  //   <RobotControlBar
-  //     selectRobotCallback={setRobotId(setContext, scope)}
-  //     navigationDetailCallback={() => switchTo({ scope: CONTEXT_SLOTS.NAVIGATION })}
-  //     robotId={getRobotId(context, scope)}
-  //   />
-  // ),
+  [WIDGET_TYPES_IDS.ROBOT_CONTROL_BAR]: ({ context, setContext, scope, switchTo }) => (
+    <RobotControlBar
+      selectRobotCallback={setRobotId(setContext, scope)}
+      navigationDetailCallback={() => switchTo({ scope: CONTEXT_SLOTS.NAVIGATION })}
+      robotId={getRobotId(context, scope)}
+    />
+  ),
 
   // [WIDGET_TYPES_IDS.INCIDENT_LIST]: ({
   //   context, setContext, scope, switchTo, isZeroData
@@ -741,13 +726,13 @@ const WIDGET_FACTORY = {
   //   </NowTimeContext.Consumer>
   // ),
 
-  // [WIDGET_TYPES.VITALS]: ({ config, context, scope, isZeroData }) => (
-  //   <VitalsWidget
-  //     robotId={getRobotId(context, scope)}
-  //     config={config}
-  //     isZeroData={isZeroData}
-  //   />
-  // ),
+  [WIDGET_TYPES.VITALS]: ({ config, context, scope, isZeroData }) => (
+    <VitalsWidget
+      robotId={getRobotId(context, scope)}
+      config={config}
+      isZeroData={isZeroData}
+    />
+  ),
 
   // [WIDGET_TYPES.LOCALIZATION]: ({
   //   context,

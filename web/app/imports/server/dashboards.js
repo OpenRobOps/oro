@@ -13,7 +13,6 @@ import { isString, isBoolean, isEmpty } from 'lodash';
 // import { UIPreferences, Companies } from '../lib/collections';
 import Dashboards, {
   listAllDashboardsAsync,
-  cleanupDashboardConfig,
   foldWidgetsAsync
 } from '../lib/dashboards';
 // import ConfigManager, { assertUniqueIdFields } from '../lib/configManagerAsync';
@@ -36,7 +35,6 @@ class DashboardsManager {
       instance = this;
       // this._uiPrefsCnfg = new ConfigManager(UIPreferences);
       // Configuration listeners to receive callbacks when dashboards change.
-      // Similar to AttributesManager and CollectionsManager.
       this._configListenerCallbacks = [];
     }
     // eslint-disable-next-line no-constructor-return
@@ -251,11 +249,6 @@ class DashboardsManager {
     const newDashConfig = {};
     newDashConfig['dashboards.' + dashboardId] = '';
     await this.validateDashboardConfig(newDashboardConfig);
-    // Process or cleanup dasboard config: This includes adding default widgets,
-    // when necessary.
-    const oldDashboardConfig = await Dashboards.findOneAsync({ _id: dashboardId });
-    cleanupDashboardConfig(newDashboardConfig, oldDashboardConfig);
-
     const result = await Dashboards.updateAsync({
       _id: dashboardId,
     }, {

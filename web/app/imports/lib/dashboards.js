@@ -8,9 +8,8 @@ import SimpleSchema from 'simpl-schema';
 import { cloneDeep, keyBy } from 'lodash';
 // ORO modules
 import { COLLECTIONS } from '../shared/constants';
-// import { UIPreferences } from '../lib/collections';
+import { UIPreferences } from '../lib/collections';
 import { DASHBOARDS, SECTION_SCOPES, WIDGET_TYPE_GROUP } from './uiPreferences';
-import DashboardSectionFixtures from './dashboardSectionFixtures';
 import { countDashboardSectionsWithScopes } from '../shared/dashboards';
 
 /**
@@ -60,61 +59,6 @@ if (Meteor.isDevelopment) {
 const listAllDashboardsAsync = async () => {
   const dashboards = await loadDashboardsAsync();
   return dashboards.map(dashboard => dashboard._id);
-};
-
-/**
- * Process or cleanup a specific section of the dasboards config,
- * given the Section object definition: This includes adding default widgets,
- * when necessary.
- *
- * @param section A section object for this configuration to be validated
- *   and sanitized.
- * @param oldSection Optional, the old configuration of the corresponding
- *   section in the old dahsboard concfig. It is used for comparison against
- *   the new one; to check for example if section types or layout presets have changed.
- */
-const cleanupSectionConfig = (section, oldSection) => {
-  const { scope, widgets } = section;
-  const timeCapsuleLayouts = DashboardSectionFixtures[SECTION_SCOPES.TIME_CAPSULE];
-  let { layoutId: newLayoutId } = section || {};
-  const { layoutId: oldLayoutId } = oldSection || {};
-  if (scope == SECTION_SCOPES.TIME_CAPSULE
-    && (!Array.isArray(widgets) || !widgets.length || (newLayoutId && oldLayoutId != newLayoutId))
-  ) {
-    // Time Capsule sections are not directly editable in the UI; instead,
-    // only a 'layoutId' is selected. (This applies only to editing the section
-    // from config UI; as manual DB configuration is still possible)
-    // See https://docs.google.com/presentation/d/1S31pKkFRqIIm3YbTEJIpHEq0uRux3sdVM7-woTdItOE/edit#slide=id.gcbe140f026_0_287
-    newLayoutId = newLayoutId || timeCapsuleLayouts[0].id;
-    const layout = timeCapsuleLayouts.find(layoutObject => layoutObject.id == newLayoutId)
-      || timeCapsuleLayouts[0];
-    Object.keys(layout.config).forEach((key) => {
-      section[key] = cloneDeep(layout.config[key]);
-    });
-    // Save a `config.layoutId` object in the section to know which layout
-    // was selected
-    section.layoutId = newLayoutId;
-    section.withControlWidget = true; // Time Capsule always uses its Control Bar
-  }
-};
-
-/**
- * Process or cleanup dasboard config, given the Dashboard object definition:
- * This includes adding default widgets, when necessary.
- *
- * @param dashboard A dashboard object for this configuration to be validated
- *   and sanitized.
- * @param oldDashboard Optional, the old configuration of the same dashboard
- *   object. It is used for comparison against the new one; to check for
- *   example if section types or layout presets have changed.
- */
-const cleanupDashboardConfig = (dashboard, oldDashboard = null) => {
-  dashboard.sections && dashboard.sections.forEach((section, ix) => {
-    cleanupSectionConfig(
-      section,
-      oldDashboard && oldDashboard.sections && oldDashboard.sections[ix]
-    );
-  });
 };
 
 /**
@@ -214,7 +158,6 @@ export {
   DashboardsSchema,
   listAllDashboardsAsync,
   cleanupSectionConfig,
-  cleanupDashboardConfig,
   loadDashboards, // deprecated
   loadDashboardsAsync,
   findDashboardWithScopes,
