@@ -33,7 +33,10 @@ const EXECUTION_STATUS = {
 const FEEDBACK_TIMEOUT = 5000;
 
 const ActionsFeedback = (props) => {
-  const { updateCallback, update } = props;
+  const {
+    updateCallback = () => {},
+    update
+  } = props;
   try {
     if (update) {
       updateCallback(update);
@@ -42,10 +45,6 @@ const ActionsFeedback = (props) => {
     console.error('Exception delivering action feedback update', e);
   }
   return <div />;
-};
-
-ActionsFeedback.defaultProps = {
-  updateCallback: () => {}
 };
 
 ActionsFeedback.propTypes = {

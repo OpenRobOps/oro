@@ -70,7 +70,11 @@ const useStyles = makeStyles()(theme => ({
 const { INPUT, ATTRIBUTE, VALUE } = ARG_FIELDS;
 
 const ActionParametersDialog = ({
-  handleClose, open, actionArguments, attributeValues, saveChanges
+  handleClose,
+  open,
+  actionArguments = {},
+  attributeValues,
+  saveChanges
 }) => {
   const { elementList, elementValues, label, description } = actionArguments;
   const v = new Validator();
@@ -216,10 +220,6 @@ const ActionParametersDialog = ({
       </DialogContent>
     </Dialog>
   );
-};
-
-ActionParametersDialog.defaultProps = {
-  actionArguments: {}
 };
 
 ActionParametersDialog.propTypes = {

@@ -944,7 +944,7 @@ const WIDGET_FACTORY = {
 /* eslint-enable react/prop-types */
 /* eslint-enable no-unused-vars */
 
-const Dashboard = ({ dashboardSpec, context, setContext, switchTo, companyId, theme }) => {
+const Dashboard = ({ dashboardSpec, context, setContext, switchTo }) => {
   /**
    * useEffect to read a robotId from localStorage
    *  - It will read read the robotId from localStorage only when there is no
@@ -993,7 +993,6 @@ Dashboard.propTypes = {
   context: PropTypes.object.isRequired,
   setContext: PropTypes.func.isRequired,
   switchTo: PropTypes.func.isRequired,
-  theme: PropTypes.object.isRequired
 };
 
 export default Dashboard;

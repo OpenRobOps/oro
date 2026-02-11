@@ -642,11 +642,6 @@ const WithActionsContext = (props, WrappedComponent) => {
   }
 };
 
-WithActionsContext.defaultProps = {
-  actionsConfig: {},
-  uiConfig: {}
-};
-
 WithActionsContext.propTypes = {
   // The action definitions object
   actionsConfig: PropTypes.object,

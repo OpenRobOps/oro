@@ -38,7 +38,15 @@ const MAX_OPTIONS_TO_BE_RADIO_BUTTON = 5;
 
 const ActionParametersDialogTextInput = (props) => {
   const {
-    actionArgument, value, handleChangeForm, label, error, attributeValues, name
+    actionArgument = {
+      input: {}
+    },
+    value,
+    handleChangeForm,
+    label,
+    error,
+    attributeValues,
+    name
   } = props;
   const { classes } = useStyles();
   const handleOnChange = event => handleChangeForm(name, event.target.value);
@@ -112,12 +120,6 @@ const ActionParametersDialogTextInput = (props) => {
       )}
     </>
   );
-};
-
-ActionParametersDialogTextInput.defaultProps = {
-  actionArgument: {
-    input: {}
-  }
 };
 
 ActionParametersDialogTextInput.propTypes = {

@@ -55,8 +55,9 @@ class VitalsWidgetComponent extends Component {
   renderVital = (attributeId, ix) => {
     const {
       classes,
-      attributeValues,
-      robot, robotId,
+      attributeValues = {},
+      robot = {},
+      robotId,
       trackEvent,
       isZeroData
     } = this.props;
@@ -147,11 +148,6 @@ class VitalsWidgetComponent extends Component {
     );
   }
 }
-
-VitalsWidgetComponent.defaultProps = {
-  attributeValues: {},
-  robot: {},
-};
 
 VitalsWidgetComponent.propTypes = {
   // Widget aesthetics

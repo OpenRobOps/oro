@@ -138,7 +138,7 @@ const styles = theme => ({
 const Dashboard = (props) => {
   const {
     classes,
-    dashboardSpec,
+    dashboardSpec = {},
     context,
     setContext,
     switchTo,
@@ -196,10 +196,6 @@ const Dashboard = (props) => {
       </div>
     </ErrorBoundary>
   );
-};
-
-Dashboard.defaultProps = {
-  dashboardSpec: {}
 };
 
 Dashboard.propTypes = {

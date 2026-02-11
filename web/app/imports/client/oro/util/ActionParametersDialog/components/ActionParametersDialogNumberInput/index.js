@@ -8,7 +8,16 @@ import { isFinite } from 'lodash';
 import { TextField } from '@mui/material';
 
 const ActionParametersDialogNumberInput = (props) => {
-  const { actionArgument, value, handleChangeForm, label, error, name } = props;
+  const {
+    actionArgument = {
+      input: {}
+    },
+    value,
+    handleChangeForm,
+    label,
+    error,
+    name
+  } = props;
   const displayValue = isFinite(value) ? value : '';
   const handleOnChange = event => handleChangeForm(name, parseFloat(event.target.value));
   const { max, min } = actionArgument.input;
@@ -33,12 +42,6 @@ const ActionParametersDialogNumberInput = (props) => {
       fullWidth
     />
   );
-};
-
-ActionParametersDialogNumberInput.defaultProps = {
-  actionArgument: {
-    input: {}
-  }
 };
 
 ActionParametersDialogNumberInput.propTypes = {

@@ -145,7 +145,7 @@ const Section = (props) => {
     // common widget props
     classes,
     // section props
-    id, label, widgets, scope, withControlWidget,
+    id, label = '', widgets, scope, withControlWidget,
     // dashboard and context specific props
     widgetRenderer, toolbarRenderer, context, setContext, switchTo, isZeroData
   } = props;
@@ -254,10 +254,6 @@ const Section = (props) => {
       </Grid>
     </Grid>
   );
-};
-
-Section.defaultProps = {
-  label: ''
 };
 
 Section.propTypes = {
