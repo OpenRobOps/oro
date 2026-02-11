@@ -81,7 +81,7 @@ class VitalsWidgetComponent extends Component {
     let disabled = false;
     if (isZeroData) {
       return (
-        <Grid container item xs={6} key={ix} className={classes.vital}>
+        <Grid container key={ix} className={classes.vital} size={6}>
           <VitalsZeroData counter={ix} />
         </Grid>
       );
@@ -94,7 +94,7 @@ class VitalsWidgetComponent extends Component {
         value = this.formatNumber(value * 100);
       }
       return (
-        <Grid container item xs={6} key={ix} className={classes.vital}>
+        <Grid container key={ix} className={classes.vital} size={6}>
           <VitalsGaugeEntry
             {...config}
             legend={config.label}
@@ -106,7 +106,12 @@ class VitalsWidgetComponent extends Component {
       );
     } else if (config.type == VITAL_ELEMENT_TEXT) {
       return (
-        <Grid container item xs={6} key={ix} className={classes.vital} data-test="mc-vitals-widget">
+        <Grid
+          container
+          key={ix}
+          className={classes.vital}
+          data-test="mc-vitals-widget"
+          size={6}>
           <VitalsTextEntry
             {...config}
             legend={config.label}
@@ -118,7 +123,7 @@ class VitalsWidgetComponent extends Component {
       );
     } else {
       return (
-        <Grid xs={6} key={ix}>
+        <Grid key={ix} size={6}>
           <div>
             Invalid type: {config.type}
           </div>

@@ -140,8 +140,6 @@ const DashboardWidgetWrapper = (props) => {
 
   return (
     <Grid
-      xs={12}
-      md={width || 4}
       key={id}
       data-test={dataTest}
       className={classNames(
@@ -150,7 +148,10 @@ const DashboardWidgetWrapper = (props) => {
         { [classes.controlWidgetContainer]: controlWidget },
         { [classes.mobileControlWidgetContainer]: isMobile }
       )}
-    >
+      size={{
+        xs: 12,
+        md: width || 4
+      }}>
       <div className={
         classNames(
           classes.widget,

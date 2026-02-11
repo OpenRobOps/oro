@@ -17,14 +17,14 @@ import { StartTsPropType } from '../../util/timeUtils';
 
 const LiveButtonToolbar = ({ alwaysLive, startTs, timeRangeMs, setStartTime }) => (
   // DO NOT ADD NEW TOOLBAR ELEMENTS TO THIS WIDGET (Read top IMPORTANT comment)
-  <Grid container spacing={1}>
+  (<Grid container spacing={1}>
     <LiveButton
       alwaysLive={alwaysLive}
       startTs={startTs}
       timeRangeMs={timeRangeMs}
       setStartTime={setStartTime}
     />
-  </Grid>
+  </Grid>)
 );
 
 LiveButtonToolbar.propTypes = {

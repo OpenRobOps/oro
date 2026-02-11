@@ -156,7 +156,10 @@ const setEventType = (setContext, scope = {}) => (
   fp.compose(setContext, writeAuditLogProp({ scope: scope.write, prop: CTX_PROPS.EVENT_TYPE }))
 );
 const deleteEventType = (setContext, scope = {}) => ( // eslint-disable-line no-unused-vars
-  fp.compose(setContext, deleteAuditLogProp({ scope: scope.delete, prop: CTX_PROPS.EVENT_TYPE }))
+  (fp.compose(
+    setContext,
+    deleteAuditLogProp({ scope: scope.delete, prop: CTX_PROPS.EVENT_TYPE })
+  ))
 );
 const getEventModule = (context, scope = {}) => (
   readAuditLogProp({ ctx: context, scope: scope.read, prop: CTX_PROPS.EVENT_MODULE })
@@ -165,7 +168,10 @@ const setEventModule = (setContext, scope = {}) => (
   fp.compose(setContext, writeAuditLogProp({ scope: scope.write, prop: CTX_PROPS.EVENT_MODULE }))
 );
 const deleteEventModule = (setContext, scope = {}) => ( // eslint-disable-line no-unused-vars
-  fp.compose(setContext, deleteAuditLogProp({ scope: scope.delete, prop: CTX_PROPS.EVENT_MODULE }))
+  (fp.compose(
+    setContext,
+    deleteAuditLogProp({ scope: scope.delete, prop: CTX_PROPS.EVENT_MODULE })
+  ))
 );
 const setUserId = (setContext, scope = {}) => (
   fp.compose(setContext, writeAuditLogProp({ scope: scope.write, prop: CTX_PROPS.USER_ID }))
@@ -174,7 +180,7 @@ const getUserId = (context, scope = {}) => (
   readAuditLogProp({ ctx: context, scope: scope.read, prop: CTX_PROPS.USER_ID })
 );
 const deleteUserId = (setContext, scope = {}) => ( // eslint-disable-line no-unused-vars
-  fp.compose(setContext, deleteAuditLogProp({ scope, prop: CTX_PROPS.ACTION_ID }))
+  (fp.compose(setContext, deleteAuditLogProp({ scope, prop: CTX_PROPS.ACTION_ID })))
 );
 const setActionId = (setContext, scope = {}) => (
   fp.compose(setContext, writeAuditLogProp({ scope: scope.write, prop: CTX_PROPS.ACTION_ID }))
@@ -183,7 +189,7 @@ const getActionId = (context, scope = {}) => (
   readAuditLogProp({ ctx: context, scope: scope.read, prop: CTX_PROPS.ACTION_ID })
 );
 const deleteActionId = (setContext, scope = {}) => ( // eslint-disable-line no-unused-vars
-  fp.compose(setContext, deleteAuditLogProp({ scope, prop: CTX_PROPS.ACTION_ID }))
+  (fp.compose(setContext, deleteAuditLogProp({ scope, prop: CTX_PROPS.ACTION_ID })))
 );
 
 // Convenience functions for operating on context navigation props

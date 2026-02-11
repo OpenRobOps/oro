@@ -200,7 +200,11 @@ const Section = (props) => {
         if (widgetSpec.type == WIDGET_TYPE_GROUP) {
           const { layout = {}, widgets: renderWidgets } = widgetSpec;
           return (
-            <Grid xs={12} md={layout.width || 4}>
+            <Grid
+              size={{
+                xs: 12,
+                md: layout.width || 4
+              }}>
               {render(renderWidgets)}
             </Grid>
           );
@@ -220,35 +224,35 @@ const Section = (props) => {
   // its control bar. So we include the provider in the render at section level
   return (
     // <ActiveInteractionProvider>
-      // <LayoutProvider>
-        <Grid container className={classes.section} key={id}>
-          {label && (
-            <Grid xs={12} className={classes.labelContainer}>
-              <div
-                className={
-                  classnames(classes.titleButtons, { [classes.titleMobile]: isMobile })
-                }
-              >
-                {label && (
-                  <div className={classes.titleFlex}>
-                    <div className={classes.infoName}>
-                      <Typography className={classes.componentTitle} data-test="dashboard-section-label">
-                        {label}
-                      </Typography>
-                    </div>
-                  </div>
-                )}
-                {withControlWidget && CONTROL_WIDGET_CONFIGS[scope]
-                  && renderWidget(CONTROL_WIDGET_CONFIGS[scope], true)}
-              </div>
-            </Grid>
-          )}
-          <Grid xs={12}>
-            {render(widgets)}
-          </Grid>
-        </Grid>
-      // </LayoutProvider>
+    // <LayoutProvider>
+    // </LayoutProvider>
     // </ActiveInteractionProvider>
+    <Grid container className={classes.section} key={id}>
+      {label && (
+        <Grid className={classes.labelContainer} size={12}>
+          <div
+            className={
+              classnames(classes.titleButtons, { [classes.titleMobile]: isMobile })
+            }
+          >
+            {label && (
+              <div className={classes.titleFlex}>
+                <div className={classes.infoName}>
+                  <Typography className={classes.componentTitle} data-test="dashboard-section-label">
+                    {label}
+                  </Typography>
+                </div>
+              </div>
+            )}
+            {withControlWidget && CONTROL_WIDGET_CONFIGS[scope]
+              && renderWidget(CONTROL_WIDGET_CONFIGS[scope], true)}
+          </div>
+        </Grid>
+      )}
+      <Grid size={12}>
+        {render(widgets)}
+      </Grid>
+    </Grid>
   );
 };
 
