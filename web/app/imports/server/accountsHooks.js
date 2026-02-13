@@ -17,6 +17,7 @@ const normalizeOAuthProfile = (options, user) => {
     return {
       name: g.name || `${g.given_name || ''} ${g.family_name || ''}`.trim() || g.email,
       email: g.email,
+      avatar: g.picture || null,
     };
   }
   if (user.services?.github) {
@@ -24,20 +25,22 @@ const normalizeOAuthProfile = (options, user) => {
     return {
       name: gh.username || options.profile?.name || gh.email || 'GitHub User',
       email: gh.email || null,
+      avatar: gh.id ? `https://avatars.githubusercontent.com/u/${gh.id}` : null,
     };
   }
   // Fallback for any future provider
   return {
     name: options.profile?.name || 'Unknown',
     email: options.profile?.email || null,
+    avatar: null,
   };
 };
 
 const registerAccountsHooks = () => {
   Accounts.onCreateUser((options, user) => {
     console.log("Accounts.onCreateUser", options, user);
-    const { name, email } = normalizeOAuthProfile(options, user);
-    user.profile = { name, email };
+    const { name, email, avatar } = normalizeOAuthProfile(options, user);
+    user.profile = { name, email, avatar };
     // New users start with no roles — an admin must approve them
     user.userRoles = [];
     return user;

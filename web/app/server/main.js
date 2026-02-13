@@ -66,6 +66,23 @@ const oroAppMain = async () => {
   await configureOAuth();
 };
 
+// GET /logout — serves a tiny page that clears Meteor auth tokens and redirects
+// to "/". Works independently of the React app, useful when no Logout button is
+// reachable in the UI.
+WebApp.connectHandlers.use('/logout', (req, res, next) => {
+  if (req.method !== 'GET') return next();
+  res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+  res.end(
+    '<html><body>Logging out&hellip;' +
+    '<script>' +
+    "localStorage.removeItem('Meteor.loginToken');" +
+    "localStorage.removeItem('Meteor.loginTokenExpires');" +
+    "localStorage.removeItem('Meteor.userId');" +
+    "window.location.replace('/');" +
+    '</script></body></html>'
+  );
+});
+
 // Allow CORS for configured origins in settings
 const { allowedOrigins } = Meteor.settings;
 const allowedHeaders = Meteor.settings.allowedHeaders || [];

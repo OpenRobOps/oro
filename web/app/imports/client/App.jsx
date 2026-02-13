@@ -8,6 +8,7 @@ import { BrowserRouter } from 'react-router-dom';
 // ORO modules
 import theme from './Styles';
 import Routes from './oro/Routes';
+import AppHeader from './oro/AppHeader';
 import ErrorBoundary from './oro/ErrorBoundary';
 import { AuthProvider } from './oro/contexts/AuthContext';
 import { AuthGuard } from './oro/Auth';
@@ -17,6 +18,7 @@ const App = () => (
     <BrowserRouter>
       <AuthProvider>
         <AuthGuard>
+          <AppHeader />
           <Routes />
         </AuthGuard>
       </AuthProvider>

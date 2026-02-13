@@ -16,6 +16,7 @@ Meteor.publish('user.details', function () {
       fields: {
         'profile.name': 1,
         'profile.email': 1,
+        'profile.avatar': 1,
         userRoles: 1,
       },
     }
