@@ -1,9 +1,6 @@
 /**
  * Support constants and basic functions (non Meteor) for Roles functionality
- * implemented in lib/inorbitRoles and server/inorbitRoles.
- *
- * See Roles document:
- * https://docs.google.com/document/d/1wSU1arRiMitm91NUqOupcqhCWReqw3kI4Ua6FPjzXj8/edit
+ * implemented in lib/roles and server/roles.
  */
 import { isString } from 'lodash';
 import { ID_TYPE_ROLE } from './constants';

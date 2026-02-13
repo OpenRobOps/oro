@@ -1,5 +1,10 @@
 node_modules/
 
+# Meteor settings (real credentials) — keep settings-example.json tracked
+settings.json
+settings-*.json
+!settings-example.json
+
 # Meteor Modern-Tools build context directories
 _build
 */build-assets

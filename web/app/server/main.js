@@ -12,6 +12,12 @@ import 'meteor/aldeed:collection2/static';
 // ORO modules
 import DashboardsManager from '../imports/server/dashboards';
 import SearchManager from '../imports/server/searchManager';
+import { registerAccountsHooks } from '../imports/server/accountsHooks';
+import { configureOAuth } from '../imports/server/oauthConfig';
+import '../imports/server/userPublications';
+
+// Register accounts hooks at module level — before any login attempt
+registerAccountsHooks();
 
 // Module object to keep App Server instance-level variables.
 // - serverId: Unique ID representing this App Server instance
@@ -55,6 +61,9 @@ const oroAppMain = async () => {
   // TODO add and initialize modules
   await new DashboardsManager().init();
   await new SearchManager().init();
+
+  // Configure OAuth providers from settings
+  await configureOAuth();
 };
 
 // Allow CORS for configured origins in settings
