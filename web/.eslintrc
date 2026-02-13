@@ -1,0 +1,62 @@
+{
+  "extends": "airbnb",
+  "rules": {
+    "react/require-extension": "off",
+    "react/sort-comp": "off",
+    "react/jsx-filename-extension": "off",
+    "react/require-default-props": "off",
+    "react/forbid-prop-types": "off",
+    "comma-dangle": "off",
+    "eqeqeq": "off",
+    "no-console": "off",
+    "prefer-template": "off",
+    "no-underscore-dangle": "off",
+    "func-names": "off",
+    "no-param-reassign": "off",
+    "import/no-unresolved": "off",
+    "import/extensions": "off",
+    "import/no-extraneous-dependencies": "off",
+    "no-unused-expressions": "off",
+    "no-plusplus": "off",
+    "no-else-return": "off",
+    "react-hooks/rules-of-hooks": "error",
+    "react/jsx-one-expression-per-line": ["error", { "allow": "literal" }],
+    "object-curly-newline": "off",
+    "react/no-did-update-set-state": "off",
+    "no-restricted-syntax": 0,
+    "react/function-component-definition": "off",
+    "import/no-relative-packages": "off",
+    "arrow-parens": ["error", "as-needed", { "requireForBlockBody": true }]    
+  },
+  "plugins": [
+        "react",
+        "react-hooks",
+        "mocha",
+        "jest"
+  ],
+  "settings": {
+    "import/core-modules": [
+      "meteor/meteor",
+      "meteor/webapp",
+      "meteor/mongo",
+      "meteor/random",
+      "meteor/accounts-base",
+      "meteor/react-meteor-data"
+    ],
+    "react": {
+      "version": "18.2.0"
+    }
+  },
+  "env": {
+    "browser": true,
+    "mocha": true
+  },
+  "parser": "@babel/eslint-parser",
+  "parserOptions": {
+    "requireConfigFile": false,
+    "babelOptions": {
+      "presets": ["@babel/preset-react"]
+    }
+  }
+}
+

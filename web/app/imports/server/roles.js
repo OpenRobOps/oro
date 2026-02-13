@@ -1,10 +1,11 @@
 /**
  * OroRoles: this class encapsulates ORO  specific roles and permissions definitions and usage.
- *
+ * 
+ * TODOS:
+ *  - Add caching
  */
 import { Meteor } from 'meteor/meteor';
-import { Mongo } from 'meteor/mongo';
-import { isString, isEmpty, pick, capitalize } from 'lodash';
+import { isString, pick, capitalize } from 'lodash';
 // ORO modules
 import { ID_TYPE_ROBOT } from '../shared/constants';
 import {
@@ -26,14 +27,14 @@ const ROLES_FIELD = 'userRoles';
 const GRANTS_FIELD = 'grants';
 
 /*
- * Default company roles values. Added to DB during initialization.
+ * Default roles values. Added to DB during initialization.
  */
 const STATIC_ROLES_CONFIG = {};
 /* eslint-disable wrap-iife */
 (function () { // Wrapping this code in a closure since abbreviations are added that make
   // All 'singletons' in this module are about Resources -- rename to make code shorter
   const SINGLETONS = RESOURCE_SINGLETONS;
-  // C: prefix for company elements
+  // C: prefix for system elements
   const C = RESOURCE_TYPES.SYSTEM + SCOPE_SEPARATOR;
   STATIC_ROLES_CONFIG[ROLE_VIEWER] = {
     [C + SINGLETONS.FLEET]: [ACCESS_LEVEL_VIEW], // view robots in fleet
@@ -340,8 +341,7 @@ class OroRoles {
    * composite publication helper userGrantsCompositePublication():
    *
    * @param {Array} roleIds are all the roles the current user has in the platform
-   * @param {Object} rolesConfig is the CompanyRoles document
-   *   already retrieved (or a subset containing at least roleIds keys)
+   * @param {Object} rolesConfig is the roles config, map from id to Role object
    * @param {String} permissionLevel The access level to check
    *
    * NOTE: Server-side only - used when documents have already been retrieved
@@ -819,46 +819,6 @@ class OroRoles {
   };
 
   /**
-   * Sets access level permissions `accessLevel` to user `userId` on the object
-   * `(entityId, entityType)`. For now, only ID_TYPE_ROBOT is supported as
-   * `entityId`.
-   *
-   * In terms of meteor-roles package, this sets the "role" `accessLevel`
-   * on the "group" <entityType>/<entityId>.
-   *
-   * API 3.0
-   */
-  // eslint-disable-next-line class-methods-use-this
-  setAccessLevel = async ({ userId, entityType, entityId, accessLevel }) => {
-    // Validate arguments
-    if (!isString(userId)) {
-      throw new Error('userId must be a string');
-    }
-    if (entityType != ID_TYPE_ROBOT) {
-      throw new Error(`Invalid entityType ${entityType}; only collections are supported for now`);
-    }
-    if (!isString(entityId)) {
-      throw new Error('entityId must be a string');
-    }
-    // if accessLevel is given, it must be valid (if not given, it acts as removing access)
-    if (accessLevel && !ACCESS_LEVEL_TYPES.includes(accessLevel)) {
-      throw new Error(`Invalid accessLevel ${accessLevel}`);
-    }
-    // Build a qualified id (e.g. "collection/abc123") and save the access
-    const scopeId = glueId(ID_TYPE_ROBOT, entityId);
-    if (accessLevel) {
-      await this.Roles.setUserRoles(userId, accessLevel, scopeId);
-    } else {
-      // NOTE(herchu) It appears that Roles.removeUsersFromRoles needs to know the current
-      // role in order to delete it. Doing a query plus an update; although this could be
-      // done in a simply $set if not going through the api.
-      const roles = await this.Roles.getRolesForUser(userId, scopeId);
-      await this.Roles.removeUsersFromRoles(userId, roles, scopeId);
-    }
-    return true;
-  };
-
-  /**
    * Builds a query to retrieve roles documents.
    * Note that these seldom change. This should be cached in the Roles module.
    */
@@ -998,8 +958,8 @@ Meteor.methods({
  * That code snippet properly binds `this`. Then `userGrantsCompositePublication`
  * while compose a composite publication, and ultimately call `publish`
  * function with arguments `{ roleIds, rolesConfig, userGrants }`:
- *   - userGrants is an object with the set of all grants of this user in the company,
- *     for example { 'tag/hooli/prod': ['config'], 'action/hooli/*': ['op'] }`
+ *   - userGrants is an object with the set of all grants of this user,
+ *     for example { 'system/~dashboards': ['config'], 'action/*': ['op'] }`
  *   - roleIds is an array with the role ids (normally just one)
  *   - rolesConfig are the roles { roleId, { label, grants ... }}
  *
@@ -1019,7 +979,7 @@ const userGrantsCompositePublication = function (publish) {
     },
     children: [{
       async find(user) {
-        // user is the User object. We need to determine its roles in companyId; and this turns
+        // user is the User object. We need to determine its roles; and this turns
         // result in another cursor for the third layer of the publication
         const roles = user?.[ROLES_FIELD];
         if (!Array.isArray(roles) || !roles.length) {
