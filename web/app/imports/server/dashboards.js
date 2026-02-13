@@ -344,12 +344,12 @@ export default DashboardsManager;
  * @param {array} dashboardIds list of Ids identifying the dashboards to publish
  */
 Meteor.publish('user.dashboards', async function () {
+  // TODO/login
   // if (!this.userId) {
   //   return this.ready();
   // }
   // Determine which dashboards are visible for this user
   const visibleDashboardIds = await new DashboardsManager().calculateVisibleDashboards(this.userId);
   const query = visibleDashboardIds ? { _id: { $in: visibleDashboardIds } } : {};
-  console.log('PUB user.dashboards', await Dashboards.find(query).countAsync());
   return Dashboards.find(query);
 });

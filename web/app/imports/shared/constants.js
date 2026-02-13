@@ -8,7 +8,7 @@ const COLLECTIONS = {
   USERS: 'users', // Based on Meteor package
 
   // - Permissions-related
-  // COMPANY_ROLES: 'company_roles', // note that ROLES is used by alanning/roles
+  ROLES: 'roles', // note that this is the same name used by alanning/roles
 
   // Dashboards for each user
   DASHBOARDS: 'dashboards',

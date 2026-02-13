@@ -3,7 +3,8 @@
   "private": true,
   "scripts": {
     "start": "meteor run",
-    "test": "meteor test --once --driver-package meteortesting:mocha",
+    "test": "TEST_CLIENT=0 meteor test --once --driver-package meteortesting:mocha",
+    "test:watch": "TEST_CLIENT=0 meteor test --driver-package meteortesting:mocha",
     "test-app": "TEST_WATCH=1 meteor test --full-app --driver-package meteortesting:mocha",
     "visualize": "meteor --production --extra-packages bundle-visualizer"
   },
@@ -40,7 +41,13 @@
     "@rspack/core": "^1.7.1",
     "@rspack/plugin-react-refresh": "^1.4.3",
     "@svgr/webpack": "^8.1.0",
-    "react-refresh": "^0.17.0"
+    "axios-mock-adapter": "^1.21.4",
+    "chai": "^4.3.7",
+    "chai-as-promised": "^7.1.1",
+    "chai-http": "^4.3.0",
+    "chai-string": "^1.5.0",
+    "react-refresh": "^0.17.0",
+    "sinon": "^16.1.0"
   },
   "meteor": {
     "mainModule": {

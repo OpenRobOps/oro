@@ -1,5 +1,7 @@
 import assert from "assert";
 
+import '../imports/server/test/roles.test.js'
+
 describe("app", function () {
   it("package.json has correct name", async function () {
     const { name } = await import("../package.json");

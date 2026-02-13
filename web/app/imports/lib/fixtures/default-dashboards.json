@@ -156,18 +156,6 @@
           },
           {
             "index": 2,
-            "label": "Modes and Tags",
-            "type": "tagsAndModes",
-            "config": {},
-            "layout": {
-              "chroma": true,
-              "grid": 4,
-              "height": 1
-            },
-            "isExpanded": false
-          },
-          {
-            "index": 3,
             "label": "ROS Diagnostics",
             "config": {},
             "layout": {
@@ -401,18 +389,6 @@
               "height": 1
             },
             "isExpanded": true
-          },
-          {
-            "index": 3,
-            "label": "Modes and Tags",
-            "type": "tagsAndModes",
-            "config": {},
-            "layout": {
-              "chroma": true,
-              "grid": 4,
-              "height": 1
-            },
-            "isExpanded": false
           }
         ],
         "layout": {},
