@@ -35,3 +35,5 @@ meteortesting:mocha
 lmieulet:meteor-coverage
 http
 
+accounts-passwordless
+email

@@ -1,16 +1,17 @@
 /**
- * LoginPage — OAuth login screen.
+ * LoginPage — Passwordless email + OAuth login screen.
  *
- * Renders a centered card with one button per configured OAuth provider.
- * To add a new provider: push an entry into OAUTH_PROVIDERS and install
- * the matching Meteor accounts-* package.
+ * Two-step email flow (enter email → enter code) with OAuth buttons below.
  */
 import { Meteor } from 'meteor/meteor';
+import { Accounts } from 'meteor/accounts-base';
 import React, { useState, useCallback } from 'react';
 import {
   Box,
   Button,
+  Divider,
   Paper,
+  TextField,
   Typography,
   Alert,
   CircularProgress,
@@ -45,6 +46,9 @@ const OAUTH_PROVIDERS = [
 const LoginPage = () => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState('');
+  const [step, setStep] = useState('email'); // 'email' | 'code'
+  const [code, setCode] = useState('');
 
   const handleLogin = useCallback((loginFn) => {
     setError(null);
@@ -56,6 +60,45 @@ const LoginPage = () => {
       }
     });
   }, []);
+
+  const handleSendCode = useCallback(() => {
+    setError(null);
+    setLoading(true);
+    console.log("**********handleSendCode", email);
+    Accounts.requestLoginTokenForUser(
+      {
+        selector: email,
+        userData: {
+          name: email.split('@')[0],
+          email: email,
+          avatar: null,
+        }
+      },
+      (err) => {
+        setLoading(false);
+        if (err) {
+          setError(err.reason || err.message || 'Could not send code');
+        } else {
+          setStep('code');
+        }
+      }
+    );
+  }, [email]);
+
+  const handleVerifyCode = useCallback(() => {
+    setError(null);
+    setLoading(true);
+    Meteor.passwordlessLoginWithToken(
+      email,
+      code,
+      (err) => {
+        setLoading(false);
+        if (err) {
+          setError(err.reason || err.message || 'Invalid code');
+        }
+      }
+    );
+  }, [email, code]);
 
   return (
     <Box
@@ -91,6 +134,64 @@ const LoginPage = () => {
             {error}
           </Alert>
         )}
+
+        {/* Passwordless email flow */}
+        {step === 'email' ? (
+          <>
+            <TextField
+              label="Email address"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              fullWidth
+              disabled={loading}
+              onKeyDown={(e) => e.key === 'Enter' && email && handleSendCode()}
+            />
+            <Button
+              variant="contained"
+              onClick={handleSendCode}
+              disabled={loading || !email}
+              fullWidth
+              sx={{ textTransform: 'none' }}
+            >
+              {loading ? <CircularProgress size={20} /> : 'Send login code'}
+            </Button>
+          </>
+        ) : (
+          <>
+            <Typography variant="body2" color="text.secondary">
+              Enter the 6-digit code sent to <strong>{email}</strong>
+            </Typography>
+            <TextField
+              label="Login code"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              fullWidth
+              disabled={loading}
+              autoFocus
+              onKeyDown={(e) => e.key === 'Enter' && code && handleVerifyCode()}
+            />
+            <Button
+              variant="contained"
+              onClick={handleVerifyCode}
+              disabled={loading || !code}
+              fullWidth
+              sx={{ textTransform: 'none' }}
+            >
+              {loading ? <CircularProgress size={20} /> : 'Verify code'}
+            </Button>
+            <Button
+              variant="text"
+              size="small"
+              onClick={() => { setStep('email'); setCode(''); setError(null); }}
+              sx={{ textTransform: 'none' }}
+            >
+              Use a different email
+            </Button>
+          </>
+        )}
+
+        <Divider sx={{ width: '100%', my: 1 }}>or</Divider>
 
         {OAUTH_PROVIDERS.map(({ id, label, icon, loginFn }) => (
           <Button

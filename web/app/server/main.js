@@ -64,6 +64,18 @@ const oroAppMain = async () => {
 
   // Configure OAuth providers from settings
   await configureOAuth();
+
+  // Configure SMTP for passwordless email login
+  if (Meteor.settings.smtp?.url) {
+    process.env.MAIL_URL = Meteor.settings.smtp.url;
+  }
+
+  // Customize the passwordless login-token email
+  Accounts.emailTemplates.sendLoginToken = {
+    subject: () => 'Your OpenRobOps login code',
+    text: (user, url, { sequence }) =>
+      `Hi!\n\nYour OpenRobOps login code is: ${sequence}\n\nIf you didn't request this, you can safely ignore this email.\n`,
+  };
 };
 
 // GET /logout — serves a tiny page that clears Meteor auth tokens and redirects

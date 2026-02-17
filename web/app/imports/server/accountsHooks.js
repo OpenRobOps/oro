@@ -28,6 +28,15 @@ const normalizeOAuthProfile = (options, user) => {
       avatar: gh.id ? `https://avatars.githubusercontent.com/u/${gh.id}` : null,
     };
   }
+  // Passwordless email users — no OAuth service data, just emails[]
+  if (user.emails?.length) {
+    const email = user.emails[0].address;
+    return {
+      name: email.split('@')[0],
+      email,
+      avatar: null,
+    };
+  }
   // Fallback for any future provider
   return {
     name: options.profile?.name || 'Unknown',
