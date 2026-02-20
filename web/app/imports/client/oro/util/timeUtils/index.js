@@ -223,13 +223,6 @@ const getDefaultStartTs = nowTs => (
 const getDefaultTimeRangeMs = () => moment.duration(1, 'days').valueOf();
 
 /**
- * Default timerange for time capsule components.
- * Timecapsule defaults to 1 hour (vs. one day used in in live dashboards)
- * @returns {Number} 1 hour in milliseconds
- */
-const getDefaultTimeRangeMsForTC = () => moment.duration(1, 'hours').valueOf();
-
-/**
  * Calculate an endTs from nowTs, startTs, and timeRangeMs.
  * EndTs would be the ending point timestamp of the timeframe that is being
  * defined by startTs and timeRangeMs.

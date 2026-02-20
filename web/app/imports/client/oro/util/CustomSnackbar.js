@@ -1,6 +1,6 @@
 /**
  * Custom control to show a notification skackbar
- * (with different modes: success, info, error, warning, freeEdition).
+ * (with different modes: success, info, error, warning).
  * Example directly following customized snackbards from MUI: https://material-ui.com/demos/snackbars/
  *
  * Colors picked from https://www.materialui.co/colors combined with those in the tutorial
@@ -24,8 +24,7 @@ const SnackbarVariants = {
   SUCCESS: 'success',
   WARNING: 'warning',
   ERROR: 'error',
-  INFO: 'info',
-  EDITION: 'edition'
+  INFO: 'info'
 };
 
 const VariantIcons = {
@@ -47,10 +46,6 @@ const styles1 = theme => ({
   },
   warning: {
     backgroundColor: '#FFA000', // from MUI: amber[700],
-  },
-  edition: {
-    backgroundColor: '#FFFFFF', // White
-    color: 'initial'
   },
   icon: {
     fontSize: 20,
@@ -119,7 +114,7 @@ CustomSnackbarContent.propTypes = {
   className: PropTypes.string,
   message: PropTypes.node,
   onClose: PropTypes.func,
-  variant: PropTypes.oneOf(['success', 'warning', 'error', 'info', 'edition']).isRequired,
+  variant: PropTypes.oneOf(['success', 'warning', 'error', 'info']).isRequired,
   autoHideDuration: PropTypes.number,
   actionMessage: PropTypes.string,
   onAction: PropTypes.func,

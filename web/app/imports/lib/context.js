@@ -241,17 +241,6 @@ const deleteTimeProp = ({ scope, prop }) => (
   deleteCtx({ scope, prop, slot: CONTEXT_SLOTS.TIME })
 );
 
-// Convenience functions reading/writing Time Capsule ('tc') context properties
-const readTimeCapsuleProp = ({ ctx, scope, prop, type }) => (
-  readCtx({ ctx, scope, prop, slot: CONTEXT_SLOTS.TIME_CAPSULE, type })
-);
-const writeTimeCapsuleProp = ({ scope, prop }) => (
-  writeCtx({ scope, prop, slot: CONTEXT_SLOTS.TIME_CAPSULE })
-);
-const deleteTimeCapsuleProp = ({ scope, prop }) => (
-  deleteCtx({ scope, prop, slot: CONTEXT_SLOTS.TIME_CAPSULE })
-);
-
 // Convenience functions reading/writing 'navigation' context properties
 const readNavigationProp = ({ ctx, scope, prop, type }) => (
   readCtx({ ctx, scope, prop, slot: CONTEXT_SLOTS.NAVIGATION, type })
@@ -432,9 +421,6 @@ export {
   readTimeProp,
   writeTimeProp,
   deleteTimeProp,
-  readTimeCapsuleProp,
-  writeTimeCapsuleProp,
-  deleteTimeCapsuleProp,
   readNavigationProp,
   writeNavigationProp,
   deleteNavigationProp,

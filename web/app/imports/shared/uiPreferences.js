@@ -33,7 +33,6 @@ const SECTION_SCOPES = {
   FLEET: 'fleet',
   ROBOT: 'robot',
   NAVIGATION: 'navigation',
-  TIME_CAPSULE: 'timeCapsule',
   MISSION: 'mission',
   DEMO: 'demo',
   LOCATION: 'location',

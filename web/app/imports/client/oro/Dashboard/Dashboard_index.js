@@ -10,7 +10,7 @@ import detectMobile from 'ismobilejs';
 import { FullscreenProvider } from '../contexts/FullscreenContext';
 import { DarkModeProvider } from '../contexts/DarkModeContext';
 import { NowTimeProvider, NowTimeContext } from '../util/timeUtils/NowTimeContext';
-// import { validateStartTime } from '../util/timeUtils';
+import { validateStartTime } from '../util/timeUtils';
 import DashboardComponent from './DashboardComponent';
 // import ListData from '../robotWidgets/ListDataWidget';
 // import NavigationToolbar from './widgetToolbars/NavigationToolbar';
@@ -18,7 +18,7 @@ import DashboardComponent from './DashboardComponent';
 // import DataBagsToolbar from './widgetToolbars/DataBagsToolbar';
 import LiveButtonToolbar from './widgetToolbars/LiveButtonToolbar';
 // import ListDataToolbar from './widgetToolbars/ListDataToolbar';
-// import IncidentsFilter from './widgetToolbars/ToolbarFilters/IncidentsFilter';
+import IncidentsFilter from './widgetToolbars/ToolbarFilters/IncidentsFilter';
 // import LocalizationAdapter from '../robotWidgets/LocalizationWidget/LocalizationAdapter';
 // import CustomDataWidget from '../robotWidgets/CustomDataWidget';
 // import ImageWidget from '../robotWidgets/ImageWidget';
@@ -31,7 +31,7 @@ import VitalsWidget from '../robotWidgets/VitalsWidget';
 // import LogsWidget from '../robotWidgets/LogsWidget';
 // import CameraView from '../robotWidgets/CameraView';
 // import IncidentTimeline from '../fleetWidgets/IncidentTimeline';
-// import IncidentList from '../fleetWidgets/IncidentList';
+import IncidentList from '../fleetWidgets/IncidentList';
 // import ActionsWidget from '../robotWidgets/ActionsWidget';
 // import RobotMissionsTracker from '../robotWidgets/RobotMissionsTracker';
 // import RobotSearch from '../util/RobotSearch';
@@ -48,8 +48,6 @@ import {
   writeNavigationProp,
   readTimeProp,
   writeTimeProp,
-  readTimeCapsuleProp,
-  writeTimeCapsuleProp,
   readAuditLogProp,
   writeAuditLogProp,
   deleteAuditLogProp,
@@ -75,13 +73,7 @@ import RobotControlBar from '../robotWidgets/RobotControlBar';
 // import AuditLogsFleet from '../fleetWidgets/AuditLogs/AuditLogsFleet';
 // import AuditLogsRobot from '../fleetWidgets/AuditLogs/AuditLogsRobot';
 // // Time Capsule widgets
-// import TimeCapsuleControlBar from '../timeCapsuleWidgets/TimeCapsuleControlBar';
-// import TimeCapsuleSegmentLog from '../timeCapsuleWidgets/SegmentLog';
-// import TimeCapsuleAuditLog from '../timeCapsuleWidgets/TimeCapsuleAuditLog';
 // import { DATA_BAG_VARIANT } from '../robotWidgets/DataBagWidget/constants';
-// import TimeCapsuleMap from '../timeCapsuleWidgets/TimeCapsuleMap';
-// import TimeCapsuleCameraImages from '../timeCapsuleWidgets/TimeCapsuleCameraImages';
-// import TimeCapsuleAISummary from '../timeCapsuleWidgets/AISummary';
 // import TimelineFilter from './widgetToolbars/ToolbarFilters/TimelineFilter';
 // import IncidentTimelineFilter from './widgetToolbars/ToolbarFilters/IncidentTimelineFilter';
 // import { DEFAULT_DATA_SOURCES } from '../robotWidgets/LocalizationWidget/LocalizationDataSources';
@@ -259,36 +251,6 @@ const getTimeFocus = (context, scope = {}) => readTimeProp(
 const setTimeFocus = (setContext, scope = {}) => fp.compose(setContext, writeTimeProp(
   { scope: scope.write, prop: CTX_PROPS.FOCUS_TIME }
 ));
-const getIsPlaying = (context, scope = {}) => readTimeCapsuleProp(
-  { ctx: context, scope: scope.read, prop: CTX_PROPS.IS_PLAYING, type: Boolean }
-);
-const setIsPlaying = (setContext, scope = {}) => fp.compose(setContext, writeTimeCapsuleProp(
-  { scope: scope.write, prop: CTX_PROPS.IS_PLAYING }
-));
-const getMapVisualizationType = (context, scope = {}) => readTimeCapsuleProp(
-  { ctx: context, scope: scope.read, prop: CTX_PROPS.MAP_VISUALIZATION_TYPE }
-);
-const setMapVisualizationType = (setContext, scope = {}) => fp.compose(
-  setContext, writeTimeCapsuleProp(
-    { scope: scope.write, prop: CTX_PROPS.MAP_VISUALIZATION_TYPE }
-  )
-);
-const getSavedPathType = (context, scope = {}) => readTimeCapsuleProp(
-  { ctx: context, scope: scope.read, prop: CTX_PROPS.SAVED_PATH_TYPE }
-);
-const setSavedPathType = (setContext, scope = {}) => fp.compose(
-  setContext, writeTimeCapsuleProp(
-    { scope: scope.write, prop: CTX_PROPS.SAVED_PATH_TYPE }
-  )
-);
-const getMap = (context, scope = {}) => readTimeCapsuleProp(
-  { ctx: context, scope: scope.read, prop: CTX_PROPS.MAP }
-);
-const setMap = (setContext, scope = {}) => fp.compose(
-  setContext, writeTimeCapsuleProp(
-    { scope: scope.write, prop: CTX_PROPS.MAP }
-  )
-);
 
 // mission context
 const getMissionFilter = (context, scope = {}) => (
@@ -418,24 +380,24 @@ const TOOLBAR_FACTORY = {
   //     )}
   //   </NowTimeContext.Consumer>
   // ),
-  // [WIDGET_TYPES_IDS.INCIDENT_LIST]: ({ context, setContext, scope, isZeroData }) => (
-  //   <NowTimeContext.Consumer>
-  //     {nowTs => (
-  //       <IncidentsFilter
-  //         selectedIncidentComponentFilter={getIncidentComponent(context, scope)}
-  //         setSelectedIncidentComponentFilter={setIncidentComponent(setContext, scope)}
-  //         selectedSeverityFilter={getIncidentSeverity(context, scope)}
-  //         setSelectedSeverityFilter={setIncidentSeverity(setContext, scope)}
-  //         startTs={getStartTime(context, scope)}
-  //         setStartTime={setStartTime(setContext, scope)}
-  //         isZeroData={isZeroData}
-  //         timeRangeMs={getTimeRangeMs(context, scope)}
-  //         setTimeRangeMs={setTimeRangeMs(setContext, scope)}
-  //         nowTs={nowTs}
-  //       />
-  //     )}
-  //   </NowTimeContext.Consumer>
-  // ),
+  [WIDGET_TYPES_IDS.INCIDENT_LIST]: ({ context, setContext, scope, isZeroData }) => (
+    <NowTimeContext.Consumer>
+      {nowTs => (
+        <IncidentsFilter
+          selectedIncidentComponentFilter={getIncidentComponent(context, scope)}
+          setSelectedIncidentComponentFilter={setIncidentComponent(setContext, scope)}
+          selectedSeverityFilter={getIncidentSeverity(context, scope)}
+          setSelectedSeverityFilter={setIncidentSeverity(setContext, scope)}
+          startTs={getStartTime(context, scope)}
+          setStartTime={setStartTime(setContext, scope)}
+          isZeroData={isZeroData}
+          timeRangeMs={getTimeRangeMs(context, scope)}
+          setTimeRangeMs={setTimeRangeMs(setContext, scope)}
+          nowTs={nowTs}
+        />
+      )}
+    </NowTimeContext.Consumer>
+  ),
   // [WIDGET_TYPES_IDS.INCIDENT_TIMELINE]: ({ companyId, context, setContext, scope }) => (
   //   <NowTimeContext.Consumer>
   //     {nowTs => (
@@ -590,31 +552,31 @@ const WIDGET_FACTORY = {
     />
   ),
 
-  // [WIDGET_TYPES_IDS.INCIDENT_LIST]: ({
-  //   context, setContext, scope, switchTo, isZeroData
-  // }) => (
-  //   <NowTimeContext.Consumer>
-  //     {nowTs => (
-  //       <IncidentList
-  //         selectedIncident={getIncidentId(context, scope)}
-  //         selectedComponentFilter={getIncidentComponent(context, scope)}
-  //         selectedSeverityFilter={getIncidentSeverity(context, scope)}
-  //         onSelectedIncidentChange={setIncidentId(setContext, scope)}
-  //         robotId={getRobotId(context, scope)}
-  //         selectStartTimeCallback={setStartTime(setContext, scope)}
-  //         selectTimeRangeMsCallback={setTimeRangeMs(setContext, scope)}
-  //         startTs={getStartTime(context, scope)}
-  //         nowTs={nowTs}
-  //         timeRangeMs={getTimeRangeMs(context, scope)}
-  //         setTimeRangeMs={setTimeRangeMs(setContext, scope)}
-  //         selectRobotCallback={setRobotId(setContext, scope)}
-  //         onTimeFocusChange={setTimeFocus(setContext, scope)}
-  //         switchTo={switchTo}
-  //         isZeroData={isZeroData}
-  //       />
-  //     )}
-  //   </NowTimeContext.Consumer>
-  // ),
+  [WIDGET_TYPES_IDS.INCIDENT_LIST]: ({
+    context, setContext, scope, switchTo, isZeroData
+  }) => (
+    <NowTimeContext.Consumer>
+      {nowTs => (
+        <IncidentList
+          selectedIncident={getIncidentId(context, scope)}
+          selectedComponentFilter={getIncidentComponent(context, scope)}
+          selectedSeverityFilter={getIncidentSeverity(context, scope)}
+          onSelectedIncidentChange={setIncidentId(setContext, scope)}
+          robotId={getRobotId(context, scope)}
+          selectStartTimeCallback={setStartTime(setContext, scope)}
+          selectTimeRangeMsCallback={setTimeRangeMs(setContext, scope)}
+          startTs={getStartTime(context, scope)}
+          nowTs={nowTs}
+          timeRangeMs={getTimeRangeMs(context, scope)}
+          setTimeRangeMs={setTimeRangeMs(setContext, scope)}
+          selectRobotCallback={setRobotId(setContext, scope)}
+          onTimeFocusChange={setTimeFocus(setContext, scope)}
+          switchTo={switchTo}
+          isZeroData={isZeroData}
+        />
+      )}
+    </NowTimeContext.Consumer>
+  ),
 
   // [WIDGET_TYPES_IDS.INCIDENT_TIMELINE]: ({ setContext, context, scope, isZeroData }) => (
   //   <NowTimeContext.Consumer>

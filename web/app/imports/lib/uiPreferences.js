@@ -14,7 +14,6 @@ const GROUND_CONTROL_WIDGET = 'groundControlWidget';
 const FLEET_STATUS_WIDGET = 'fleetStatusWidget';
 const APPBAR_WIDGET = 'appBar';
 const NAVIGATION_DETAIL_WIDGET = 'navigationDetail';
-const TIME_CAPSULE_WIDGET = 'timeCapsule';
 const ACTIONS_PREFERENCES_FIELD = 'actions';
 const DASHBOARDS = 'dashboards';
 // Some key names found inside widgets (listed above)
@@ -97,15 +96,6 @@ const WIDGET_TYPES_IDS = {
   HISTORY: 'history',
   // Navigation widgets
   NAVIGATION_CONTROL_BAR: 'navigationControlBar',
-  // Time Capsule
-  TIME_CAPSULE_MAP: 'timeCapsuleMap',
-  TIME_CAPSULE_CONTROL_BAR: 'timeCapsuleControlBar',
-  TIME_CAPSULE_SEGMENT_LOGS: 'timeCapsuleSegmentLogs',
-  TIME_CAPSULE_AUDIT_LOGS: 'timeCapsuleAuditLogs',
-  TIME_CAPSULE_DATA_BAGS: 'timeCapsuleDataBags',
-  TIME_CAPSULE_CAMERA_IMAGES: 'timeCapsuleCameraImages',
-  TIME_CAPSULE_AI_SUMMARY: 'timeCapsuleAISummary',
-  TIME_CAPSULE_ROS_DIAGNOSTICS: 'timeCapsuleRosDiagnostics',
   // Mission & Orders widgets
   MISSION_TRACKER: 'missionTracker',
   FLEET_MISSION_TRACKER: 'fleetMissionTracker',

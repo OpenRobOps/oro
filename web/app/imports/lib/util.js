@@ -1084,7 +1084,6 @@ export {
   keyValueListToObject,
   keyValueListToList,
   generateNewName,
-  arrayToMapById,
   formatWithUnit,
   formatDuration,
   formatTime,
