@@ -1,7 +1,7 @@
 import moment from 'moment';
 // Oro modules
 import OroRoles from '../server/roles';
-import { ACCESS_LEVEL_VIEW } from '../shared/constants';
+import { ACCESS_LEVEL_VIEW } from '../shared/roles';
 import { queryIncidentsForRobots } from '../lib/alerts';
 import { Robots } from '../lib/collections';
 

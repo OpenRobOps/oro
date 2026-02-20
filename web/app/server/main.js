@@ -16,7 +16,7 @@ import { registerAccountsHooks } from '../imports/server/accountsHooks';
 import { configureOAuth } from '../imports/server/oauthConfig';
 import '../imports/server/userPublications';
 import '../imports/server/publications';
-
+import OroRoles from '../imports/server/roles';
 
 // Register accounts hooks at module level — before any login attempt
 registerAccountsHooks();
@@ -63,6 +63,7 @@ const oroAppMain = async () => {
   // TODO add and initialize modules
   await new DashboardsManager().init();
   await new SearchManager().init();
+  await new OroRoles().createDefaultRoles();
 
   // Configure OAuth providers from settings
   await configureOAuth();

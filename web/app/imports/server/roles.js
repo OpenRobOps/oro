@@ -1,6 +1,6 @@
 /**
  * OroRoles: this class encapsulates ORO  specific roles and permissions definitions and usage.
- * 
+ *
  * TODOS:
  *  - Add caching
  */
@@ -904,9 +904,15 @@ class OroRoles {
    */
   // eslint-disable-next-line class-methods-use-this
   createDefaultRoles = async () => {
+    // Remove any role not in the defaults just in case
+    await Roles.removeAsync({
+      _id: { $nin: Object.keys(STATIC_ROLES_CONFIG) }
+    });
+    // (Re)create the default roles
     for (const roleId of Object.keys(STATIC_ROLES_CONFIG)) {
-      await Roles.insertAsync({
+      await Roles.upsertAsync({
         _id: roleId,
+      }, {
         grants: STATIC_ROLES_CONFIG[roleId],
         label: capitalize(roleId)
       });
