@@ -361,7 +361,6 @@ class IncidentListWidget extends React.Component {
    * outside this function to force a re-render.
    */
   sortIncidents = (incidents, sortBy, sortAsc) => {
-    const { robotIds } = this.props;
     if (!incidents) {
       return;
     }
@@ -386,7 +385,7 @@ class IncidentListWidget extends React.Component {
         // HACK(herchu) This is an exception and is not done in place because the way
         // sortIncidentsByRobotStatus was originally written. So this one does not
         // really sort in place, and updates state.sortedRows instead.
-        const sortedRows = sortIncidentsByRobotStatus(incidents, robotIds);
+        const sortedRows = sortIncidentsByRobotStatus(incidents);
         this.setState({ sortedRows });
         break;
       }
@@ -402,7 +401,7 @@ class IncidentListWidget extends React.Component {
     const direction = sortAsc ? 'asc' : 'desc'; // for MUI's TableSortLabel
     const now = Date.now();
     const incidentRows = sortedRows || [];
-    const r = (
+    return (
       <StyledTableContainer>
         <Table
           stickyHeader
@@ -506,14 +505,6 @@ class IncidentListWidget extends React.Component {
         </Table>
       </StyledTableContainer>
     );
-
-    // TODO(herchu) remove this logging. Left to debug in production if this is the issue with
-    // slow UI
-    const t1 = Date.now();
-    if (t1 - t0 > 100) {
-      console.log('IncidentList.render:', t1 - t0, 'ms; ', incidentRows.length, 'incidents');
-    }
-    return r;
   }
 
   /**
@@ -596,13 +587,9 @@ class IncidentListWidget extends React.Component {
       && incident.componentsIds[0].startsWith('RosDiag:')) {
       return null; // HACK(herchu) Skip these; too many errors otherwise
     }
-    if (incident.entityType != ID_TYPE_ROBOT) {
-      // We don't know how to display incidents for non robots yet
-      return null;
-    }
     const id = incident._id;
     const isSelected = selectedIncident == id;
-    const robotName = (robotsMap[incident.entityId] && robotsMap[incident.entityId].name) || '';
+    const robotName = (robotsMap?.[incident.robotId]?.name) || '';
     const componentName = ((incident.latestEvent && incident.latestEvent.name)
       || (incident.componentsIds && incident.componentsIds[0]));
     const data = (incident.latestEvent
@@ -759,31 +746,6 @@ class IncidentListWidget extends React.Component {
           </StyledTableCell>
         </StyledTableRow>
       );
-      /*
-      // NOTE(herchu): Incidents no longer have actions attached to them. We USED to offer running
-      // actions directly from the incident list; but this does not work anymore. This relied
-      // on ActionsButtonsList component, being deleted - IO-2075
-      // TODO(herchu) Re-enable the following block using ActionsButtons component when we revisit
-      // incidents + actions functionality:
-      /*
-      if (!isResolved && incident.actions && incident.actions.length) {
-        line.push(
-          <TableRow
-            key={id + '-actions'}
-            title={incident.event && incident.event.message}
-            selected={isSelected}
-          >
-            <TableCell />
-            <TableCell colSpan="4">
-              <ActionsButtonsList
-                actions={incident.actions}
-                robotId={incident.robotId}
-              />
-            </TableCell>
-          </TableRow>
-        );
-      }
-      */
     }
     return line;
   }
@@ -793,7 +755,6 @@ IncidentListWidget.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   incidents: PropTypes.array,
-  robotIds: PropTypes.array,
   robotsMap: PropTypes.object,
   selectedIncident: PropTypes.string,
   selectStartTimeCallback: PropTypes.func,

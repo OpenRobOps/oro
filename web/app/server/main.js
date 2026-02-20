@@ -15,6 +15,8 @@ import SearchManager from '../imports/server/searchManager';
 import { registerAccountsHooks } from '../imports/server/accountsHooks';
 import { configureOAuth } from '../imports/server/oauthConfig';
 import '../imports/server/userPublications';
+import '../imports/server/publications';
+
 
 // Register accounts hooks at module level — before any login attempt
 registerAccountsHooks();

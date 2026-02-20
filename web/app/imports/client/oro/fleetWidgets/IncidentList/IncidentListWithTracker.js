@@ -3,7 +3,7 @@
  * Wraps around Incident List Component and sets Meteor dependant component and props
  */
 import { Meteor } from 'meteor/meteor';
-import { groupBy } from 'lodash';
+import { keyBy } from 'lodash';
 import { useTracker } from 'meteor/react-meteor-data';
 import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
@@ -29,12 +29,6 @@ const IncidentListContainer = ({
   // startTs,
   // endTs
 }) => {
-  const filterFunction = useMemo(() => (
-    robotId
-      ? filterFunctionForRobotId(robotId)
-      : NO_FILTER_FN
-  ), [robotId]);
-
   const incidentsFilterFunction = useMemo(() => filterFunctionForIncidents({
     selectedComponentFilter,
     selectedSeverityFilter,
@@ -45,30 +39,28 @@ const IncidentListContainer = ({
 
   const { startTs, endTs } = useTimeVarsForLiveQuery(contextStartTs, timeRangeMs, nowTs);
 
-  const [isLoading, robotsMap, robotIds, queriedIncidents] = useTracker(() => {
-    const robotsHandle = Meteor.subscribe('collections.robots', {});
+  const [isLoading, queriedIncidents, robotsMap] = useTracker(() => {
+    // Get all robots (to display their names)
+    const robotsHandle = Meteor.subscribe('robots', {});
     const robots = robotsHandle.ready() ? Robots.find({}).fetch() : [];
-    const filteredRobotIds = robots.filter(filterFunction).map(r => r._id);
-    // Map from robot ID to robot object
-    const robotsById = groupBy(robots, '_id');
 
-    const incidentsHandle = robotsHandle.ready() && Meteor.subscribe('incidents.list', {
-      robotIds: filteredRobotIds,
+    let incidentQuery = robotId ?{
+      robotId: { $in: [robotId] }
+    } : {};
+    const incidentsHandle = Meteor.subscribe('incidents.list', {
+      robotIds: robotId ? [robotId] : undefined,
       startTs,
       endTs,
       componentId: selectedComponentFilter,
       severities: selectedSeverityFilter
     });
-    const incidentsList = (incidentsHandle && incidentsHandle.ready() && Incidents.find({
-      robotId: { $in: filteredRobotIds }
-    }).fetch());
+    const incidentsList = incidentsHandle.ready() && Incidents.find(incidentQuery).fetch();
     return [
-      !robotsHandle.ready() || !incidentsHandle || !incidentsHandle.ready(),
-      robotsById,
-      filteredRobotIds,
-      incidentsList
+      !robotsHandle.ready() || !incidentsHandle.ready(),
+      incidentsList,
+      keyBy(robots, '_id')
     ];
-  }, [filterFunction, startTs, endTs]);
+  }, [robotId, startTs, endTs, selectedComponentFilter, selectedSeverityFilter]);
 
   const incidents = useMemo(() => (
     (queriedIncidents || []).filter(incidentsFilterFunction)
@@ -80,7 +72,6 @@ const IncidentListContainer = ({
       isLoading={isLoading}
       incidents={incidents}
       robotsMap={robotsMap}
-      robotIds={robotIds}
     />
   );
 };

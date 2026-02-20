@@ -375,7 +375,10 @@ const fetchRobotIncidents = ({ robotIds, filter }) => {
  */
 const queryIncidentsForRobots = ({ robotIds, filter = {}, limit = 100, sort }) => (
   Incidents.find(
-    { robotId: { $in: robotIds }, ...filter },
+    {
+      ... ( robotIds && { robotId: { $in: robotIds } }),
+      ...filter
+    },
     { limit, sort }
   )
 );
