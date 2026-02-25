@@ -146,29 +146,13 @@ const SCOPE_SEPARATOR = '/';
 /*
  * This RESOURCE_WILDCARD '*' is not a specific resource but rather an indication of _any_
  * resource of a given type. For example, granting OP access on
- *    actions/{companyId}/*
+ *    actions/*
  * allows executing _any_ action.
  *
  * Note that this is NOT a regular expression! It's simply a constant; any other
  * string could habe been used.
  */
 const RESOURCE_WILDCARD = '*';
-
-/**
- * Construct a role Id associated to a given company.
- *
- * @param {string} companyId
- * @param {string} roleId
- */
-const makeRoleId = (companyId, roleId) => {
-  if (!isString(companyId)) {
-    throw new Error('makeRoleId: missing company Id');
-  }
-  if (!isString(roleId)) {
-    throw new Error('makeRoleId: missing role name');
-  }
-  return `${ID_TYPE_ROLE}${SCOPE_SEPARATOR}${companyId}${SCOPE_SEPARATOR}${roleId}`;
-};
 
 /**
  * Returns a qualifiedResourceId from a list of parts. It simply glues all arguments with '/'.
@@ -213,8 +197,8 @@ const makeWildcardId = (resourceType) => {
 };
 
 /**
- * Parses a qualified resource id (of the form resourceType/companyId/resourceId) into
- * an object with three components: { resourceType, companyId }.
+ * Parses a qualified resource id (of the form resourceType/resourceId) into
+ * an object with three components: { resourceType, resourceId }.
  *
  * @param (string) qualifiedResourceId A qualified resource id of the form "type/id" or "~singleton"
  *
@@ -243,18 +227,13 @@ const parseResourceId = (qualifiedResourceId) => {
 };
 
 /**
- * Converts a parsed resource id with { resourceType, resourceId, companyId }
- * into a string `resourceType/companyId/resourceId`.
+ * Converts a parsed resource id with { resourceType, resourceId }
+ * into a string `resourceType/resourceId`.
  * This function is the converse of parseResourceId
  */
 const serializeResourceId = (parsedResourceId) => {
-  const { companyId, resourceId, resourceType } = parsedResourceId;
-  if (companyId && resourceType !== RESOURCE_TYPES.SYSTEM) {
-    return `${resourceType}/${companyId}/${resourceId}`;
-  } else {
-    // old resources with 2 elements (see comment in parseResourceId)
-    return `${resourceType}/${resourceId}`;
-  }
+  const { resourceId, resourceType } = parsedResourceId;
+  return `${resourceType}/${resourceId}`;
 };
 
 /**
@@ -285,7 +264,6 @@ export {
   parseResourceId,
   serializeResourceId,
   glueId,
-  makeRoleId,
   makeWildcardId,
   // Roles semantics
   grantsAnyAccess, // used for UI rendering

@@ -197,7 +197,7 @@ class RobotInfoButtons extends React.Component {
     this.setState({
       confirmDialogOpen: true,
       operation: 'updateAgent',
-      confirmContentText: `Update the InOrbit agent installed on ${robotName} to the latest version?`,
+      confirmContentText: `Update the agent installed on ${robotName} to the latest version?`,
       confirmButtonText: 'YES, UPDATE',
       confirmSuccessMessage: 'Update command sent'
     });
@@ -214,7 +214,7 @@ class RobotInfoButtons extends React.Component {
         this.handleUpdateAgent();
       } else {
         // NOTE(adamantivm) This is now only used for the Delete Robot button
-        // TODO(adamantivm) Migrate the Delete Robot action to be a proper InOrbit action
+        // TODO(adamantivm) Migrate the Delete Robot action to be a proper action
         Meteor.call('robot.' + operation, { robotId }, (err) => {
           if (err) {
             onFeedback && onFeedback((err && err.error) || 'Error');

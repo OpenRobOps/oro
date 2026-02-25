@@ -5,7 +5,7 @@ import { Meteor } from 'meteor/meteor';
 import { Mongo } from 'meteor/mongo';
 import SimpleSchema from 'simpl-schema';
 import { isObject } from 'lodash';
-// InOrbit modules
+// ORO modules
 import { COLLECTIONS } from '../shared/constants';
 import { isActionDisabledLocked } from './lock';
 import {
@@ -115,7 +115,6 @@ const ActionDefinitions = new Mongo.Collection(COLLECTIONS.ACTION_DEFINITIONS);
  *   context: { // context on which or for which this action will execute -- normally a robot
  *     robotId: null, // optional; if action applies to a robot, placeholder for robotId
  *     fleetId ?
- *     companyId ?
  *   },
  *   confirmation { // if confirmation is needed. See design doc
  *     required: bool,

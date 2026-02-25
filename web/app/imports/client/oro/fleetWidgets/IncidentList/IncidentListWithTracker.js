@@ -7,7 +7,7 @@ import { keyBy } from 'lodash';
 import { useTracker } from 'meteor/react-meteor-data';
 import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
-// InOrbit modules
+// ORO modules
 import { Incidents } from '../../../../lib/alerts';
 import IncidentListComponent from './IncidentListComponent';
 import { Robots } from '../../../../lib/collections';

@@ -11,7 +11,7 @@ import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import { withStyles } from 'tss-react/mui';
 import { TextField, Typography, Chip, Autocomplete } from '@mui/material';
-// InOrbit modules
+// ORO modules
 import { ID_TYPE_ROBOT } from '../../../../shared/constants';
 import { DarkModeContext } from '../../contexts/DarkModeContext';
 import LoadingBar from '../LoadingBar';

@@ -19,7 +19,7 @@ import {
 } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-// InOrbit modules
+// ORO modules
 import {
   sortIncidentsByRobotStatus,
   INCIDENT_STATUS_NEW,

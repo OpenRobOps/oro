@@ -140,7 +140,7 @@ const WithActionsContext = (props, WrappedComponent) => {
   const urlAction = ({ url, external = false }) => {
     if (!external) {
       if (!navigate) {
-        console.error('Cannot execute InOrbit client actions - navigate function not provided');
+        console.error('Cannot execute client actions - navigate function not provided');
       } else {
         // If we are about to jump to a URL about a robot, first check if a child window is
         // registered to 'display a robot'. In that case, post a message to that child window;

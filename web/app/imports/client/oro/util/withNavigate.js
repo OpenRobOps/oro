@@ -11,7 +11,7 @@
  *    it ends up being used far from these hooks, where "params" may have any meaning).
  *
  * Please do NOT add new uses of this function. Write functional components and use only the hooks
- * you need from react-router. See https://inorbit.atlassian.net/browse/IO-7514
+ * you need from react-router
  */
 import React from 'react';
 import { useNavigate, useLocation, useParams } from 'react-router';

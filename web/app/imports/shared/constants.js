@@ -2,7 +2,7 @@
  * System-wide shared constants
  */
 const COLLECTIONS = {
-  // InOrbit model collections
+  // ORO model collections
   // - Entities
   ROBOTS: 'robots',
   USERS: 'users', // Based on Meteor package

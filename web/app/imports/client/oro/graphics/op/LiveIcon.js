@@ -3,8 +3,6 @@
  *
  * Material-ui custom SvgIcon
  * Indicates if the the time context is "Live"
- *
- * More detail: https://www.figma.com/file/AohMvhfx9lS4xuFREkPo9H/InOrbit-XP-design-system-2021
  */
 import React from 'react';
 import SvgIcon from '@mui/material/SvgIcon';

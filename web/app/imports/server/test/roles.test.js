@@ -1,13 +1,13 @@
 /* eslint-disable function-call-argument-newline */
 /* eslint-disable function-paren-newline */
 /**
- * Server unit tests for Roles implementation (mainly inorbitRoles.js packages)
+ * Server unit tests for Roles implementation (mainly roles.js packages)
  */
 import { Meteor } from 'meteor/meteor';
 import { Accounts } from 'meteor/accounts-base';
 import chai, { assert, expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-// InOrbit modules
+// ORO modules
 import { resetDatabase } from './setup';
 import OroRoles from '../roles';
 import { ROLE_ADMIN, ROLE_VIEWER, ROLE_MANAGER } from '../../lib/roles';

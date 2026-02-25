@@ -94,11 +94,6 @@ class DashboardUrl {
     this._urlBuilder = new UrlBuilder(PAGES.DASHBOARDS);
   }
 
-  company(companyId) {
-    this._urlBuilder.appendPath(companyId);
-    return this;
-  }
-
   dashboard(dashboardId) {
     this._urlBuilder.appendPath(dashboardId);
     return this;

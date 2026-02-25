@@ -117,8 +117,8 @@
               "elementList": [
                 "cpuLoadPercentage",
                 "diskUsagePercentage",
-                "networkTotalRate",
-                "networkInOrbitRate"
+                "networkOroRate",
+                "networkOroRate"
               ],
               "elementValues": {
                 "cpuLoadPercentage": {

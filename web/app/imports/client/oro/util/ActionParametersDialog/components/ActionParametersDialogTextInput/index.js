@@ -16,7 +16,7 @@ import {
   Select,
   MenuItem
 } from '@mui/material';
-// InOrbit modules
+// ORO modules
 import { ACTION_ARGUMENT_INPUT_TYPES } from '../../../../../../shared/actions';
 import { getOptionValue, getOptionLabel } from '../../../../../../lib/util';
 

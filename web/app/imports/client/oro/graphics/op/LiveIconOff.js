@@ -4,8 +4,6 @@
  * Material-ui custom SvgIcon
  * Indicates if the the time context is not live (Live off)
  * It is the opposite icon for ./LiveIcon.js
- *
- * More detail: https://www.figma.com/file/AohMvhfx9lS4xuFREkPo9H/InOrbit-XP-design-system-2021
  */
 import React from 'react';
 import SvgIcon from '@mui/material/SvgIcon';

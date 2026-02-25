@@ -1,0 +1,27 @@
+{
+  "mqtt": {
+    "brokers": {
+      "local": {
+        "protocol": "mqtt://",
+        "hostname": "localdev.com",
+        "port": 1883,
+        "websocket_port": 9001,
+        "websocket_protocol": "ws://",
+        "username": "username",
+        "password": "password"
+      }
+    },
+    "defaultBrokerId": "local"
+  },
+  "profiler": {
+    "enabled": true
+  },
+  "mongo": {
+    "url": "mongodb://localdev.com:3001",
+    "db": "meteor",
+    "options": {
+      "maxPoolSize": 10,
+      "connectTimeoutMS": 5000
+    }
+  }
+}

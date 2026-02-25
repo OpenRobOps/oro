@@ -9,7 +9,7 @@ import { Accounts } from 'meteor/accounts-base';
 import { Mongo } from 'meteor/mongo';
 import { isEmpty, isObject, isString, size } from 'lodash';
 import sortBy from 'lodash/sortBy';
-// InOrbit modules
+// ORO modules
 import { renameKeys, applyDefaults } from './util';
 import { Robots } from './collections';
 import { ID_INORBIT, COLLECTIONS } from '../shared/constants';

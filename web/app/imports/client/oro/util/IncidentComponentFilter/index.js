@@ -4,7 +4,7 @@
  */
 import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
-// InOrbit Modules
+// ORO modules
 import useIncidentComponents from '../../hooks/useIncidentComponents';
 import IncidentComponentFilterComponent from './IncidentComponentFilterComponent';
 

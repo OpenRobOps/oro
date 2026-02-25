@@ -11,7 +11,7 @@ import LockIcon from '@mui/icons-material/Lock';
 import { withStyles } from 'tss-react/mui';
 import { Button, Tooltip, Box } from '@mui/material';
 import classNames from 'classnames';
-// InOrbit modules
+// ORO modules
 import CustomSnackbar, { SnackbarVariants, SNACKBAR_DEFAULT_DURATION } from '../../util/CustomSnackbar';
 import { isLocked, isLockedForUser } from '../../../../lib/lock';
 import { formatDuration } from '../../../../lib/util';

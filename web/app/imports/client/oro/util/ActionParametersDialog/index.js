@@ -20,7 +20,7 @@ import {
   Button
 } from '@mui/material';
 import classnames from 'classnames';
-// InOrbit modules
+// ORO modules
 import ActionParametersDialogNumberInput from './components/ActionParametersDialogNumberInput';
 import ActionParametersDialogTextInput from './components/ActionParametersDialogTextInput';
 import { ACTION_ARGUMENT_TYPES, ARG_FIELDS, actionArgSpecToSchema, isDummyArgName } from '../../../../shared/actions';

@@ -6,7 +6,7 @@
  * Meteor agnostic component
  */
 import React from 'react';
-// InOrbit Modules
+// ORO modules
 import SeverityFilterComponent from './SeverityFilterComponent';
 import { ICM_NONE, ICM_SEV_ALL } from '../../../../shared/alerts';
 

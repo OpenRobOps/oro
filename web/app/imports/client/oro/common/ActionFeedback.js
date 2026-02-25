@@ -17,7 +17,7 @@ import { Meteor } from 'meteor/meteor';
 import { withTracker } from 'meteor/react-meteor-data';
 import React from 'react';
 import PropTypes from 'prop-types';
-// InOrbit imports
+// ORO imports
 import { RobotCustomScript } from '../../../lib/collections';
 
 // Possible values for executionStatus

@@ -12,7 +12,7 @@
  * this function is meant to be used as a parameter on Array.filter function of incidents
  *
  * NOTE(franguerini): This function has unit tests so if you add functionality please update the unit tests
- *                    (/inorbit/web/ui-support/test/IncidentsFilterUtil.test.js)
+ *                    (/web/ui-support/test/IncidentsFilterUtil.test.js)
  * @param {Object} context - Object containing the parsed filters applied
  *        {
  *          selectedComponentFilter: string containing the component id of the context

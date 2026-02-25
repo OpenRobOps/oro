@@ -1,0 +1,34 @@
+{
+  "name": "oro-ingest",
+  "version": "1.0.0",
+  "description": "ORO ingest service",
+  "main": "src/main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev-start": "NODE_PRESERVE_SYMLINKS=1 NODE_OPTIONS=--unhandled-rejections=warn nodemon --watch src --watch /packages --exec babel-node src/main.js"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@babel/core": "^7.29.0",
+    "@babel/node": "^7.29.0",
+    "@babel/preset-env": "^7.29.0",
+    "@babel/preset-flow": "^7.27.1",
+    "convert-units": "^2.3.4",
+    "lodash": "^4.17.23",
+    "moment": "^2.30.1",
+    "mongodb": "^7.1.0",
+    "mqtt": "^5.15.0",
+    "object-hash": "^3.0.0",
+    "protobufjs": "^8.0.0"
+  },
+  "devDependencies": {
+    "chai": "^4.3.7",
+    "chai-as-promised": "^7.1.1",
+    "mocha": "^11.3.0",
+    "mocha-prepare": "^0.1.0",
+    "mongo-unit": "^3.3.0",
+    "nodemon": "^3.1.14",
+    "sinon": "^21.0.0"
+  }
+}

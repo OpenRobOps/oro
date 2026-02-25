@@ -3,7 +3,7 @@
  */
 import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
-// InOrbit Modules
+// ORO modules
 import { IncidentConfiguration } from '../../../lib/alerts.js';
 
 /**

@@ -11,7 +11,7 @@
 
 import { Meteor } from 'meteor/meteor';
 import { escapeRegExp, isArray, isFinite, pick } from 'lodash';
-// InOrbit modules
+// ORO modules
 import { Robots } from '../lib/collections';
 import { ID_TYPE_ROBOT } from '../shared/constants';
 
