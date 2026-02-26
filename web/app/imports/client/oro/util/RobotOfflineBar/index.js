@@ -17,11 +17,11 @@ const RobotOfflineBar = (props) => {
   );
   // Get data from robot selected
   const robotId = getRobotId(context);
-  const robot = useRobotData(robotId);
+  const { data: robot, isLoading } = useRobotData(robotId);
   // Get the last update of the robot
-  const lastUpdate = moment(robot && robot.updateStamp).fromNow();
+  const lastUpdate = moment(robot?.updateStamp).fromNow();
   // Check if the robots is online or offline
-  const robotOnline = robot && robot.status && robot.status.agentOnline;
+  const robotOnline = robot?.status?.agentOnline;
 
   return (
     <RobotOfflineBarComponent lastUpdate={lastUpdate} robotOnline={robotOnline} robot={robot} />

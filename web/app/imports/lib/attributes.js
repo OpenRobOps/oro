@@ -106,7 +106,7 @@ const AttrValues = new Mongo.Collection(COLLECTIONS.ATTR_VALUES);
  */
 const queryRobotAttributeValues = ({ robotId, attributes = null, pollingIntervalMs = null }) => {
   const options = {};
-  if (attributes) {
+  if (attributes?.length) {
     options.fields = attributes.reduce((acc, attr) => {
       acc[attr] = 1;
       return acc;
