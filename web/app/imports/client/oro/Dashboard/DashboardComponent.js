@@ -128,8 +128,8 @@ const styles = theme => ({
   dashboard: {
     backgroundColor: theme.palette.background.lightBackground,
     height: '100%',
-    overflowY: 'auto',
     overflowX: 'hidden',
+    overflowY: 'auto',
     // Reserve space for scrollbar to ensure consistent alignment
     scrollbarGutter: 'stable',
   }
@@ -147,10 +147,6 @@ const Dashboard = (props) => {
     isZeroData,
     guideBanner = null,
   } = props;
-
-  useEffect(() => {
-    document.body.style.overflowY = 'hidden';
-  });
 
   // Create renderer function for widgets (and toolbars), that each section
   // will simply invoke with each widget config

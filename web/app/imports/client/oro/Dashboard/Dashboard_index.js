@@ -12,12 +12,11 @@ import { DarkModeProvider } from '../contexts/DarkModeContext';
 import { NowTimeProvider, NowTimeContext } from '../util/timeUtils/NowTimeContext';
 import { validateStartTime } from '../util/timeUtils';
 import DashboardComponent from './DashboardComponent';
-// import ListData from '../robotWidgets/ListDataWidget';
+import ListData from '../robotWidgets/ListDataWidget';
 // import NavigationToolbar from './widgetToolbars/NavigationToolbar';
 // import SettingsToolbar from './widgetToolbars/SettingsToolbar';
 // import DataBagsToolbar from './widgetToolbars/DataBagsToolbar';
 import LiveButtonToolbar from './widgetToolbars/LiveButtonToolbar';
-// import ListDataToolbar from './widgetToolbars/ListDataToolbar';
 import IncidentsFilter from './widgetToolbars/ToolbarFilters/IncidentsFilter';
 // import LocalizationAdapter from '../robotWidgets/LocalizationWidget/LocalizationAdapter';
 // import CustomDataWidget from '../robotWidgets/CustomDataWidget';
@@ -322,7 +321,7 @@ const LocalizationWidgetWithContext = ({
 };
 
 // eslint-disable-next-line react/prop-types
-const NavigationDetailWithContext = ({ context, scope, companyId, setContext, isZeroData }) => {
+const NavigationDetailWithContext = ({ context, scope, setContext, isZeroData }) => {
   return (
     <NavigationDetail
       robotId={getRobotId(context, scope)}
@@ -352,7 +351,7 @@ const TOOLBAR_FACTORY = {
   //     isZeroData={isZeroData}
   //   />
   // ),
-  // [WIDGET_TYPES.KEY_VALUES]: ({ companyId, isZeroData }) => (
+  // [WIDGET_TYPES.KEY_VALUES]: ({ isZeroData }) => (
   //   <SettingsToolbar
   //     settingsPage={SECTION_ROBOT_DATA}
   //     isZeroData={isZeroData}
@@ -398,7 +397,7 @@ const TOOLBAR_FACTORY = {
       )}
     </NowTimeContext.Consumer>
   ),
-  // [WIDGET_TYPES_IDS.INCIDENT_TIMELINE]: ({ companyId, context, setContext, scope }) => (
+  // [WIDGET_TYPES_IDS.INCIDENT_TIMELINE]: ({ context, setContext, scope }) => (
   //   <NowTimeContext.Consumer>
   //     {nowTs => (
   //       <IncidentTimelineFilter
@@ -513,20 +512,7 @@ const TOOLBAR_FACTORY = {
   // [WIDGET_TYPES_IDS.FLEET_STATUS]: () => <LiveButtonToolbar alwaysLive />,
   [WIDGET_TYPES_IDS.VITALS]: () => <LiveButtonToolbar alwaysLive />,
   // [WIDGET_TYPES_IDS.CAMERA]: () => <LiveButtonToolbar alwaysLive />,
-  // [WIDGET_TYPES_IDS.LIST_DATA]: ({ config, context, scope }) => (
-  //   <NowTimeContext.Consumer>
-  //     {nowTs => (
-  //       <ListDataToolbar
-  //         alwaysLive
-  //         robotId={getRobotId(context, scope)}
-  //         config={config}
-  //         startTs={getStartTime(context, scope)}
-  //         timeRangeMs={getTimeRangeMs(context, scope)}
-  //         nowTs={nowTs}
-  //       />
-  //     )}
-  //   </NowTimeContext.Consumer>
-  // ),
+  [WIDGET_TYPES_IDS.LIST_DATA]: () => <LiveButtonToolbar alwaysLive />,
   // [WIDGET_TYPES_IDS.CUSTOM_DATA_IMAGE]: () => <LiveButtonToolbar alwaysLive />,
 };
 
@@ -661,18 +647,17 @@ const WIDGET_FACTORY = {
   //   />
   // ),
 
-  // [WIDGET_TYPES.LIST_DATA]: ({ config, context, scope, isZeroData }) => (
-  //   <NowTimeContext.Consumer>
-  //     {nowTs => (
-  //       <ListData
-  //         robotId={getRobotId(context, scope)}
-  //         config={config}
-  //         isZeroData={isZeroData}
-  //         nowTs={nowTs}
-  //       />
-  //     )}
-  //   </NowTimeContext.Consumer>
-  // ),
+   [WIDGET_TYPES.LIST_DATA]: ({ config, context, scope }) => (
+     <NowTimeContext.Consumer>
+       {nowTs => (
+         <ListData
+           robotId={getRobotId(context, scope)}
+           config={config}
+           nowTs={nowTs}
+         />
+       )}
+     </NowTimeContext.Consumer>
+   ),
 
   // [WIDGET_TYPES_IDS.CHART]: ({ setContext, config, context, scope, isZeroData }) => (
   //   <NowTimeContext.Consumer>

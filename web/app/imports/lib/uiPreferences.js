@@ -64,7 +64,7 @@ const WIDGET_TYPES = {
   // ACTIONS: 'actionsWidget',
   // CAMERA: 'cameraWidget',
   // AUDIT_LOG: 'auditLog',
-  // LIST_DATA: 'listData'
+  LIST_DATA: 'listData'
 };
 
 // Definitive Object listing all IDs for all of our widgets

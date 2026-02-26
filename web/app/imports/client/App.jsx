@@ -13,13 +13,30 @@ import ErrorBoundary from './oro/ErrorBoundary';
 import { AuthProvider } from './oro/contexts/AuthContext';
 import { AuthGuard } from './oro/Auth';
 
+const appLayoutStyle = {
+  display: 'flex',
+  flexDirection: 'column',
+  height: '100vh',
+  overflow: 'hidden',
+};
+
+const appContentStyle = {
+  flex: 1,
+  minHeight: 0,
+  overflow: 'hidden',
+};
+
 const App = () => (
   <ErrorBoundary>
     <BrowserRouter>
       <AuthProvider>
         <AuthGuard>
-          <AppHeader />
-          <Routes />
+          <div style={appLayoutStyle}>
+            <AppHeader />
+            <div style={appContentStyle}>
+              <Routes />
+            </div>
+          </div>
         </AuthGuard>
       </AuthProvider>
     </BrowserRouter>
