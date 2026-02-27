@@ -2,7 +2,7 @@
   "name": "app",
   "private": true,
   "scripts": {
-    "start": "meteor run",
+    "start": "meteor run --settings settings.json",
     "test": "TEST_CLIENT=0 meteor test --once --driver-package meteortesting:mocha",
     "test:watch": "TEST_CLIENT=0 meteor test --driver-package meteortesting:mocha",
     "test-app": "TEST_WATCH=1 meteor test --full-app --driver-package meteortesting:mocha",
@@ -16,6 +16,7 @@
     "@mui/material": "^7.3.7",
     "@swc/helpers": "^0.5.17",
     "@tanstack/react-query": "^5.90.20",
+    "body-parser": "^2.2.2",
     "classnames": "^2.5.1",
     "convert-units": "^2.3.4",
     "fastest-validator": "^1.19.1",
