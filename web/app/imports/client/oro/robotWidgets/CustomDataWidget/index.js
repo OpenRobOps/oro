@@ -8,7 +8,7 @@ import PropTypes from 'prop-types';
 import useCustomWidgetData from '../../hooks/useCustomWidgetData';
 import CustomDataWidgetComponent from './CustomDataWidgetComponent';
 
-const CustomDataWidget = ({ robotId, config }) => {
+const CustomDataWidget = ({ robotId, config, nowTs }) => {
   const { mapping } = config || {};
   const { sourceId: customField, source: dataType } = mapping || {};
 
@@ -20,13 +20,15 @@ const CustomDataWidget = ({ robotId, config }) => {
       dataType={dataType}
       config={config}
       isLoading={isLoading}
+      nowTs={nowTs}
     />
   );
 };
 
 CustomDataWidget.propTypes = {
   robotId: PropTypes.string,
-  config: PropTypes.object
+  config: PropTypes.object,
+  nowTs: PropTypes.number
 };
 
 export default CustomDataWidget;

@@ -717,12 +717,16 @@ const WIDGET_FACTORY = {
   //   </NowTimeContext.Consumer>
   // ),
 
-  [WIDGET_TYPES.KEY_VALUES]: ({ context, scope, isZeroData }) => (
-    <CustomDataWidget
-      robotId={getRobotId(context, scope)}
-      config={{ mapping: { source: 'key_value' } }}
-      isZeroData={isZeroData}
-    />
+  [WIDGET_TYPES.KEY_VALUES]: ({ context, scope }) => (
+      <NowTimeContext.Consumer>
+      {nowTs => (
+        <CustomDataWidget
+          robotId={getRobotId(context, scope)}
+          config={{ mapping: { source: 'key_value' } }}
+          nowTs={nowTs}
+        />
+      )}
+    </NowTimeContext.Consumer>
   ),
 
   // [WIDGET_TYPES_IDS.LOGS]: ({ context, setContext, scope, isZeroData }) => (
@@ -788,20 +792,28 @@ const WIDGET_FACTORY = {
   //   </NowTimeContext.Consumer>
   // ),
 
-  [WIDGET_TYPES_IDS.CUSTOM_DATA_TEXT]: ({ config, context, scope, isZeroData }) => (
-    <CustomDataWidget
-      robotId={getRobotId(context, scope)}
-      config={config}
-      isZeroData={isZeroData}
-    />
+  [WIDGET_TYPES_IDS.CUSTOM_DATA_TEXT]: ({ config, context, scope }) => (
+    <NowTimeContext.Consumer>
+      {nowTs => (
+        <CustomDataWidget
+          robotId={getRobotId(context, scope)}
+          config={config}
+          nowTs={nowTs}
+        />
+      )}
+    </NowTimeContext.Consumer>
   ),
 
-  [WIDGET_TYPES_IDS.CUSTOM_DATA_IMAGE]: ({ config, context, scope, isZeroData }) => (
-    <CustomDataWidget
-      robotId={getRobotId(context, scope)}
-      config={config}
-      isZeroData={isZeroData}
-    />
+  [WIDGET_TYPES_IDS.CUSTOM_DATA_IMAGE]: ({ config, context, scope }) => (
+    <NowTimeContext.Consumer>
+      {nowTs => (
+        <CustomDataWidget
+          robotId={getRobotId(context, scope)}
+          config={config}
+          nowTs={nowTs}
+        />
+      )}
+    </NowTimeContext.Consumer>
   ),
 
   // [WIDGET_TYPES_IDS.NAVIGATION_CONTROL_BAR]: ({
