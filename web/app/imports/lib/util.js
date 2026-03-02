@@ -4,7 +4,7 @@
 import moment from 'moment';
 import momentDurationFormatSetup from 'moment-duration-format';
 import convert from 'convert-units';
-import { isArray, isObject, isString, isBoolean, isEqual, isEmpty, isNumber } from 'lodash';
+import { isArray, isObject, isString, isEqual, isEmpty, isNumber, get } from 'lodash';
 
 // moment-duration-format works as a plugin on top of moment package;
 // it needs to modify the base `moment` lib. See:
@@ -833,9 +833,9 @@ const propSet = (object, property, value) => {
 };
 
 /**
- * Expanded propGet function that receives an array of properties
+ * Expanded get function that receives an array of properties
  * and returns a value of the object.
- * It uses the propGet dot notation to find the value in the object
+ * It uses the get dot notation to find the value in the object
  * It returns the value of the first property with value found in the object
  * (or default value if provided)
  *
@@ -849,7 +849,7 @@ const propGetAnyInList = (object, properties, defaultValue = undefined) => {
   let value = defaultValue;
   if (properties) {
     for (const property of properties) {
-      const readValue = propGet(object, property); // Read the property from object
+      const readValue = get(object, property); // Read the property from object
       if (readValue != null) { // if exist break the loop with the readValue in value
         value = readValue;
         break;
@@ -1029,7 +1029,6 @@ export {
   asyncForEach,
   flattenDeepObj,
   propSet,
-  propGet,
   propGetAnyInList,
   fieldGet,
   isEmailValid,
