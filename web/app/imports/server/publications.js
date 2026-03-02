@@ -3,7 +3,7 @@ import moment from 'moment';
 import OroRoles from '../server/roles';
 import { ACCESS_LEVEL_VIEW } from '../shared/roles';
 import { queryIncidentsForRobots } from '../lib/alerts';
-import { Robots } from '../lib/collections';
+import { Robots, RobotKeyValues, RobotCustomData } from '../lib/collections';
 import { queryRobotAttributeValues } from '../lib/attributes';
 
 Meteor.publish('attributes.values', async function ({ robotId, attributes, pollingIntervalMs = 10000 }) {
@@ -80,4 +80,28 @@ Meteor.publish('incidents.list', async function ({
     limit: MAX_INCIDENTS_LIMIT,
     sort: { createdAt: -1 }
   });
+});
+
+Meteor.publish('robot.key_values', async function ({ robotId, pollingIntervalMs = 10000 }) {
+  if (!this.userId) {
+    return this.ready();
+  }
+  if (!await new OroRoles().canAccessRobot(this.userId, robotId, ACCESS_LEVEL_VIEW)) {
+    return this.error(new Meteor.Error('Unauthorized'));
+  }
+  const options = {};
+  if (pollingIntervalMs && !Number.isNaN(pollingIntervalMs) && pollingIntervalMs > 50) {
+    options.pollingIntervalMs = pollingIntervalMs;
+  }
+  return RobotKeyValues.find({ _id: robotId }, options);
+});
+
+Meteor.publish('custom_data', async function ({ robotId }) {
+  if (!this.userId) {
+    return this.ready();
+  }
+  if (!await new OroRoles().canAccessRobot(this.userId, robotId, ACCESS_LEVEL_VIEW)) {
+    return this.error(new Meteor.Error('Unauthorized'));
+  }
+  return RobotCustomData.find({ robotId });
 });

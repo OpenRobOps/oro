@@ -58,7 +58,7 @@ const WIDGET_TYPES = {
   VITALS: 'vitals',
   // DATA_BAGS: 'dataBags',
   // LOCALIZATION: 'localization',
-  // KEY_VALUES: 'keyValues',
+  KEY_VALUES: 'keyValues',
   // CUSTOM_DATA: 'customData',
   // LOGS: 'logsWidget',
   // ACTIONS: 'actionsWidget',

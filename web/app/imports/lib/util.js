@@ -760,51 +760,6 @@ const formatWithUnit = (value, unit, options = {}) => {
 };
 
 /**
- * Returns a string with the formatted value of the attribute passed in the argument
- *
- * If attribute is undefined or attribute.value is undefined it returns '--'
- * If attribute.value is a boolean it returns a string with 'true' or 'false'
- * If attribute.value is a string it returns the same string. (Empty strings are returned
- * as empty strings)
- * If attribute value is a number it returns the number with the unit attached if passed
- * If attribute value is an array it returns the array as a string
- * If attribute value is an object it returns the object as a string
- *
- * @param {object} attribute: object with property value: { value: 'some value'}.
- * @param {string} attributeUnit (optional): string representing the incoming units. For supported
- * units check here: https://github.com/ben-ng/convert-units
- *
- * @deprecated See IO-7189 Remove this function. Use AtributteValueFormatter
- */
-const formatAttributeValue = (attribute, attributeUnit, precision) => {
-  let formattedValue = '--';
-  if (attribute) {
-    let attributeValue = attribute.value;
-    if (attributeValue === undefined) {
-      formattedValue = '--';
-    } else if (isBoolean(attributeValue)) {
-      formattedValue = '' + attributeValue;
-    } else if (isString(attributeValue)) {
-      formattedValue = attributeValue;
-    } else if (isArray(attributeValue) || isObject(attributeValue)) {
-      formattedValue = JSON.stringify(attributeValue);
-    } else {
-      if (attributeUnit === '%') {
-        attributeValue *= 100; // scale percentage; and let the next function round it if required
-      }
-      // eslint-disable-next-line prefer-const
-      let { value, unit } = formatWithUnit(
-        attributeValue,
-        attributeUnit,
-        { precision }
-      );
-      formattedValue = `${value}${unit ? ` ${unit}` : ''}`;
-    }
-  }
-  return formattedValue;
-};
-
-/**
  * Permits the use of async/await with `Array.forEach()`.
  * Awaits for the async callback to return for all elements in the array before returning the
  * resolved promise for the function asyncForEach.
@@ -875,26 +830,6 @@ const propSet = (object, property, value) => {
       object = object[prop]; // enter nested object
     }
   }
-};
-
-/**
- * Safe method to get a value from a nested property on a given object.
- * Property must be specified using dot notation.
- * If the property or any subproperty in the path to it is missing, then
- * defaultValue (if provided) or undefined  is returned.
- *
- * @deprecated Prefer lodash.get()
- */
-const propGet = (object, property, defaultValue = undefined) => {
-  if (!isString(property)) {
-    throw new Error('property must be a string');
-  }
-  if (!isObject(object)) {
-    throw new Error('object must be an object');
-  }
-  const chain = property.split('.');
-  const result = chain.reduce((acc, el) => acc && acc[el], object);
-  return result === undefined ? defaultValue : result;
 };
 
 /**
@@ -1103,7 +1038,6 @@ export {
   getOptionLabel,
   getOptionValue,
   validateUrl,
-  formatAttributeValue,
   UNDEFINED_VALUE,
   toTimestampMilliseconds,
   mapByIdToArray,
