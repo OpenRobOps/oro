@@ -27,6 +27,7 @@ const COLLECTIONS = {
   PREFERENCES: 'preferences',
 
   // - Data
+  ATTRIBUTE_VALUES: 'attr_values',
   ROBOT_ALERTS: 'robot_alerts',
   INCIDENTS: 'incidents',
   NOTIFICATIONS: 'notifications',
@@ -86,8 +87,7 @@ const COLLECTIONS = {
  * NOTE(herchu) ConfigManager still re-exports them, there are way too many modules using them
  */
 // system wide configurations ID
-const ID_INORBIT = '0';
-const ID_TYPE_SYSTEM_WIDE = 'root';
+const ID_UNIQUE = '0';
 const ID_TYPE_ROBOT = 'robot';
 const ID_TYPE_ROLE = 'role';
 const ID_TYPE_USER = 'user';
@@ -180,8 +180,7 @@ const AGG_STATUSES_KEY = 'aggregated status';
 export {
   COLLECTIONS,
   // ConfigManager
-  ID_INORBIT,
-  ID_TYPE_SYSTEM_WIDE,
+  ID_UNIQUE,
   ID_TYPE_ROBOT,
   ID_TYPE_ROLE,
   ID_TYPE_USER,

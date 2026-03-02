@@ -2,7 +2,7 @@
  * Ingest-side implementation of the System agent module
  */
 import Robot from '../model/robot';
-// import AttributesManager from '../attributes';
+import AttributesManager from '../attributes';
 import {
   VITAL_CPU_LOAD_PERCENTAGE,
   VITAL_RAM_USAGE_PERCENTAGE,
@@ -32,7 +32,7 @@ const OPTION_TYPES = {
 export default class SystemModule {
   constructor(mqtt, batchProcessing = false) {
     this.mqtt = mqtt;
-    // this.attrMgr = new AttributesManager();
+    this.attrMgr = new AttributesManager();
     // Flag to identify if this module is being used in batch mode. This attribute takes relevance
     // when processing messages from rosbags in bulk. When batchProcessing is true, mongo won't be
     // updated with real time information.
@@ -116,7 +116,7 @@ export default class SystemModule {
       });
 
       // Save to vitals. Also hooks status updates and events
-      // TODO re-enable! await this.attrMgr.handleSystemUpdates({ robotId }, updates, ts);
+      await this.attrMgr.handleSystemUpdates(robotId, updates, ts);
     } catch (e) {
       console.error('Error processing robot stats message', e);
     }

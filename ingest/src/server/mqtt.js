@@ -628,7 +628,7 @@ export default class OroMqtt {
           }
           // Finally send all updates to be saved (and cascaded to status updates, ...)
           this.attrMgr.handleSystemUpdates(
-            { robotId },
+            robotId,
             odometryUpdates,
             ts,
             { status: true }

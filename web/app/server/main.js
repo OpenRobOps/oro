@@ -4,7 +4,6 @@
  */
 
 import { Meteor } from 'meteor/meteor';
-import { isObject } from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 // This must happen before any collection.attachSchema() in our managers
 // See https://github.com/Meteor-Community-Packages/meteor-collection2/tree/master?tab=readme-ov-file#import-using-static-imports
@@ -17,6 +16,7 @@ import { configureOAuth } from '../imports/server/oauthConfig';
 import '../imports/server/userPublications';
 import '../imports/server/publications';
 import OroRoles from '../imports/server/roles';
+import { CoreHttpApis } from '../imports/server/http_apis';
 
 // Register accounts hooks at module level — before any login attempt
 registerAccountsHooks();
