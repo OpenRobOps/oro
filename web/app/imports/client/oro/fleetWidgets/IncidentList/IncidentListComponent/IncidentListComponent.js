@@ -29,7 +29,6 @@ import {
   ICM_SEV_2,
   ICM_SEV_ALL
 } from '../../../../../shared/alerts';
-import { ID_TYPE_ROBOT } from '../../../../../shared/constants';
 import OpenFolderIcon from '../../../graphics/OpenFolderIcon';
 import { SECTION_SCOPES } from '../../../../../lib/uiPreferences';
 import OnFeedbackContext from '../../../contexts/OnFeedbackContext';

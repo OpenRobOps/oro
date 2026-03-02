@@ -13,7 +13,6 @@ import IncidentListComponent from './IncidentListComponent';
 import { Robots } from '../../../../lib/collections';
 import { filterFunctionForRobotId } from '../fleetFilteringUtil';
 import { filterFunctionForIncidents } from '../incidentFilteringUtil';
-import { ID_TYPE_ROBOT } from '../../../../shared/constants';
 import { useTimeVarsForLiveQuery } from '../../util/timeUtils';
 
 const NO_FILTER_FN = () => true;
