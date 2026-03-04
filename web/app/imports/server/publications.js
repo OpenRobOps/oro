@@ -1,4 +1,6 @@
 import moment from 'moment';
+import { Meteor } from 'meteor/meteor';
+import { isString, isArray } from 'lodash';
 // Oro modules
 import OroRoles from '../server/roles';
 import { ACCESS_LEVEL_VIEW } from '../shared/roles';
@@ -104,4 +106,57 @@ Meteor.publish('custom_data', async function ({ robotId }) {
     return this.error(new Meteor.Error('Unauthorized'));
   }
   return RobotCustomData.find({ robotId });
+/**
+ * Publish details (Robot object) for a single or multiple robots
+ *robot.details
+ * See also 'robot.getDetails' Meteor method, for one-time operations.
+ */
+Meteor.publish('robot.details', async function ({ robotId, robotIds }) {
+  // check arguments
+  if (robotId && robotIds) {
+    console.warn('robot.details: bad params');
+    return this.error(new Meteor.Error('wrong-parameter', 'only one of robotId and robotIds can be provided'));
+  }
+  if (robotId) {
+    // publish data for a single robot
+    if (!isString(robotId)) {
+      console.warn('robot.details: bad params');
+      return this.error(new Meteor.Error('wrong-parameter', 'robotId must be a string'));
+    }
+    robotIds = [robotId];
+  } else if (robotIds) {
+    // publish data for a single robot
+    if (!isArray(robotIds)) {
+      console.warn('robot.details: bad params');
+      return this.error(new Meteor.Error('wrong-parameter', 'robotIds must be an array'));
+    }
+    // in the special case there is only one element, set robotId to be used
+    // in the cursor query below
+    if (robotIds.length == 1) {
+      [robotId] = robotIds;
+    }
+  } else {
+    // No robotId(s) are received when viewing a new company (zero data), do not log it the error
+    return this.ready();
+  }
+  // check permissions
+  if (!this.userId) { // User must be logged in
+    console.warn('robot.details: not logged in');
+    return this.ready();
+  }
+  // at this point robotIds is always populated with a list (can be a single element),
+  // so permissions check can use canAccessRobots (plural!)
+  if (!await new OroRoles().canAccessRobots(this.userId, robotIds)) {
+    if (robotId && robotId != ZERO_ROBOT._id) {
+      console.warn(`Unauthorized (robot.details): userId: ${this.userId}, robotIds: ${robotIds}`);
+    }
+    return this.error(new Meteor.Error('Unauthorized'));
+  }
+  // For efficiency, build the query differently if this is a single or multiple
+  // robots query
+  if (robotId) {
+    return Robots.find({ _id: robotId });
+  } else {
+    return Robots.find({ _id: { $in: robotIds } });
+  }
 });

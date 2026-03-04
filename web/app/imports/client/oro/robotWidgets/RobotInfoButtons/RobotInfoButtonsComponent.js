@@ -15,6 +15,7 @@ import {
 import { withTracker } from 'meteor/react-meteor-data';
 import moment from 'moment';
 // ORO modules
+import { ID_TYPE_ROBOT } from '../../../../shared/constants';
 import {
   ACTION_TYPES,
   createInternalActionId

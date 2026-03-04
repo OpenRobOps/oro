@@ -48,16 +48,16 @@ message SystemStatsMessage {
   string network_interface = 4;
   int64 total_tx = 5;
   int64 total_rx = 6;
-  int64 oro_tx = 7;
-  int64 oro_rx = 8;
+  int64 agent_tx = 7;
+  int64 agent_rx = 8;
 
   // Disk usage:
   // total usage percentage: [0.0, 1.0]
   float hdd_usage_percentage = 9;
-  // usage by ORO, in Mb
-  float oro_hdd_usage_mb = 10;
-  // usage by ORO, percentage: [0.0, 1.0]
-  float oro_hdd_usage_percentage = 11;
+  // usage by Agent, in Mb
+  float agent_hdd_usage_mb = 10;
+  // usage by Agent, percentage: [0.0, 1.0]
+  float agent_hdd_usage_percentage = 11;
 
   // battery fields (battery_voltage, battery_percent, battery_ts): now removed
   // Just in case do NOT reuse the following IDs: 12, 13, 14.
