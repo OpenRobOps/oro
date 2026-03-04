@@ -1,0 +1,11 @@
+services:
+  mosquitto:
+    image: iegomez/mosquitto-go-auth:latest
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./mosquitto/mosquitto.conf:/etc/mosquitto/mosquitto.conf
+    extra_hosts:
+      - "localdev.com:host-gateway"
+    restart: unless-stopped

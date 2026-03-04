@@ -18,6 +18,7 @@ import '../imports/server/publications';
 import OroRoles from '../imports/server/roles';
 import AttributesManager from '../imports/server/attributes';
 import { CoreHttpApis } from '../imports/server/http_apis';
+import { seedMasterCredentials } from '../imports/server/mqttCredentialProvisioner';
 
 // Register accounts hooks at module level — before any login attempt
 registerAccountsHooks();
@@ -66,6 +67,9 @@ const oroAppMain = async () => {
   await new SearchManager().init();
   await new AttributesManager().init();
   await new OroRoles().createDefaultRoles();
+
+  // Seed master MQTT credentials
+  await seedMasterCredentials();
 
   // Configure OAuth providers from settings
   await configureOAuth();

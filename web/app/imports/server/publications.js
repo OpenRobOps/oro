@@ -106,6 +106,8 @@ Meteor.publish('custom_data', async function ({ robotId }) {
     return this.error(new Meteor.Error('Unauthorized'));
   }
   return RobotCustomData.find({ robotId });
+
+});
 /**
  * Publish details (Robot object) for a single or multiple robots
  *robot.details
