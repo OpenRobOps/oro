@@ -1,11 +1,8 @@
 services:
   mosquitto:
     image: iegomez/mosquitto-go-auth:latest
-    ports:
-      - "1883:1883"
-      - "9001:9001"
+    # Use host network so Mosquitto can reach Meteor's MongoDB on localhost:3001
+    network_mode: host
     volumes:
       - ./mosquitto/mosquitto.conf:/etc/mosquitto/mosquitto.conf
-    extra_hosts:
-      - "localdev.com:host-gateway"
     restart: unless-stopped
