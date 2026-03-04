@@ -19,7 +19,7 @@ import ListData from '../robotWidgets/ListDataWidget';
 import LiveButtonToolbar from './widgetToolbars/LiveButtonToolbar';
 import IncidentsFilter from './widgetToolbars/ToolbarFilters/IncidentsFilter';
 // import LocalizationAdapter from '../robotWidgets/LocalizationWidget/LocalizationAdapter';
-// import CustomDataWidget from '../robotWidgets/CustomDataWidget';
+import CustomDataWidget from '../robotWidgets/CustomDataWidget';
 // import ImageWidget from '../robotWidgets/ImageWidget';
 import { WIDGET_TYPES, WIDGET_TYPES_IDS } from '../../../lib/uiPreferences';
 // import NavigationDetail from '../navigationWidgets/NavigationDetail';
@@ -351,12 +351,7 @@ const TOOLBAR_FACTORY = {
   //     isZeroData={isZeroData}
   //   />
   // ),
-  // [WIDGET_TYPES.KEY_VALUES]: ({ isZeroData }) => (
-  //   <SettingsToolbar
-  //     settingsPage={SECTION_ROBOT_DATA}
-  //     isZeroData={isZeroData}
-  //   />
-  // ),
+  [WIDGET_TYPES.KEY_VALUES]: () => <LiveButtonToolbar alwaysLive />,
   // [WIDGET_TYPES.LOCALIZATION]: ({ switchTo }) => (
   //   <NavigationToolbar
   //     navigationDetailCallback={() => switchTo({ scope: CONTEXT_SLOTS.NAVIGATION })}
@@ -475,12 +470,7 @@ const TOOLBAR_FACTORY = {
   //     )}
   //   </NowTimeContext.Consumer>
   // ),
-  // [WIDGET_TYPES_IDS.CUSTOM_DATA_TEXT]: ({ isZeroData }) => (
-  //   <SettingsToolbar
-  //     settingsPage={SECTION_ROBOT_DATA}
-  //     isZeroData={isZeroData}
-  //   />
-  // ),
+  [WIDGET_TYPES_IDS.CUSTOM_DATA_TEXT]: () => <LiveButtonToolbar alwaysLive />,
   // [WIDGET_TYPES_IDS.TIME_CAPSULE_DATA_BAGS]: ({ setContext, scope, context }) => (
   //   <DataBagsToolbar
   //     robotId={getRobotId(context, scope)}
@@ -513,7 +503,7 @@ const TOOLBAR_FACTORY = {
   [WIDGET_TYPES_IDS.VITALS]: () => <LiveButtonToolbar alwaysLive />,
   // [WIDGET_TYPES_IDS.CAMERA]: () => <LiveButtonToolbar alwaysLive />,
   [WIDGET_TYPES_IDS.LIST_DATA]: () => <LiveButtonToolbar alwaysLive />,
-  // [WIDGET_TYPES_IDS.CUSTOM_DATA_IMAGE]: () => <LiveButtonToolbar alwaysLive />,
+  [WIDGET_TYPES_IDS.CUSTOM_DATA_IMAGE]: () => <LiveButtonToolbar alwaysLive />,
 };
 
 /**
@@ -727,13 +717,17 @@ const WIDGET_FACTORY = {
   //   </NowTimeContext.Consumer>
   // ),
 
-  // [WIDGET_TYPES.KEY_VALUES]: ({ context, scope, isZeroData }) => (
-  //   <CustomDataWidget
-  //     robotId={getRobotId(context, scope)}
-  //     config={{ mapping: { source: 'key_value' } }}
-  //     isZeroData={isZeroData}
-  //   />
-  // ),
+  [WIDGET_TYPES.KEY_VALUES]: ({ context, scope }) => (
+      <NowTimeContext.Consumer>
+      {nowTs => (
+        <CustomDataWidget
+          robotId={getRobotId(context, scope)}
+          config={{ mapping: { source: 'key_value' } }}
+          nowTs={nowTs}
+        />
+      )}
+    </NowTimeContext.Consumer>
+  ),
 
   // [WIDGET_TYPES_IDS.LOGS]: ({ context, setContext, scope, isZeroData }) => (
   //   <LogsWidget
@@ -798,21 +792,29 @@ const WIDGET_FACTORY = {
   //   </NowTimeContext.Consumer>
   // ),
 
-  // [WIDGET_TYPES_IDS.CUSTOM_DATA_TEXT]: ({ config, context, scope, isZeroData }) => (
-  //   <CustomDataWidget
-  //     robotId={getRobotId(context, scope)}
-  //     config={config}
-  //     isZeroData={isZeroData}
-  //   />
-  // ),
+  [WIDGET_TYPES_IDS.CUSTOM_DATA_TEXT]: ({ config, context, scope }) => (
+    <NowTimeContext.Consumer>
+      {nowTs => (
+        <CustomDataWidget
+          robotId={getRobotId(context, scope)}
+          config={config}
+          nowTs={nowTs}
+        />
+      )}
+    </NowTimeContext.Consumer>
+  ),
 
-  // [WIDGET_TYPES_IDS.CUSTOM_DATA_IMAGE]: ({ config, context, scope, isZeroData }) => (
-  //   <CustomDataWidget
-  //     robotId={getRobotId(context, scope)}
-  //     config={config}
-  //     isZeroData={isZeroData}
-  //   />
-  // ),
+  [WIDGET_TYPES_IDS.CUSTOM_DATA_IMAGE]: ({ config, context, scope }) => (
+    <NowTimeContext.Consumer>
+      {nowTs => (
+        <CustomDataWidget
+          robotId={getRobotId(context, scope)}
+          config={config}
+          nowTs={nowTs}
+        />
+      )}
+    </NowTimeContext.Consumer>
+  ),
 
   // [WIDGET_TYPES_IDS.NAVIGATION_CONTROL_BAR]: ({
   //   context, setContext, scope
