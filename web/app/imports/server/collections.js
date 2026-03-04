@@ -13,6 +13,12 @@ if (Meteor.isDevelopment) {
     robotId: { type: String, required: false },
     username: String,
     password: String,
+    encryptedPassword: { type: String, required: false },
+    superuser: { type: Boolean, required: false },
+    acls: { type: Array, required: false },
+    'acls.$': { type: Object },
+    'acls.$.topic': { type: String },
+    'acls.$.acc': { type: SimpleSchema.Integer },
     // New field added in 1.20.0. Optional after 4.3.0 to support late binding.
     brokerId: { type: String, required: false },
     // NOTE(adamantivm) The following three properties can currently only be

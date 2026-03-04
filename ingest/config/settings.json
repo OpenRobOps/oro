@@ -7,8 +7,8 @@
         "port": 1883,
         "websocket_port": 9001,
         "websocket_protocol": "ws://",
-        "username": "username",
-        "password": "password"
+        "username": "ingest-master",
+        "password": "sGfB0P_8l9EvUFdqYQbE_I4mnjWiobSF"
       }
     },
     "defaultBrokerId": "local"

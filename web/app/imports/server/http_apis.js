@@ -1,8 +1,17 @@
 import bodyParser from 'body-parser';
+import { Meteor } from 'meteor/meteor';
 import { isString, pick } from 'lodash';
 // ORO modules
 import { MqttLogins } from './collections';
 import { VALID_ID_REGEXP } from '../shared/constants';
+import { decryptPassword } from './mqttCredentialUtils';
+import { provisionRobotCredentials } from './mqttCredentialProvisioner';
+
+function sendAndLog403(res, msg) {
+  console.warn(`403: ${msg}`);
+  res.writeHead(403);
+  res.end(JSON.stringify({ error: msg }));
+}
 
 // Middlewares to parse the request body from content-type application/json or x-www-form-urlencoded
 // Replaces old Meteor's pbastowski:body-parser
@@ -54,35 +63,41 @@ const mqttConfigEndpoint = (fromRobot = true, defaultApiKey = undefined) => asyn
 
   console.log(`Getting MQTT parameters for robotId=[${robotId}]`);
 
-  // Get the configuration for this robot and handle suspended credentials
-  // let robotMqttConfig = await mqttAssignmentManager.getConfig({ robotId });
-  // BEGIN FIXME use mqttAssignmentManager to get the configuration, not a simple lookup.
-  // This is a partial implementation copied from MqttAssignmentManager.getRobotCurrentMqttConfig
-  const login = await MqttLogins.findOneAsync({ robotId });
+  // Get or lazily provision credentials for this robot
+  const defaultBrokerId = Meteor.settings.mqtt.defaultBrokerId || 'local';
+  let login = await MqttLogins.findOneAsync({ robotId });
+  if (!login) {
+    login = await provisionRobotCredentials(robotId, defaultBrokerId);
+  }
+  if (login.suspended) {
+    sendAndLog403(res, `Robot credentials suspended for robotId=[${robotId}]`);
+    return;
+  }
+
   const brokerDetails = Meteor.settings.mqtt.brokers[login?.brokerId];
   if (!login || !brokerDetails) {
     sendAndLog403(res, 'Robot credentials not found');
     return;
   }
+
+  let password;
+  try {
+    const encryptionKey = Meteor.settings.mqtt.credentialEncryptionKey;
+    password = decryptPassword(login.encryptedPassword, encryptionKey);
+  } catch (e) {
+    console.error("Error decrypting password", e);
+    sendAndLog403(res, `Error decrypting password for robotId=[${robotId}]`);
+    return;
+  }
+
   const robotMqttConfig = {
-    // broker
     ...pick(
       brokerDetails,
       ['hostname', 'port', 'protocol', 'websocket_port', 'websocket_protocol']
     ),
-    // login
-    suspended: login.suspended,
-    username: "username", //login.username, FIXME!
-    password: "password", //login.password, FIXME!
+    username: login.username,
+    password
   };
-  console.warn(`TEMP: Returning HARDCODED MQTT credentials for robotId=[${robotId}]`);
-  // END FIXME
-
-  // If the robot is suspended, return 403
-  if (robotMqttConfig && robotMqttConfig.suspended) {
-    sendAndLog403(res, 'Attempt to access /mqtt_config: Robot credentials suspended');
-    return;
-  }
 
   // Send the configuration
   res.writeHead(200);
