@@ -82,6 +82,7 @@ const mqttConfigEndpoint = (fromRobot = true, defaultApiKey = undefined) => asyn
 
   let password;
   try {
+    const encryptionKey = Meteor.settings.mqtt.credentialEncryptionKey;
     password = decryptPassword(login.encryptedPassword, encryptionKey);
   } catch (e) {
     console.error("Error decrypting password", e);
@@ -89,22 +90,14 @@ const mqttConfigEndpoint = (fromRobot = true, defaultApiKey = undefined) => asyn
     return;
   }
 
-  const encryptionKey = Meteor.settings.mqtt.credentialEncryptionKey;
   const robotMqttConfig = {
     ...pick(
       brokerDetails,
       ['hostname', 'port', 'protocol', 'websocket_port', 'websocket_protocol']
     ),
-    suspended: login.suspended,
     username: login.username,
-    password: decryptPassword(login.encryptedPassword, encryptionKey),
+    password
   };
-
-  // If the robot is suspended, return 403
-  if (robotMqttConfig && robotMqttConfig.suspended) {
-    sendAndLog403(res, 'Attempt to access /mqtt_config: Robot credentials suspended');
-    return;
-  }
 
   // Send the configuration
   res.writeHead(200);
