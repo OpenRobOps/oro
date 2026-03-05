@@ -15,10 +15,12 @@ import { registerAccountsHooks } from '../imports/server/accountsHooks';
 import { configureOAuth } from '../imports/server/oauthConfig';
 import '../imports/server/userPublications';
 import '../imports/server/publications';
+import ConfigAPI from '../imports/server/configAPI/configAPI';
 import OroRoles from '../imports/server/roles';
 import AttributesManager from '../imports/server/attributes';
 import { CoreHttpApis } from '../imports/server/http_apis';
 import { seedMasterCredentials } from '../imports/server/mqttCredentialProvisioner';
+import { addApiRoute } from '../imports/server/rest_api';
 
 // Register accounts hooks at module level — before any login attempt
 registerAccountsHooks();
@@ -67,6 +69,7 @@ const oroAppMain = async () => {
   await new SearchManager().init();
   await new AttributesManager().init();
   await new OroRoles().createDefaultRoles();
+  await new ConfigAPI().init({});
 
   // Seed master MQTT credentials
   await seedMasterCredentials();

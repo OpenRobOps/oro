@@ -6,17 +6,6 @@ import OroRoles from '../server/roles';
 import { ACCESS_LEVEL_VIEW } from '../shared/roles';
 import { queryIncidentsForRobots } from '../lib/alerts';
 import { Robots, RobotKeyValues, RobotCustomData } from '../lib/collections';
-import { queryRobotAttributeValues } from '../lib/attributes';
-
-Meteor.publish('attributes.values', async function ({ robotId, attributes, pollingIntervalMs = 10000 }) {
-  if (!this.userId) {
-    return this.ready();
-  }
-  if (!await new OroRoles().canAccessRobot(this.userId, robotId, ACCESS_LEVEL_VIEW)) {
-    return this.error(new Meteor.Error('Unauthorized'));
-  }
-  return queryRobotAttributeValues({ robotId, attributes, pollingIntervalMs });
-});
 
 Meteor.publish('robots', async function ({
   options = {},
