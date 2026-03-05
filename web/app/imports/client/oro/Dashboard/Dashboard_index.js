@@ -56,7 +56,7 @@ import {
   writeOrderProp,
 } from '../../../lib/context';
 // import FleetControlWidget from '../fleetWidgets/FleetControlWidget';
-// import FleetStatusWidget from '../fleetWidgets/FleetStatusWidget';
+import FleetStatusWidget from '../fleetWidgets/FleetStatusWidget';
 import RobotControlBar from '../robotWidgets/RobotControlBar';
 // import ROSDiagnosticsFilter from './widgetToolbars/ToolbarFilters/ROSDiagnosticsFilter';
 // import MissionToolbar from './widgetToolbars/MissionToolbar';
@@ -583,23 +583,20 @@ const WIDGET_FACTORY = {
   //   />
   // ),
 
-  // [WIDGET_TYPES_IDS.FLEET_STATUS]: ({
-  //   config, context, setContext, scope, isZeroData
-  // }) => (
-  //   <FleetStatusWidget
-  //     robotId={getRobotId(context, scope)}
-  //     onRobotSelected={setRobotId(setContext, scope)}
-  //     sortBy={getFleetSortBy(context, scope)}
-  //     groupBy={getFleetGroupBy(context, scope)}
-  //     attributeStatus={getFleetAttributeStatus(context, scope)}
-  //     robotStatus={getFleetRobotStatus(context, scope)}
-  //     onRobotStatusSelected={setFleetRobotStatus(setContext, scope)}
-  //     showSummaryView={getSummary(context, scope)}
-  //     onShowSummaryView={setSummary(setContext, scope)}
-  //     isZeroData={isZeroData}
-  //     config={config}
-  //   />
-  // ),
+  [WIDGET_TYPES_IDS.FLEET_STATUS]: ({
+    config, context, setContext, scope
+  }) => (
+    <FleetStatusWidget
+      robotId={getRobotId(context, scope)}
+      onRobotSelected={setRobotId(setContext, scope)}
+      sortBy={getFleetSortBy(context, scope)}
+      groupBy={getFleetGroupBy(context, scope)}
+      attributeStatus={getFleetAttributeStatus(context, scope)}
+      robotStatus={getFleetRobotStatus(context, scope)}
+      onRobotStatusSelected={setFleetRobotStatus(setContext, scope)}
+      config={config}
+    />
+  ),
 
   // [WIDGET_TYPES_IDS.ROBOT_SEARCH]: ({
   //   config, context, setContext, scope, isZeroData
