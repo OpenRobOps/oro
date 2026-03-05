@@ -70,6 +70,7 @@ import {
 // import { Robot } from './model';
 // import { publishSingleDocumentFromFunction } from './lib/publicationsHelpers';
 // import { TIMESERIES_FIELD, TimeseriesFieldConfig } from '../shared/timeseries';
+import { listAttributeUIFields } from '../lib/uiPreferences';
 
 // All builtin attribute definitions to be used when
 // configuring them for the system
@@ -280,7 +281,6 @@ class AttributesManager {
   init = async () => {
     this.DEFAULT_ENTITY = { _id: ID_UNIQUE };
     this._attrDefsColl = AttributeDefinitions;
-    this._attrMappingsColl = AttributeMappings;
     await this._addDefaults();
   };
 
@@ -631,7 +631,6 @@ class AttributesManager {
       // a "trival" - always OK - status value.
       status: []
     };
-
     return applyDefaults(options, defaults);
   };
 
@@ -701,10 +700,7 @@ class AttributesManager {
       definition.timeline = {};
     }
     // Save core attribute definition details
-    this._attrDefsColl.upsertAsync(
-      this.DEFAULT_ENTITY,
-      { $set: { [attributeId]: definition }
-    });
+    await this._setAttributeDefinition(attributeId, definition);
 
     // Propagate to attribute mappings
     if (source) {
@@ -757,7 +753,7 @@ class AttributesManager {
    */
   updateAttribute = async ({
     attributeId, definition, options = {}, user = null,
-    // TODO(mike) These field is a little ugly and used only by the DataSources config API
+    // TODO These field is a little ugly and used only by the DataSources config API
     // handler (web/imports/server/configAPI/dataSourceDefinitions.js)
     // We should refactor this in a better way.
     allowAllFields = false
@@ -787,9 +783,9 @@ class AttributesManager {
       // of the definition and options provided.
 
       // select fields for the update
-      (await listAttributeUIFields()).forEach((field) => {
+      listAttributeUIFields().forEach((field) => {
         if (field in delta) {
-          newConfig[attributeId + '.' + field] = definition[field];
+          newConfig[field] = definition[field];
         }
       });
 
@@ -798,12 +794,13 @@ class AttributesManager {
         // See web/imports/server/configAPI/dataSourceDefinitions.js
         // eslint-disable-next-line guard-for-in
         for (const k in definition) {
-          newConfig[`${attributeId}.${k}`] = definition[k];
+          newConfig[k] = definition[k];
         }
       }
 
       // Propagate to UI settings to any widget this attribute may appear
-      await new UIPreferencesManager().updateUiPreferences(attributeId, delta);
+      console.log("TODO propagate to UIPreferencesManager", delta)
+      // await new UIPreferencesManager().updateUiPreferences(attributeId, delta);
       await this._setAttributeDefinition(attributeId, newConfig);
     }
 
@@ -824,50 +821,35 @@ class AttributesManager {
     return { ...oldDefinition, ...definition };
   };
 
-
   _getAttributeDefinition = async (attributeId) => {
-    const doc = await this._attrDefsColl.findOneAsync(
-      this.DEFAULT_ENTITY,
-      { fields: { [attributeId]: true } }
-    );
-    return doc?.[attributeId]
+    const doc = await this._attrDefsColl.findOneAsync({ attributeId });
+    return doc?.definition;
   }
 
-  _setAttributeDefinition = async (attributeId, definition) => {
-    await this._attrDefsColl.upsertAsync(
-      this.DEFAULT_ENTITY,
-      { $set: { [attributeId]: definition } }
-    );
-  }
+  _setAttributeDefinition = async (attributeId, definition) => (
+    this._attrDefsColl.upsertAsync({ attributeId }, { $set: { definition } })
+  )
 
-  _unsetAttributeDefinition = async (attributeId) => {
-    await this._attrDefsColl.upsertAsync(
-      this.DEFAULT_ENTITY,
-      { $unset: { [attributeId]: true } }
-    );
-  }
+  _unsetAttributeDefinition = async (attributeId) => (
+    this._attrDefsColl.upsertAsync({ attributeId }, { $unset: { definition: true } })
+  )
+
+  removeAttributeDefinition = async (attributeId) => (
+    this._attrDefsColl.removeAsync({ attributeId })
+  )
 
   _getAttributeMapping = async (attributeId) => {
-    const doc = await this._attrMappingsColl.findOneAsync(
-      this.DEFAULT_ENTITY,
-      { fields: { [attributeId]: true } }
-    );
-    return doc?.[attributeId]
+    const doc = await this._attrDefsColl.findOneAsync({ attributeId });
+    return doc?.mapping;
   }
 
-  _setAttributeMapping = async (attributeId, mapping) => {
-    await this._attrMappingsColl.upsertAsync(
-      this.DEFAULT_ENTITY,
-      { $set: { [attributeId]: mapping } }
-    );
-  }
+  _setAttributeMapping = async (attributeId, mapping) => (
+    this._attrDefsColl.upsertAsync({ attributeId }, { $set: { mapping } })
+  )
 
-  _unsetAttributeMapping = async (attributeId) => {
-    await this._attrMappingsColl.upsertAsync(
-      this.DEFAULT_ENTITY,
-      { $unset: { [attributeId]: true } }
-    );
-  }
+  _unsetAttributeMapping = async (attributeId) => (
+    this._attrDefsColl.upsertAsync({ attributeId }, { $unset: { mapping: true } })
+  )
 
   /**
    * For the given entity, make the given attribute inexistent.
@@ -933,11 +915,7 @@ class AttributesManager {
         await new UIPreferencesManager().suppressUiPreferences(attributeId);
       }
       // Attribute itself
-      await this._attrDefsColl.updateAsync(this.DEFAULT_ENTITY, {
-        $unset: {
-          [attributeId]: true
-        }
-      });
+      await this._removeAttributeDefinition(attributeId);
       await this.propagateConfigChange();
     }
   };
@@ -958,10 +936,8 @@ class AttributesManager {
       mapping = {};
     }
     // Fist see if there were previous mappings to this attributeId or from this same source
-    const oldMapping = (
-      await this._attrMappingsColl.findOneAsync(this.DEFAULT_ENTITY)
-    )?.[attributeId] || {};
 
+    const oldMapping = await this._getAttributeMapping(attributeId) || {};
     if (isEqual(mapping, oldMapping)) {
       // No change in mapping, skip
       return;
@@ -1160,10 +1136,7 @@ class AttributesManager {
         return;
     }
     // Finally, update mapping definition in the mappings collection.
-    this._attrMappingsColl.upsertAsync(
-      this.DEFAULT_ENTITY,
-      { $set: { [attributeId]: mapping } }
-    );
+    this._setAttributeMapping(attributeId, mapping);
     await this.propagateConfigChange();
   };
 
@@ -1416,6 +1389,15 @@ class AttributesManager {
       // But for all this: We need to share the code between ingest and app-server! :(
     }
   };
+
+  findAttributeDefinitions = async ({ id = null }) => {
+    const query = id ? { attributeId: id } : {};
+    const docs = await this._attrDefsColl.find(query).fetchAsync();
+    docs.forEach(doc => {
+      delete doc._id;
+    });
+    return docs;
+  }
 }
 
 Meteor.publish('attributes.definitions', async function () {
@@ -1443,7 +1425,6 @@ Meteor.publish('attributes.mappings', async function () {
 });
 
 Meteor.publish('attributes.values', async function ({ robotId, attributes, pollingIntervalMs = 5000 }) {
-  console.log("publish attributes.values", robotId, attributes, pollingIntervalMs);
   if (!this.userId) { // User must be logged in
     return this.ready();
   }

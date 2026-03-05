@@ -7,7 +7,7 @@ import { isEmpty, isObject } from 'lodash';
 // ORO Modules
 // import IncidentsConfigAPIHandler from './incidentDefinitions';
 // import RobotCameraAPIHandler from './robotCamera';
-// import DataSourcesConfigAPIHandler from './dataSourceDefinitions';
+import DataSourcesConfigAPIHandler from './dataSourceDefinitions';
 // import ActionConfigAPIHandler from './actionDefinitions';
 // import DashboardsConfigAPIHandler from './dashboards';
 // import StatusConfigAPIHandler from './statusDefinitions';
@@ -80,7 +80,7 @@ export default class ConfigAPI {
     this._kindsHandlers = kindsHandlersMap || {
       // [KIND_INCIDENT_DEFINITION]: new IncidentsConfigAPIHandler(this),
       // [KIND_ROBOT_CAMERA]: new RobotCameraAPIHandler(this),
-      // [KIND_DATASOURCE_DEFINITION]: new DataSourcesConfigAPIHandler(this),
+      [KIND_DATASOURCE_DEFINITION]: new DataSourcesConfigAPIHandler(this),
       // [KIND_STATUS_DEFINITION]: new StatusConfigAPIHandler(this),
       // [KIND_ACTION_DEFINITION]: new ActionConfigAPIHandler(this),
       // [KIND_DASHBOARD_DEFINITION]: new DashboardsConfigAPIHandler(this),
@@ -185,7 +185,7 @@ export default class ConfigAPI {
         const outputValidation = fullListOutputValidator(configObject);
         if (outputValidation !== true) {
           console.error(
-            `invalid output format in ${kind}.list() for config object with id "${o?.metadata?.id}": `
+            `invalid output format in ${kind}.list() for config object with id "${configObject?.metadata?.id}": `
             + `${outputValidation.map(v => v.message).join(', ')}`
           );
           return acc;

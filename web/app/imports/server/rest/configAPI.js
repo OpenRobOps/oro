@@ -4,8 +4,7 @@
 // ORO modules
 import ConfigAPI from '../configAPI/configAPI';
 import { ValidationError, SchemaError, AuthorizationError,
-  QuotaError, LIST_FORMAT_SHORT, SCOPE_ACCOUNT,
-  FeatureNotAvailableError, buildEntitlementsError
+  LIST_FORMAT_SHORT, SCOPE_ACCOUNT,
 } from '../../shared/configAPI';
 
 /**
@@ -25,16 +24,12 @@ const apiApply = async ({ user, body: configObject }) => {
     if (e instanceof ValidationError || e instanceof SchemaError) {
       return [e.message, 400];
     }
-    if (e instanceof FeatureNotAvailableError || e instanceof QuotaError) {
-      return buildEntitlementsError(e);
-    }
     if (e instanceof AuthorizationError) {
       return [e.message, 401];
     }
     // Unknown error. Can be anything wrong in our code. Log it con console, but do not return
     // error details as API response to users, revealing details of our code.
-    logger.error(`Error evaluating config apply(): ${e.message}`, e);
-    console.error(e); // logger.error above is greatly formatted but misses the stack trace
+    console.error(`Error evaluating config apply(): ${e.message}`, e);
     return ['Internal error', 500];
   }
   // Merge the ConfigAPI return value which could include messages or other results with a "SUCCESS"
@@ -56,9 +51,6 @@ const apiClear = async ({ user, body: configObject }) => {
   } catch (e) {
     if (e instanceof ValidationError || e instanceof SchemaError) {
       return [e.message, 400];
-    }
-    if (e instanceof FeatureNotAvailableError || e instanceof QuotaError) {
-      return buildEntitlementsError(e);
     }
     if (e instanceof AuthorizationError) {
       return [e.message, 401];
@@ -89,9 +81,6 @@ const apiList = async ({ user, queryParams }) => {
     if (e instanceof ValidationError || e instanceof SchemaError) {
       return [e.message, 400];
     }
-    if (e instanceof FeatureNotAvailableError || e instanceof QuotaError) {
-      return buildEntitlementsError(e);
-    }
     if (e instanceof AuthorizationError) {
       return [e.message, 401];
     }
@@ -113,8 +102,7 @@ const listKinds = () => {
     const results = new ConfigAPI().getKinds();
     return [{ items: results }, 200];
   } catch (e) {
-    logger.error(`Error evaluating list kinds: ${e.message}`, e);
-    console.error(e); // logger.error above is greatly formatted but misses the stack trace
+    console.error(`Error evaluating list kinds: ${e.message}`, e);
     return ['Internal error', 500];
   }
 };
