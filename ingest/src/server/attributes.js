@@ -55,7 +55,6 @@ class AttributesManager {
       this.mongoManager = new MongoManager();
       // this.storageManager = new StorageManager();
       this._attrDefsColl = this.mongoManager.getCollection(COLLECTIONS.ATTRIBUTE_DEFINITIONS);
-      this._mappingsColl = this.mongoManager.getCollection(COLLECTIONS.ATTRIBUTE_MAPPINGS);
       this._attrValuesColl = this.mongoManager.getCollection(COLLECTIONS.ATTRIBUTE_VALUES);
       // Queues
       // this.messageQueue = new WorkerQueue().buildExchangeDirect(QUEUES.ATTRIBUTES);
@@ -135,8 +134,15 @@ class AttributesManager {
   getRobotVitalsConfig = async (robotId) => this._vitalsConfigCache.get(robotId);
 
   _doGetRobotVitalsConfig = async (robotId) => {
-    const defs = await this._attrDefsColl.findOne({ _id: ID_UNIQUE }) || {}; //await this.getRobotAttributeDefinitions({ robotId });
-    const mappings = await this._mappingsColl.findOne({ _id: ID_UNIQUE }) || {} ; //await this.getRobotAttributeMappings({ robotId });
+    // TODO(herchu) rewrite this function and related attributes handling; it's inefficient and based
+    // on the old data representation
+    const attrs = await this._attrDefsColl.find({}).toArray();
+    const defs = {};
+    const mappings = {};
+    attrs.forEach((attr) => {
+      defs[attr.attributeId] = attr.definition;
+      mappings[attr.attributeId] = attr.mapping;
+    });
     return new RobotVitalsConfig(robotId, defs, mappings);
   };
 
@@ -194,7 +200,7 @@ class AttributesManager {
       return [];
     }
     // Note: This is live data, we would ideally read it from Redis
-    return await this._attrDefsColl.find({ _id: { $in: robotIds }}, { fields: attrIds }).toArray();
+    return await this._attrValuesColl.find({ _id: { $in: robotIds }}, { fields: attrIds }).toArray();
   };
 
   /**
