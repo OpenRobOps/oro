@@ -15,7 +15,6 @@ const COLLECTIONS = {
 
   // - Definitions
   ATTRIBUTE_DEFINITIONS: 'attr_defs',
-  ATTRIBUTE_MAPPINGS: 'attr_mappings',
   VITAL_DEFINITIONS: 'vital_defs',
   INCIDENT_DEFINITIONS: 'incident_definitions',
   ALERTS_CONFIG: 'alerts_config',
