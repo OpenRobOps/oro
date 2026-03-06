@@ -29,7 +29,7 @@ import VitalsWidget from '../robotWidgets/VitalsWidget';
 // import DataBagWidget from '../robotWidgets/DataBagWidget';
 // import LogsWidget from '../robotWidgets/LogsWidget';
 // import CameraView from '../robotWidgets/CameraView';
-// import IncidentTimeline from '../fleetWidgets/IncidentTimeline';
+import IncidentTimeline from '../fleetWidgets/IncidentTimeline';
 import IncidentList from '../fleetWidgets/IncidentList';
 // import ActionsWidget from '../robotWidgets/ActionsWidget';
 // import RobotMissionsTracker from '../robotWidgets/RobotMissionsTracker';
@@ -74,7 +74,7 @@ import RobotControlBar from '../robotWidgets/RobotControlBar';
 // // Time Capsule widgets
 // import { DATA_BAG_VARIANT } from '../robotWidgets/DataBagWidget/constants';
 // import TimelineFilter from './widgetToolbars/ToolbarFilters/TimelineFilter';
-// import IncidentTimelineFilter from './widgetToolbars/ToolbarFilters/IncidentTimelineFilter';
+import IncidentTimelineFilter from './widgetToolbars/ToolbarFilters/IncidentTimelineFilter';
 // import { DEFAULT_DATA_SOURCES } from '../robotWidgets/LocalizationWidget/LocalizationDataSources';
 // import { RobotsDataProvider } from '../contexts/RobotsDataContext/RobotsDataContext';
 // import { LOCALIZATION_VARIANTS } from '../robotWidgets/LocalizationWidget/Localization';
@@ -392,23 +392,23 @@ const TOOLBAR_FACTORY = {
       )}
     </NowTimeContext.Consumer>
   ),
-  // [WIDGET_TYPES_IDS.INCIDENT_TIMELINE]: ({ context, setContext, scope }) => (
-  //   <NowTimeContext.Consumer>
-  //     {nowTs => (
-  //       <IncidentTimelineFilter
-  //         startTs={getStartTime(context, scope)}
-  //         setStartTime={setStartTime(setContext, scope)}
-  //         timeRangeMs={getTimeRangeMs(context, scope)}
-  //         setTimeRangeMs={setTimeRangeMs(setContext, scope)}
-  //         nowTs={nowTs}
-  //         selectedIncidentComponentFilter={getIncidentComponent(context, scope)}
-  //         setSelectedIncidentComponentFilter={setIncidentComponent(setContext, scope)}
-  //         selectedSeverityFilter={getIncidentSeverity(context, scope)}
-  //         setSelectedSeverityFilter={setIncidentSeverity(setContext, scope)}
-  //       />
-  //     )}
-  //   </NowTimeContext.Consumer>
-  // ),
+  [WIDGET_TYPES_IDS.INCIDENT_TIMELINE]: ({ context, setContext, scope }) => (
+    <NowTimeContext.Consumer>
+      {nowTs => (
+        <IncidentTimelineFilter
+          startTs={getStartTime(context, scope)}
+          setStartTime={setStartTime(setContext, scope)}
+          timeRangeMs={getTimeRangeMs(context, scope)}
+          setTimeRangeMs={setTimeRangeMs(setContext, scope)}
+          nowTs={nowTs}
+          selectedIncidentComponentFilter={getIncidentComponent(context, scope)}
+          setSelectedIncidentComponentFilter={setIncidentComponent(setContext, scope)}
+          selectedSeverityFilter={getIncidentSeverity(context, scope)}
+          setSelectedSeverityFilter={setIncidentSeverity(setContext, scope)}
+        />
+      )}
+    </NowTimeContext.Consumer>
+  ),
   // [WIDGET_TYPES.ROS_DIAGNOSTICS]: ({ context, setContext, scope, isZeroData }) => (
   //   <ROSDiagnosticsFilter
   //     robotId={getRobotId(context, scope)}
@@ -554,25 +554,25 @@ const WIDGET_FACTORY = {
     </NowTimeContext.Consumer>
   ),
 
-  // [WIDGET_TYPES_IDS.INCIDENT_TIMELINE]: ({ setContext, context, scope, isZeroData }) => (
-  //   <NowTimeContext.Consumer>
-  //     {nowTs => (
-  //       <IncidentTimeline
-  //         selectedIncident={getIncidentId(context, scope)}
-  //         selectedComponentFilter={getIncidentComponent(context, scope)}
-  //         selectedSeverityFilter={getIncidentSeverity(context, scope)}
-  //         onSelectedIncidentChange={setIncidentId(setContext, scope)}
-  //         robotId={getRobotId(context, scope)}
-  //         startTs={getStartTime(context, scope)}
-  //         nowTs={nowTs}
-  //         timeRangeMs={getTimeRangeMs(context, scope)}
-  //         setStartTime={setStartTime(setContext, scope)}
-  //         setTimeRangeMs={setTimeRangeMs(setContext, scope)}
-  //         isZeroData={isZeroData}
-  //       />
-  //     )}
-  //   </NowTimeContext.Consumer>
-  // ),
+  [WIDGET_TYPES_IDS.INCIDENT_TIMELINE]: ({ setContext, context, scope, isZeroData }) => (
+    <NowTimeContext.Consumer>
+      {nowTs => (
+        <IncidentTimeline
+          selectedIncident={getIncidentId(context, scope)}
+          selectedComponentFilter={getIncidentComponent(context, scope)}
+          selectedSeverityFilter={getIncidentSeverity(context, scope)}
+          onSelectedIncidentChange={setIncidentId(setContext, scope)}
+          robotId={getRobotId(context, scope)}
+          startTs={getStartTime(context, scope)}
+          nowTs={nowTs}
+          timeRangeMs={getTimeRangeMs(context, scope)}
+          setStartTime={setStartTime(setContext, scope)}
+          setTimeRangeMs={setTimeRangeMs(setContext, scope)}
+          isZeroData={isZeroData}
+        />
+      )}
+    </NowTimeContext.Consumer>
+  ),
 
   // [WIDGET_TYPES_IDS.NAVIGATION]: ({ context, scope, setContext, isZeroData }) => (
   //   <NavigationDetailWithContext
