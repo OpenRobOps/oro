@@ -2,6 +2,7 @@
 # HACK: Import files from other components into the Ingest service
 
 set -e
+mkdir -p src/shared
 
 # NOTE: always use `cp -u`, to copy files only if they changed.
 # Copying all files all the time causes other nodemon'ed services
