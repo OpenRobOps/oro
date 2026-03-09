@@ -16,9 +16,26 @@
 Local configuration files require some credentials and keys for services to interact.
 Some of these are randomized; and settings files are not Git-controlled.
 
+To configure OAuth mechanisms, create a file `terraform/local.tfvars` with some of these contents (uncommenting and entering your secrets):
+
+```
+# If using Google auth, create a Google app and enter these values
+# oauth_google_client_id = ""
+# oauth_google_secret    = ""
+
+# If using Google auth, create a Github app and enter these values
+# oauth_github_client_id = ""
+# oauth_github_secret    = ""
+
+# If authenticating via email and passcodes, enter a 
+# smtp_url = "smtp://USER:PASS@SOME_SMTP_SERVER:PORT"
+```
+
 In `/scripts`, use `generate-settings.sh` to randomize passwords and create settings files (for ingest and appserver).
 
 Preview with `generate-settings.sh`, then run `generate-settings --apply`.
+
+You can check created files `web/app/settings.json` and `ingest/settings.json`; as well as further customize them.
 
 ## Run services (manually)
 

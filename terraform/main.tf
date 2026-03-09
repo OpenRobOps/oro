@@ -2,11 +2,23 @@ terraform {
   required_version = ">= 1.0"
 }
 
+locals {
+  # Create a list of available oauth providers (part of Meteor's UI settings)
+  oauth_providers = concat(
+    (var.smtp_url != "") ? ["email"] : [],
+    (var.oauth_google_client_id != "") ? ["google"] : [],
+    (var.oauth_google_client_id != "") ? ["github"] : []
+  )
+}
+
 resource "local_file" "web_app_settings" {
   filename        = "${path.module}/../web/app/settings.json"
   file_permission = "0644"
-  content         = jsonencode(merge(
+  content = jsonencode(merge(
     {
+      public = {
+        oauthProviders = local.oauth_providers
+      }
       allowedOrigins = []
       allowedHeaders = []
       mqtt = {
@@ -17,20 +29,20 @@ resource "local_file" "web_app_settings" {
         }
         brokers = {
           local = {
-            protocol             = "mqtt://"
-            hostname             = var.hostname
-            port                 = var.mqtt_port
-            websocket_port       = var.mqtt_websocket_port
-            websocket_protocol   = "ws://"
-            username             = var.mqtt_master_username
-            password             = var.mqtt_master_password
+            protocol           = "mqtt://"
+            hostname           = var.hostname
+            port               = var.mqtt_port
+            websocket_port     = var.mqtt_websocket_port
+            websocket_protocol = "ws://"
+            username           = var.mqtt_master_username
+            password           = var.mqtt_master_password
           }
         }
         defaultBrokerId = "local"
       }
       peerKey = var.peer_key
     },
-    
+
     (var.smtp_url != "") ? {
       smtp = {
         url = var.smtp_url
@@ -64,17 +76,17 @@ resource "local_file" "web_app_settings" {
 resource "local_file" "ingest_settings" {
   filename        = "${path.module}/../ingest/settings.json"
   file_permission = "0644"
-  content         = jsonencode({
+  content = jsonencode({
     mqtt = {
       brokers = {
         local = {
-          protocol             = "mqtt://"
-          hostname             = var.hostname
-          port                 = var.mqtt_port
-          websocket_port       = var.mqtt_websocket_port
-          websocket_protocol   = "ws://"
-          username             = var.mqtt_master_username
-          password             = var.mqtt_master_password
+          protocol           = "mqtt://"
+          hostname           = var.hostname
+          port               = var.mqtt_port
+          websocket_port     = var.mqtt_websocket_port
+          websocket_protocol = "ws://"
+          username           = var.mqtt_master_username
+          password           = var.mqtt_master_password
         }
       }
       defaultBrokerId = "local"
