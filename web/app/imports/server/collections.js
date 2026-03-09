@@ -23,7 +23,7 @@ if (Meteor.isDevelopment) {
     brokerId: { type: String, required: false },
     // NOTE(adamantivm) The following three properties can currently only be
     // set manually in the DB, there is no UI for configuration.
-    // TODO(adamantivm) Unfold these into a hierarchical configuration capable
+    // TODO Unfold these into a hierarchical configuration capable
     // collection.
     hostname: { type: String, required: false },
     port: { type: String, required: false },

@@ -128,7 +128,7 @@ const getCombinedStatusValue = (
   attributeIdList = attributeIdList || Object.keys(status);
   const value = [0, -1, 0, -1, 0, -1];
   attributeIdList.forEach((attrId, ix) => {
-    // TODO(adamantivm) Account for stale status values
+    // TODO Account for stale status values
     if (attrId in status) {
       switch (status[attrId].value) {
         case STATUS.OK.value:
@@ -159,7 +159,7 @@ const getCombinedStatusValue = (
           break;
       }
     } else {
-      // TODO(adamantivm) Better ideas on how to account for missing values?
+      // TODO Better ideas on how to account for missing values?
       // Currently counting as zero
     }
   });

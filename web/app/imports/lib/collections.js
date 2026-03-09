@@ -769,7 +769,7 @@ Schemas.uiPreferences = new SimpleSchema({
    *     }
    *   },
    *   // coming soon: available actions
-   *   // TODO(adamantivm) This must be migrated to use elementList/elementValues instead of
+   *   // TODO This must be migrated to use elementList/elementValues instead of
    *   // a single Array. Otherwise, configManager can't be used to tailor the configuration
    *   mapsList: [ // array of map objects
    *    {

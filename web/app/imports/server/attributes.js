@@ -279,7 +279,6 @@ class AttributesManager {
    * Initializes the attributes manager.
    */
   init = async () => {
-    this.DEFAULT_ENTITY = { _id: ID_UNIQUE };
     this._attrDefsColl = AttributeDefinitions;
     await this._addDefaults();
   };
@@ -613,7 +612,7 @@ class AttributesManager {
     const statusSuppressed = options.status === null || options.status === false;
 
     // Create defaults object
-    // TODO(adamantivm) Choose between different default objects based on value of isVital
+    // TODO Choose between different default objects based on value of isVital
     const defaults = {
       ui: {
         // Show the attribute in the vitals widget as a text or gauge element
@@ -911,7 +910,7 @@ class AttributesManager {
         // mappings
         await this.clearAttributeMapping(attributeId);
         // UI elements
-        // TODO(adamantivm) The following one won't cause the desired effect. Implement properly.
+        // TODO The following one won't cause the desired effect. Implement properly.
         await new UIPreferencesManager().suppressUiPreferences(attributeId);
       }
       // Attribute itself
@@ -1037,7 +1036,7 @@ class AttributesManager {
 
         const methodArguments = {
           params: {
-            // TODO(adamantivm) use a constant from the agent module being configured
+            // TODO use a constant from the agent module being configured
             // (CustomDataModule) instead of hard-coded strings.
             type: mapping.source == SOURCES.FILE_IMAGE.value ? 'image' : 'text_file',
             path: mapping.path,
@@ -1094,7 +1093,7 @@ class AttributesManager {
 
         const methodArguments = {
           params: {
-            // TODO(adamantivm) use a constant from the module for type
+            // TODO use a constant from the module for type
             type: 'diagnostics',
             diagnostics_key: mapping.key,
             diagnostics_name: mapping.namespace,
@@ -1183,7 +1182,7 @@ class AttributesManager {
     }
 
     // update source configration
-    // TODO(adamantivm) Only do this if necessary
+    // TODO Only do this if necessary
     await SystemModule.setOptionalSource({
       type: optionType,
       key: mapping.optionKey,
@@ -1246,21 +1245,21 @@ class AttributesManager {
         break;
       }
       case SOURCES.KEY_VALUE.value:
-        if (mapping.sourceId) {
-          // For key/value pairs, the agent module data source is shared between
-          // multiple keys, so we should only delete the source if this is the
-          // last mapping for this sourceId remaining.
+        // if (mapping.sourceId) {
+        //   // For key/value pairs, the agent module data source is shared between
+        //   // multiple keys, so we should only delete the source if this is the
+        //   // last mapping for this sourceId remaining.
 
-          // NOTE(adamantivm) This is an expensive operation, but it should be infrequent
-          const allMappings = await this._attrMappingsColl.findOneAsync(this.DEFAULT_ENTITY);
-          const anotherMappingSameTopic = Object.values(allMappings).find(m => (
-            m && m.attributeId != mapping.attributeId && m.sourceId == mapping.sourceId
-          ));
+        //   // NOTE(adamantivm) This is an expensive operation, but it should be infrequent
+        //   const allMappings = await this._attrMappingsColl.findOneAsync(this.DEFAULT_ENTITY);
+        //   const anotherMappingSameTopic = Object.values(allMappings).find(m => (
+        //     m && m.attributeId != mapping.attributeId && m.sourceId == mapping.sourceId
+        //   ));
 
-          if (!anotherMappingSameTopic) {
-            await new CustomDataModule().suppressDataSource(mapping.sourceId);
-          }
-        }
+        //   if (!anotherMappingSameTopic) {
+        //     await new CustomDataModule().suppressDataSource(mapping.sourceId);
+        //   }
+        // }
         break;
 
       case SOURCES.ROS_DIAGNOSTICS.value:
@@ -1295,7 +1294,7 @@ class AttributesManager {
         // Clear configuration in corresponding modules according to the mapping
         await this._clearSource(mapping);
 
-        // TODO(adamantivm) Perform automatic dashboard widgets clean-up
+        // TODO Perform automatic dashboard widgets clean-up
 
         // Notify caches of a config change
         await this.propagateConfigChange();
@@ -1321,7 +1320,7 @@ class AttributesManager {
           ? SystemModule.OPTION_TYPES.DISK
           : SystemModule.OPTION_TYPES.NET;
 
-        // TODO(adamantivm) Update this to actually clear instead of suppressing
+        // TODO Update this to actually clear instead of suppressing
         await SystemModule.clearOptionalSource({
           type,
           key: mapping.optionKey
@@ -1329,7 +1328,7 @@ class AttributesManager {
         break;
       }
       case SOURCES.KEY_VALUE.value:
-        // TODO(adamantivm) Identify the cases where the 'clear' operation needs an update
+        // TODO Identify the cases where the 'clear' operation needs an update
         // in the CustomDataModule.
         // Note that individual custom fields in the Custom Data module are represented as
         // arrays and so a proper "clear" is not feasible
@@ -1338,7 +1337,7 @@ class AttributesManager {
       case SOURCES.ROS_DIAGNOSTICS.value:
       case SOURCES.FILE_IMAGE.value:
       case SOURCES.FILE_TEXT.value:
-        // TODO(adamantivm) Implement clear instead of suppress
+        // TODO Implement clear instead of suppress
         await new CustomDataModule().suppressDataSource(mapping.sourceId);
         break;
 
@@ -1399,18 +1398,6 @@ class AttributesManager {
     return docs;
   }
 }
-
-Meteor.publish('attributes.definitions', async function () {
-  if (!this.userId) { // User must be logged in
-    return this.ready();
-  }
-  // Check permissions
-  if (!await new OroRoles().hasRole(this.userId)) {
-    throw new Meteor.Error(`User not authorized to query mappings`);
-  }
-  const attrsMgr = new AttributesManager();
-  return attrsMgr._attrDefsColl.find(attrsMgr.DEFAULT_ENTITY);
-});
 
 Meteor.publish('attributes.mappings', async function () {
   if (!this.userId) { // User must be logged in
