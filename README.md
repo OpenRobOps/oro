@@ -76,7 +76,7 @@ oro/
 
 ## Getting Started
 
-See [README-dev.md](Developer's documentation)
+See [Developer's documentation](README-dev.md)
 
 ## Learn More
 
