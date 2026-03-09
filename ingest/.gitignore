@@ -2,3 +2,4 @@ node_modules
 src/shared/**/*
 !src/shared/imports
 docker
+settings.json

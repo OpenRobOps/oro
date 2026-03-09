@@ -41,7 +41,7 @@ import {
 
 // Read settings from configuration file
 // TODO Allow passing configuration file path from an environment variable
-const settings = JSON.parse(fs.readFileSync(path.join(__dirname, '/../config/settings.json')));
+const settings = JSON.parse(fs.readFileSync(path.join(__dirname, '/../settings.json')));
 
 const signals = {
   SIGHUP: 1,
