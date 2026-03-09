@@ -6,6 +6,7 @@ import { MqttLogins } from './collections';
 import { VALID_ID_REGEXP } from '../shared/constants';
 import { decryptPassword } from './mqttCredentialUtils';
 import { provisionRobotCredentials } from './mqttCredentialProvisioner';
+import AgentManager from './agentManager';
 
 function sendAndLog403(res, msg) {
   console.warn(`403: ${msg}`);
@@ -67,6 +68,7 @@ const mqttConfigEndpoint = (fromRobot = true, defaultApiKey = undefined) => asyn
   const defaultBrokerId = Meteor.settings.mqtt.defaultBrokerId || 'local';
   let login = await MqttLogins.findOneAsync({ robotId });
   if (!login) {
+  console.log(`Provisioning new credentials for robotId=[${robotId}]`);
     login = await provisionRobotCredentials(robotId, defaultBrokerId);
   }
   if (login.suspended) {
@@ -105,3 +107,78 @@ const mqttConfigEndpoint = (fromRobot = true, defaultApiKey = undefined) => asyn
 };
 
 WebApp.connectHandlers.use('/mqtt_config', httpHandleExceptions(mqttConfigEndpoint(true)));
+
+
+/**
+ * Peer API (Inter-component API) / robot-initiated commands
+ *
+ * Used by the ingest component to report an incoming command
+ * request from a robot.
+ *
+ * Parameters:
+ *
+ * Authentication:
+ *
+ * - peerKey:   String, shared secret peer key, must correspond to the peer key
+ *              configured for this server instance
+ *
+ * Identification:
+ *
+ * - robotId:   ID of the robot requesting the provided command
+ *
+ * Payload:
+ *
+ * - command:   Command string
+ *
+ */
+WebApp.connectHandlers.use('/peer/robot/command', Meteor.bindEnvironment(async (req, res) => {
+  if (req.method != 'POST') {
+    console.warn('/peer/robot/command, Unrecognized request method: ' + req.method);
+    res.writeHead(400);
+    res.end();
+    return;
+  }
+
+  // Fetch parameters from the message body
+  const {
+    peerKey,
+    robotId,
+    command
+  } = req.body;
+
+  // TODOSanity checks (e.g: required params)
+  // TODO Confirm it's a valid robotId
+
+  // Check peerKey against settings
+  // TODO More realistic security here
+  if (peerKey != Meteor.settings.peerKey) {
+    console.warn('Invalid peer key provided');
+    res.writeHead(400);
+    res.end();
+    return;
+  }
+
+  try {
+    // TODO Move to a command process module or manager
+    switch (command) {
+      case 'resend_modules':
+        console.info(`mqtt: robotId=${robotId} requested all modules reload.`, { labels: { robotId } });
+        // TODO Consider unifying loaded state, runlevel and state configuration.
+        await new AgentManager().resendModules(robotId);
+        break;
+      case 'update_modules':
+        console.info(`mqtt: updating module states for robotId=${robotId}.`);
+        await new AgentManager().updateModuleStates(robotId);
+        break;
+      default:
+        logger.warn(`Unknown command received from robotId=${robotId} : ${command}`, { labels: { robotId } });
+    }
+
+    res.writeHead(200);
+    res.end();
+  } catch (e) {
+    console.warn(e);
+    res.writeHead(400);
+    res.end();
+  }
+}));

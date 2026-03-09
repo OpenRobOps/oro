@@ -9,7 +9,7 @@ import { Meteor } from 'meteor/meteor';
 import { Random } from 'meteor/random';
 import { isString, isBoolean, isEmpty } from 'lodash';
 // ORO modules
-// import InOrbitRoles from './inorbitRoles';
+// import OroRoles from './roles';
 // import { UIPreferences, Companies } from '../lib/collections';
 import Dashboards, {
   listAllDashboardsAsync,
@@ -105,7 +105,7 @@ class DashboardsManager {
    * @return {String} dashboardId
    */
   deleteDashboard = async ({ dashboardId }) => {
-    // const roles = await new InOrbitRoles().fetchCompanyRoles(companyId);
+    // const roles = await new OroRoles().fetchCompanyRoles(companyId);
     // const entities = Object.keys(companyRoles).map(roleId => ({
     //   entityId: glueId(ID_TYPE_ROLE, companyId, roleId),
     //   entityType: ID_TYPE_ROLE

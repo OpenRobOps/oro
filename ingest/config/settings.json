@@ -23,5 +23,10 @@
       "maxPoolSize": 10,
       "connectTimeoutMS": 5000
     }
+  },
+  "peerClient": {
+    "url": "http://localhost:3000/",
+    "peerKey": "appP33rK3y",
+    "connectionPooling": true
   }
 }

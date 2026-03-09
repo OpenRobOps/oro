@@ -21,7 +21,7 @@ import {
   VITAL_NET_ORO_RX_BYTES
 } from '../../shared/attributes';
 
-// TODO(adamantivm) Change to ES6 imports format
+// TODO Change to ES6 imports format
 const Long = require('long');
 
 const OPTION_TYPES = {

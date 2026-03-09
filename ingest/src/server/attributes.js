@@ -237,7 +237,7 @@ class AttributesManager {
       if (robotConfig.isBuiltinVital(attr)) {
         attributeId = attr;
       } else {
-        // TODO(adamantivm) Make this query more efficient (e.g.: directly by key aka index)
+        // TODO Make this query more efficient (e.g.: directly by key aka index)
         attributeId = robotConfig.findAttributeIdMappedTo(
           SOURCES.SYSTEM_HDD.value,
           { mappingKey: attr }
@@ -284,7 +284,7 @@ class AttributesManager {
     }
 
     // Parse the value according to the type declared in attr_defs
-    // TODO(adamantivm) Cache parsers together with the attribute definitions
+    // TODO Cache parsers together with the attribute definitions
     Object.keys(attributeValues).forEach((attrId) => {
       const attributeValue = attributeValues[attrId];
       let parsedValue;
@@ -377,7 +377,7 @@ class AttributesManager {
     }
 
     // Hook to send data to time series and long term storage
-    // TODO(adamantivm) Bubble up this guard, it should be everywhere we receive info
+    // TODO Bubble up this guard, it should be everywhere we receive info
     if (ts == 0) {
       // This is very suspicious, we're probably sending wrong data from the agent in the
       // first place, but just in case fix the timestamp to be now.
@@ -410,7 +410,7 @@ class AttributesManager {
    * Implemented as a separate method to avoid modifying the delicate and high-traffic
    * code in handleKeyValuePairs below.
    *
-   * TODO(adamantivm) Refactor and consolidate all of the handleXxxxYyy calls
+   * TODO Refactor and consolidate all of the handleXxxxYyy calls
    */
   async handleEvents({ robotId, customField }, events, ts = Date.now()) {
     const robotConfig = await this.getRobotVitalsConfig(robotId);
@@ -645,7 +645,7 @@ class RobotVitalsConfig {
       return m && m.source == sourceType
         // NOTE(adamantivm) Mappings configured with the default k/v field don't have a mappingKey
         // defined on its mapping. Allow matching with any mapping key.
-        // TODO(adamantivm) Finish porting custom data k/v fields to only use mappingKey to match
+        // TODO Finish porting custom data k/v fields to only use mappingKey to match
         // attributes. See https://inorbit.atlassian.net/browse/IO-2076
         && (mappingKey === undefined || m.mappingKey === undefined || m.mappingKey == mappingKey)
         && (key === undefined || m.key == key)

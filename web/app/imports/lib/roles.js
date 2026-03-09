@@ -1,6 +1,6 @@
 /**
  * Common constants and some client side functions for roles and permissions handling:
- * shared code for inorbitRoles module.
+ * shared code for Roles module.
  *
  * #meteor3: Migrated. New functions use *async prefix. TODO last: Remove deprecated versions
  */

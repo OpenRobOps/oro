@@ -41,7 +41,7 @@ const MQTT_DATABAG_UPLOAD_TOPIC = 'ros/databag/upload';
 
 // Create instrumented/serializable class from protobuf definition
 
-// TODO(adamantivm) Create proto path properly
+// TODO Create proto path properly
 const protoRoot = loadSync(__dirname + '/../shared/oro.proto');
 
 const RobotFilesUpdateMessage = protoRoot.lookupType('oro.RobotFilesUpdateMessage');
@@ -53,7 +53,7 @@ const Echo = protoRoot.lookupType('oro.Echo');
  */
 class MqttBroker {
   constructor({ config, id, onConnection, onMessage }) {
-    // TODO(adamantivm) Validate config
+    // TODO Validate config
     this.config = config;
     this.id = id;
     this.onConnection = onConnection;
@@ -189,7 +189,7 @@ export default class OroMqtt {
     // Registered MQTT system topic listeners (not robot-specific)
     this._systemListeners = {};
 
-    // TODO(adamantivm) Clean-up. Move these listener implementations
+    // TODO Clean-up. Move these listener implementations
     // to a constant or something else and leave the init method clean.
 
     // Registered MQTT robot topic listeners
@@ -213,7 +213,7 @@ export default class OroMqtt {
           this._callbackResponse(seq, robotId, tsAgent);
         }
       }],
-      // TODO(adamantivm) Move to its own ingest module
+      // TODO Move to its own ingest module
       logfiles_update: [async (robotId, msg) => {
         // Note (Flor_Grosso): log files are managed through in_cmd for now. Consider
         // moving this to its own module.
@@ -288,7 +288,7 @@ export default class OroMqtt {
       // listeners configured.
       this._listeners = {};
     }
-    // TODO(adamantivm) Move Odometry to its own module instead
+    // TODO Move Odometry to its own module instead
     this.odometryEnabled = config.odometryEnabled;
 
     if (!(config.defaultBrokerId in config.brokers)) {
@@ -332,7 +332,7 @@ export default class OroMqtt {
    * Register a listener for a system topic, not robot-specific
    */
   registerSystemListener = (subtopic, callback) => {
-    // TODO(adamantivm) Sanity checks
+    // TODO Sanity checks
     if (!(subtopic in this._systemListeners)) {
       this._systemListeners[subtopic] = [];
     }
@@ -348,7 +348,7 @@ export default class OroMqtt {
    * Register a listener to a given MQTT robot-specific subtopic
    */
   registerListener = (subtopic, callback) => {
-    // TODO(adamantivm) Sanity checks
+    // TODO Sanity checks
     if (!(subtopic in this._listeners)) {
       this._listeners[subtopic] = [];
     }
@@ -391,7 +391,7 @@ export default class OroMqtt {
   processConnection = (mqttInstance) => {
     // Re-establish subscriptions:
     const topics = [];
-    // TODO(adamantivm) Move Odometry to its own module instead
+    // TODO Move Odometry to its own module instead
     if (this.odometryEnabled) {
       topics.push('r/+/ros/odometry/+');
     }
@@ -524,7 +524,7 @@ export default class OroMqtt {
           const ts = decodedMsg.ts.toNumber();
           // HACK(adamantivm) If ts is zero it means this is an invalid odometry message
           // which can be skipped.
-          // TODO(adamantivm) Fix agent to avoid sending invalid odometry messages
+          // TODO Fix agent to avoid sending invalid odometry messages
           if (ts == 0) {
             return;
           }
@@ -657,7 +657,7 @@ export default class OroMqtt {
    *
    * This method currently only supports text payload.
    *
-   * TODO(adamantivm) Switch appropriate topics to protobuf.
+   * TODO Switch appropriate topics to protobuf.
    */
   _callbackSend = (robotId, subtopic, payload, callback, timeout = 10000, options = null) => {
     const callbackRegistry = this.callbacks;
