@@ -57,6 +57,10 @@ export async function seedMasterCredentials() {
   }
 
   const { username, password } = masterCreds;
+  if (await MqttLogins.findOneAsync({ username })) {
+    // Credentials already seeded; skip
+    return;
+  }
   const hashedPassword = hashPasswordPBKDF2(password);
 
   await MqttLogins.upsertAsync(

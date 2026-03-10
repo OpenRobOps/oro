@@ -3,9 +3,7 @@
  */
 // ORO modules
 import ConfigAPI from '../configAPI/configAPI';
-import { ValidationError, SchemaError, AuthorizationError,
-  LIST_FORMAT_SHORT, SCOPE_ACCOUNT,
-} from '../../shared/configAPI';
+import { ValidationError, SchemaError, AuthorizationError, LIST_FORMAT_SHORT } from '../../shared/configAPI';
 
 /**
  * API handler for POST configuration/apply
@@ -15,10 +13,7 @@ import { ValidationError, SchemaError, AuthorizationError,
 const apiApply = async ({ user, body: configObject }) => {
   let result;
   try {
-    if (configObject.metadata && configObject.metadata.scope === SCOPE_ACCOUNT) {
-      configObject.metadata.scope = `${SCOPE_ACCOUNT}/${getServiceUserCompanyId(user)}`;
-    }
-    console.log(configObject);
+    console.log("configAPI.apply",configObject);
     result = await new ConfigAPI().apply({ configObject, user });
   } catch (e) {
     if (e instanceof ValidationError || e instanceof SchemaError) {
@@ -44,9 +39,6 @@ const apiApply = async ({ user, body: configObject }) => {
  */
 const apiClear = async ({ user, body: configObject }) => {
   try {
-    if (configObject.metadata && configObject.metadata.scope === SCOPE_ACCOUNT) {
-      configObject.metadata.scope = `${SCOPE_ACCOUNT}/${getServiceUserCompanyId(user)}`;
-    }
     await new ConfigAPI().clear({ configObject, user });
   } catch (e) {
     if (e instanceof ValidationError || e instanceof SchemaError) {

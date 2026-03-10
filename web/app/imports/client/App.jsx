@@ -26,9 +26,14 @@ const appContentStyle = {
   overflow: 'hidden',
 };
 
+const FUTURE_FLAG = {
+  // This flag ensures a future-compatibility and removes an annoying console warning
+  v7_relativeSplatPath: true
+};
+
 const App = () => (
   <ErrorBoundary>
-    <BrowserRouter>
+    <BrowserRouter future={FUTURE_FLAG}>
       <AuthProvider>
         <AuthGuard>
           <div style={appLayoutStyle}>

@@ -5,9 +5,7 @@ import { Meteor } from 'meteor/meteor';
 // ORO modules
 import OroRoles from '../roles';
 import { AuthorizationError, ValidationError, SchemaError } from '../../shared/configAPI';
-import {
-  ID_TYPE_COMPANY, ID_TYPE_COLLECTION, ID_TYPE_ROBOT, ID_TYPE_SYSTEM_WIDE
-} from '../../shared/constants';
+import { ID_TYPE_ROBOT, ID_TYPE_SYSTEM_WIDE } from '../../shared/constants';
 import { ACCESS_LEVEL_VIEW, RESOURCE_TYPES } from '../../shared/roles';
 
 // Fields for JSON responses
@@ -62,11 +60,8 @@ const filterEntitiesWithAccess = async (
   const robotIds = entitiesList
     .filter(({ entityType }) => entityType == ID_TYPE_ROBOT)
     .map(e => e.entityId);
-  const tagIds = entitiesList
-    .filter(({ entityType }) => entityType == ID_TYPE_COLLECTION)
-    .map(e => e.entityId);
   const otherEntities = entitiesList
-    .filter(({ entityType }) => [ID_TYPE_SYSTEM_WIDE, ID_TYPE_COMPANY].includes(entityType));
+    .filter(({ entityType }) => ID_TYPE_SYSTEM_WIDE == entityType);
   const accessibleRobotIds = await new OroRoles().getAccessibleRobotIds(
     userId,
     robotIds,

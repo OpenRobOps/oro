@@ -248,13 +248,6 @@ const AttributeValueFormatter = attrDef => (val) => {
   }) + (attrDef.unit || '');
 };
 
-// Values for 'language' in derived attributes definitions
-// Unsafe: First version, based on eval(), should NOT be used anymore (and validated in APIs so
-// it cannot be used)
-const DERIVED_EXPR_LANGUAGE_UNSAFE = 'unsafe';
-// Safe: Based on expressions parsing. No arbitrary code execution
-const DERIVED_EXPR_LANGUAGE_SAFE = 'safe';
-
 // Mapping types from ROS monitoring "tasks" to attributes.
 // These are the possible values of `type` field of an AttributeMapping.
 // See https://docs.google.com/document/d/1NF_56a5CYkrDLqIeZ4oOnxzOyorkiTrYtO1pI2KuiLQ/edit#heading=h.49wzx3x6esei
