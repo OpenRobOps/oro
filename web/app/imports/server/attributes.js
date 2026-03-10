@@ -1378,9 +1378,8 @@ class AttributesManager {
       throw new Error('Invalid (empty) attribute definition');
     }
     if (options && options.source && options.source.source == SOURCES.DERIVED.value) {
-      const { transform, filter, language } = options.source;
+      const { transform, filter } = options.source;
       // TODO(herchu) Validate the following:
-      // - if language=unsafe: print a console warning right now
       // - transform must be a string
       // - filter is optional; must be a string if given
       // - in any case, use createExpression() to build a expression. It will throw if

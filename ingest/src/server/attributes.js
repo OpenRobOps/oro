@@ -733,8 +733,7 @@ class DerivedAttributesConfig {
    *
    * @param {string} attributeId The derived attribute id
    * @returns {array} List of ids of attributes that derived attribute expressions (transform or
-   * filter reference). Derived attributes using the old (soon to be deprecated) language
-   * expects their arguments in the same order as this list.
+   * filter reference). 
    */
   getDerivedAttributeDependencies(attributeId) {
     if (!this.memoDerivedAttrDeps[attributeId]) {
@@ -748,8 +747,7 @@ class DerivedAttributesConfig {
    *
    * @param {string} attributeId The derived attribute id
    * @returns {array} List of ids of attributes that derived attribute expressions (transform or
-   * filter reference). Derived attributes using the old (soon to be deprecated) language
-   * expects their arguments in the same order as this list.
+   * filter reference). 
    */
   _getDerivedAttributeDependencies = (attributeId) => {
     const mapping = this.robotVitalsConfig.getAttributeMapping(attributeId);
@@ -767,9 +765,8 @@ class DerivedAttributesConfig {
     for (const exprStr of [transform, filter]) {
       if (exprStr) {
         // Get attribute dependencies. To do this, the expression must be well formed.
-        // (In the 'unsafe', eval-based language, the check is less strict, via regexps)
         try {
-          const expr = createExpression(exprStr, mapping.language);
+          const expr = createExpression(exprStr, mapping);
           const {
             attributeIds: depAttributeIds,
             time: depTime,
@@ -812,17 +809,17 @@ class DerivedAttributesConfig {
   };
 
   /**
-   * Returns the expressions and language used by a derived attribute
+   * Returns the expressions used by a derived attribute
    * @param {string} attributeId
    * @returns {object}
    */
   getExpressions = (attributeId) => {
     const mapping = this.robotVitalsConfig.getAttributeMapping(attributeId) || {};
-    // include language, filter, expression and attributeIds; all necessary to know how this
+    // include filter, expression and attributeIds; all necessary to know how this
     // attribute will be evaluated
     // NOTE: attributeIds (list of dependencies) is deprecated but still in use, so it is returned
-    const { filter, transform, language, attributeIds } = mapping;
-    return { filter, transform, language, attributeIds };
+    const { filter, transform, attributeIds } = mapping;
+    return { filter, transform, attributeIds };
   };
 }
 

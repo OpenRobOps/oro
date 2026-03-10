@@ -17,7 +17,7 @@ import { buildCleanerFunction, mergeAndCompleteConfigObject } from './validators
 import AttributesManager from '../attributes';
 import { API_RESPONSE_FIELD_MESSAGES } from './utils';
 import {
-  ATTRIBUTE_TYPES, DERIVED_EXPR_LANGUAGE_SAFE, SOURCES, SOURCE_DERIVED_ID
+  ATTRIBUTE_TYPES, SOURCES, SOURCE_DERIVED_ID
 } from '../../shared/attributes';
 
 // These constants match all supported types from SOURCES (shared/attributes.js), specifying the
@@ -75,8 +75,7 @@ const DataSourceDefinitionSpecSchema = {
         ...OPTIONAL_STRICT,
         props: {
           transform: { type: 'string' },
-          filter: { type: 'string', optional: true },
-          language: { type: 'string', optional: true }
+          filter: { type: 'string', optional: true }
         }
       },
       [FIELD_SOURCE_NETWORK]: {
@@ -312,15 +311,6 @@ export default class DataSourcesConfigAPI {
           // also add `ui`, `status` or other options.
           source: configSourceToMappingSource(attributeId, source)
         };
-      }
-      if (options?.source?.source === SOURCES.DERIVED.value) {
-        const language = options.source?.language;
-        if (language && language != DERIVED_EXPR_LANGUAGE_SAFE) {
-          throw new ValidationError('Invalid language selected');
-        }
-        if (!language) {
-          options.source.language = DERIVED_EXPR_LANGUAGE_SAFE;
-        }
       }
       await this._attributesManager.updateAttribute({
         attributeId,
