@@ -12,6 +12,7 @@ import 'meteor/aldeed:collection2/static';
 import AgentManager from '../imports/server/agentManager';
 import DashboardsManager from '../imports/server/dashboards';
 import SearchManager from '../imports/server/searchManager';
+import StatusManager from '../imports/server/status';
 import { registerAccountsHooks } from '../imports/server/accountsHooks';
 import { configureOAuth } from '../imports/server/oauthConfig';
 import '../imports/server/userPublications';
@@ -79,6 +80,7 @@ const oroAppMain = async () => {
   // TODO add and initialize modules
   await new DashboardsManager().init();
   await new SearchManager().init();
+  await new StatusManager().init();
   await new AttributesManager().init();
   await new OroRoles().createDefaultRoles();
   await new ConfigAPI().init({});

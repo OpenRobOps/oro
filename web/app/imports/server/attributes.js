@@ -21,6 +21,7 @@ import { Meteor } from 'meteor/meteor';
 import { isEqual } from 'lodash';
 // ORO modules
 import { STATUS } from '../lib/status';
+import RobotStatusManager from './status';
 import { ID_UNIQUE } from '../shared/constants';
 import { applyDefaults, assignIfDistinct } from '../lib/util';
 import OroRoles from './roles';
@@ -625,7 +626,7 @@ class AttributesManager {
       },
       // By default, consider the attribute a vital
       isVital: true,
-      // NOTE(adamantivm) Setting an empty array as the configuration for
+      // NOTE Setting an empty array as the configuration for
       // an attribute status results in no status ever triggered, and thus
       // a "trival" - always OK - status value.
       status: []
@@ -640,7 +641,10 @@ class AttributesManager {
   createDefaultAttribute = async (attributeId, definition, options = {}) => {
     const existingDef = await this._getAttributeDefinition(attributeId);
     if (existingDef !== undefined) { // even with null, return
-      return;
+      if (!Meteor.isDevelopment) {
+        // Only in development mode, always re-create all attributes
+        return;
+      }
     }
     return this.createAttribute(attributeId, definition, options);
   };
@@ -716,12 +720,12 @@ class AttributesManager {
       // Propagate to status configuration
       if (status) {
         console.log("TODO propagate to RobotStatusManager")
-        // await new RobotStatusManager().setStatusConfig(
-        //   attributeId,
-        //   status,
-        //   label,
-        //   user
-        // );
+        await new RobotStatusManager().setStatusConfig(
+          attributeId,
+          status,
+          definition.label,
+          user
+        );
       }
       // Propagate to UI elements
       if (ui) {
@@ -759,10 +763,10 @@ class AttributesManager {
   }) => {
     // Validate this definition; and throw if it is wrong (before attempting any change)
     this.validateAttributeDefinition({ definition, options });
-    // NOTE(adamantivm) Using intensive fetch, compare, set here since configuration is something
+    // NOTE Using intensive fetch, compare, set here since configuration is something
     // that should happen rarely.
     // Fetch current version to update
-    // NOTE(Barbie): we are assuming that the attributeId is always different
+    // NOTE: we are assuming that the attributeId is always different
     // That is why we can do a logical delete, and nullify the object without problem
     // However, if we want to apply an already deleted data source
     // (using the same attributeId), this logic will break
@@ -776,7 +780,7 @@ class AttributesManager {
     if (delta) {
       const newConfig = {};
       // There was an update to the definition itself
-      // NOTE(adamantivm) Here I am unfolding all the detailed logic on how each portion
+      // NOTE Here I am unfolding all the detailed logic on how each portion
       // of the incoming updates should be handled. I didn't generalize this on purpose,
       // in order to allow deciding what to update and how depending on each portion
       // of the definition and options provided.
@@ -1123,7 +1127,7 @@ class AttributesManager {
         break;
       }
       case SOURCES.DERIVED.value:
-        // TODO(Mike) Validate expressions See IO-6165
+        // TODO Validate expressions See IO-6165
         if (!mapping.transform) {
           console.warn('setAttributeMapping: derived attribute transform missing in mapping', {
             attributeId, mapping
@@ -1145,7 +1149,7 @@ class AttributesManager {
    *
    * optionType is the specific type within the SystemModule being configured.
    *
-   * NOTE(adamantivm): The mapping object can be modified inside this method.
+   * NOTE: The mapping object can be modified inside this method.
    */
   _configureSystemSource = async (
     optionType,
@@ -1206,7 +1210,7 @@ class AttributesManager {
     // Suppress the corresponding agent module or source if there was
     // a previous configuration.
     //
-    // NOTE(adamantivm) Here we suppress instead of clearing in case
+    // NOTE Here we suppress instead of clearing in case
     // there is a mapping configured for higher-level item in the hierarchy.
     // In that case, we don't want the agent module to send data that we're
     // not going to process now.
@@ -1250,7 +1254,7 @@ class AttributesManager {
         //   // multiple keys, so we should only delete the source if this is the
         //   // last mapping for this sourceId remaining.
 
-        //   // NOTE(adamantivm) This is an expensive operation, but it should be infrequent
+        //   // NOTE This is an expensive operation, but it should be infrequent
         //   const allMappings = await this._attrMappingsColl.findOneAsync(this.DEFAULT_ENTITY);
         //   const anotherMappingSameTopic = Object.values(allMappings).find(m => (
         //     m && m.attributeId != mapping.attributeId && m.sourceId == mapping.sourceId
@@ -1282,7 +1286,7 @@ class AttributesManager {
    */
   clearAttributeMapping = async (attributeId) => {
     // Get current mapping information
-    // NOTE(adamantivm) I'm not sure that using the effective mapping (vs. the specific mapping for
+    // NOTE I'm not sure that using the effective mapping (vs. the specific mapping for
     // this scope) is the right thing to do, but doing it like this for consistency with the rest
     // of the implementation at this time
     const mapping = await this._getAttributeMapping(attributeId);

@@ -13,7 +13,7 @@ const noFilterItem = {
   label: 'No Filter'
 };
 
-// NOTE(mike) This works only for incidents defined for the company entity
+// NOTE This works only for incidents defined for the company entity
 const IncidentComponentFilter = ({
   selectedIncidentComponentFilter,
   setSelectedIncidentComponentFilter,

@@ -10,7 +10,7 @@ const GROUP_LABEL_NONE = 'Other';
 
 /**
  * Specifies the duration in seconds that the high resolution snapshot will last
- * TODO(franguerini): update / remove this constant when camera config
+ * TODO: update / remove this constant when camera config
  *                    allows the user to set the high resolution duration
  */
 const HIGH_RES_DURATION = 60;

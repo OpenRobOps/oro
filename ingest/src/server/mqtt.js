@@ -601,7 +601,7 @@ export default class OroMqtt {
               // Only if the user has ever teleoped the robot
               // there will be data on sysNetAgentTimeDelta.value.
               // Otherwise, there will be data gathered by ping.js
-              // TODO(Gus) Remove this check when rttManager is replaced by ping
+              // TODO Remove this check when rttManager is replaced by ping
               if (robotVitalsDoc && robotVitalsDoc.sysNetAgentTimeDelta) {
                 agentTimeDelta = robotVitalsDoc.sysNetAgentTimeDelta.value;
               } else {
@@ -712,7 +712,7 @@ export default class OroMqtt {
 
     // Only call the callback if the request wasn't canceled (e.g.: timeout)
     if (!callbackState.isCanceled) {
-      // NOTE(adamantivm) The signature of the returned function is:
+      // NOTE The signature of the returned function is:
       //  error, { tsServerReceive, tsServerSend, tsAgent }
       // This is in order to be compatible with a wrapAsync Meteor callback
       callbackState.callback(undefined, { tsServerReceive, tsServerSend, tsAgent });

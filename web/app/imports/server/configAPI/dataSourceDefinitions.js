@@ -279,7 +279,7 @@ export default class DataSourcesConfigAPI {
     }
     // Permissions validations: require access to the data source singleton
     // and configure access to the whole fleet
-    // TODO(mike): It should be possible to grant access to the data source
+    // TODO: It should be possible to grant access to the data source
     // singleton at the tag or robot level, but currently our roles implementation
     // does not support that.
     if (!isSystemUser(user) && ( // do not validate authorization when using peer api calls
@@ -341,7 +341,7 @@ export default class DataSourcesConfigAPI {
     }
     // Permissions validations: require access to the data source singleton
     // and configure access to the whole fleet
-    // TODO(mike): It should be possible to grant access to the data source
+    // TODO: It should be possible to grant access to the data source
     // singleton at the tag or robot level, but currently our roles implementation
     // does not support that.
     if (!await new OroRoles().canAccessSystemElement(

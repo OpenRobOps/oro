@@ -11,7 +11,7 @@
  * Provides a function that filters incidents according to the context passed,
  * this function is meant to be used as a parameter on Array.filter function of incidents
  *
- * NOTE(franguerini): This function has unit tests so if you add functionality please update the unit tests
+ * NOTE: This function has unit tests so if you add functionality please update the unit tests
  *                    (/web/ui-support/test/IncidentsFilterUtil.test.js)
  * @param {Object} context - Object containing the parsed filters applied
  *        {

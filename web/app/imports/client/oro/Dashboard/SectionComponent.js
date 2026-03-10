@@ -6,7 +6,7 @@
 
  * This Component should remain meteor free.
  *
- * TODO(franguerini):
+ * TODO:
  *   - Add proper design with proper spacing between sections + components
  */
 import React, { useMemo } from 'react';

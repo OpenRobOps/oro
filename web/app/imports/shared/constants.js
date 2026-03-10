@@ -21,7 +21,7 @@ const COLLECTIONS = {
   ACTION_DEFINITIONS: 'action_defs',
   CUSTOM_SCRIPT: 'custom_script',
   DATA_DISPLAY_CONFIG: 'data_display_config',
-  ROBOT_STATUS_CONFIG: 'robot_status_config',
+  STATUS_CONFIG: 'status_config',
   UI_PREFERENCES: 'ui_preferences',
   PREFERENCES: 'preferences',
 
