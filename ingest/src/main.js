@@ -89,7 +89,7 @@ async function run() {
   // objectsManager = new ObjectsManager();
   // await objectsManager.init(settings.objectsManager);
 
-  // // TODO(bz): When modes are migrated fully to dynamic collections, EventLog won't be needed here
+  // // TODO: When modes are migrated fully to dynamic collections, EventLog won't be needed here
   // // anymore
   // new EventLog().init(settings.eventLog);
 

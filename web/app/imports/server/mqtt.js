@@ -185,7 +185,7 @@ export default class OroMqtt {
     // Key: subtopic, value: callback
     // Callback signature: (robotId, payload)
     //
-    // NOTE(adamantivm): By far and large most listeners will likely go
+    // NOTE: By far and large most listeners will likely go
     // into the ingest service and not here. Please consult before
     // adding any new listeners.
     this._listeners = {
@@ -265,7 +265,7 @@ export default class OroMqtt {
     if (broker) {
       broker.client.publish('r/' + robotId + '/' + subtopic, msg, options);
     } else {
-      // TODO(mike) A throttled log functionality should be extracted somewhere else
+      // TODO A throttled log functionality should be extracted somewhere else
       // to avoid repeating this over and over.
       // Math.random() < 0.01 ~1% of the times
       // FIXME- add rate limiter
@@ -390,7 +390,7 @@ ${robotId} but robot has no broker (These messages are throttled)`);
         }
       }, 5000);
     } else {
-      // TODO(mike) A throttled log functionality should be extracted somewhere else
+      // TODO A throttled log functionality should be extracted somewhere else
       // to avoid repeating this over and over.
       // Math.random() < 0.01 ~1% of the times
       Math.random() < 0.01 && console.warn(`Call to _echoEnd for unregistered robotId=${robotId} (These messages are throttled)`);
@@ -475,7 +475,7 @@ ${robotId} but robot has no broker (These messages are throttled)`);
     // Only call the callback if the request wasn't canceled (e.g.: timeout)
     // and callback was provided
     if (!callbackState.isCanceled && typeof callbackState.callback === 'function') {
-      // NOTE(adamantivm) The signature of the returned function is:
+      // NOTE The signature of the returned function is:
       //  error, { tsServerReceive, tsServerSend, tsAgent }
       // This is in order to be compatible with a wrapAsync Meteor callback
       callbackState.callback(undefined, { tsServerReceive, tsServerSend, tsAgent });

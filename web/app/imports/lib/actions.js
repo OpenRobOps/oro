@@ -105,9 +105,9 @@ const ActionDefinitions = new Mongo.Collection(COLLECTIONS.ACTION_DEFINITIONS);
  *                    // of an img, such as a base64 data or an image URL.
  *   tooltip: string, // Tooltip text for the action
  *   order: number,    // HACK(adamantivm) If present, used to sort actions by numerical order
- *     // NOTE(adamantivm) icon, tooltip and order are
+ *     // NOTE icon, tooltip and order are
  *     // still experimental, under action-icons feature flag
- *     // NOTE(adamantivm) order in particular should be
+ *     // NOTE order in particular should be
  *     // removed from here and moved to ui_preferences instead
  *   target: { type: String, optional: true },
  *   client: bool (optional), // (default: false) if this is a client-side action

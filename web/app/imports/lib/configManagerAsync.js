@@ -69,7 +69,7 @@ export default class ConfigManager {
    *    other fields
    */
   _checkObjectHierarchy = (obj1, obj2) => {
-    // TODO(pablo):
+    // TODO:
     // Now hierarchy is a partial order. Should we throw if types aren't comparable?
     // That would require traversing the tree, making sorting expensive. So not
     // checking for the moment. Although this method traverses arrays anyway

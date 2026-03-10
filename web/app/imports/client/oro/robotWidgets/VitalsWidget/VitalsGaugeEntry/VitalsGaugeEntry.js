@@ -6,7 +6,7 @@
  *
  * For text only entries, use the VitalsTextEntry component.
  *
- * TODO(germanmas) Gauges should be replaced by the ones from a chart library. When it happens,
+ * TODO Gauges should be replaced by the ones from a chart library. When it happens,
  * perhaps this component is deprecated or repurposed.
  */
 import React from 'react';

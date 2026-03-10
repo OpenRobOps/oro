@@ -1,0 +1,40 @@
+{
+  "allowedOrigins": [],
+  "allowedHeaders": [],
+  "smtp": {
+    "url": "smtp://063469cece21f6:7530dea2ea9926@sandbox.smtp.mailtrap.io:2525"
+  },
+  "oauth": {
+    "google": {
+      "clientId": "584258706598-0cuofar9ejk7r0kfk1273hbp2vp0509g.apps.googleusercontent.com",
+      "secret": "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",
+      "loginStyle": "popup"
+    },
+    "github": {
+      "clientId": "Iv23li9mfyZ01HrTgn7w",
+      "secret": "9ad1343058b8b2ea575803001f1bd85568714bb3",
+      "loginStyle": "popup"
+    }
+  },
+  "mqtt": {
+    "credentialEncryptionKey": "1ff89760b5ab2082c28a07ea5a9ad5b6c143f0db5e5cab807b43367539dfcee1",
+    "_comment_masterCredentials": "These credentials are seeded into mqtt_credentials on startup. Keep in sync with ingest/config/settings.json",
+    "masterCredentials": {
+      "username": "ingest-master",
+      "password": "sGfB0P_8l9EvUFdqYQbE_I4mnjWiobSF"
+    },
+    "brokers": {
+      "local": {
+        "protocol": "mqtt://",
+        "hostname": "localdev.com",
+        "port": 1883,
+        "websocket_port": 9001,
+        "websocket_protocol": "ws://",
+        "username": "ingest-master",
+        "password": "sGfB0P_8l9EvUFdqYQbE_I4mnjWiobSF"
+      }
+    },
+    "defaultBrokerId": "local"
+  },
+  "peerKey": "appP33rK3y"
+}
