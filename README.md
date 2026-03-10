@@ -78,6 +78,12 @@ oro/
 
 See [Developer's documentation](README-dev.md)
 
+## Contributing
+
+We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines
+on reporting issues, submitting pull requests, and setting up a development
+environment.
+
 ## Learn More
 
 - [InOrbit.AI](https://www.inorbit.ai) — the company behind OpenRobOps
