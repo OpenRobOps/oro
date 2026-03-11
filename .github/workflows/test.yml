@@ -37,20 +37,22 @@ jobs:
           MONGO_URL: mongodb://localhost:27017/test
           TEST_CLIENT: "0"
           MOCHA_REPORTER: "xunit"
-          SERVER_MOCHA_OUTPUT: "../../junit_server.xml"
+          SERVER_MOCHA_OUTPUT: "junit_server.xml"
         run: meteor test --once --driver-package meteortesting:mocha reporter=mocha-junit-reporter
 
       - name: Upload test results
+        working-directory: web/app
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-results
-          path: junit_server.xml
+          path: ./junit_server.xml
 
       - name: Publish test results
+        working-directory: web/app
         if: always()
         uses: dorny/test-reporter@v1
         with:
           name: Test Results
-          path: junit_server.xml
+          path: ./junit_server.xml
           reporter: java-junit
