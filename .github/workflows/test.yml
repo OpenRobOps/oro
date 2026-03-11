@@ -41,18 +41,16 @@ jobs:
         run: meteor test --once --driver-package meteortesting:mocha reporter=mocha-junit-reporter
 
       - name: Upload test results
-        working-directory: web/app
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-results
-          path: ./junit_server.xml
+          path: web/app/junit_server.xml
 
       - name: Publish test results
-        working-directory: web/app
         if: always()
         uses: dorny/test-reporter@v1
         with:
           name: Test Results
-          path: ./junit_server.xml
+          path: web/app/junit_server.xml
           reporter: java-junit
