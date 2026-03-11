@@ -26,6 +26,7 @@ jobs:
       - name: Install dependencies
         working-directory: web/app
         run: meteor npm install
+        # TODO Fix this. We should be able to cache Meteor install and NPM packages steps
         # uses: actions/cache@v4
         # with:
         #   path: .meteor/local
