@@ -27,6 +27,7 @@ jobs:
         working-directory: web/app
         run: meteor npm install
         with:
+          path: .
           key: ${{ hashFiles('**/package-lock.json') }}
 
       - name: Run tests
