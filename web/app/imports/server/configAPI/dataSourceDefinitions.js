@@ -134,7 +134,6 @@ const dataSourceDefinitionSpecCleaner = buildCleanerFunction(DataSourceDefinitio
 function dataSourceDefinitionToListItem({ attributeId, definition }) {
   const ret = {
     id: attributeId,
-    scope: "", // For compatibility with legacy CLI tool
     suppressed: definition === null,
   };
   if (definition && definition.label) {
@@ -353,7 +352,6 @@ export default class DataSourcesConfigAPI {
     }
     const { id: attributeId } = configObject.metadata;
     await this._attributesManager.clearAttribute(attributeId, true);
-    return UNSTABLE_API_WARNING;
   };
 
   /**
@@ -361,17 +359,17 @@ export default class DataSourcesConfigAPI {
    *
    * @returns {array}
    */
-  list = async ({ scopeFilter, id, user, format = LIST_FORMAT_SHORT, includeAll = false }) => {
+  list = async ({ id, user, format = LIST_FORMAT_SHORT, includeAll = false }) => {
     if (!isSystemUser(user) // do not validate authorization when using peer api calls
       && !await new OroRoles().hasRole(user._id)) {
       throw new AuthorizationError('Unauthorized');
     }
-    // Retrieve configs for the scope, filtering by id
+    // Retrieve configs, filtering by id
     const allDataSourceDefs = await this._attributesManager.findAttributeDefinitions({ id });
     // Filter out data sources created automatically from calculated statuses ("hidden").
     // See filterHiddenDataSources() for details.
     const dataSourceDefs = !includeAll
-      ? await this.filterHiddenDataSources(allDataSourceDefs, scopeFilter, user)
+      ? await this.filterHiddenDataSources(allDataSourceDefs, user)
       : allDataSourceDefs;
     // Transform the output to the right format used for Config as Code lists.
     if (format === LIST_FORMAT_SHORT) {
@@ -384,7 +382,7 @@ export default class DataSourcesConfigAPI {
   };
 
   /**
-   * Given a list of DataSourceDefinitions retrieved by user `user` at scope `scopeFilter`,
+   * Given a list of DataSourceDefinitions retrieved by user `user`
    * it filters out those that should be hidden from users.
    * Currently, this means hiding those data sources created as byproduct of creating
    * "advanced" status definitions (those with a `calculated` field). Only those DataSources

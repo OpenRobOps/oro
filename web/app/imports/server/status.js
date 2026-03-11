@@ -24,10 +24,6 @@ export default class RobotStatusManager {
     if (instance === undefined) {
       instance = this;
       // this._alertsManager = new AlertsManager();
-      this._statusConfigCache = new AsyncCache({
-        maxAge: 60 * 1000, // 1 minute
-        createFunction: this._doGetStatusConfig
-      });
     }
     // eslint-disable-next-line no-constructor-return
     return instance;
@@ -40,14 +36,13 @@ export default class RobotStatusManager {
   /**
    * Gets the status configuration
    */
-  _doGetStatusConfig = async () => {
-    const docs = await StatusConfig.find({}).fetchAsync();
-    const config = {};
-    docs.forEach((doc) => {
-      config[doc.attributeId] = doc.config;
-    });
-    return config;
-  };
+  _doGetStatusConfig = async () => (
+    (await StatusConfig.find({}).fetchAsync()).reduce((acc, doc) => {
+      delete doc._id;
+      acc[doc.attributeId] = doc;
+      return acc;
+    }, {})
+  );
 
   _doFetchStatusConfig = async (attributeId) => (
     StatusConfig.findOneAsync({ attributeId })
@@ -60,6 +55,10 @@ export default class RobotStatusManager {
 
   _doUnsetStatusConfig = async (attributeId) => (
     StatusConfig.removeAsync({ attributeId })
+  );
+
+  getStatusConfigs = async () => (
+    this._doGetStatusConfig()
   );
 
   /**

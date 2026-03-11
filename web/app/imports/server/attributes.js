@@ -824,8 +824,16 @@ class AttributesManager {
     return { ...oldDefinition, ...definition };
   };
 
+  getAttributeDefinition = async (attributeId) => (
+    this._getAttributeDefinition(attributeId)
+  )
+
+  _getAttributeDefinitionDoc = async (attributeId) => (
+    await this._attrDefsColl.findOneAsync({ attributeId })
+  )
+
   _getAttributeDefinition = async (attributeId) => {
-    const doc = await this._attrDefsColl.findOneAsync({ attributeId });
+    const doc = this._getAttributeDefinitionDoc(attributeId);
     return doc?.definition;
   }
 
@@ -837,12 +845,12 @@ class AttributesManager {
     this._attrDefsColl.upsertAsync({ attributeId }, { $unset: { definition: true } })
   )
 
-  removeAttributeDefinition = async (attributeId) => (
+  _removeAttributeDefinition = async (attributeId) => (
     this._attrDefsColl.removeAsync({ attributeId })
   )
 
   _getAttributeMapping = async (attributeId) => {
-    const doc = await this._attrDefsColl.findOneAsync({ attributeId });
+    const doc = await this._getAttributeDefinitionDoc(attributeId);
     return doc?.mapping;
   }
 
@@ -879,20 +887,22 @@ class AttributesManager {
       // mappings
       await this.suppressAttributeMapping(attributeId);
       // UI elements
-      await new UIPreferencesManager().suppressUiPreferences(attributeId);
-      await new DashboardsManager().suppressAttributeFromDashboards(attributeId);
+      console.log("TODO suppress UI/Dashboards/Alerts elements", attributeId)
+      // await new UIPreferencesManager().suppressUiPreferences(attributeId);
+      // await new DashboardsManager().suppressAttributeFromDashboards(attributeId);
       // remove related incident definitions
-      await this.alertsManager.suppressIncidentDefinition(attributeId);
+      // await this.alertsManager.suppressIncidentDefinition(attributeId);
     }
     // Suppress the attribute definition
     await this._unsetAttributeDefinition(attributeId);
     await this.propagateConfigChange();
-    new EventLog().logSetting({
-      settingGroupName: EVENT_SETTINGS_SECTION_NAMES.ATTRIBUTES,
-      settingName: oldAttrDef?.label || attributeId,
-      eventType: EVENT_TYPES.SETTING_REMOVED,
-      user
-    });
+    console.log("TODO log event log", attributeId)
+    // new EventLog().logSetting({
+    //   settingGroupName: EVENT_SETTINGS_SECTION_NAMES.ATTRIBUTES,
+    //   settingName: oldAttrDef?.label || attributeId,
+    //   eventType: EVENT_TYPES.SETTING_REMOVED,
+    //   user
+    // });
     return oldAttrDef;
   };
 
@@ -915,7 +925,8 @@ class AttributesManager {
         await this.clearAttributeMapping(attributeId);
         // UI elements
         // TODO The following one won't cause the desired effect. Implement properly.
-        await new UIPreferencesManager().suppressUiPreferences(attributeId);
+        // await new UIPreferencesManager().suppressUiPreferences(attributeId);
+        console.log("TODO suppress UI/Dashboards/Alerts elements", attributeId)
       }
       // Attribute itself
       await this._removeAttributeDefinition(attributeId);
@@ -1293,7 +1304,7 @@ class AttributesManager {
 
     if (mapping !== undefined) {
       // Clear the attribute mapping configuration at this level
-      await this.unsetAttributeMapping(attributeId);
+      await this._unsetAttributeMapping(attributeId);
       if (mapping !== null) {
         // Clear configuration in corresponding modules according to the mapping
         await this._clearSource(mapping);
