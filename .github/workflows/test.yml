@@ -37,18 +37,14 @@ jobs:
           MONGO_URL: mongodb://localhost:27017/test
           TEST_CLIENT: "0"
           MOCHA_REPORTER: "xunit"
-          SERVER_MOCHA_OUTPUT: "${PWD}/junit_server.xml"
+          SERVER_MOCHA_OUTPUT: "${{ github.workspace }}/junit_server.xml"
         run: meteor test --once --driver-package meteortesting:mocha reporter=mocha-junit-reporter
 
-      - name: Check file (1)
+      - name: Check files (1)
         run: |
           echo 1
           ls . -l
           echo 2
-          ls .. -l
-          echo 3
-          ls .. -l
-          echo 4
           ls web -l
           echo 5
           ls web/app -l
