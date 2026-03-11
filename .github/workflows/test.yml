@@ -34,8 +34,8 @@ jobs:
         env:
           MONGO_URL: mongodb://localhost:27017/test
           TEST_CLIENT: "0"
-          MOCHA_REPORTER="xunit"
-          SERVER_MOCHA_OUTPUT="../../junit_server.xml"
+          MOCHA_REPORTER: "xunit"
+          SERVER_MOCHA_OUTPUT: "../../junit_server.xml"
         run: meteor test --once --driver-package meteortesting:mocha
 
       - name: Upload test results
