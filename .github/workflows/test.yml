@@ -40,26 +40,17 @@ jobs:
           SERVER_MOCHA_OUTPUT: "${{ github.workspace }}/junit_server.xml"
         run: meteor test --once --driver-package meteortesting:mocha reporter=mocha-junit-reporter
 
-      - name: Check files (1)
-        run: |
-          echo 1
-          ls . -l
-          echo 2
-          ls web -l
-          echo 5
-          ls web/app -l
-
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-results
-          path: web/app/junit_server.xml
+          path: junit_server.xml
 
       - name: Publish test results
         if: always()
         uses: dorny/test-reporter@v1
         with:
           name: Test Results
-          path: web/app/junit_server.xml
+          path: junit_server.xml
           reporter: java-junit
