@@ -48,6 +48,10 @@ jobs:
           ls .. -l
           echo 3
           ls .. -l
+          echo 4
+          ls web -l
+          echo 5
+          ls web/app -l
 
       - name: Upload test results
         if: always()
