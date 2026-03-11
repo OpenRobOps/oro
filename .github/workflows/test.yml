@@ -26,10 +26,10 @@ jobs:
       - name: Install dependencies
         working-directory: web/app
         run: meteor npm install
-        uses: actions/cache@v4
-        with:
-          path: .meteor/local
-          key: ${{ hashFiles('**/package-lock.json') }}
+        # uses: actions/cache@v4
+        # with:
+        #   path: .meteor/local
+        #   key: ${{ hashFiles('**/package-lock.json') }}
 
       - name: Run tests
         working-directory: web/app
