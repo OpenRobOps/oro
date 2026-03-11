@@ -38,7 +38,7 @@ jobs:
           TEST_CLIENT: "0"
           MOCHA_REPORTER: "xunit"
           SERVER_MOCHA_OUTPUT: "../../junit_server.xml"
-        run: meteor test --once --driver-package meteortesting:mocha
+        run: meteor test --once --driver-package meteortesting:mocha reporter=mocha-junit-reporter
 
       - name: Upload test results
         if: always()
