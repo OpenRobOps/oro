@@ -448,7 +448,7 @@ ${robotId} but robot has no broker (These messages are throttled)`);
     if (typeof callbackState.callback === 'function') {
       callbackState.callback(new Meteor.Error('Timeout waiting for callback'), undefined);
     } else {
-      logger.warn(`_callbackTimeout: No callback provided for seq ${seq}, robotId ${callbackState.robotId}`);
+      console.warn(`_callbackTimeout: No callback provided for seq ${seq}, robotId ${callbackState.robotId}`);
     }
   };
 
@@ -466,7 +466,7 @@ ${robotId} but robot has no broker (These messages are throttled)`);
 
     // This is only a precaution, we've never seen it so far.
     if (robotId != callbackState.robotId) {
-      logger.warn(`Discarding call to callback originally set for a different robotId ${JSON.stringify({ robotId, seq, callbackState })}`);
+      console.warn(`Discarding call to callback originally set for a different robotId ${JSON.stringify({ robotId, seq, callbackState })}`);
       return;
     }
 
@@ -481,7 +481,7 @@ ${robotId} but robot has no broker (These messages are throttled)`);
       callbackState.callback(undefined, { tsServerReceive, tsServerSend, tsAgent });
     } else if (!callbackState.isCanceled) {
       // Only warn if not canceled, canceled requests are expected to not call back
-      logger.warn(`_callbackResponse: No callback provided for seq ${seq}, robotId ${robotId}`);
+      console.warn(`_callbackResponse: No callback provided for seq ${seq}, robotId ${robotId}`);
     }
 
     // If there was a timeout timer, get rid of it now
