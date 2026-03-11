@@ -19,19 +19,21 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Meteor
-        run: curl https://install.meteor.com/ | sh
+        run: curl https://install.meteor.com/\?release\=3.4 | sh
 
       - name: Install dependencies
         working-directory: web/app
         run: meteor npm install
+        with:
+          key: ${{ hashFiles('**/package-lock.json') }}
 
       - name: Run tests
         working-directory: web/app
         env:
           MONGO_URL: mongodb://localhost:27017/test
           TEST_CLIENT: "0"
-          SERVER_TEST_REPORTER: xunit
-          SERVER_TEST_REPORTER_OPTIONS: output=../../junit.xml
+          MOCHA_REPORTER="xunit"
+          SERVER_MOCHA_OUTPUT="../../junit_server.xml"
         run: meteor test --once --driver-package meteortesting:mocha
 
       - name: Upload test results
@@ -39,12 +41,12 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-results
-          path: junit.xml
+          path: junit_server.xml
 
       - name: Publish test results
         if: always()
         uses: dorny/test-reporter@v1
         with:
           name: Test Results
-          path: junit.xml
+          path: junit_server.xml
           reporter: java-junit
