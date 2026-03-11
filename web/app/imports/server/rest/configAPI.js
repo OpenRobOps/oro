@@ -49,8 +49,7 @@ const apiClear = async ({ user, body: configObject }) => {
     }
     // Unknown error. Can be anything wrong in our code. Log it con console, but do not return
     // error details as API response to users, revealing details of our code.
-    logger.error(`Error evaluating config clear(): ${e.message}`, e);
-    console.error(e); // logger.error above is greatly formatted but misses the stack trace
+    console.error(`Error evaluating config clear(): ${e.message}`, e);
     return ['Internal error', 500];
   }
   return [{ operationStatus: 'SUCCESS' }, 200];

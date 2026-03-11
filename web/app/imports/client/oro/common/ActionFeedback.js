@@ -58,7 +58,7 @@ const ActionsFeedbackContainer = withTracker(({ robotId, executionId, executionT
     robotId,
     // TODO rename 'fileName' collection field to 'executionId'
     fileName: executionId,
-    // NOTE(adamantivm) serverTime is a Date field but executionTs is a number (epoch)
+    // NOTE serverTime is a Date field but executionTs is a number (epoch)
     serverTime: { $gte: new Date(executionTs) }
   });
   return { update };

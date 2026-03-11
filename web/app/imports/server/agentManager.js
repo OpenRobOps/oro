@@ -244,9 +244,9 @@ export default class AgentManager {
     // using ConfigManager.
     // Currently state defaults are on server/attributs.js#_addDefaults, although they
     // should be moved out from there.
-    // NOTE(adamantivm) When this is changed, remember to also update the clean-up
+    // NOTE When this is changed, remember to also update the clean-up
     // job as well (@see refreshDefaultsAndCleanup).
-    // NOTE(adamantivm) When this is changed, also remember to move current defaults in
+    // NOTE When this is changed, also remember to move current defaults in
     // server/attributes.js#_addDefaults to here.
     const defaultModuleStates = [{
       moduleName: 'RosDiagnosticsAgentlet',
@@ -544,7 +544,7 @@ export default class AgentManager {
       operation.$unset = unset;
     }
     if (!isEmpty(operation)) {
-      // TODO(bz): Switch this call to configManager.setConfig
+      // TODO: Switch this call to configManager.setConfig
       await RobotModuleState.upsertAsync({ entityId, moduleName, entityType }, operation);
     }
   }
@@ -557,7 +557,7 @@ export default class AgentManager {
     // save user set runlevel to DB
     await this._runlevelComparator(robotId, moduleName, minRunlevel,
       async () => {
-        // TODO(bz): Switch this call to configManager.setConfig
+        // TODO: Switch this call to configManager.setConfig
         await RobotModuleState.upsertAsync({ entityId: robotId, moduleName, entityType: 'robot' }, { $set: { minRunlevel }});
       }
     );
@@ -572,7 +572,7 @@ export default class AgentManager {
     await this._runlevelComparator(
       robotId, moduleName, null,
       async () => {
-        // TODO(bz): Switch this call to configManager.setConfig
+        // TODO: Switch this call to configManager.setConfig
         await RobotModuleState.updateAsync({
           entityId: robotId,
           moduleName,

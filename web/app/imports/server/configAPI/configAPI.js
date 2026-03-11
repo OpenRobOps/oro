@@ -10,7 +10,7 @@ import { isEmpty, isObject } from 'lodash';
 import DataSourcesConfigAPIHandler from './dataSourceDefinitions';
 // import ActionConfigAPIHandler from './actionDefinitions';
 // import DashboardsConfigAPIHandler from './dashboards';
-// import StatusConfigAPIHandler from './statusDefinitions';
+import StatusConfigAPIHandler from './statusDefinitions';
 // import MissionTrackingAPIHandler from './missionTracking';
 // import RobotFootprintAPIHandler from './robotFootprint';
 // import SpatialTransformationConfigAPIHandler from './spatialTransformation';
@@ -47,6 +47,8 @@ const listFiltersValidator = new Validator().compile(buildListFiltersSchema());
 // output is a root object.
 const fullListOutputValidator = new Validator().compile(buildConfigObjectApplySchema(true, true));
 
+const CONFIG_API_DUMMY_SCOPE_ID = '';
+
 let instance;
 
 /**
@@ -81,7 +83,7 @@ export default class ConfigAPI {
       // [KIND_INCIDENT_DEFINITION]: new IncidentsConfigAPIHandler(this),
       // [KIND_ROBOT_CAMERA]: new RobotCameraAPIHandler(this),
       [KIND_DATASOURCE_DEFINITION]: new DataSourcesConfigAPIHandler(this),
-      // [KIND_STATUS_DEFINITION]: new StatusConfigAPIHandler(this),
+      [KIND_STATUS_DEFINITION]: new StatusConfigAPIHandler(this),
       // [KIND_ACTION_DEFINITION]: new ActionConfigAPIHandler(this),
       // [KIND_DASHBOARD_DEFINITION]: new DashboardsConfigAPIHandler(this),
       // [KIND_MISSION_TRACKING]: new MissionTrackingAPIHandler(this),
@@ -103,6 +105,10 @@ export default class ConfigAPI {
   apply = async ({ configObject = {}, user }) => {
     if (!user) {
       throw new Error('Configuration can only be applied on behalf of users, no user provided');
+    }
+    // HACK: For compatibility with InOrbit's CLI, we accept and ignore a scope field in the config object,
+    if (configObject?.metadata?.scope) {
+      delete configObject.metadata.scope;
     }
     // Basic schema validation
     const validation = configObjectApplyValidator(configObject);
@@ -194,7 +200,17 @@ export default class ConfigAPI {
           return acc;
         }
       }, []);
+    } else {
+      
     }
+    // HACK: For compatibility with InOrbit's CLI, we append a scope field to all results
+    result.forEach(i => { 
+      if (!i.metadata) {
+        i.scope = CONFIG_API_DUMMY_SCOPE_ID;
+      } else {
+        i.metadata.scope = CONFIG_API_DUMMY_SCOPE_ID;
+      }
+    });
     return result;
   };
 

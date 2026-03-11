@@ -946,7 +946,7 @@ const toTimestampMilliseconds = (ts) => {
   if (!Number.isFinite(ts)) {
     return undefined;
   }
-  // TODO(mike) revisit this code in the year 5772
+  // TODO revisit this code in the year 5772
   // ts in milliseconds 120000000000 = 1973-10-20
   // ts in seconds 120000000000 = 5772-08-24
 

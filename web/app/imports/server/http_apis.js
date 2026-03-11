@@ -171,7 +171,7 @@ WebApp.connectHandlers.use('/peer/robot/command', Meteor.bindEnvironment(async (
         await new AgentManager().updateModuleStates(robotId);
         break;
       default:
-        logger.warn(`Unknown command received from robotId=${robotId} : ${command}`, { labels: { robotId } });
+        console.warn(`Unknown command received from robotId=${robotId} : ${command}`, { labels: { robotId } });
     }
 
     res.writeHead(200);

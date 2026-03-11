@@ -170,7 +170,7 @@ const ACTION_TYPES_LIST = [
       elementList: ['pose', 'namedWaypointId'],
       elementValues: {
         pose: { type: 'any', required: false },
-        // NOTE(mike) namedWaypointId type should be string, but because of how our arguments
+        // NOTE namedWaypointId type should be string, but because of how our arguments
         // are validated, that would force us to also use input: {} and that breaks the
         // waypoint navigation UI, making it show a dialog because the action has user inputs.
         // See web/imports/client/inorbit/util/WithActionsContext.js executeAction()

@@ -2,10 +2,60 @@
  * Common status declarations and functions to manipulate and represent statuses.
  */
 import moment from 'moment';
+import { Mongo } from 'meteor/mongo';
+import SimpleSchema from 'simpl-schema';
 import { isArray, intersection, isNumber } from 'lodash';
 // InOrbit imports
 import { DEFAULT_RECENTLY_ONLINE_SEC, STATUS } from '../shared/status';
 import { HACK_GHOST_UPDATE_STAMP_VALUE, AGG_STATUSES_KEY } from '../shared/constants';
+import { COLLECTIONS } from '../shared/constants';
+
+const RobotStatus = new Mongo.Collection(COLLECTIONS.ROBOT_STATUS);
+// TODO describe this view, point to design doc
+const RobotsWithStatus = new Mongo.Collection(COLLECTIONS.ROBOTS_WITH_STATUS);
+/**
+ * _id: == robotId
+ * <attributeId>: RobotStatus.schema (validation done by hand in status.js)
+ * ...
+ */
+// TODO: Update the schema. This is NOT up to date (and it may have never been)
+// * `formattedAttributeValue` is `formattedValue`.
+// `formattedAttributeValue` does not exist and is not used.
+// * `hasOpenAlert: { type: Boolean, optional: true },` is missing.
+RobotStatus.schema = new SimpleSchema({
+  name: String, // NOTE: Denormalized. Source of truth in AttributeDefinitions
+  value: Number, // Status values coming from /lib/status.js
+  attributeValue: Number, // The attribute value that triggered the status when last evaluated
+  formattedAttributeValue: // Same as above, formatted using this attribute's rules
+    { type: String, optional: true },
+  ts: Number,
+  message: // Textual description of the current status
+    { type: String, optional: true },
+  lastChangeTs: // In milliseconds, last time the value changed
+    { type: Number, optional: true },
+  incidentId: { type: String, optional: true },
+  data: { type: Object, optional: true }
+});
+
+const StatusConfig = new Mongo.Collection(COLLECTIONS.STATUS_CONFIG);
+/**
+ *  attributeId: str,
+ *  rules: [{
+ *       functionName: "higherThan" - Name of the pre-defined function to use
+ *       params: Object             - Parameters to the function. This is what will most likely be
+ *                                    modified per entity (e.g.: company)
+ *       status: STATUS_ERROR       - Value returned in case the result of the function is true
+ *     }, {
+ *       function: "higherThan"
+ *       params: Object
+ *       state: STATUS_WARN
+ *     }]
+ *  }
+ */
+if (Meteor.isServer) {
+  StatusConfig.rawCollection().createIndex({ attributeId: 1 }, { unique: true });
+}
+
 
 /**
  * This field is used in robots_with_status publication as a TEMPORARY field to calculate and
@@ -502,6 +552,8 @@ const sortRobotsByStatus = (robots, statusList, recentlyOnlineTime) => (
 );
 
 export {
+  RobotStatus,
+  StatusConfig,
   STATUS,
   getStatusColor,
   getStatusValue,

@@ -17,11 +17,11 @@
 // Disable linting rule as this file has multiple classes
 /* eslint max-classes-per-file: 0 */
 
-import { isString, pick } from 'lodash';
+import { isString } from 'lodash';
 import { AsyncCache } from './simpleCache';
 import moment from 'moment';
 // InOrbit modules
-// import RobotStatusManager from './status';
+import RobotStatusManager from './status';
 import MongoManager from '../mongo';
 // import StorageManager from '../storage';
 import {
@@ -134,7 +134,7 @@ class AttributesManager {
   getRobotVitalsConfig = async (robotId) => this._vitalsConfigCache.get(robotId);
 
   _doGetRobotVitalsConfig = async (robotId) => {
-    // TODO(herchu) rewrite this function and related attributes handling; it's inefficient and based
+    // TODO rewrite this function and related attributes handling; it's inefficient and based
     // on the old data representation
     const attrs = await this._attrDefsColl.find({}).toArray();
     const defs = {};
@@ -372,8 +372,7 @@ class AttributesManager {
   async _cascadeUpdates(robotId, attrValues, attrDefs, ts, skip = {}) {
     // Hook to process status update for the robot
     if (!skip.status && this.isEnabled(OUTPUTS.STATUS)) {
-      // new RobotStatusManager().evaluateStatus(robotId, attrValues);
-      console.log(`TODO(AttributesManager) Evaluate statuses ${Object.keys(attrValues)}`);
+      new RobotStatusManager().evaluateStatus(robotId, attrValues);
     }
 
     // Hook to send data to time series and long term storage
@@ -439,7 +438,7 @@ class AttributesManager {
     });
 
     if (hasUpdates) {
-      // NOTE(adamantivm) Using a for loop because there are awaits inside
+      // NOTE Using a for loop because there are awaits inside
       for (let i = 0; i < updates.length; i++) {
         await this.saveAttributeValues({
           robotId, attributeValues: updates[i], ts, attrDefs: robotConfig.getAttrDefs()
@@ -643,7 +642,7 @@ class RobotVitalsConfig {
     const ret = Object.keys(this.mappings).find((k) => {
       const m = this.mappings[k];
       return m && m.source == sourceType
-        // NOTE(adamantivm) Mappings configured with the default k/v field don't have a mappingKey
+        // NOTE Mappings configured with the default k/v field don't have a mappingKey
         // defined on its mapping. Allow matching with any mapping key.
         // TODO Finish porting custom data k/v fields to only use mappingKey to match
         // attributes. See https://inorbit.atlassian.net/browse/IO-2076
