@@ -129,18 +129,14 @@ export default class RobotStatusManager {
     // disable a higher-level default in the hierarchy.
     await this._doUnsetStatusConfig(attributeId);
     // remove related incident definitions
-    this.alertsManager.suppressIncidentDefinition(attributeId);
-    // TODO event log
+    console.log("TODO suppressIncidentDefinition / eventLog", attributeId)
+    // this.alertsManager.suppressIncidentDefinition(attributeId);
     // oldStatus && new EventLog().logSetting({
     //   settingGroupName: EVENT_SETTINGS_SECTION_NAMES.STATUS,
     //   settingName: (attribute && attribute.label) || attributeId,
     //   eventType: EVENT_TYPES.SETTING_REMOVED,
     //   user
     // });
-    return {
-      oldStatus,
-      attribute
-    };
   };
 
   /**
