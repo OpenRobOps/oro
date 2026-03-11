@@ -26,6 +26,7 @@ jobs:
       - name: Install dependencies
         working-directory: web/app
         run: meteor npm install
+        uses: actions/cache@v4
         with:
           path: .
           key: ${{ hashFiles('**/package-lock.json') }}
