@@ -1,0 +1,50 @@
+name: Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test-web:
+    name: Web App Tests
+    runs-on: ubuntu-latest
+
+    services:
+      mongodb:
+        image: mongo:7
+        ports:
+          - 27017:27017
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Meteor
+        run: curl https://install.meteor.com/ | sh
+
+      - name: Install dependencies
+        working-directory: web/app
+        run: meteor npm install
+
+      - name: Run tests
+        working-directory: web/app
+        env:
+          MONGO_URL: mongodb://localhost:27017/test
+          TEST_CLIENT: "0"
+          SERVER_TEST_REPORTER: xunit
+          SERVER_TEST_REPORTER_OPTIONS: output=../../junit.xml
+        run: meteor test --once --driver-package meteortesting:mocha
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: junit.xml
+
+      - name: Publish test results
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: Test Results
+          path: junit.xml
+          reporter: java-junit
