@@ -15,7 +15,6 @@ const COLLECTIONS = {
 
   // - Definitions
   ATTRIBUTE_DEFINITIONS: 'attr_defs',
-  ATTRIBUTE_MAPPINGS: 'attr_mappings',
   VITAL_DEFINITIONS: 'vital_defs',
   INCIDENT_DEFINITIONS: 'incident_definitions',
   ALERTS_CONFIG: 'alerts_config',
@@ -87,10 +86,11 @@ const COLLECTIONS = {
  * NOTE(herchu) ConfigManager still re-exports them, there are way too many modules using them
  */
 // system wide configurations ID
-const ID_UNIQUE = '0';
+const ID_DEFAULT = '0';
 const ID_TYPE_ROBOT = 'robot';
 const ID_TYPE_ROLE = 'role';
 const ID_TYPE_USER = 'user';
+const ID_TYPE_SYSTEM_WIDE = 'system';
 
 /**
  * Module States constants
@@ -130,17 +130,6 @@ const MODULE_AVAILABLE_KEYS = {
   NETWORK_INTERFACES: 'available_network_interfaces'
 };
 
-// Constants for section names (used in URL parsing)
-const SECTION_ROBOT_DATA = 'robot-data';
-const SECTION_INSIGHTS = 'insights';
-const SECTION_ORGANIZATION = 'organization';
-const SECTION_NAVIGATION = 'navigation';
-const SECTION_OVERVIEW = 'overview';
-const SECTION_APIKEY = 'apikey';
-const SECTION_PROVISIONING = 'provisioning';
-const SECTION_ADMIN = 'admin';
-const SECTION_LOCATIONS = 'locations'; // 'locations is a special section without navigation tab
-
 // Constant to use the HTML title by default
 const DEFAULT_HTML_TITLE = 'OpenRobOps';
 
@@ -179,8 +168,9 @@ const AGG_STATUSES_KEY = 'aggregated status';
 
 export {
   COLLECTIONS,
-  // ConfigManager
-  ID_UNIQUE,
+  // Configs
+  ID_DEFAULT,
+  ID_TYPE_SYSTEM_WIDE,
   ID_TYPE_ROBOT,
   ID_TYPE_ROLE,
   ID_TYPE_USER,
@@ -189,16 +179,6 @@ export {
   ID_TYPE_CLIENT,
   MODULE_NAMES,
   MODULE_AVAILABLE_KEYS,
-  // Configuration screen sections,
-  SECTION_ROBOT_DATA,
-  SECTION_INSIGHTS,
-  SECTION_ORGANIZATION,
-  SECTION_NAVIGATION,
-  SECTION_ADMIN,
-  SECTION_LOCATIONS,
-  SECTION_OVERVIEW,
-  SECTION_APIKEY,
-  SECTION_PROVISIONING,
   // Misc constants
   DEFAULT_HTML_TITLE,
   VALID_ID_CAPTURE_PATTERN,

@@ -30,7 +30,6 @@ import {
   ICM_SEV_ALL
 } from '../../../../../shared/alerts';
 import OpenFolderIcon from '../../../graphics/OpenFolderIcon';
-import { SECTION_SCOPES } from '../../../../../lib/uiPreferences';
 import OnFeedbackContext from '../../../contexts/OnFeedbackContext';
 import { StyledTableBody, StyledTableCell, StyledTableContainer, StyledTableRow } from '../../../util/DefaultTable';
 import LabelZeroData from '../../../graphics/op/zeroDataIcons/LabelZeroData';
@@ -495,7 +494,13 @@ class IncidentListWidget extends React.Component {
             {/* HACK(herchu) render at most rows (the first 200 in selected order) */}
             {incidentRows.map((st, ix) => ix < 150 && this.renderStatusRow(st, now))}
             {isZeroData && (this.renderZeroData())}
-            {incidentRows.length == 0 && !isZeroData && <NoDataIcon />}
+            {incidentRows.length == 0 && !isZeroData && (
+              <StyledTableRow>
+                <StyledTableCell colSpan="10" style={{ border: 'none' }}>
+                  <NoDataIcon />
+                </StyledTableCell>
+              </StyledTableRow>
+            )}
           </StyledTableBody>
           <TableFooter className={classes.footer}>
             {/* TODO Clara: uncomment the message when the BE limitation for incidents is ready */}

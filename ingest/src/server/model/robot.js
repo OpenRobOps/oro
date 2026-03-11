@@ -23,7 +23,7 @@ export default class Robot extends Model {
    * is found.
    */
   static findOne = (params) => {
-    // TODO(adamantivm) Sanity checks and error handling.
+    // TODO Sanity checks and error handling.
     const Robots = new MongoManager().getCollection(COLLECTIONS.ROBOTS);
     const doc = Robots.findOne(params);
     if (doc) {

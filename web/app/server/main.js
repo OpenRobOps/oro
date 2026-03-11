@@ -9,16 +9,20 @@ import { v4 as uuidv4 } from 'uuid';
 // See https://github.com/Meteor-Community-Packages/meteor-collection2/tree/master?tab=readme-ov-file#import-using-static-imports
 import 'meteor/aldeed:collection2/static';
 // ORO modules
+import AgentManager from '../imports/server/agentManager';
 import DashboardsManager from '../imports/server/dashboards';
 import SearchManager from '../imports/server/searchManager';
 import { registerAccountsHooks } from '../imports/server/accountsHooks';
 import { configureOAuth } from '../imports/server/oauthConfig';
 import '../imports/server/userPublications';
 import '../imports/server/publications';
+import ConfigAPI from '../imports/server/configAPI/configAPI';
 import OroRoles from '../imports/server/roles';
 import AttributesManager from '../imports/server/attributes';
 import { CoreHttpApis } from '../imports/server/http_apis';
 import { seedMasterCredentials } from '../imports/server/mqttCredentialProvisioner';
+import { addApiRoute } from '../imports/server/rest_api';
+import OroMqtt from '../imports/server/mqtt';
 
 // Register accounts hooks at module level — before any login attempt
 registerAccountsHooks();
@@ -28,7 +32,7 @@ registerAccountsHooks();
 const instanceValues = {};
 
 // Pointers to instantiated app-server side modules
-// TODO(adamantivm) Expose this through a proper interface
+// TODO Expose this through a proper interface
 const moduleInstances = {};
 
 // code to run on server at startup
@@ -37,9 +41,6 @@ const moduleInstances = {};
 const oroAppMain = async () => {
   // Set-up instance ID
   instanceValues.serverId = process.env.POD_ID || uuidv4();
-  // if (Meteor.isDevelopment && !process.env.POD_ID) {
-  //   logger.setupForLocal();
-  // }
   console.log('Application Server Starting: serverId: ' + instanceValues.serverId);
 
   // Database migrations:
@@ -53,31 +54,35 @@ const oroAppMain = async () => {
     // explained above (future migration) or in our migration code itself.
     // Warn about the first one, but fail on the other.
     if (e.message.match(/Can\'t find migration/)) {
-      console.warn('***********************************************************************************************');
-      console.warn('*** Running on a _future_ migration. This may be wrong! Please update this app-server ASAP ***');
+      console.warn('***************************************************************************************');
+      console.warn('*** Running on a _future_ migration. This may be wrong! Please update this app ASAP ***');
       console.warn(`** Exception message: ${e.message} **`);
-      console.warn('***********************************************************************************************');
+      console.warn('***************************************************************************************');
     } else {
       throw e;
     }
   }
+
+  // Seed master MQTT credentials
+  await seedMasterCredentials();
+  // Configure OAuth providers from settings
+  await configureOAuth();
+  // Configure SMTP for passwordless email login
+  if (Meteor.settings.smtp?.url) {
+    process.env.MAIL_URL = Meteor.settings.smtp.url;
+  }
+
+  // Start MQTT client
+  const mqtt = new OroMqtt();
+  mqtt.run(Meteor.settings.mqtt);
 
   // TODO add and initialize modules
   await new DashboardsManager().init();
   await new SearchManager().init();
   await new AttributesManager().init();
   await new OroRoles().createDefaultRoles();
-
-  // Seed master MQTT credentials
-  await seedMasterCredentials();
-
-  // Configure OAuth providers from settings
-  await configureOAuth();
-
-  // Configure SMTP for passwordless email login
-  if (Meteor.settings.smtp?.url) {
-    process.env.MAIL_URL = Meteor.settings.smtp.url;
-  }
+  await new ConfigAPI().init({});
+  await new AgentManager().init({ serverId: instanceValues.serverId });
 
   // Customize the passwordless login-token email
   Accounts.emailTemplates.sendLoginToken = {
