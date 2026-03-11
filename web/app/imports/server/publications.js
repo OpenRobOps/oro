@@ -5,18 +5,8 @@ import { isString, isArray } from 'lodash';
 import OroRoles from '../server/roles';
 import { ACCESS_LEVEL_VIEW } from '../shared/roles';
 import { queryIncidentsForRobots } from '../lib/alerts';
-import { Robots, RobotKeyValues, RobotCustomData, RobotStatus, UIPreferences } from '../lib/collections';
+import { Robots, RobotKeyValues, RobotCustomData, UIPreferences } from '../lib/collections';
 import { queryRobotAttributeValues } from '../lib/attributes';
-import { AGG_STATUS_FIELD } from '../lib/status';
-import {
-  DEFAULT_FLAGS_STRING,
-  FLAG_ERROR,
-  FLAG_OFFLINE,
-  FLAG_OK,
-  FLAG_WARNING,
-  STATUS
-} from '../shared/status';
-import { COLLECTIONS } from '../shared/constants';
 
 Meteor.publish('attributes.values', async function ({ robotId, attributes, pollingIntervalMs = 10000 }) {
   if (!this.userId) {
@@ -174,128 +164,10 @@ Meteor.publish('robot.details', async function ({ robotId, robotIds }) {
 });
 
 /**
- * Check whether the given status letter is in the robot status string.
- */
-const isInRobotStatusString = (statusLetter, robotStatus = DEFAULT_FLAGS_STRING) => (
-  robotStatus.includes(statusLetter)
-);
-
-/**
- * Returns true if the robot's aggregated status value matches the statusFilter string.
- */
-const satisfiesStatusFilter = (statusFilter, aggStatusValue) => {
-  switch (aggStatusValue) {
-    case STATUS.ERROR.value:
-      return isInRobotStatusString(FLAG_ERROR, statusFilter);
-    case STATUS.WARN.value:
-      return isInRobotStatusString(FLAG_WARNING, statusFilter);
-    case STATUS.OK.value:
-      return isInRobotStatusString(FLAG_OK, statusFilter);
-    default:
-      return isInRobotStatusString(FLAG_OFFLINE, statusFilter);
-  }
-};
-
-/**
- * Publication: robots_with_status
- *
- * Publishes robot documents merged with their status data into the
- * view_robots_with_status collection, filtering by statusFilter.
- *
- * Simplified port from inorbit: polls MongoDB robot_status instead of Redis,
- * no collections/tags filtering, no UIPreferences lookup.
- *
- * Parameters:
- *   statusList   {string[]} - Attribute IDs to include in status computation
- *   statusFilter {string}   - Flag string (e.g. 'ewo') controlling which status levels to show
- */
-// eslint-disable-next-line prefer-arrow-callback
-Meteor.publish('robots_with_status', async function ({ statusList, statusFilter }) {
-  if (!this.userId) {
-    return this.ready();
-  }
-
-  const collectionName = COLLECTIONS.ROBOTS_WITH_STATUS;
-  const attrIds = Array.isArray(statusList) && statusList.length ? statusList : [];
-
-  const calculateAggregatedStatusValue = statuses => (
-    attrIds.reduce((agg, attrId) => Math.max(agg, statuses?.[attrId]?.value || 0), 0)
-  );
-
-  const extractStatuses = (statusDoc) => {
-    const statuses = {};
-    attrIds.forEach((attrId) => {
-      if (statusDoc[attrId]) statuses[attrId] = statusDoc[attrId];
-    });
-    return statuses;
-  };
-
-  const robotIds = new Set();
-
-  const robotCollHandle = await Robots.find({}).observeChanges({
-    added: (id, doc) => {
-      this.added(collectionName, id, { ...doc, statuses: {} });
-      robotIds.add(id);
-    },
-    changed: async (id, doc) => {
-      const statusDoc = await RobotStatus.findOneAsync({ _id: id });
-      const statuses = statusDoc ? extractStatuses(statusDoc) : {};
-      const aggStatusValue = calculateAggregatedStatusValue(statuses);
-      if (satisfiesStatusFilter(statusFilter, aggStatusValue)) {
-        doc[AGG_STATUS_FIELD] = aggStatusValue;
-        doc.statuses = statuses;
-        this.changed(collectionName, id, doc);
-      } else {
-        this.removed(collectionName, id);
-        robotIds.delete(id);
-      }
-    },
-    removed: (id) => {
-      this.removed(collectionName, id);
-      robotIds.delete(id);
-    }
-  });
-
-  let running = true;
-
-  const updateFleetRobotStatus = async () => {
-    if (!running || !robotIds.size) return;
-
-    const statusDocs = await RobotStatus.find(
-      { _id: { $in: Array.from(robotIds) } }
-    ).fetchAsync();
-
-    statusDocs.forEach((statusDoc) => {
-      const id = statusDoc._id;
-      if (!robotIds.has(id)) return;
-      const statuses = extractStatuses(statusDoc);
-      const aggStatusValue = calculateAggregatedStatusValue(statuses);
-      if (satisfiesStatusFilter(statusFilter, aggStatusValue)) {
-        this.changed(collectionName, id, { [AGG_STATUS_FIELD]: aggStatusValue, statuses });
-      } else {
-        this.removed(collectionName, id);
-        robotIds.delete(id);
-      }
-    });
-  };
-
-  const pollingIntervalMs = 3000;
-  const intervalHandle = setInterval(updateFleetRobotStatus, pollingIntervalMs);
-  updateFleetRobotStatus();
-
-  this.onStop(() => {
-    running = false;
-    clearInterval(intervalHandle);
-    robotCollHandle.stop();
-  });
-
-  return this.ready();
-});
-
-/**
  * Publication: ui.preferences
  *
  * Publishes UIPreferences documents, projecting only the requested widget fields.
+ * // TODO: Needs to be rewritten to use the right format
  */
 Meteor.publish('ui.preferences', function ({ widget }) {
   if (!this.userId) {
@@ -308,21 +180,3 @@ Meteor.publish('ui.preferences', function ({ widget }) {
   return UIPreferences.find({}, { fields: projection });
 });
 
-Meteor.methods({
-  /**
-   * Returns full status data for a robot, used for tooltip details in FleetStatusWidget.
-   */
-  // eslint-disable-next-line object-shorthand
-  async 'status.getDetailedStatus'({ robotId }) {
-    if (!isString(robotId)) {
-      throw new Meteor.Error('robotId must be a string');
-    }
-    if (!this.userId) {
-      throw new Meteor.Error('Unauthorized');
-    }
-    if (!await new OroRoles().canAccessRobot(this.userId, robotId, ACCESS_LEVEL_VIEW)) {
-      throw new Meteor.Error('Unauthorized');
-    }
-    return RobotStatus.findOneAsync({ _id: robotId });
-  }
-});

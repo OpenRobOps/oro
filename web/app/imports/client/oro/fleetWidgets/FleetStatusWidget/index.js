@@ -6,41 +6,16 @@
  */
 import React, { useMemo, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { Meteor } from 'meteor/meteor';
-import { useTracker } from 'meteor/react-meteor-data';
 import { isEmpty, isArray } from 'lodash';
-import moment from 'moment';
 import { getAggregatedRobotStatus } from '../../../../lib/status';
-import { RobotsWithStatus, UIPreferences } from '../../../../lib/collections';
 import { FLEET_STATUS_WIDGET } from '../../../../lib/uiPreferences';
+import useUiPreferences from '../../hooks/useUiPrefs';
+import useRobotsWithStatus from '../../hooks/useRobotsWithStatus';
+import useRobotDetailedStatus from '../../hooks/useRobotDetailedStatus';
 import FleetStatusComponent from './FleetStatusComponent';
 import { UI_AGG_STATUS } from '../fleetFilteringUtil';
 import { AGG_STATUSES_KEY } from '../../../../shared/constants';
 import { useWidgetData } from '../../contexts/WidgetDataContext';
-
-/**
- * Fetch detailed status for a single robot attribute, shown in a tooltip.
- * @param {object} params - { robotId, attributeId, cb }
- */
-const getRobotDetailedStatus = ({ robotId, attributeId, cb }) => {
-  Meteor.call('status.getDetailedStatus', { robotId }, (err, status) => {
-    if (err) {
-      console.error('Error on status.getDetailedStatus', err);
-      cb(null);
-      return;
-    }
-    const st = status && status[attributeId];
-    if (st && st.message) {
-      let { message } = st;
-      if (st.ts) {
-        message += ` (Last reported ${moment(st.ts).fromNow()})`;
-      }
-      cb(message);
-    } else {
-      cb('No status data available');
-    }
-  });
-};
 
 const FleetStatusWidgetContainer = ({
   config: widgetConfig,
@@ -49,18 +24,11 @@ const FleetStatusWidgetContainer = ({
 }) => {
   const { setWidgetTitle } = useWidgetData();
 
-  // Fetch fleet status config from UIPreferences
-  const uiPrefs = useTracker(() => {
-    const handle = Meteor.subscribe('ui.preferences', {
-      widget: [FLEET_STATUS_WIDGET],
-    });
-    if (!handle.ready()) return null;
-    return UIPreferences.findOne();
-  }, []);
+  const { data: uiPrefs, isLoading: isPrefsLoading } = useUiPreferences(FLEET_STATUS_WIDGET);
 
   // Resolve statusList and statusValues: UIPreferences first, widget config as override
   const { elementList: uiElementList, elementValues: uiElementValues } =
-    (uiPrefs?.[FLEET_STATUS_WIDGET]) || {};
+    uiPrefs?.[FLEET_STATUS_WIDGET] || {};
 
   let statusList = uiElementList;
   let statusValues = uiElementValues;
@@ -70,20 +38,13 @@ const FleetStatusWidgetContainer = ({
     statusValues = widgetConfig.elementValues;
   }
 
-  // Subscribe to robots_with_status publication
-  const { robotDocs, isLoading: isRobotsLoading } = useTracker(() => {
-    if (!statusList) return { robotDocs: [], isLoading: true };
-    const handle = Meteor.subscribe('robots_with_status', {
-      statusList,
-      statusFilter,
-    });
-    return {
-      robotDocs: RobotsWithStatus.find({}).fetch(),
-      isLoading: !handle.ready(),
-    };
-  }, [JSON.stringify(statusList), statusFilter]);
+  const { robots: robotDocs, isLoading: isRobotsLoading } = useRobotsWithStatus({
+    statusList,
+    statusFilter,
+    skip: isPrefsLoading,
+  });
 
-  const isLoading = !uiPrefs || isRobotsLoading;
+  const isLoading = isPrefsLoading || isRobotsLoading;
 
   // Compute aggregated status field for each robot
   const robots = useMemo(() => {
@@ -113,6 +74,8 @@ const FleetStatusWidgetContainer = ({
     ));
   }, [robots?.length, setWidgetTitle]);
 
+  const getRobotDetailedStatus = useRobotDetailedStatus();
+
   return (
     <FleetStatusComponent
       // eslint-disable-next-line react/jsx-props-no-spreading
@@ -140,4 +103,3 @@ FleetStatusWidgetContainer.propTypes = {
 };
 
 export default FleetStatusWidgetContainer;
-

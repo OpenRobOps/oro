@@ -15,6 +15,7 @@ import { registerAccountsHooks } from '../imports/server/accountsHooks';
 import { configureOAuth } from '../imports/server/oauthConfig';
 import '../imports/server/userPublications';
 import '../imports/server/publications';
+import '../imports/server/status';
 import OroRoles from '../imports/server/roles';
 import AttributesManager from '../imports/server/attributes';
 import { CoreHttpApis } from '../imports/server/http_apis';
