@@ -3,9 +3,6 @@
  *
  * Renders time period selection buttons (1h, 1d, 1w, etc.) and page navigation
  * buttons (prev, next, last), passing time context props to a render function.
- *
- * Migrated from inorbit: removed edition/feature limits, billing snackbars,
- * companyId and WithSnackbar wrapper.
  */
 import React, { useCallback, useMemo } from 'react';
 import moment from 'moment';
@@ -239,7 +236,7 @@ const TimeIntervalHook = (props) => {
   const { classes } = useStyles();
   timeRangeMs = timeRangeMs || getDefaultTimeRangeMs();
   const isMobile = useMediaQuery('(max-width:900px)');
-  const staticTimeOnly = Boolean(config && config.staticTimeOnly);
+  const staticTimeOnly = Boolean(config?.staticTimeOnly);
 
   const endTs = useMemo(() => (
     getAbsoluteEndTs(startTs, timeRangeMs, nowTs)

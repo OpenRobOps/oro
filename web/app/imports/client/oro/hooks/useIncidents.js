@@ -1,7 +1,7 @@
 import { useTracker } from 'meteor/react-meteor-data';
 import { Meteor } from 'meteor/meteor';
 import { Incidents } from '../../../lib/alerts';
-import { filterFunctionForIncidents } from '../fleetWidgets/IncidentTimeline/incidentFilteringUtil';
+import { filterFunctionForIncidents } from '../fleetWidgets/incidentFilteringUtil';
 
 const useIncidents = ({ robotIds, startTs, endTs, selectedComponentFilter, selectedSeverityFilter }) => useTracker(() => {
     if (robotIds === null) {

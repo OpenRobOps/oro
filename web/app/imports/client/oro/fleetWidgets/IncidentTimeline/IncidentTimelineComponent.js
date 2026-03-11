@@ -205,7 +205,7 @@ const IncidentTimelineWidget = ({
     }
 
     return { items: itemsAccumulator, groups: groupsAccumulator };
-  }, [incidents, robotsMap, selectedIncident, theme]);
+  }, [incidents, robotsMap, selectedIncident]);
 
   const boundTimeValues = useCallback((start, end) => {
     const minTime = moment().add(-6, 'months').valueOf();
@@ -252,7 +252,7 @@ const IncidentTimelineWidget = ({
         <Typography className={classes.groupItemText}>{group.title}</Typography>
       </Grid>
     </Grid>
-  ), [classes]);
+  ), []);
 
   const getHorizontalLinesClassNames = useCallback((group) => {
     const lineClasses = [group.robotName ? classes.horizontalLine : classes.horizontalDashedLine];
@@ -260,9 +260,9 @@ const IncidentTimelineWidget = ({
       lineClasses.push(classes.isSelectedIncident);
     }
     return lineClasses;
-  }, [classes]);
+  }, []);
 
-  const getVerticalLineClassNames = useCallback(() => [classes.vertical], [classes]);
+  const getVerticalLineClassNames = useCallback(() => [classes.vertical], []);
 
   const itemRenderer = useCallback(({ item, itemContext, getItemProps }) => {
     const parsedItemProps = getItemProps(item.itemProps);
@@ -288,14 +288,14 @@ const IncidentTimelineWidget = ({
     <Typography {...getIntervalProps()} className={classes.primaryDateHeader} align="center">
       {intervalContext.intervalText}
     </Typography>
-  ), [classes]);
+  ), []);
 
   const renderSecondaryHeader = useCallback(({ getIntervalProps, intervalContext }) => (
     /* eslint-disable-next-line react/jsx-props-no-spreading */
     <Typography {...getIntervalProps()} className={classes.secondaryDateHeader} align="center">
       {intervalContext.intervalText}
     </Typography>
-  ), [classes]);
+  ), []);
 
   // Enforce a minimum time range to prevent react-calendar-timeline from crashing
   // See: https://github.com/namespace-ee/react-calendar-timeline/issues/707
