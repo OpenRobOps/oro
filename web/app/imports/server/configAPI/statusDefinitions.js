@@ -20,18 +20,15 @@ import { upperFirst, lowerFirst, invert, get, isObject, keyBy } from 'lodash';
 // InOrbit
 import OroRoles from '../roles';
 import {
-  RESOURCE_SINGLETONS, ACCESS_LEVEL_CONFIGURE, parseResourceId, RESOURCE_TYPES, isSystemUser,
-  ACCESS_LEVEL_VIEW
+  RESOURCE_SINGLETONS, ACCESS_LEVEL_CONFIGURE, isSystemUser,
 } from '../../shared/roles';
 import {
   KIND_DATASOURCE_DEFINITION,
   SchemaError, ValidationError, AuthorizationError,
   LIST_FORMAT_SHORT, LIST_FORMAT_FULL
 } from '../../shared/configAPI';
-// import { filterEntitiesWithAccess, scopeFilterToEntities } from './utils';
 import RobotStatusManager from '../status';
 import { STATUS, STATUS_FUNCTIONS as INTERNAL_FUNCTIONS } from '../../shared/status';
-import AttributesManager from '../attributes';
 import { FIELD_SOURCE_DERIVED } from './dataSourceDefinitions';
 
 // API fields
