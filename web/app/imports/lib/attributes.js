@@ -15,9 +15,8 @@ import { COLLECTIONS } from '../shared/constants';
 
 const AttributeDefinitions = new Mongo.Collection(COLLECTIONS.ATTRIBUTE_DEFINITIONS);
 /*
- * entityId: string
- * entityType: string
- * <attributeId1> : {
+ * attributeId: string
+ * definition: {
  *   unit: string
  *   label: string
  *   precision: number,
@@ -25,37 +24,8 @@ const AttributeDefinitions = new Mongo.Collection(COLLECTIONS.ATTRIBUTE_DEFINITI
  *                         // Takes a value from ATTRIBUTE_TYPES (as in shared/attributes.js)
  *   modeId: <taxonomyId>, // optional, if changing this attributes triggers
  *                         // recalculating a robot Mode
- * },
- * ...
- */
-if (Meteor.isServer) {
-  AttributeDefinitions.rawCollection().createIndex({ entityId: 1, entityType: 1 }, { unique: true });
-}
-
-const VitalDefinitions = new Mongo.Collection(COLLECTIONS.VITAL_DEFINITIONS);
-/*
- * entityId: string
- * entityType: string
- * <attributeId1> : {
- *   unit: String, (optional)
- *   label: String,
- *   precision: Number, (optional)
- *   timeline: Object {    // (optional) If absent, no timeseries archiving is done.
- *     enabled: Boolean,   // (optional): If present and false, same effect as
- *                         // if no 'timeline' object (disabled)
- *   }
- * },
- * ...
- */
-if (Meteor.isServer) {
-  VitalDefinitions.rawCollection().createIndex({ entityId: 1, entityType: 1 }, { unique: true });
-}
-
-const AttributeMappings = new Mongo.Collection(COLLECTIONS.ATTRIBUTE_MAPPINGS);
-/*
- * entityId: string
- * entityType: string
- * <attributeId1> : object {
+ * }
+ * mapping: {
  *   source: string // "key-value" or "builtin" (default) or "diagnostics"
  *   path: string
  *   namespace: string
@@ -64,10 +34,9 @@ const AttributeMappings = new Mongo.Collection(COLLECTIONS.ATTRIBUTE_MAPPINGS);
  *   // missing one more field for diagnostics?
  *   transform: TBD
  * }
- * ...
  */
 if (Meteor.isServer) {
-  AttributeDefinitions.rawCollection().createIndex({ entityId: 1, entityType: 1 }, { unique: true });
+  AttributeDefinitions.rawCollection().createIndex({ attributeId: 1 }, { unique: true });
 }
 
 const AttrValues = new Mongo.Collection(COLLECTIONS.ATTR_VALUES);
@@ -164,7 +133,6 @@ export {
   // Collections
   AttributeDefinitions,
   VitalDefinitions,
-  AttributeMappings,
   AttrValues,
 
   // Queries

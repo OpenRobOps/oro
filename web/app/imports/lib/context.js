@@ -326,8 +326,8 @@ const uriEncodeCtxStr = str => encodeURIComponent(str).replace('(', '%28').repla
  */
 const serializeCtx = (value = {}) => {
   if (isPlainObject(value)) {
-    // TODO(Pablo): we might need to sort context entries if Object.entries doesn't guarantee order
-    // NOTE(Pablo): as of ES2015+, order seems to be guaranteed:
+    // TODO: we might need to sort context entries if Object.entries doesn't guarantee order
+    // NOTE: as of ES2015+, order seems to be guaranteed:
     // https://stackoverflow.com/questions/5525795/does-javascript-guarantee-object-property-order
     return `(${Object.entries(value).map(([k, v]) => `${uriEncodeCtxStr(k)}:${serializeCtx(v)}`)})`;
   } else if (isArray(value)) {

@@ -21,6 +21,7 @@ import { Meteor } from 'meteor/meteor';
 import { isEqual } from 'lodash';
 // ORO modules
 import { STATUS } from '../lib/status';
+import RobotStatusManager from './status';
 import { ID_UNIQUE } from '../shared/constants';
 import { applyDefaults, assignIfDistinct } from '../lib/util';
 import OroRoles from './roles';
@@ -70,6 +71,7 @@ import {
 // import { Robot } from './model';
 // import { publishSingleDocumentFromFunction } from './lib/publicationsHelpers';
 // import { TIMESERIES_FIELD, TimeseriesFieldConfig } from '../shared/timeseries';
+import { listAttributeUIFields } from '../lib/uiPreferences';
 
 // All builtin attribute definitions to be used when
 // configuring them for the system
@@ -278,9 +280,7 @@ class AttributesManager {
    * Initializes the attributes manager.
    */
   init = async () => {
-    this.DEFAULT_ENTITY = { _id: ID_UNIQUE };
     this._attrDefsColl = AttributeDefinitions;
-    this._attrMappingsColl = AttributeMappings;
     await this._addDefaults();
   };
 
@@ -613,7 +613,7 @@ class AttributesManager {
     const statusSuppressed = options.status === null || options.status === false;
 
     // Create defaults object
-    // TODO(adamantivm) Choose between different default objects based on value of isVital
+    // TODO Choose between different default objects based on value of isVital
     const defaults = {
       ui: {
         // Show the attribute in the vitals widget as a text or gauge element
@@ -626,12 +626,11 @@ class AttributesManager {
       },
       // By default, consider the attribute a vital
       isVital: true,
-      // NOTE(adamantivm) Setting an empty array as the configuration for
+      // NOTE Setting an empty array as the configuration for
       // an attribute status results in no status ever triggered, and thus
       // a "trival" - always OK - status value.
       status: []
     };
-
     return applyDefaults(options, defaults);
   };
 
@@ -642,7 +641,10 @@ class AttributesManager {
   createDefaultAttribute = async (attributeId, definition, options = {}) => {
     const existingDef = await this._getAttributeDefinition(attributeId);
     if (existingDef !== undefined) { // even with null, return
-      return;
+      if (!Meteor.isDevelopment) {
+        // Only in development mode, always re-create all attributes
+        return;
+      }
     }
     return this.createAttribute(attributeId, definition, options);
   };
@@ -701,10 +703,7 @@ class AttributesManager {
       definition.timeline = {};
     }
     // Save core attribute definition details
-    this._attrDefsColl.upsertAsync(
-      this.DEFAULT_ENTITY,
-      { $set: { [attributeId]: definition }
-    });
+    await this._setAttributeDefinition(attributeId, definition);
 
     // Propagate to attribute mappings
     if (source) {
@@ -721,12 +720,12 @@ class AttributesManager {
       // Propagate to status configuration
       if (status) {
         console.log("TODO propagate to RobotStatusManager")
-        // await new RobotStatusManager().setStatusConfig(
-        //   attributeId,
-        //   status,
-        //   label,
-        //   user
-        // );
+        await new RobotStatusManager().setStatusConfig(
+          attributeId,
+          status,
+          definition.label,
+          user
+        );
       }
       // Propagate to UI elements
       if (ui) {
@@ -757,17 +756,17 @@ class AttributesManager {
    */
   updateAttribute = async ({
     attributeId, definition, options = {}, user = null,
-    // TODO(mike) These field is a little ugly and used only by the DataSources config API
+    // TODO These field is a little ugly and used only by the DataSources config API
     // handler (web/imports/server/configAPI/dataSourceDefinitions.js)
     // We should refactor this in a better way.
     allowAllFields = false
   }) => {
     // Validate this definition; and throw if it is wrong (before attempting any change)
     this.validateAttributeDefinition({ definition, options });
-    // NOTE(adamantivm) Using intensive fetch, compare, set here since configuration is something
+    // NOTE Using intensive fetch, compare, set here since configuration is something
     // that should happen rarely.
     // Fetch current version to update
-    // NOTE(Barbie): we are assuming that the attributeId is always different
+    // NOTE: we are assuming that the attributeId is always different
     // That is why we can do a logical delete, and nullify the object without problem
     // However, if we want to apply an already deleted data source
     // (using the same attributeId), this logic will break
@@ -781,15 +780,15 @@ class AttributesManager {
     if (delta) {
       const newConfig = {};
       // There was an update to the definition itself
-      // NOTE(adamantivm) Here I am unfolding all the detailed logic on how each portion
+      // NOTE Here I am unfolding all the detailed logic on how each portion
       // of the incoming updates should be handled. I didn't generalize this on purpose,
       // in order to allow deciding what to update and how depending on each portion
       // of the definition and options provided.
 
       // select fields for the update
-      (await listAttributeUIFields()).forEach((field) => {
+      listAttributeUIFields().forEach((field) => {
         if (field in delta) {
-          newConfig[attributeId + '.' + field] = definition[field];
+          newConfig[field] = definition[field];
         }
       });
 
@@ -798,12 +797,13 @@ class AttributesManager {
         // See web/imports/server/configAPI/dataSourceDefinitions.js
         // eslint-disable-next-line guard-for-in
         for (const k in definition) {
-          newConfig[`${attributeId}.${k}`] = definition[k];
+          newConfig[k] = definition[k];
         }
       }
 
       // Propagate to UI settings to any widget this attribute may appear
-      await new UIPreferencesManager().updateUiPreferences(attributeId, delta);
+      console.log("TODO propagate to UIPreferencesManager", delta)
+      // await new UIPreferencesManager().updateUiPreferences(attributeId, delta);
       await this._setAttributeDefinition(attributeId, newConfig);
     }
 
@@ -824,50 +824,43 @@ class AttributesManager {
     return { ...oldDefinition, ...definition };
   };
 
+  getAttributeDefinition = async (attributeId) => (
+    this._getAttributeDefinition(attributeId)
+  )
+
+  _getAttributeDefinitionDoc = async (attributeId) => (
+    await this._attrDefsColl.findOneAsync({ attributeId })
+  )
 
   _getAttributeDefinition = async (attributeId) => {
-    const doc = await this._attrDefsColl.findOneAsync(
-      this.DEFAULT_ENTITY,
-      { fields: { [attributeId]: true } }
-    );
-    return doc?.[attributeId]
+    const doc = this._getAttributeDefinitionDoc(attributeId);
+    return doc?.definition;
   }
 
-  _setAttributeDefinition = async (attributeId, definition) => {
-    await this._attrDefsColl.upsertAsync(
-      this.DEFAULT_ENTITY,
-      { $set: { [attributeId]: definition } }
-    );
-  }
+  _setAttributeDefinition = async (attributeId, definition) => (
+    this._attrDefsColl.upsertAsync({ attributeId }, { $set: { definition } })
+  )
 
-  _unsetAttributeDefinition = async (attributeId) => {
-    await this._attrDefsColl.upsertAsync(
-      this.DEFAULT_ENTITY,
-      { $unset: { [attributeId]: true } }
-    );
-  }
+  _unsetAttributeDefinition = async (attributeId) => (
+    this._attrDefsColl.upsertAsync({ attributeId }, { $unset: { definition: true } })
+  )
+
+  _removeAttributeDefinition = async (attributeId) => (
+    this._attrDefsColl.removeAsync({ attributeId })
+  )
 
   _getAttributeMapping = async (attributeId) => {
-    const doc = await this._attrMappingsColl.findOneAsync(
-      this.DEFAULT_ENTITY,
-      { fields: { [attributeId]: true } }
-    );
-    return doc?.[attributeId]
+    const doc = await this._getAttributeDefinitionDoc(attributeId);
+    return doc?.mapping;
   }
 
-  _setAttributeMapping = async (attributeId, mapping) => {
-    await this._attrMappingsColl.upsertAsync(
-      this.DEFAULT_ENTITY,
-      { $set: { [attributeId]: mapping } }
-    );
-  }
+  _setAttributeMapping = async (attributeId, mapping) => (
+    this._attrDefsColl.upsertAsync({ attributeId }, { $set: { mapping } })
+  )
 
-  _unsetAttributeMapping = async (attributeId) => {
-    await this._attrMappingsColl.upsertAsync(
-      this.DEFAULT_ENTITY,
-      { $unset: { [attributeId]: true } }
-    );
-  }
+  _unsetAttributeMapping = async (attributeId) => (
+    this._attrDefsColl.upsertAsync({ attributeId }, { $unset: { mapping: true } })
+  )
 
   /**
    * For the given entity, make the given attribute inexistent.
@@ -894,20 +887,22 @@ class AttributesManager {
       // mappings
       await this.suppressAttributeMapping(attributeId);
       // UI elements
-      await new UIPreferencesManager().suppressUiPreferences(attributeId);
-      await new DashboardsManager().suppressAttributeFromDashboards(attributeId);
+      console.log("TODO suppress UI/Dashboards/Alerts elements", attributeId)
+      // await new UIPreferencesManager().suppressUiPreferences(attributeId);
+      // await new DashboardsManager().suppressAttributeFromDashboards(attributeId);
       // remove related incident definitions
-      await this.alertsManager.suppressIncidentDefinition(attributeId);
+      // await this.alertsManager.suppressIncidentDefinition(attributeId);
     }
     // Suppress the attribute definition
     await this._unsetAttributeDefinition(attributeId);
     await this.propagateConfigChange();
-    new EventLog().logSetting({
-      settingGroupName: EVENT_SETTINGS_SECTION_NAMES.ATTRIBUTES,
-      settingName: oldAttrDef?.label || attributeId,
-      eventType: EVENT_TYPES.SETTING_REMOVED,
-      user
-    });
+    console.log("TODO log event log", attributeId)
+    // new EventLog().logSetting({
+    //   settingGroupName: EVENT_SETTINGS_SECTION_NAMES.ATTRIBUTES,
+    //   settingName: oldAttrDef?.label || attributeId,
+    //   eventType: EVENT_TYPES.SETTING_REMOVED,
+    //   user
+    // });
     return oldAttrDef;
   };
 
@@ -929,15 +924,12 @@ class AttributesManager {
         // mappings
         await this.clearAttributeMapping(attributeId);
         // UI elements
-        // TODO(adamantivm) The following one won't cause the desired effect. Implement properly.
-        await new UIPreferencesManager().suppressUiPreferences(attributeId);
+        // TODO The following one won't cause the desired effect. Implement properly.
+        // await new UIPreferencesManager().suppressUiPreferences(attributeId);
+        console.log("TODO suppress UI/Dashboards/Alerts elements", attributeId)
       }
       // Attribute itself
-      await this._attrDefsColl.updateAsync(this.DEFAULT_ENTITY, {
-        $unset: {
-          [attributeId]: true
-        }
-      });
+      await this._removeAttributeDefinition(attributeId);
       await this.propagateConfigChange();
     }
   };
@@ -958,10 +950,8 @@ class AttributesManager {
       mapping = {};
     }
     // Fist see if there were previous mappings to this attributeId or from this same source
-    const oldMapping = (
-      await this._attrMappingsColl.findOneAsync(this.DEFAULT_ENTITY)
-    )?.[attributeId] || {};
 
+    const oldMapping = await this._getAttributeMapping(attributeId) || {};
     if (isEqual(mapping, oldMapping)) {
       // No change in mapping, skip
       return;
@@ -1061,7 +1051,7 @@ class AttributesManager {
 
         const methodArguments = {
           params: {
-            // TODO(adamantivm) use a constant from the agent module being configured
+            // TODO use a constant from the agent module being configured
             // (CustomDataModule) instead of hard-coded strings.
             type: mapping.source == SOURCES.FILE_IMAGE.value ? 'image' : 'text_file',
             path: mapping.path,
@@ -1118,7 +1108,7 @@ class AttributesManager {
 
         const methodArguments = {
           params: {
-            // TODO(adamantivm) use a constant from the module for type
+            // TODO use a constant from the module for type
             type: 'diagnostics',
             diagnostics_key: mapping.key,
             diagnostics_name: mapping.namespace,
@@ -1148,7 +1138,7 @@ class AttributesManager {
         break;
       }
       case SOURCES.DERIVED.value:
-        // TODO(Mike) Validate expressions See IO-6165
+        // TODO Validate expressions See IO-6165
         if (!mapping.transform) {
           console.warn('setAttributeMapping: derived attribute transform missing in mapping', {
             attributeId, mapping
@@ -1160,10 +1150,7 @@ class AttributesManager {
         return;
     }
     // Finally, update mapping definition in the mappings collection.
-    this._attrMappingsColl.upsertAsync(
-      this.DEFAULT_ENTITY,
-      { $set: { [attributeId]: mapping } }
-    );
+    this._setAttributeMapping(attributeId, mapping);
     await this.propagateConfigChange();
   };
 
@@ -1173,7 +1160,7 @@ class AttributesManager {
    *
    * optionType is the specific type within the SystemModule being configured.
    *
-   * NOTE(adamantivm): The mapping object can be modified inside this method.
+   * NOTE: The mapping object can be modified inside this method.
    */
   _configureSystemSource = async (
     optionType,
@@ -1210,7 +1197,7 @@ class AttributesManager {
     }
 
     // update source configration
-    // TODO(adamantivm) Only do this if necessary
+    // TODO Only do this if necessary
     await SystemModule.setOptionalSource({
       type: optionType,
       key: mapping.optionKey,
@@ -1234,7 +1221,7 @@ class AttributesManager {
     // Suppress the corresponding agent module or source if there was
     // a previous configuration.
     //
-    // NOTE(adamantivm) Here we suppress instead of clearing in case
+    // NOTE Here we suppress instead of clearing in case
     // there is a mapping configured for higher-level item in the hierarchy.
     // In that case, we don't want the agent module to send data that we're
     // not going to process now.
@@ -1273,21 +1260,21 @@ class AttributesManager {
         break;
       }
       case SOURCES.KEY_VALUE.value:
-        if (mapping.sourceId) {
-          // For key/value pairs, the agent module data source is shared between
-          // multiple keys, so we should only delete the source if this is the
-          // last mapping for this sourceId remaining.
+        // if (mapping.sourceId) {
+        //   // For key/value pairs, the agent module data source is shared between
+        //   // multiple keys, so we should only delete the source if this is the
+        //   // last mapping for this sourceId remaining.
 
-          // NOTE(adamantivm) This is an expensive operation, but it should be infrequent
-          const allMappings = await this._attrMappingsColl.findOneAsync(this.DEFAULT_ENTITY);
-          const anotherMappingSameTopic = Object.values(allMappings).find(m => (
-            m && m.attributeId != mapping.attributeId && m.sourceId == mapping.sourceId
-          ));
+        //   // NOTE This is an expensive operation, but it should be infrequent
+        //   const allMappings = await this._attrMappingsColl.findOneAsync(this.DEFAULT_ENTITY);
+        //   const anotherMappingSameTopic = Object.values(allMappings).find(m => (
+        //     m && m.attributeId != mapping.attributeId && m.sourceId == mapping.sourceId
+        //   ));
 
-          if (!anotherMappingSameTopic) {
-            await new CustomDataModule().suppressDataSource(mapping.sourceId);
-          }
-        }
+        //   if (!anotherMappingSameTopic) {
+        //     await new CustomDataModule().suppressDataSource(mapping.sourceId);
+        //   }
+        // }
         break;
 
       case SOURCES.ROS_DIAGNOSTICS.value:
@@ -1310,19 +1297,19 @@ class AttributesManager {
    */
   clearAttributeMapping = async (attributeId) => {
     // Get current mapping information
-    // NOTE(adamantivm) I'm not sure that using the effective mapping (vs. the specific mapping for
+    // NOTE I'm not sure that using the effective mapping (vs. the specific mapping for
     // this scope) is the right thing to do, but doing it like this for consistency with the rest
     // of the implementation at this time
     const mapping = await this._getAttributeMapping(attributeId);
 
     if (mapping !== undefined) {
       // Clear the attribute mapping configuration at this level
-      await this.unsetAttributeMapping(attributeId);
+      await this._unsetAttributeMapping(attributeId);
       if (mapping !== null) {
         // Clear configuration in corresponding modules according to the mapping
         await this._clearSource(mapping);
 
-        // TODO(adamantivm) Perform automatic dashboard widgets clean-up
+        // TODO Perform automatic dashboard widgets clean-up
 
         // Notify caches of a config change
         await this.propagateConfigChange();
@@ -1348,7 +1335,7 @@ class AttributesManager {
           ? SystemModule.OPTION_TYPES.DISK
           : SystemModule.OPTION_TYPES.NET;
 
-        // TODO(adamantivm) Update this to actually clear instead of suppressing
+        // TODO Update this to actually clear instead of suppressing
         await SystemModule.clearOptionalSource({
           type,
           key: mapping.optionKey
@@ -1356,7 +1343,7 @@ class AttributesManager {
         break;
       }
       case SOURCES.KEY_VALUE.value:
-        // TODO(adamantivm) Identify the cases where the 'clear' operation needs an update
+        // TODO Identify the cases where the 'clear' operation needs an update
         // in the CustomDataModule.
         // Note that individual custom fields in the Custom Data module are represented as
         // arrays and so a proper "clear" is not feasible
@@ -1365,7 +1352,7 @@ class AttributesManager {
       case SOURCES.ROS_DIAGNOSTICS.value:
       case SOURCES.FILE_IMAGE.value:
       case SOURCES.FILE_TEXT.value:
-        // TODO(adamantivm) Implement clear instead of suppress
+        // TODO Implement clear instead of suppress
         await new CustomDataModule().suppressDataSource(mapping.sourceId);
         break;
 
@@ -1406,9 +1393,8 @@ class AttributesManager {
       throw new Error('Invalid (empty) attribute definition');
     }
     if (options && options.source && options.source.source == SOURCES.DERIVED.value) {
-      const { transform, filter, language } = options.source;
+      const { transform, filter } = options.source;
       // TODO(herchu) Validate the following:
-      // - if language=unsafe: print a console warning right now
       // - transform must be a string
       // - filter is optional; must be a string if given
       // - in any case, use createExpression() to build a expression. It will throw if
@@ -1416,19 +1402,16 @@ class AttributesManager {
       // But for all this: We need to share the code between ingest and app-server! :(
     }
   };
-}
 
-Meteor.publish('attributes.definitions', async function () {
-  if (!this.userId) { // User must be logged in
-    return this.ready();
+  findAttributeDefinitions = async ({ id = null }) => {
+    const query = id ? { attributeId: id } : {};
+    const docs = await this._attrDefsColl.find(query).fetchAsync();
+    docs.forEach(doc => {
+      delete doc._id;
+    });
+    return docs;
   }
-  // Check permissions
-  if (!await new OroRoles().hasRole(this.userId)) {
-    throw new Meteor.Error(`User not authorized to query mappings`);
-  }
-  const attrsMgr = new AttributesManager();
-  return attrsMgr._attrDefsColl.find(attrsMgr.DEFAULT_ENTITY);
-});
+}
 
 Meteor.publish('attributes.mappings', async function () {
   if (!this.userId) { // User must be logged in
@@ -1443,7 +1426,6 @@ Meteor.publish('attributes.mappings', async function () {
 });
 
 Meteor.publish('attributes.values', async function ({ robotId, attributes, pollingIntervalMs = 5000 }) {
-  console.log("publish attributes.values", robotId, attributes, pollingIntervalMs);
   if (!this.userId) { // User must be logged in
     return this.ready();
   }

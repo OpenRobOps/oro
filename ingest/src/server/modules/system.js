@@ -21,7 +21,7 @@ import {
   VITAL_NET_ORO_RX_BYTES
 } from '../../shared/attributes';
 
-// TODO(adamantivm) Change to ES6 imports format
+// TODO Change to ES6 imports format
 const Long = require('long');
 
 const OPTION_TYPES = {
@@ -48,7 +48,7 @@ export default class SystemModule {
   };
 
   onMessage = async (robotId, msg, _packet) => {
-    // NOTE(adamantivm) This is a hack to detect when the offline state
+    // NOTE This is a hack to detect when the offline state
     // may be wrong / lost.
     // If we receive a message that is not a state message from a robot
     // that we either haven't listed yet or is listed as offline, then
@@ -59,7 +59,6 @@ export default class SystemModule {
     try {
       // Decode the protobuf message
       const decodedMsg = this.SystemStatsMessage.decode(msg);
-
       // Convenience accessor for static method
       const convertRate = this.constructor.convertTransferRate;
       const ts = decodedMsg.timestamp.toNumber() || Date.now();
@@ -67,16 +66,16 @@ export default class SystemModule {
       // absolute values (only meaningful when added)
       const totalTx = decodedMsg.totalTx.toNumber();
       const totalRx = decodedMsg.totalRx.toNumber();
-      const oroTx = decodedMsg.oroTx.toNumber();
-      const oroRx = decodedMsg.oroRx.toNumber();
+      const agentTx = decodedMsg.agentTx.toNumber();
+      const agentRx = decodedMsg.agentRx.toNumber();
       // transmit rates, can be seen as a snapshot
       const rateTotalTx = convertRate(totalTx, elapsedSeconds);
       const rateTotalRx = convertRate(totalRx, elapsedSeconds);
-      const rateOroTx = convertRate(oroTx, elapsedSeconds);
-      const rateOroRx = convertRate(oroRx, elapsedSeconds);
+      const rateAgentTx = convertRate(agentTx, elapsedSeconds);
+      const rateAgentRx = convertRate(agentRx, elapsedSeconds);
       // Also report aggregated TX and RX rate
       const rateTotal = rateTotalTx + rateTotalRx;
-      const rateOro = rateOroTx + rateOroRx;
+      const rateAgent = rateAgentTx + rateAgentRx;
 
       // Prepare updates from core elements
       const updates = {
@@ -87,13 +86,13 @@ export default class SystemModule {
         [VITAL_NET_TOTAL_TX_RATE]: { value: rateTotalTx },
         [VITAL_NET_TOTAL_RX_RATE]: { value: rateTotalRx },
         [VITAL_NET_TOTAL_RATE]: { value: rateTotal },
-        [VITAL_NET_ORO_TX_RATE]: { value: rateOroTx },
-        [VITAL_NET_ORO_RX_RATE]: { value: rateOroRx },
-        [VITAL_NET_ORO_RATE]: { value: rateOro },
+        [VITAL_NET_ORO_TX_RATE]: { value: rateAgentTx },
+        [VITAL_NET_ORO_RX_RATE]: { value: rateAgentRx },
+        [VITAL_NET_ORO_RATE]: { value: rateAgent },
         [VITAL_NET_TOTAL_TX_BYTES]: { value: totalTx },
         [VITAL_NET_TOTAL_RX_BYTES]: { value: totalRx },
-        [VITAL_NET_ORO_TX_BYTES]: { value: oroTx },
-        [VITAL_NET_ORO_RX_BYTES]: { value: oroRx },
+        [VITAL_NET_ORO_TX_BYTES]: { value: agentTx },
+        [VITAL_NET_ORO_RX_BYTES]: { value: agentRx },
         [VITAL_RAM_USAGE_PERCENTAGE]: { value: decodedMsg.ramUsagePercentage }
       };
 

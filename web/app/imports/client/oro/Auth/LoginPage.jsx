@@ -18,6 +18,7 @@ import {
 } from '@mui/material';
 import GoogleIcon from '@mui/icons-material/Google';
 import GitHubIcon from '@mui/icons-material/GitHub';
+import { isArray } from 'lodash';
 
 // ---- Extension point for OAuth providers ----
 const OAUTH_PROVIDERS = [
@@ -42,6 +43,10 @@ const OAUTH_PROVIDERS = [
       ),
   },
 ];
+
+const ENABLED_OAUTH_PROVIDERS = isArray(Meteor.settings.public.oauthProviders) 
+  ? Meteor.settings.public.oauthProviders 
+  : [];
 
 const LoginPage = () => {
   const [error, setError] = useState(null);
@@ -136,75 +141,82 @@ const LoginPage = () => {
         )}
 
         {/* Passwordless email flow */}
-        {step === 'email' ? (
-          <>
-            <TextField
-              label="Email address"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              fullWidth
-              disabled={loading}
-              onKeyDown={(e) => e.key === 'Enter' && email && handleSendCode()}
-            />
-            <Button
-              variant="contained"
-              onClick={handleSendCode}
-              disabled={loading || !email}
-              fullWidth
-              sx={{ textTransform: 'none' }}
-            >
-              {loading ? <CircularProgress size={20} /> : 'Send login code'}
-            </Button>
-          </>
-        ) : (
-          <>
-            <Typography variant="body2" color="text.secondary">
-              Enter the 6-digit code sent to <strong>{email}</strong>
-            </Typography>
-            <TextField
-              label="Login code"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              fullWidth
-              disabled={loading}
-              autoFocus
-              onKeyDown={(e) => e.key === 'Enter' && code && handleVerifyCode()}
-            />
-            <Button
-              variant="contained"
-              onClick={handleVerifyCode}
-              disabled={loading || !code}
-              fullWidth
-              sx={{ textTransform: 'none' }}
-            >
-              {loading ? <CircularProgress size={20} /> : 'Verify code'}
-            </Button>
-            <Button
-              variant="text"
-              size="small"
-              onClick={() => { setStep('email'); setCode(''); setError(null); }}
-              sx={{ textTransform: 'none' }}
-            >
-              Use a different email
-            </Button>
-          </>
+        { ENABLED_OAUTH_PROVIDERS?.includes("email") && (
+          (step === 'email') ? (
+            <>
+              <TextField
+                label="Email address"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                fullWidth
+                disabled={loading}
+                onKeyDown={(e) => e.key === 'Enter' && email && handleSendCode()}
+              />
+              <Button
+                variant="contained"
+                onClick={handleSendCode}
+                disabled={loading || !email}
+                fullWidth
+                sx={{ textTransform: 'none' }}
+              >
+                {loading ? <CircularProgress size={20} /> : 'Send login code'}
+              </Button>
+            </>
+          ) : (
+            <>
+              <Typography variant="body2" color="text.secondary">
+                Enter the 6-digit code sent to <strong>{email}</strong>
+              </Typography>
+              <TextField
+                label="Login code"
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                fullWidth
+                disabled={loading}
+                autoFocus
+                onKeyDown={(e) => e.key === 'Enter' && code && handleVerifyCode()}
+              />
+              <Button
+                variant="contained"
+                onClick={handleVerifyCode}
+                disabled={loading || !code}
+                fullWidth
+                sx={{ textTransform: 'none' }}
+              >
+                {loading ? <CircularProgress size={20} /> : 'Verify code'}
+              </Button>
+              <Button
+                variant="text"
+                size="small"
+                onClick={() => { setStep('email'); setCode(''); setError(null); }}
+                sx={{ textTransform: 'none' }}
+              >
+                Use a different email
+              </Button>
+            </>
+          )
         )}
 
-        <Divider sx={{ width: '100%', my: 1 }}>or</Divider>
+        {ENABLED_OAUTH_PROVIDERS?.some(provider => provider != "email") &&
+         ENABLED_OAUTH_PROVIDERS?.includes("email") && (
+          <Divider sx={{ width: '100%', my: 1 }}>or</Divider>
+        )}
 
         {OAUTH_PROVIDERS.map(({ id, label, icon, loginFn }) => (
-          <Button
-            key={id}
-            variant="outlined"
-            startIcon={loading ? <CircularProgress size={20} /> : icon}
-            disabled={loading}
-            onClick={() => handleLogin(loginFn)}
-            fullWidth
-            sx={{ textTransform: 'none' }}
-          >
-            {label}
-          </Button>
+          ENABLED_OAUTH_PROVIDERS.includes(id) && (
+            <Button
+              key={id}
+              variant="outlined"
+              startIcon={loading ? <CircularProgress size={20} /> : icon}
+              disabled={loading}
+              onClick={() => handleLogin(loginFn)}
+              fullWidth
+              sx={{ textTransform: 'none' }}
+            >
+              {label}
+            </Button>
+          )
         ))}
       </Paper>
     </Box>

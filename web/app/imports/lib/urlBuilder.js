@@ -12,7 +12,7 @@ import { PAGES } from '../shared/urls';
 
 /**
  * Generic url builder.
- * TODO(Pablo) This + specialization should replace the Url class.
+ * TODO This + specialization should replace the Url class.
  */
 class UrlBuilder {
   static for(page) {
@@ -86,7 +86,7 @@ class UrlBuilder {
 /**
  * Url builder specialization for Dashboard urls.
  *
- * TODO(Pablo): define further specializations for
+ * TODO: define further specializations for
  * mc, kip, settings, and location urls.
  */
 class DashboardUrl {

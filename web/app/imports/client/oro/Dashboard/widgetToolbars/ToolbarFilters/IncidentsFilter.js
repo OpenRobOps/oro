@@ -33,10 +33,10 @@ const IncidentsFilter = (props) => {
         timeRangeMs={timeRangeMs}
         setStartTime={setStartTime}
       />
-      <Grid item className={classes.itemContainer}>
+      <Grid className={classes.itemContainer}>
         <SeverityFilter {...props} />
       </Grid>
-      <Grid item className={classes.itemContainer}>
+      <Grid className={classes.itemContainer}>
         <IncidentComponentFilter {...props} />
       </Grid>
     </Grid>

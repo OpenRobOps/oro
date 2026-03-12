@@ -210,12 +210,12 @@ class RobotInfoButtons extends React.Component {
     this.setState({ confirmDialogOpen: false });
 
     if (confirmed) {
-      // TODO(adamantivm) Move updateAgent to use confirmation logic from the Actions engine
+      // TODO Move updateAgent to use confirmation logic from the Actions engine
       if (operation == 'updateAgent') {
         this.handleUpdateAgent();
       } else {
         // NOTE(adamantivm) This is now only used for the Delete Robot button
-        // TODO(adamantivm) Migrate the Delete Robot action to be a proper action
+        // TODO Migrate the Delete Robot action to be a proper action
         Meteor.call('robot.' + operation, { robotId }, (err) => {
           if (err) {
             onFeedback && onFeedback((err && err.error) || 'Error');

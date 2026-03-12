@@ -34,6 +34,7 @@ const configureOAuth = async () => {
     return;
   }
 
+  const oauthMethodsConfigured = [];
   // Google
   if (oauthSettings.google) {
     const { clientId, secret, loginStyle } = oauthSettings.google;
@@ -44,7 +45,7 @@ const configureOAuth = async () => {
       secret,
       loginStyle: loginStyle || 'popup',
     });
-    console.log('OAuth: Google configured');
+    oauthMethodsConfigured.push('google');
   }
 
   // GitHub
@@ -57,8 +58,9 @@ const configureOAuth = async () => {
       secret,
       loginStyle: loginStyle || 'popup',
     });
-    console.log('OAuth: GitHub configured');
+    oauthMethodsConfigured.push('github');
   }
+  console.log('OAuth: configured with: ' + oauthMethodsConfigured.join(', '));
 };
 
 export { configureOAuth };

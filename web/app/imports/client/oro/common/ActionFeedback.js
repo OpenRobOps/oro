@@ -56,9 +56,9 @@ const ActionsFeedbackContainer = withTracker(({ robotId, executionId, executionT
   Meteor.subscribe('actions.feedback', { robotId, executionId, executionTs });
   const update = RobotCustomScript.findOne({
     robotId,
-    // TODO(adamantivm) rename 'fileName' collection field to 'executionId'
+    // TODO rename 'fileName' collection field to 'executionId'
     fileName: executionId,
-    // NOTE(adamantivm) serverTime is a Date field but executionTs is a number (epoch)
+    // NOTE serverTime is a Date field but executionTs is a number (epoch)
     serverTime: { $gte: new Date(executionTs) }
   });
   return { update };

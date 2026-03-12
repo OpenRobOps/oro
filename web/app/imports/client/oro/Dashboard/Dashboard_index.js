@@ -292,7 +292,7 @@ const setOrderFields = (setContext, scope = {}) => (
 );
 
 // Helper components used to inject context dependent props into widgets
-// NOTE(mike) These components are required when the data to inject depends on some hooks.
+// NOTE These components are required when the data to inject depends on some hooks.
 // Calling hooks outside of a component is not allowed, so we need to wrap the widget in a component
 // that can call the hooks and pass the data to the widget.
 const LocalizationWidgetWithContext = ({
@@ -897,7 +897,7 @@ const Dashboard = ({ dashboardSpec, context, setContext, switchTo }) => {
    *    robotId in the context
    *  - It will validate that the robot from localStorage exists and can be accessed by
    *    the user with the method robot.canAccessRobot
-   *  TODO(franguerini): Validate the robot permissions when the id read from the context
+   *  TODO: Validate the robot permissions when the id read from the context
    */
   useEffect(() => {
     // Get the robot id from context

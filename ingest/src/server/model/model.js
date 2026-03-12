@@ -16,7 +16,7 @@ export default class Model {
    * object as a parameter.
    */
   constructor(objectId, collection) {
-    // TODO(adamantivm) Sanity checks
+    // TODO Sanity checks
     this._id = objectId;
     this._coll = collection
   }

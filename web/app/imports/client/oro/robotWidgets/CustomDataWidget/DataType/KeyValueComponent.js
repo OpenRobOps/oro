@@ -65,7 +65,13 @@ const KeyValueComponent = ({ customData, staleIndicator = true, now }) => {
   const direction = sortAsc ? 'asc' : 'desc';
 
   const rows = useMemo(() => {
-    if (isEmpty(sortedData)) return <NoDataIcon />;
+    if (isEmpty(sortedData)) return (
+      <StyledTableRow>
+        <StyledTableCell colSpan="3" style={{ border: 'none' }}>
+          <NoDataIcon />
+        </StyledTableCell>
+      </StyledTableRow>
+    );
     return sortedData.map(kv => {
       let { ts } = kv;
       const value = kv.value !== undefined ? formatter(kv.value) : UNDEFINED_VALUE;

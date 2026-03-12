@@ -21,9 +21,9 @@ if (Meteor.isDevelopment) {
     'acls.$.acc': { type: SimpleSchema.Integer },
     // New field added in 1.20.0. Optional after 4.3.0 to support late binding.
     brokerId: { type: String, required: false },
-    // NOTE(adamantivm) The following three properties can currently only be
+    // NOTE The following three properties can currently only be
     // set manually in the DB, there is no UI for configuration.
-    // TODO(adamantivm) Unfold these into a hierarchical configuration capable
+    // TODO Unfold these into a hierarchical configuration capable
     // collection.
     hostname: { type: String, required: false },
     port: { type: String, required: false },
@@ -43,7 +43,7 @@ if (Meteor.isDevelopment) {
   MqttLogins.attachSchema(MqttLogins.schema);
 }
 MqttLogins.rawCollection().createIndex({ username: 1 }, { unique: true, partialFilterExpression: { username: { $exists: 1 } } });
-// NOTE(adamantivm) This index was replaced in app-server version 4.3.0 to make unique optional
+// NOTE This index was replaced in app-server version 4.3.0 to make unique optional
 // Makes robotId unique only if it is present
 MqttLogins.rawCollection().createIndex({ robotId: 1 },
   { unique: true, partialFilterExpression: { robotId: { $exists: true } } });

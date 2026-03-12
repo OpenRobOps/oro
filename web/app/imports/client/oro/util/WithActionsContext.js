@@ -322,7 +322,7 @@ const WithActionsContext = (props, WrappedComponent) => {
    * robotId could have changed since then. If for any reason this component is not showing the
    * same robot anymore, it does not proceed executing the action.
    *
-   * TODO(adamantivm) Standardize parameters used between method calls (server/action.js), feedback
+   * TODO Standardize parameters used between method calls (server/action.js), feedback
    * response (ingest/customCommands.js / client/ActionFeedback.js) and parameters passed ultimately
    * to agentActionEnd so that messages and statuses (e.g.: errors) are always passed through
    * properly.

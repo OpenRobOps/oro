@@ -17,11 +17,11 @@
 // Disable linting rule as this file has multiple classes
 /* eslint max-classes-per-file: 0 */
 
-import { isString, pick } from 'lodash';
+import { isString } from 'lodash';
 import { AsyncCache } from './simpleCache';
 import moment from 'moment';
 // InOrbit modules
-// import RobotStatusManager from './status';
+import RobotStatusManager from './status';
 import MongoManager from '../mongo';
 // import StorageManager from '../storage';
 import {
@@ -55,7 +55,6 @@ class AttributesManager {
       this.mongoManager = new MongoManager();
       // this.storageManager = new StorageManager();
       this._attrDefsColl = this.mongoManager.getCollection(COLLECTIONS.ATTRIBUTE_DEFINITIONS);
-      this._mappingsColl = this.mongoManager.getCollection(COLLECTIONS.ATTRIBUTE_MAPPINGS);
       this._attrValuesColl = this.mongoManager.getCollection(COLLECTIONS.ATTRIBUTE_VALUES);
       // Queues
       // this.messageQueue = new WorkerQueue().buildExchangeDirect(QUEUES.ATTRIBUTES);
@@ -135,8 +134,15 @@ class AttributesManager {
   getRobotVitalsConfig = async (robotId) => this._vitalsConfigCache.get(robotId);
 
   _doGetRobotVitalsConfig = async (robotId) => {
-    const defs = await this._attrDefsColl.findOne({ _id: ID_UNIQUE }) || {}; //await this.getRobotAttributeDefinitions({ robotId });
-    const mappings = await this._mappingsColl.findOne({ _id: ID_UNIQUE }) || {} ; //await this.getRobotAttributeMappings({ robotId });
+    // TODO rewrite this function and related attributes handling; it's inefficient and based
+    // on the old data representation
+    const attrs = await this._attrDefsColl.find({}).toArray();
+    const defs = {};
+    const mappings = {};
+    attrs.forEach((attr) => {
+      defs[attr.attributeId] = attr.definition;
+      mappings[attr.attributeId] = attr.mapping;
+    });
     return new RobotVitalsConfig(robotId, defs, mappings);
   };
 
@@ -194,7 +200,7 @@ class AttributesManager {
       return [];
     }
     // Note: This is live data, we would ideally read it from Redis
-    return await this._attrDefsColl.find({ _id: { $in: robotIds }}, { fields: attrIds }).toArray();
+    return await this._attrValuesColl.find({ _id: { $in: robotIds }}, { fields: attrIds }).toArray();
   };
 
   /**
@@ -231,7 +237,7 @@ class AttributesManager {
       if (robotConfig.isBuiltinVital(attr)) {
         attributeId = attr;
       } else {
-        // TODO(adamantivm) Make this query more efficient (e.g.: directly by key aka index)
+        // TODO Make this query more efficient (e.g.: directly by key aka index)
         attributeId = robotConfig.findAttributeIdMappedTo(
           SOURCES.SYSTEM_HDD.value,
           { mappingKey: attr }
@@ -278,7 +284,7 @@ class AttributesManager {
     }
 
     // Parse the value according to the type declared in attr_defs
-    // TODO(adamantivm) Cache parsers together with the attribute definitions
+    // TODO Cache parsers together with the attribute definitions
     Object.keys(attributeValues).forEach((attrId) => {
       const attributeValue = attributeValues[attrId];
       let parsedValue;
@@ -366,12 +372,11 @@ class AttributesManager {
   async _cascadeUpdates(robotId, attrValues, attrDefs, ts, skip = {}) {
     // Hook to process status update for the robot
     if (!skip.status && this.isEnabled(OUTPUTS.STATUS)) {
-      // new RobotStatusManager().evaluateStatus(robotId, attrValues);
-      console.log(`TODO(AttributesManager) Evaluate statuses ${Object.keys(attrValues)}`);
+      new RobotStatusManager().evaluateStatus(robotId, attrValues);
     }
 
     // Hook to send data to time series and long term storage
-    // TODO(adamantivm) Bubble up this guard, it should be everywhere we receive info
+    // TODO Bubble up this guard, it should be everywhere we receive info
     if (ts == 0) {
       // This is very suspicious, we're probably sending wrong data from the agent in the
       // first place, but just in case fix the timestamp to be now.
@@ -404,7 +409,7 @@ class AttributesManager {
    * Implemented as a separate method to avoid modifying the delicate and high-traffic
    * code in handleKeyValuePairs below.
    *
-   * TODO(adamantivm) Refactor and consolidate all of the handleXxxxYyy calls
+   * TODO Refactor and consolidate all of the handleXxxxYyy calls
    */
   async handleEvents({ robotId, customField }, events, ts = Date.now()) {
     const robotConfig = await this.getRobotVitalsConfig(robotId);
@@ -433,7 +438,7 @@ class AttributesManager {
     });
 
     if (hasUpdates) {
-      // NOTE(adamantivm) Using a for loop because there are awaits inside
+      // NOTE Using a for loop because there are awaits inside
       for (let i = 0; i < updates.length; i++) {
         await this.saveAttributeValues({
           robotId, attributeValues: updates[i], ts, attrDefs: robotConfig.getAttrDefs()
@@ -637,9 +642,9 @@ class RobotVitalsConfig {
     const ret = Object.keys(this.mappings).find((k) => {
       const m = this.mappings[k];
       return m && m.source == sourceType
-        // NOTE(adamantivm) Mappings configured with the default k/v field don't have a mappingKey
+        // NOTE Mappings configured with the default k/v field don't have a mappingKey
         // defined on its mapping. Allow matching with any mapping key.
-        // TODO(adamantivm) Finish porting custom data k/v fields to only use mappingKey to match
+        // TODO Finish porting custom data k/v fields to only use mappingKey to match
         // attributes. See https://inorbit.atlassian.net/browse/IO-2076
         && (mappingKey === undefined || m.mappingKey === undefined || m.mappingKey == mappingKey)
         && (key === undefined || m.key == key)
@@ -727,8 +732,7 @@ class DerivedAttributesConfig {
    *
    * @param {string} attributeId The derived attribute id
    * @returns {array} List of ids of attributes that derived attribute expressions (transform or
-   * filter reference). Derived attributes using the old (soon to be deprecated) language
-   * expects their arguments in the same order as this list.
+   * filter reference). 
    */
   getDerivedAttributeDependencies(attributeId) {
     if (!this.memoDerivedAttrDeps[attributeId]) {
@@ -742,8 +746,7 @@ class DerivedAttributesConfig {
    *
    * @param {string} attributeId The derived attribute id
    * @returns {array} List of ids of attributes that derived attribute expressions (transform or
-   * filter reference). Derived attributes using the old (soon to be deprecated) language
-   * expects their arguments in the same order as this list.
+   * filter reference). 
    */
   _getDerivedAttributeDependencies = (attributeId) => {
     const mapping = this.robotVitalsConfig.getAttributeMapping(attributeId);
@@ -761,9 +764,8 @@ class DerivedAttributesConfig {
     for (const exprStr of [transform, filter]) {
       if (exprStr) {
         // Get attribute dependencies. To do this, the expression must be well formed.
-        // (In the 'unsafe', eval-based language, the check is less strict, via regexps)
         try {
-          const expr = createExpression(exprStr, mapping.language);
+          const expr = createExpression(exprStr, mapping);
           const {
             attributeIds: depAttributeIds,
             time: depTime,
@@ -806,17 +808,17 @@ class DerivedAttributesConfig {
   };
 
   /**
-   * Returns the expressions and language used by a derived attribute
+   * Returns the expressions used by a derived attribute
    * @param {string} attributeId
    * @returns {object}
    */
   getExpressions = (attributeId) => {
     const mapping = this.robotVitalsConfig.getAttributeMapping(attributeId) || {};
-    // include language, filter, expression and attributeIds; all necessary to know how this
+    // include filter, expression and attributeIds; all necessary to know how this
     // attribute will be evaluated
     // NOTE: attributeIds (list of dependencies) is deprecated but still in use, so it is returned
-    const { filter, transform, language, attributeIds } = mapping;
-    return { filter, transform, language, attributeIds };
+    const { filter, transform, attributeIds } = mapping;
+    return { filter, transform, attributeIds };
   };
 }
 

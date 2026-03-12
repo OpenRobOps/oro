@@ -80,7 +80,7 @@ if (Meteor.isDevelopment) {
 }
 
 const RobotLocalization = new Mongo.Collection(COLLECTIONS.LOCALIZATION);
-// TODO(diegobatt): Figure out how to include paths and lasers structure in this schema
+// TODO: Figure out how to include paths and lasers structure in this schema
 Schemas.RobotLocalization = new SimpleSchema({
   _id: { type: String, required: true },
   robotPose: Object,
@@ -512,58 +512,11 @@ const DataDisplayConfig = new Mongo.Collection(COLLECTIONS.DATA_DISPLAY_CONFIG);
  *  TODO: Add unofficial schema
  */
 
-const RobotStatus = new Mongo.Collection(COLLECTIONS.ROBOT_STATUS);
-// TODO describe this view, point to design doc
-const RobotsWithStatus = new Mongo.Collection(COLLECTIONS.ROBOTS_WITH_STATUS);
-/**
- * _id: == robotId
- * <attributeId>: RobotStatus.schema (validation done by hand in status.js)
- * ...
- */
-// TODO(b-Tomas): Update the schema. This is NOT up to date (and it may have never been)
-// * `formattedAttributeValue` is `formattedValue`.
-// `formattedAttributeValue` does not exist and is not used.
-// * `hasOpenAlert: { type: Boolean, optional: true },` is missing.
-RobotStatus.schema = new SimpleSchema({
-  name: String, // NOTE: Denormalized. Source of truth in AttributeDefinitions
-  value: Number, // Status values coming from /lib/status.js
-  attributeValue: Number, // The attribute value that triggered the status when last evaluated
-  formattedAttributeValue: // Same as above, formatted using this attribute's rules
-    { type: String, optional: true },
-  ts: Number,
-  message: // Textual description of the current status
-    { type: String, optional: true },
-  lastChangeTs: // In milliseconds, last time the value changed
-    { type: Number, optional: true },
-  incidentId: { type: String, optional: true },
-  data: { type: Object, optional: true }
-});
-
-const RobotStatusConfig = new Mongo.Collection(COLLECTIONS.ROBOT_STATUS_CONFIG);
-/**
- *  entityId,
- *  entityType,
- *  attributeId: [{
- *       functionName: "higherThan" - Name of the pre-defined function to use
- *       params: Object             - Parameters to the function. This is what will most likely be
- *                                    modified per entity
- *       status: STATUS_ERROR       - Value returned in case the result of the function is true
- *     }, {
- *       function: "higherThan"
- *       params: Object
- *       state: STATUS_WARN
- *     }]
- *  }
- */
-if (Meteor.isServer) {
-  RobotStatusConfig.rawCollection().createIndex({ entityId: 1, entityType: 1 }, { unique: true });
-}
-
 /**
  * UI Preferences Design doc:
  * https://docs.google.com/document/d/1qWklxC2yHz9NiCSXeQPTjB3vbrHvlRoEPux6AEHRmuw/edit
  *
-// TODO(herchu) Collection UIPreferences MUST be moved to ./uiPreferences.js!
+// TODO Collection UIPreferences MUST be moved to ./uiPreferences.js!
 //              (It's a big change as it is imported from everywhere and it requires testing)
  */
 const UIPreferences = new Mongo.Collection(COLLECTIONS.UI_PREFERENCES);
@@ -769,7 +722,7 @@ Schemas.uiPreferences = new SimpleSchema({
    *     }
    *   },
    *   // coming soon: available actions
-   *   // TODO(adamantivm) This must be migrated to use elementList/elementValues instead of
+   *   // TODO This must be migrated to use elementList/elementValues instead of
    *   // a single Array. Otherwise, configManager can't be used to tailor the configuration
    *   mapsList: [ // array of map objects
    *    {
@@ -865,18 +818,14 @@ export {
   Robots,
   RobotAgentFiles,
   RobotCustomData,
-  RobotCustomDataKeyValues, // TODO(herchu) Remove this one! IO-876\
+  RobotCustomDataKeyValues, // TODO Remove this one! IO-876\
   RobotCustomScript,
   RobotDiagnostics,
   RobotKeyValues,
   RobotLocalization,
   RobotLogs,
   RobotModuleState,
-  RobotStatus,
-  RobotsWithStatus,
-  RobotStatusConfig,
   SpatialTransformations,
-  SystemStatus,
   UIPreferences,
   VDA5050LayoutsDefinition,
   Sublocations

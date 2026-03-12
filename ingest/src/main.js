@@ -13,7 +13,7 @@ import MongoManager from './mongo';
 // import StorageManager from './storage';
 import OroMqtt from './server/mqtt';
 // import { RedisManager } from './shared/redis';
-// import PeerClient from './peer';
+import PeerClient from './server/peer';
 // import EventTracker from './shared/tracking';
 // import metricsProxy from './shared/server/metrics';
 // import { registerMetricsViews } from './metricsDefinitions';
@@ -23,7 +23,7 @@ import { anonymizeUri } from './lib/util';
 // import EventLog from './shared/server/eventLogger';
 
 import {
-//   BasicsModule,
+  BasicsModule,
   SystemModule,
 //   RobotLocalizationModule,
 //   DataBagsModule,
@@ -31,7 +31,7 @@ import {
 //   DiagnosticsModule,
 //   StatesModule,
 //   RosoutModule,
-//   CustomDataModule,
+  CustomDataModule,
 //   RosMonitorModule,
 //   CustomCommandsModule,
 //   RobotEventsModule,
@@ -40,8 +40,8 @@ import {
 } from './server/modules';
 
 // Read settings from configuration file
-// TODO(adamantivm) Allow passing configuration file path from an environment variable
-const settings = JSON.parse(fs.readFileSync(path.join(__dirname, '/../config/settings.json')));
+// TODO Allow passing configuration file path from an environment variable
+const settings = JSON.parse(fs.readFileSync(path.join(__dirname, '/../settings.json')));
 
 const signals = {
   SIGHUP: 1,
@@ -66,7 +66,7 @@ async function run() {
 
   console.log('MQTT is ON at ' + settings.mqtt.hostname);
   console.log('MongoDB is ON: ' + anonymizeUri(settings.mongo.url));
-  // console.log('Peer API is ON: ' + settings.peerClient.url);
+  console.log('Peer API is ON: ' + settings.peerClient.url);
   console.log('Profiler is ' + (settings.profiler?.enabled ? 'ON' : 'OFF'));
   console.log('Objects Manager ' + (settings.objectsManager?.enabled ? 'ON' : 'OFF'));
 
@@ -82,18 +82,18 @@ async function run() {
   // await redis.init(settings.redis);
   // storage = new StorageManager();
   // await storage.init(settings.storage);
-  // peerClient = new PeerClient();
-  // await peerClient.init(settings.peerClient);
+  peerClient = new PeerClient();
+  await peerClient.init(settings.peerClient);
   mqtt = new OroMqtt();
   // await new EventTracker().init(settings.pendo);
   // objectsManager = new ObjectsManager();
   // await objectsManager.init(settings.objectsManager);
 
-  // // TODO(bz): When modes are migrated fully to dynamic collections, EventLog won't be needed here
+  // // TODO: When modes are migrated fully to dynamic collections, EventLog won't be needed here
   // // anymore
   // new EventLog().init(settings.eventLog);
 
-  // TODO(adamantivm) Separate init from run and make sure the service
+  // TODO Separate init from run and make sure the service
   // is considered ready (including readiness probe) when connection
   // to MQTT has succeeded.
   mqtt.run(settings.mqtt);
@@ -108,9 +108,9 @@ async function run() {
   // const moduleSettings = settings.modules || {};
 
   // Initialize modules
-  // new BasicsModule(mqtt).load();
+  new BasicsModule(mqtt).load();
   new SystemModule(mqtt).load();
-  // new CustomDataModule(mqtt).load();
+  new CustomDataModule({ mqtt, mongo }).load();
   // new DiagnosticsModule(mqtt).load(moduleSettings.diagnostics);
 
   // await new RobotLocalizationModule({
