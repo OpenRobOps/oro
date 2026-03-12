@@ -158,7 +158,7 @@ export default class RobotStatusManager {
  * Create (or replace) the MongoDB view that joins robots with their status.
  * The view is backed by the `robots` collection and $lookups into `robot_status`.
  */
-async function ensureRobotsWithStatusView() {
+async function robotsWithStatusView() {
 	const db = Robots.rawDatabase();
 	const viewName = COLLECTIONS.ROBOTS_WITH_STATUS;
 	try {
@@ -186,14 +186,14 @@ async function ensureRobotsWithStatusView() {
 		// View already exists — drop and recreate to pick up pipeline changes
 		if (err.codeName === 'NamespaceExists') {
 			await db.collection(viewName).drop();
-			return ensureRobotsWithStatusView();
+			return robotsWithStatusView();
 		}
 		throw err;
 	}
 }
 
 Meteor.startup(() => {
-	ensureRobotsWithStatusView().catch(err => {
+	robotsWithStatusView().catch(err => {
 		console.error('Failed to create robots_with_status view:', err);
 	});
 });
