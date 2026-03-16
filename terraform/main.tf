@@ -19,6 +19,7 @@ resource "local_file" "web_app_settings" {
       public = {
         oauthProviders = local.oauth_providers
       }
+      robotApiKeys = var.robot_api_key != "" ? [var.robot_api_key] : [],
       allowedOrigins = []
       allowedHeaders = []
       mqtt = {

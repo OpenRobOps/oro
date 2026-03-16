@@ -4,6 +4,13 @@ variable "hostname" {
   default     = "localhost"
 }
 
+variable "robot_api_key" {
+  description = "API key for robots to connect (can use multiple; use empty to disallow registration)"
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
 variable "mqtt_port" {
   description = "MQTT broker port"
   type        = number

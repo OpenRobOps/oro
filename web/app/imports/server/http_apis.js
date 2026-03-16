@@ -1,17 +1,22 @@
 import bodyParser from 'body-parser';
 import { Meteor } from 'meteor/meteor';
-import { isString, pick } from 'lodash';
+import { isString, isArray, pick } from 'lodash';
 // ORO modules
 import { MqttLogins } from './collections';
 import { VALID_ID_REGEXP } from '../shared/constants';
 import { decryptPassword } from './mqttCredentialUtils';
 import { provisionRobotCredentials } from './mqttCredentialProvisioner';
 import AgentManager from './agentManager';
+import Robot from './model/robot';
 
-function sendAndLog403(res, msg) {
-  console.warn(`403: ${msg}`);
-  res.writeHead(403);
+function sendAndLogError(res, msg, endpoint, httpStatus) {
+  console.warn(`HTTP ${endpoint || 'api'} error [${httpStatus}]: ${msg}`);
+  res.writeHead(httpStatus);
   res.end(JSON.stringify({ error: msg }));
+}
+
+function sendAndLog403(res, msg, endpoint='api') {
+  sendAndLogError(res, msg, endpoint, 403);
 }
 
 // Middlewares to parse the request body from content-type application/json or x-www-form-urlencoded
@@ -31,19 +36,12 @@ const httpHandleExceptions = handler => Meteor.bindEnvironment(async (req, res, 
 
 /**
  * Provide MQTT configuration to agents.
- *
- * TODO(herchu): This is a stub and does not handle creating credentials yet.
  */
-// eslint-disable-next-line max-len, no-unused-vars
 const mqttConfigEndpoint = (fromRobot = true, defaultApiKey = undefined) => async (req, res) => {
-  console.log('mqttConfigEndpoint: req=', req.body?.robotId);
   // Validate request method and parameters
   if (req.method != 'POST') {
     // Unrecognized request method
-    // For agent version 1.0.10 onwards, we use POST requests
-    res.writeHead(404);
-    res.end();
-    return;
+    return sendAndLogError(res, 'Unrecognized request method', 'mqtt_config', 404);
   }
 
   const { apiKey = defaultApiKey, robotId, credentialsId,
@@ -52,34 +50,48 @@ const mqttConfigEndpoint = (fromRobot = true, defaultApiKey = undefined) => asyn
   // Require a valid robotId (non-empty and without invalid characters)
   // This is the first validation for new robotIds - don't let invalid data enter our system
   if (!robotId || !isString(robotId) || !robotId.match(VALID_ID_REGEXP)) {
-    res.writeHead(400);
-    res.end();
-    return;
+    return sendAndLogError(res, 'Invalid robotId', 'mqtt_config', 400);
   }
 
-  if (!apiKey) { // Validate first. Even in local environments this must fail
-    res.writeHead(400);
-    res.end();
-    return;
+  // Validate API key. Even in local environments this must fail
+  const apiKeys = Meteor.settings.robotApiKeys;
+  if (!apiKey) {
+    return sendAndLogError(res, 'Invalid apiKey', 'mqtt_config', 400);
+  } else if (!isArray(apiKeys)) {
+    return sendAndLogError(res, 'Adding robots is not allowed in this server', 403);
+  } else if (!apiKeys.includes(apiKey)) {
+    return sendAndLogError(res, 'Invalid apiKey', 'mqtt_config', 403);
   }
 
   console.log(`Getting MQTT parameters for robotId=[${robotId}]`);
+  // Check if this robot exists. Add it if it does not. 
+  // TODO: In the future this could be configurable; ie. robots not to be added automatically
+  const robotExists = await new Robot(robotId).existsAsync();
+  if (!robotExists) {
+    console.log(`Robot not found for robotId=[${robotId}]. Adding it.`);
+    await Robot.createAsync({ 
+      robotId, 
+      name: hostname, // mqttconfig API does not define a robot name; so we default to hostname
+      agentVersion,
+      hostname
+    });
+  }
 
   // Get or lazily provision credentials for this robot
   const defaultBrokerId = Meteor.settings.mqtt.defaultBrokerId || 'local';
   let login = await MqttLogins.findOneAsync({ robotId });
   if (!login) {
-  console.log(`Provisioning new credentials for robotId=[${robotId}]`);
+    console.log(`Provisioning new credentials for robotId=[${robotId}]`);
     login = await provisionRobotCredentials(robotId, defaultBrokerId);
   }
   if (login.suspended) {
-    sendAndLog403(res, `Robot credentials suspended for robotId=[${robotId}]`);
+    sendAndLog403(res, `Robot credentials suspended for robotId=[${robotId}]`, 'mqtt_config');
     return;
   }
 
   const brokerDetails = Meteor.settings.mqtt.brokers[login?.brokerId];
   if (!login || !brokerDetails) {
-    sendAndLog403(res, 'Robot credentials not found');
+    sendAndLog403(res, 'Robot credentials not found', 'mqtt_config');
     return;
   }
 
@@ -89,7 +101,7 @@ const mqttConfigEndpoint = (fromRobot = true, defaultApiKey = undefined) => asyn
     password = decryptPassword(login.encryptedPassword, encryptionKey);
   } catch (e) {
     console.error("Error decrypting password", e);
-    sendAndLog403(res, `Error decrypting password for robotId=[${robotId}]`);
+    sendAndLog403(res, `Error decrypting password for robotId=[${robotId}]`, 'mqtt_config');
     return;
   }
 
