@@ -9,23 +9,24 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Grid } from '@mui/material';
-import { withStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui';
 import SeverityFilter from '../../../util/SeverityFolder';
 import IncidentComponentFilter from '../../../util/IncidentComponentFilter';
 import TimeIntervalToolbar from '../../../util/TimeIntervalToolbar';
 import LiveButton from '../../../util/LiveButton';
 import { StartTsPropType } from '../../../util/timeUtils';
 
-const styles = () => ({
+const useStyles = makeStyles()(() => ({
   itemContainer: {
     display: 'flex',
     alignItems: 'center',
     maxHeight: '32px'
   }
-});
+}));
 
 const IncidentTimelineFilter = (props) => {
-  const { classes, startTs, setStartTime, timeRangeMs } = props;
+  const { startTs, setStartTime, timeRangeMs } = props;
+  const { classes } = useStyles();
 
   return (
     <Grid container spacing={1}>
@@ -51,10 +52,9 @@ const IncidentTimelineFilter = (props) => {
 };
 
 IncidentTimelineFilter.propTypes = {
-  classes: PropTypes.object,
   startTs: StartTsPropType,
   timeRangeMs: PropTypes.number,
   setStartTime: PropTypes.func
 };
 
-export default withStyles(IncidentTimelineFilter, styles);
+export default IncidentTimelineFilter;

@@ -112,7 +112,7 @@ const useStyles = makeStyles()(theme => ({
 const IncidentTimelineWidget = ({
   selectedIncident,
   onSelectedIncidentChange,
-  robotsMap,
+  robotsById,
   incidents,
   setStartTime,
   nowTs,
@@ -126,10 +126,10 @@ const IncidentTimelineWidget = ({
     onSelectedIncidentChange(nextSelected);
   }, [selectedIncident, onSelectedIncidentChange]);
 
-  // Build groups and items for react-calendar-timeline from incidents and robotsMap.
+  // Build groups and items for react-calendar-timeline from incidents and robotsById.
   // Groups: one row per robot+component pair. Items: one bar per incident.
   const { items, groups } = useMemo(() => {
-    if (!isArray(incidents) || !isPlainObject(robotsMap)) {
+    if (!isArray(incidents) || !isPlainObject(robotsById)) {
       return { items: [], groups: [] };
     }
 
@@ -137,18 +137,18 @@ const IncidentTimelineWidget = ({
     const itemsAccumulator = [];
 
     incidents.forEach((incident) => {
-      const componentId = (incident.componentsIds && incident.componentsIds[0]) || '';
+      const componentId = incident.componentsIds[0] || '';
       if (componentId.startsWith('RosDiag:')) {
         return; // skip noisy diagnostics
       }
       const robotId = incident.entityId;
       if (!robotIncidents[robotId]) {
-        robotIncidents[robotId] = { robot: robotsMap[robotId], components: {} };
+        robotIncidents[robotId] = { robot: robotsById[robotId], components: {} };
       }
 
       const name = componentId.indexOf('external:') > -1
         ? incident.label
-        : incident.latestEvent && incident.latestEvent.name;
+        : incident.latestEvent?.name;
 
       if (!robotIncidents[robotId].components[componentId]) {
         robotIncidents[robotId].components[componentId] = { name };
@@ -161,7 +161,7 @@ const IncidentTimelineWidget = ({
       itemsAccumulator.push({
         id: incident._id,
         start_time: incident.createdAt.getTime(),
-        end_time: incident.resolvedAt?.getTime() || Date.now(),
+        end_time: incident.resolvedAt?.getTime() || nowTs,
         group: `${robotId}:${componentId}`,
         canMove: false,
         canResize: false,
@@ -184,8 +184,7 @@ const IncidentTimelineWidget = ({
         const componentData = robotIncidents[robotId].components[componentId];
         const name = componentData?.name || componentId;
         const robotName = index === 0
-          && robotIncidents[robotId].robot
-          && robotIncidents[robotId].robot.name;
+          && robotIncidents[robotId].robot?.name;
         groupsAccumulator.push({
           id: `${robotId}:${componentId}`,
           title: name,
@@ -205,7 +204,7 @@ const IncidentTimelineWidget = ({
     }
 
     return { items: itemsAccumulator, groups: groupsAccumulator };
-  }, [incidents, robotsMap, selectedIncident]);
+  }, [incidents, robotsById, selectedIncident, nowTs]);
 
   const boundTimeValues = useCallback((start, end) => {
     const minTime = moment().add(-6, 'months').valueOf();
@@ -265,14 +264,17 @@ const IncidentTimelineWidget = ({
   const getVerticalLineClassNames = useCallback(() => [classes.vertical], []);
 
   const itemRenderer = useCallback(({ item, itemContext, getItemProps }) => {
-    const parsedItemProps = getItemProps(item.itemProps);
+    // Destructure `key` out of getItemProps result to pass it directly to JSX.
+    // react-calendar-timeline includes `key` in the returned props object, which
+    // triggers a React warning when spread into a JSX element.
+    const { key, ...parsedItemProps } = getItemProps(item.itemProps);
     const styleMerged = { ...parsedItemProps.style, ...item.itemProps.style };
     if (itemContext.selected) {
       styleMerged.border = '2px solid #2A3C98';
     }
     return (
       /* eslint-disable-next-line react/jsx-props-no-spreading */
-      <div {...parsedItemProps} style={styleMerged}>
+      <div key={key} {...parsedItemProps} style={styleMerged}>
         <div
           className="rct-item-content"
           style={{ maxHeight: `${itemContext.dimensions.height}` }}
@@ -283,24 +285,40 @@ const IncidentTimelineWidget = ({
     );
   }, []);
 
-  const renderPrimaryHeader = useCallback(({ getIntervalProps, intervalContext }) => (
-    /* eslint-disable-next-line react/jsx-props-no-spreading */
-    <Typography {...getIntervalProps()} className={classes.primaryDateHeader} align="center">
-      {intervalContext.intervalText}
-    </Typography>
-  ), []);
+  const renderPrimaryHeader = useCallback(({ getIntervalProps, intervalContext }) => {
+    // Destructure `key` — react-calendar-timeline includes it in getIntervalProps()
+    const { key, ...intervalProps } = getIntervalProps();
+    return (
+      /* eslint-disable-next-line react/jsx-props-no-spreading */
+      <Typography key={key} {...intervalProps} className={classes.primaryDateHeader} align="center">
+        {intervalContext.intervalText}
+      </Typography>
+    );
+  }, []);
 
-  const renderSecondaryHeader = useCallback(({ getIntervalProps, intervalContext }) => (
-    /* eslint-disable-next-line react/jsx-props-no-spreading */
-    <Typography {...getIntervalProps()} className={classes.secondaryDateHeader} align="center">
-      {intervalContext.intervalText}
-    </Typography>
-  ), []);
+  const renderSecondaryHeader = useCallback(({ getIntervalProps, intervalContext }) => {
+    const { key, ...intervalProps } = getIntervalProps();
+    return (
+      /* eslint-disable-next-line react/jsx-props-no-spreading */
+      <Typography key={key} {...intervalProps} className={classes.secondaryDateHeader} align="center">
+        {intervalContext.intervalText}
+      </Typography>
+    );
+  }, []);
 
   // Enforce a minimum time range to prevent react-calendar-timeline from crashing
   // See: https://github.com/namespace-ee/react-calendar-timeline/issues/707
   const timeRangeMs = propTimeRangeMs <= 90000 ? 90001 : propTimeRangeMs;
-  const timeVars = prepareTimeVarsForQuery(startTs, timeRangeMs, nowTs);
+
+  const { timeStart, timeEnd, defaultStart, defaultEnd } = useMemo(() => {
+    const vars = prepareTimeVarsForQuery(startTs, timeRangeMs, nowTs);
+    return {
+      timeStart: vars.startTs,
+      timeEnd: vars.endTs,
+      defaultStart: moment(vars.startTs),
+      defaultEnd: moment(vars.endTs)
+    };
+  }, [startTs, timeRangeMs, nowTs]);
 
   return (
     <div className={classes.calendarContainer}>
@@ -309,10 +327,10 @@ const IncidentTimelineWidget = ({
         items={items}
         onItemSelect={handleIncidentClicked}
         onItemClick={handleIncidentClicked}
-        defaultTimeStart={timeVars.startTs}
-        defaultTimeEnd={timeVars.endTs}
-        visibleTimeStart={timeVars.startTs}
-        visibleTimeEnd={timeVars.endTs}
+        defaultTimeStart={defaultStart}
+        defaultTimeEnd={defaultEnd}
+        visibleTimeStart={timeStart}
+        visibleTimeEnd={timeEnd}
         onTimeChange={throttledTimeHandler}
         selected={[selectedIncident]}
         groupRenderer={groupRenderer}
@@ -347,7 +365,7 @@ const IncidentTimelineWidget = ({
 
 IncidentTimelineWidget.propTypes = {
   incidents: PropTypes.array,
-  robotsMap: PropTypes.object,
+  robotsById: PropTypes.object,
   selectedIncident: PropTypes.string,
   onSelectedIncidentChange: PropTypes.func,
   setStartTime: PropTypes.func,

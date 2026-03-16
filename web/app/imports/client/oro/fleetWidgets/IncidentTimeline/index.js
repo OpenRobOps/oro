@@ -1,10 +1,9 @@
 /**
  * IncidentTimeline — Data Container
  *
- * Subscribes to robots and incidents publications, builds robotsMap and filtered
+ * Subscribes to robots and incidents publications, builds robotsById and filtered
  * incidents list, and passes them to IncidentTimelineComponent.
  *
- * Follows the hooks pattern (useTracker) instead of withTracker.
  * Wrapped with WithNoDataMessage to handle loading and zero-data states.
  */
 import React from 'react';
@@ -27,7 +26,8 @@ const IncidentTimeline = ({
   ...other
 }) => {
   const { startTs, endTs } = prepareTimeVarsForQuery(propStartTs, timeRangeMs, nowTs);
-  const { isLoading: isRobotsLoading, robotIds, robotsMap } = useRobots(robotId);
+  const { isLoading: isRobotsLoading, robotsById } = useRobots();
+  const robotIds = isRobotsLoading ? null : Object.keys(robotsById);
   const { isLoading: isIncidentsLoading, incidents } = useIncidents({
     robotIds,
     startTs,
@@ -42,7 +42,7 @@ const IncidentTimeline = ({
       {...other}
       isLoading={isRobotsLoading || isIncidentsLoading}
       incidents={incidents}
-      robotsMap={robotsMap}
+      robotsById={robotsById}
       robotIds={robotIds}
       startTs={propStartTs}
       timeRangeMs={timeRangeMs}

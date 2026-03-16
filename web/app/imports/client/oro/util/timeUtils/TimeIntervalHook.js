@@ -23,6 +23,7 @@ import {
   LABELS_SECOND, LABELS_MINUTE, LABELS_HOUR, LABELS_DAY, LABELS_WEEK, LABELS_MONTH, LABELS_CUSTOM,
   PERIODS
 } from '.';
+import { isObject } from 'lodash';
 
 const useStyles = makeStyles()(theme => ({
   mobileButtonContainer: {
@@ -68,7 +69,7 @@ const useStyles = makeStyles()(theme => ({
 const MIN_SELECTABLE_PERIOD_MS = PERIODS[PERIOD_SECOND].timeframeSeconds;
 
 const renderPeriodOption = (buttonId, {
-  setTimeWrapper, timeRangeMs, classes, staticTimeOnly, isMobile, startTs
+  setTimeWrapper, timeRangeMs, classes, staticTimeOnly, isMobile, startTs, nowTs
 }, buttonLabel) => {
   const [period] = getPeriod(timeRangeMs);
   const isSelectedPeriod = period === buttonId;
@@ -76,7 +77,7 @@ const renderPeriodOption = (buttonId, {
   const newTimeRangeMs = getIntervalInMs(buttonId);
 
   const onClick = staticTimeOnly
-    ? () => setTimeWrapper({ dateStart: Date.now() - newTimeRangeMs, timeRangeMs: newTimeRangeMs })
+    ? () => setTimeWrapper({ dateStart: nowTs - newTimeRangeMs, timeRangeMs: newTimeRangeMs })
     : () => setTimeWrapper({ dateStart: startTs, timeRangeMs: newTimeRangeMs });
 
   return (
@@ -229,12 +230,11 @@ const changePeriodOnRangeUpdate = setTimeWrapper => ({
 
 const TimeIntervalHook = (props) => {
   const {
-    startTs, nowTs,
+    startTs, nowTs, timeRangeMs: propsTimeRangeMs,
     setStartTime, setTimeRangeMs, config, onTimeFocusChange, width
   } = props;
-  let { timeRangeMs } = props;
   const { classes } = useStyles();
-  timeRangeMs = timeRangeMs || getDefaultTimeRangeMs();
+  const timeRangeMs = propsTimeRangeMs || getDefaultTimeRangeMs();
   const isMobile = useMediaQuery('(max-width:900px)');
   const staticTimeOnly = Boolean(config?.staticTimeOnly);
 
@@ -244,7 +244,7 @@ const TimeIntervalHook = (props) => {
 
   const setTimeWrapper = useCallback(({ dateStart, timeRangeMs: newTimeRangeMs }) => {
     if (dateStart !== undefined && setStartTime) {
-      setStartTime(typeof dateStart === 'object' ? dateStart.valueOf() : dateStart);
+      setStartTime(isObject(dateStart) ? dateStart.valueOf() : dateStart);
     }
     if (newTimeRangeMs && setTimeRangeMs) {
       setTimeRangeMs(newTimeRangeMs);
@@ -263,10 +263,9 @@ const TimeIntervalHook = (props) => {
     })
   }), [startTs, endTs, timeRangeMs, staticTimeOnly, width, isMobile, nowTs, setTimeWrapper]);
 
-  const onChangeLayout = useCallback(
-    changePeriodOnRangeUpdate(setTimeWrapper),
-    [setTimeWrapper]
-  );
+  const onChangeLayout = useMemo(() => (
+    changePeriodOnRangeUpdate(setTimeWrapper)
+  ), [setTimeWrapper]);
 
   return props.render({
     timeIntervalProps,

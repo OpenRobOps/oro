@@ -1,37 +1,21 @@
 /**
- * useRobots — Hook to fetch robots data
+ * useRobots — Hook to fetch all robots
  *
- * Subscribes to the robots publication and returns the robots data
+ * Subscribes to the robots publication and returns robots keyed by id.
  *
- * @param {string} robotId - The id of the robot to fetch
- * @returns {Object} - { isLoading, robotIds, robotsMap }
- *  isLoading: boolean - Whether the data is still loading
- *  robotIds: string[] - The ids of the robots
- *  robotsMap: { [robotId]: robotData } -
- *    {
- *      [robotId]: {
- *        _id: string - The id of the robot
- *        name: string - The name of the robot
- *        hostname: string - The hostname of the robot
- *        status: {
- *          agentOnline: boolean - Whether the agent is online
- *          value: number - The status value
- *        }
- *      }
- *    }
+ * @returns {Object} - { isLoading, robotsById }
+ *  isLoading: boolean - Whether the subscription is still loading
+ *  robotsById: { [robotId]: robotData } - All robots indexed by _id
  */
 import { useTracker } from 'meteor/react-meteor-data';
 import { Meteor } from 'meteor/meteor';
 import { Robots } from '../../../lib/collections';
 
-const useRobots = (robotId) => useTracker(() => {
-    const handle = Meteor.subscribe('robots', {});
-    const allRobots = Robots.find({}).fetch();
-    const robots = robotId ? allRobots.filter(r => r._id === robotId) : allRobots;
-    const ids = robots.map(r => r._id);
-    const byId = robots.reduce((acc, r) => { acc[r._id] = r; return acc; }, {});
-    const isLoading = !handle.ready();
-    return { isLoading, robotIds: isLoading ? null : ids, robotsMap: byId };
-  }, [robotId]);
+const useRobots = () => useTracker(() => {
+  const handle = Meteor.subscribe('robots', {});
+  const robots = Robots.find({}).fetch();
+  const robotsById = robots.reduce((acc, r) => { acc[r._id] = r; return acc; }, {});
+  return { isLoading: !handle.ready(), robotsById };
+}, []);
 
 export default useRobots;
