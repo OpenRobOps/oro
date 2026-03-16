@@ -213,7 +213,7 @@ export default class RobotStatusManager {
    * @arg newValues is an object with attributeId: { value: x } pairs
    */
   evaluateStatus = async (robotId, newValues) => {
-    console.log("evaluating status", robotId, newValues)
+    console.log(`evaluating status for robot ${robotId}: ${Object.keys(newValues)}`);
     // Store time for attributes metrics calculation.
     const t0 = Date.now();
 

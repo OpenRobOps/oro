@@ -36,6 +36,7 @@ const httpHandleExceptions = handler => Meteor.bindEnvironment(async (req, res, 
  */
 // eslint-disable-next-line max-len, no-unused-vars
 const mqttConfigEndpoint = (fromRobot = true, defaultApiKey = undefined) => async (req, res) => {
+  console.log('mqttConfigEndpoint: req=', req.body?.robotId);
   // Validate request method and parameters
   if (req.method != 'POST') {
     // Unrecognized request method

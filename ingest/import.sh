@@ -13,4 +13,6 @@ mkdir -p src/shared
 cp -u ../web/app/private/oro.proto \
   ../web/app/imports/shared/constants.js \
   ../web/app/imports/shared/attributes.js \
+  ../web/app/imports/shared/geometry.js \
+  ../web/app/imports/shared/arrayUtil.js \
   src/shared

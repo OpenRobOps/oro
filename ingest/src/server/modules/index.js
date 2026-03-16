@@ -1,5 +1,5 @@
 export { default as SystemModule } from './system';
-// export { default as RobotLocalizationModule } from './localization';
+export { default as RobotLocalizationModule } from './localization';
 // export { default as DataBagsModule } from './databags';
 // export { default as AlertsModule } from './alerts';
 // export { default as ImagesModule } from './images';

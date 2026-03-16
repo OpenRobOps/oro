@@ -274,11 +274,11 @@ class RobotInfoButtons extends React.Component {
     const { userGrants } = this.context;
     const { confirmDialogOpen, confirmTitle, confirmContentText, confirmButtonText } = this.state;
     // Flags to decide if some buttons should or should not be shown
-    const showDeleteRobot = clientGrantsSpecificAccess(this.context && userGrants,
-      null, [RESOURCE_SINGLETONS.FLEET], ACCESS_LEVEL_CONFIGURE);
+    const showDeleteRobot = true; // TODO check access: clientGrantsSpecificAccess(this.context && userGrants,
+      //null, [RESOURCE_SINGLETONS.FLEET], ACCESS_LEVEL_CONFIGURE);
     const showUpdateAgent = showDeleteRobot;
-    const showSettings = clientGrantsSpecificAccess(this.context && userGrants,
-      null, [RESOURCE_SINGLETONS.DATASOURCES], ACCESS_LEVEL_CONFIGURE);
+    const showSettings = true; // TODO check access: clientGrantsSpecificAccess(this.context && userGrants,
+      //null, [RESOURCE_SINGLETONS.DATASOURCES], ACCESS_LEVEL_CONFIGURE);
     const restartAction = actionsConfig && actionsConfig[RESTART_AGENT_ACTION_ID];
     const updateAction = actionsConfig && actionsConfig[UPDATE_AGENT_ACTION_ID];
 
