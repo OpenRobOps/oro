@@ -19,6 +19,24 @@ const anonymizeUri = (uri) => {
   return match ? match[1] + '...' + match[2] : '(anonymized url)';
 };
 
+
+/**
+ * Flattens a given source object into dot notation, for key-by-key
+ * insertion or modification in Mongo
+ */
+const toDotNotation = (source, prefix, target = {}) => {
+  for (const key in source) {
+    const targetKey = prefix === undefined ? key : prefix + "." + key;
+    if (isObject(source[key]) && !isArray(source[key])) {
+      toDotNotation(source[key], targetKey, target);
+    } else {
+      target[targetKey] = source[key];
+    }
+  }
+  return target;
+};
+
 export {
-  anonymizeUri
+  anonymizeUri,
+  toDotNotation
 };

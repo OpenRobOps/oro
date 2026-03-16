@@ -166,6 +166,10 @@ const HACK_GHOST_UPDATE_STAMP_VALUE = 12;
 // Key to group the aggregated status for a robot or entity
 const AGG_STATUSES_KEY = 'aggregated status';
 
+const SPATIAL_ANNOTATION_TYPES = {
+  MAP: 'map',
+}
+
 export {
   COLLECTIONS,
   // Configs
@@ -188,5 +192,6 @@ export {
   EMPTY_FUNCTION,
   EMPTY_OBJECT,
   EMPTY_ARRAY,
-  AGG_STATUSES_KEY
+  AGG_STATUSES_KEY,
+  SPATIAL_ANNOTATION_TYPES,
 };

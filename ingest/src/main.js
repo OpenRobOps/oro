@@ -25,7 +25,7 @@ import { anonymizeUri } from './lib/util';
 import {
   BasicsModule,
   SystemModule,
-//   RobotLocalizationModule,
+  RobotLocalizationModule,
 //   DataBagsModule,
 //   AlertsModule,
 //   DiagnosticsModule,
@@ -105,7 +105,7 @@ async function run() {
   // }).load();
 
   // Per module settings
-  // const moduleSettings = settings.modules || {};
+  const moduleSettings = settings.modules || {};
 
   // Initialize modules
   new BasicsModule(mqtt).load();
@@ -113,11 +113,11 @@ async function run() {
   new CustomDataModule({ mqtt, mongo }).load();
   // new DiagnosticsModule(mqtt).load(moduleSettings.diagnostics);
 
-  // await new RobotLocalizationModule({
-  //   mqtt,
-  //   objectsManager,
-  //   workerQueue: queue
-  // }).load(moduleSettings.robotLocalization);
+  await new RobotLocalizationModule({
+    mqtt,
+    objectsManager,
+    workerQueue: queue
+  }).load(moduleSettings.robotLocalization);
   // new DataBagsModule(mqtt, timeseriesApi).load(moduleSettings.databags);
   // new AlertsModule(mqtt).load();
   // new StatesModule(mqtt).load(moduleSettings.states);
