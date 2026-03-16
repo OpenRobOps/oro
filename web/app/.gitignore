@@ -10,3 +10,6 @@ _build
 */build-assets
 */build-chunks
 .rsdoctor
+
+# Unit test results. Normally ran on Github actions, but ignored anyway
+unit_server.xml

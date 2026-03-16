@@ -1,6 +1,8 @@
 import assert from "assert";
 
 import '../imports/server/test/roles.test.js'
+import '../imports/server/test/status.test.js'
+import '../imports/server/test/configAPI/configAPIStatusDefinition.test.js'
 
 describe("app", function () {
   it("package.json has correct name", async function () {

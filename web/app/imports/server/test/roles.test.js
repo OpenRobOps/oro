@@ -78,7 +78,6 @@ describe('Basic role tests', () => {
 
   it('Viewers can only access allowed resources', async () => {
     await createUser();
-    console.log("User", await Meteor.users.find({}).fetchAsync());
     assert.isTrue(await instance.canAccess(
       BOB_USER,
       glueId(RESOURCE_TYPES.SYSTEM, RESOURCE_SINGLETONS.FLEET),
