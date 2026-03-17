@@ -3,7 +3,7 @@ import moment from 'moment';
 import useMethod from './useMethod';
 
 const useRobotDetailedStatus = () => {
-  const { execute } = useMethod('status.getDetailedStatus');
+  const { execute } = useMethod('status.getRobotDetailedStatus');
 
   return useCallback(({ robotId, attributeId, cb }) => {
     execute({ robotId })
@@ -20,7 +20,7 @@ const useRobotDetailedStatus = () => {
         }
       })
       .catch(err => {
-        console.error('Error on status.getDetailedStatus', err);
+        console.error('Error on status.getRobotDetailedStatus', err);
         cb(null);
       });
   }, [execute]);
