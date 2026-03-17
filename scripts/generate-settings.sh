@@ -33,10 +33,14 @@ TF_VAR_mqtt_credential_encryption_key="$(generate_hex_key)"
 export TF_VAR_peer_key
 TF_VAR_peer_key="$(generate_password)"
 
+export TF_VAR_robot_api_key
+TF_VAR_robot_api_key="$(generate_password)"
+
 echo "Generated random secrets for:"
 echo "  - mqtt_master_password"
 echo "  - mqtt_credential_encryption_key"
 echo "  - peer_key"
+echo "  - robot_api_key"
 echo ""
 
 # Initialize Terraform if needed

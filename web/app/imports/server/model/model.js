@@ -120,4 +120,13 @@ export default class Model {
     const lastTs = await this.getLastTsAsync(namespace, actionId);
     return !lastTs || lastTs + durationMs < Date.now();
   };
+
+  existsAsync = async () => {
+    try {
+      await this._fetchAsync();
+      return true;
+    } catch (e) {
+      return false;
+    }
+  };
 }

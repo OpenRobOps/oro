@@ -36,8 +36,6 @@ export default class Robot extends Model {
       newRobot.hostname = hostname;
     }
     const robotDocId = await Robots.insertAsync(newRobot);
-    // NOTE Create any related data structures here.
-    // Use the corresponding manager when applicable.
     return robotDocId;
   };
 
