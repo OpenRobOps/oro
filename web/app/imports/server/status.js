@@ -7,7 +7,7 @@
  * of status.
  * Processing and dispatching is in the ingest service.
  */
-import { isEmpty } from 'lodash';
+import { isEmpty, isArray } from 'lodash';
 import { Meteor } from 'meteor/meteor';
 import { isString } from 'lodash';
 import { ACCESS_LEVEL_VIEW, COLLECTIONS } from '../shared/constants';
@@ -57,7 +57,7 @@ export default class RobotStatusManager {
     }
     // Compute aggregated status value: max of configured status attribute values
     const calculateAggregatedStatusValue = (statuses) => (
-      (Array.isArray(statusList) ? statusList : []).reduce(
+      (isArray(statusList) ? statusList : []).reduce(
         (aggStatus, attrId) => Math.max(aggStatus, (statuses?.[attrId]?.value) || 0),
         0
       )
