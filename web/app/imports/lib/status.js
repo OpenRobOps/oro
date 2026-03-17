@@ -11,8 +11,6 @@ import { HACK_GHOST_UPDATE_STAMP_VALUE, AGG_STATUSES_KEY } from '../shared/const
 import { COLLECTIONS } from '../shared/constants';
 
 const RobotStatus = new Mongo.Collection(COLLECTIONS.ROBOT_STATUS);
-// TODO describe this view, point to design doc
-const RobotsWithStatus = new Mongo.Collection(COLLECTIONS.ROBOTS_WITH_STATUS);
 /**
  * _id: == robotId
  * <attributeId>: RobotStatus.schema (validation done by hand in status.js)

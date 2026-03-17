@@ -6,10 +6,8 @@
  */
 import React, { useMemo, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { isEmpty, isArray } from 'lodash';
+import { isEmpty } from 'lodash';
 import { getAggregatedRobotStatus } from '../../../../lib/status';
-import { FLEET_STATUS_WIDGET } from '../../../../lib/uiPreferences';
-import useUiPreferences from '../../hooks/useUiPrefs';
 import useRobotsWithStatus from '../../hooks/useRobotsWithStatus';
 import useRobotDetailedStatus from '../../hooks/useRobotDetailedStatus';
 import FleetStatusComponent from './FleetStatusComponent';
@@ -24,27 +22,15 @@ const FleetStatusWidgetContainer = ({
 }) => {
   const { setWidgetTitle } = useWidgetData();
 
-  const { data: uiPrefs, isLoading: isPrefsLoading } = useUiPreferences(FLEET_STATUS_WIDGET);
-
-  // Resolve statusList and statusValues: UIPreferences first, widget config as override
-  const { elementList: uiElementList, elementValues: uiElementValues } =
-    uiPrefs?.[FLEET_STATUS_WIDGET] || {};
-
-  let statusList = uiElementList;
-  let statusValues = uiElementValues;
-  // If the widget has its own config, use it as override
-  if (isArray(widgetConfig?.elementList) && widgetConfig.elementList.length) {
-    statusList = widgetConfig.elementList;
-    statusValues = widgetConfig.elementValues;
-  }
+  const statusList = widgetConfig?.elementList;
+  const statusValues = widgetConfig?.elementValues;
 
   const { robots: robotDocs, isLoading: isRobotsLoading } = useRobotsWithStatus({
     statusList,
     statusFilter,
-    skip: isPrefsLoading,
   });
 
-  const isLoading = isPrefsLoading || isRobotsLoading;
+  const isLoading = isRobotsLoading;
 
   // Compute aggregated status field for each robot
   const robots = useMemo(() => {

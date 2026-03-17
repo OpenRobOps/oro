@@ -10,6 +10,7 @@ import { COLLECTIONS } from '../shared/constants';
 const Schemas = {};
 
 const SystemStatus = new Mongo.Collection(COLLECTIONS.SYSTEM_STATUS);
+const RobotsWithStatus = new Mongo.Collection(COLLECTIONS.ROBOTS_WITH_STATUS);
 
 const Robots = new Mongo.Collection(COLLECTIONS.ROBOTS);
 Schemas.status = new SimpleSchema({
@@ -826,6 +827,7 @@ export {
   RobotLogs,
   RobotModuleState,
   SpatialTransformations,
+  RobotsWithStatus,
   UIPreferences,
   VDA5050LayoutsDefinition,
   Sublocations
