@@ -10,6 +10,7 @@ import { COLLECTIONS } from '../shared/constants';
 const Schemas = {};
 
 const SystemStatus = new Mongo.Collection(COLLECTIONS.SYSTEM_STATUS);
+
 const Robots = new Mongo.Collection(COLLECTIONS.ROBOTS);
 Schemas.status = new SimpleSchema({
   agentOnline: Boolean,

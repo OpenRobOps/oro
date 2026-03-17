@@ -162,21 +162,3 @@ Meteor.publish('robot.details', async function ({ robotId, robotIds }) {
     return Robots.find({ _id: { $in: robotIds } });
   }
 });
-
-/**
- * Publication: ui.preferences
- *
- * Publishes UIPreferences documents, projecting only the requested widget fields.
- * // TODO: Needs to be rewritten to use the right format
- */
-Meteor.publish('ui.preferences', function ({ widget }) {
-  if (!this.userId) {
-    return this.ready();
-  }
-  const projection = {};
-  if (Array.isArray(widget)) {
-    widget.forEach(w => { projection[w] = 1; });
-  }
-  return UIPreferences.find({}, { fields: projection });
-});
-

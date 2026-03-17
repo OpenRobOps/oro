@@ -63,7 +63,7 @@ export default class RobotStatusManager {
       )
     );
     const collectionName = COLLECTIONS.ROBOTS_WITH_STATUS;
-    // 
+
     const robotCollHandle = await RobotsWithStatus.find(
       {},
       { pollingIntervalMs: 3000 }
