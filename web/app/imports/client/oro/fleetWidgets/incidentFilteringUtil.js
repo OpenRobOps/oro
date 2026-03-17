@@ -24,7 +24,7 @@ const filterFunctionForIncidents = (context = {}) => (incident) => {
   let ok = true;
   // if the component filter is applied and the incidents components id contains the selected component id filter
   if(selectedComponentFilter) {
-    ok = ok && incident && incident.componentsIds.includes(selectedComponentFilter);
+    ok = ok && incident?.componentsIds?.includes(selectedComponentFilter);
   }
   // if the component filter is applied and the incident highest severity is contained in the selected severities filters
   if(selectedSeverityFilter) {

@@ -1,0 +1,28 @@
+/**
+ * CSS additions for react-calendar-timeline used in IncidentTimeline widget.
+ * https://www.npmjs.com/package/react-calendar-timeline
+ */
+#react-target .react-calendar-timeline .rct-sidebar .rct-sidebar-row {
+  padding: 0;
+  border: 0;
+}
+
+#react-target .react-calendar-timeline .rct-sidebar .rct-sidebar-row.rct-sidebar-row-odd {
+  background: initial;
+}
+
+#react-target .react-calendar-timeline .rct-vertical-lines .rct-vl.rct-day-6, .react-calendar-timeline .rct-vertical-lines .rct-vl.rct-day-0 {
+  background: initial;
+}
+
+#react-target .react-calendar-timeline .rct-horizontal-lines .rct-hl-even, .react-calendar-timeline .rct-horizontal-lines .rct-hl-odd {
+  border-bottom: 0;
+}
+
+#react-target .react-calendar-timeline .rct-horizontal-lines .rct-hl-even, .react-calendar-timeline .rct-horizontal-lines .rct-hl-even {
+  border-bottom: 0;
+}
+
+.react-calendar-timeline .rct-calendar-header {
+  border: 0
+}
