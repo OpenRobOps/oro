@@ -1,5 +1,6 @@
 import { useTracker } from 'meteor/react-meteor-data';
 import { Meteor } from 'meteor/meteor';
+import { isArray } from 'lodash';
 import { RobotsWithStatus } from '../../../lib/status';
 import { matchesStatusFilter } from '../../../shared/status';
 
@@ -23,7 +24,7 @@ const useRobotsWithStatus = ({ statusList, statusFilter }) => useTracker(() => {
 
   // Client-side filtering: compute aggregated status and check against the filter
   const robots = allRobots.filter((robot) => {
-    const aggStatusValue = (Array.isArray(statusList) ? statusList : []).reduce(
+    const aggStatusValue = (isArray(statusList) ? statusList : []).reduce(
       (agg, attrId) => Math.max(agg, (robot.statuses?.[attrId]?.value) || 0),
       0
     );
