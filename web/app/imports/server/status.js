@@ -235,11 +235,7 @@ export default class RobotStatusManager {
         ]
       });
     } catch (err) {
-      // View already exists — nothing to do
-      if (err.codeName === 'NamespaceExists') {
-        return;
-      }
-      throw err;
+      throw new Meteor.Error('Error creating robots_with_status view', err);
     }
   };
 
