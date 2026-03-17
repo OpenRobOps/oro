@@ -11,12 +11,15 @@ import { isEmpty } from 'lodash';
 import { Meteor } from 'meteor/meteor';
 import { isString } from 'lodash';
 import { ACCESS_LEVEL_VIEW, COLLECTIONS } from '../shared/constants';
-import { Robots, RobotStatus, RobotsWithStatus } from '../lib/collections';
+import { matchesStatusFilter } from '../shared/status';
+import { Robots } from '../lib/collections';
 import OroRoles from '../server/roles';
 // InOrbit modules
 import { AsyncCache } from './simpleCache';
 
 import {
+  RobotStatus,
+  RobotsWithStatus,
   StatusConfig,
 } from '../lib/status';
 // import AlertsManager from './alertsManager';
@@ -30,16 +33,6 @@ export default class RobotStatusManager {
     if (instance === undefined) {
       instance = this;
       // this._alertsManager = new AlertsManager();
-      // Meteor methods and publications for status
-      Meteor.methods({
-        'status.getRobotDetailedStatus': this._meteorGetRobotDetailedStatus,
-      });
-      Meteor.publish('robots_with_status', function () {
-        if (!this.userId) {
-          return this.ready();
-        }
-        return RobotsWithStatus.find({}, { pollingIntervalMs: 3000 });
-      });
     }
     // eslint-disable-next-line no-constructor-return
     return instance;
@@ -47,6 +40,55 @@ export default class RobotStatusManager {
 
   init = async () => {
     await this._createRobotsWithStatusView();
+    Meteor.publish('robots_with_status', this._publishRobotsWithStatus);
+    Meteor.methods({
+      'status.getRobotDetailedStatus': this._meteorGetRobotDetailedStatus,
+    });
+  };
+
+  /**
+   * Publication for robots with status data.
+   * Filters robots server-side based on statusFilter and statusList.
+   */
+  // eslint-disable-next-line prefer-arrow-callback
+  _publishRobotsWithStatus = async function ({ statusList, statusFilter } = {}) {
+    if (!await new OroRoles().hasRole(this.userId)) {
+      return this.ready();
+    }
+    // Compute aggregated status value: max of configured status attribute values
+    const calculateAggregatedStatusValue = (statuses) => (
+      (Array.isArray(statusList) ? statusList : []).reduce(
+        (aggStatus, attrId) => Math.max(aggStatus, (statuses?.[attrId]?.value) || 0),
+        0
+      )
+    );
+    const collectionName = COLLECTIONS.ROBOTS_WITH_STATUS;
+    // 
+    const robotCollHandle = await RobotsWithStatus.find(
+      {},
+      { pollingIntervalMs: 3000 }
+    ).observeChangesAsync({
+      added: (id, doc) => {
+        const aggStatusValue = calculateAggregatedStatusValue(doc.statuses);
+        if (matchesStatusFilter(statusFilter, aggStatusValue)) {
+          this.added(collectionName, id, doc);
+        }
+      },
+      changed: (id, fields) => {
+        const aggStatusValue = calculateAggregatedStatusValue(fields.statuses);
+        if (matchesStatusFilter(statusFilter, aggStatusValue)) {
+          this.changed(collectionName, id, fields);
+        } else {
+          this.removed(collectionName, id);
+        }
+      },
+      removed: (id) => {
+        this.removed(collectionName, id);
+      }
+    });
+
+    this.ready();
+    this.onStop(() => robotCollHandle.stop());
   };
 
   /**
@@ -204,16 +246,14 @@ export default class RobotStatusManager {
   /**
    * Returns full status data for a robot, used for tooltip details in FleetStatusWidget.
    */
-  async _meteorGetRobotDetailedStatus({ robotId }) {
+  // eslint-disable-next-line prefer-arrow-callback
+  _meteorGetRobotDetailedStatus = async function ({ robotId }) {
     if (!isString(robotId)) {
       throw new Meteor.Error('robotId must be a string');
-    }
-    if (!this.userId) {
-      throw new Meteor.Error('Unauthorized');
     }
     if (!await new OroRoles().canAccessRobot(this.userId, robotId, ACCESS_LEVEL_VIEW)) {
       throw new Meteor.Error('Unauthorized');
     }
     return RobotStatus.findOneAsync({ _id: robotId });
-  }
+  };
 }

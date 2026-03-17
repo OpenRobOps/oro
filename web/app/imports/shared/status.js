@@ -75,6 +75,32 @@ const includesAllStatuses = robotStatus => (
   || isIncluded(robotStatus, ALL_FLAGS_STRING)
 );
 
+/**
+ * Check whether the given status letter is in the robot status filter string.
+ * If no filter string is provided, defaults to showing error+warning+ok.
+ */
+const isInRobotStatusString = (statusLetter, robotStatus) => {
+  const status = robotStatus || DEFAULT_FLAGS_STRING;
+  return status.includes(statusLetter);
+};
+
+/**
+ * Given a status filter string and an aggregated status value,
+ * returns whether the robot should be shown.
+ */
+const matchesStatusFilter = (statusFilter, aggStatusValue) => {
+  switch (aggStatusValue) {
+    case STATUS.ERROR.value:
+      return isInRobotStatusString(FLAG_ERROR, statusFilter);
+    case STATUS.WARN.value:
+      return isInRobotStatusString(FLAG_WARNING, statusFilter);
+    case STATUS.OK.value:
+      return isInRobotStatusString(FLAG_OK, statusFilter);
+    default:
+      return isInRobotStatusString(FLAG_OFFLINE, statusFilter);
+  }
+};
+
 export {
   STATUS,
   STATUS_FUNCTIONS,
@@ -86,5 +112,7 @@ export {
   DEFAULT_FLAGS_STRING,
   ALL_FLAGS_STRING,
   DEFAULT_RECENTLY_ONLINE_SEC,
-  includesAllStatuses
+  includesAllStatuses,
+  isInRobotStatusString,
+  matchesStatusFilter
 };

@@ -4,12 +4,13 @@
  * Subscribes to the robots_with_status publication, computes aggregated robot statuses,
  * sorts robots, and passes data to FleetStatusComponent.
  */
-import React, { useMemo, useEffect } from 'react';
+import React, { useMemo, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
+import moment from 'moment';
 import { isEmpty } from 'lodash';
 import { getAggregatedRobotStatus } from '../../../../lib/status';
 import useRobotsWithStatus from '../../hooks/useRobotsWithStatus';
-import useRobotDetailedStatus from '../../hooks/useRobotDetailedStatus';
+import { useMethod } from '../../util/meteorUtils';
 import FleetStatusComponent from './FleetStatusComponent';
 import { UI_AGG_STATUS } from '../fleetFilteringUtil';
 import { AGG_STATUSES_KEY } from '../../../../shared/constants';
@@ -21,6 +22,7 @@ const FleetStatusWidgetContainer = ({
   ...other
 }) => {
   const { setWidgetTitle } = useWidgetData();
+  const { call: callGetRobotDetailedStatus } = useMethod('status.getRobotDetailedStatus');
 
   const statusList = widgetConfig?.elementList;
   const statusValues = widgetConfig?.elementValues;
@@ -60,7 +62,23 @@ const FleetStatusWidgetContainer = ({
     ));
   }, [robots?.length, setWidgetTitle]);
 
-  const getRobotDetailedStatus = useRobotDetailedStatus();
+  const getRobotDetailedStatus = useCallback(async ({ robotId, attributeId }) => {
+    try {
+      const status = await callGetRobotDetailedStatus({ robotId });
+      const st = status?.[attributeId];
+      if (st?.message) {
+        let { message } = st;
+        if (st.ts) {
+          message += ` (Last reported ${moment(st.ts).fromNow()})`;
+        }
+        return message;
+      }
+      return 'No status data available';
+    } catch (err) {
+      console.error('Error on status.getRobotDetailedStatus', err);
+      return null;
+    }
+  }, [callGetRobotDetailedStatus]);
 
   return (
     <FleetStatusComponent
