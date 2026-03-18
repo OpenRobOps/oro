@@ -14,13 +14,13 @@ import { isFunction } from 'lodash';
 import { Robot } from './model';
 import OroRoles from './roles';
 // import locksApiRoutes from './rest/locks_rest_api';
-// import robotApiRoutes from './rest/robots';
-// import attributesApiRoutes from './rest/attributes';
+import robotApiRoutes from './rest/robots';
+import attributesApiRoutes from './rest/attributes';
 // import auditLogsApiRoutes from './rest/auditLogs';
 // import incidentsApiRoutes from './rest/incidents';
 // import mapsApiRoutes from './rest/maps';
 // import acitonsApiRoutes from './rest/actions';
-// import localizationApiRoutes from './rest/localization';
+import localizationApiRoutes from './rest/localization';
 // import missionTrackingRoutes from './rest/missionTracking';
 // import navigationRoutes from './rest/navigation';
 import configAPIRoutes from './rest/configAPI';
@@ -86,12 +86,12 @@ const routes = [
 ].concat(
   // Routes imported from other modules
   // locksApiRoutes,
-  // robotApiRoutes,
-  // attributesApiRoutes,
+  robotApiRoutes,
+  attributesApiRoutes,
   // incidentsApiRoutes,
   // mapsApiRoutes,
   // acitonsApiRoutes,
-  // localizationApiRoutes,
+  localizationApiRoutes,
   // missionTrackingRoutes,
   // navigationRoutes,
   // auditLogsApiRoutes,
@@ -291,6 +291,10 @@ WebApp.connectHandlers.use('/api', async (req, res) => {
 
   // Decide if the robotId (used optionally in various places) comes from the path
   // or in the POST body
+  if (!route.loadRobot && route.checkUserCanRobot) {
+    console.warn('WARNING: checkUserCanRobot declared without loadRobot in route!', route);
+    route.loadRobot = true;
+  }
   let robotId;
   if (route.loadRobot === true) {
     // if loadRobot is simply a boolean, it uses `robotId` path parameter
