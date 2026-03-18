@@ -18,7 +18,7 @@
  * updates.
  */
 import { Meteor } from 'meteor/meteor';
-import { isEqual } from 'lodash';
+import { isEqual, isArray, isString } from 'lodash';
 // ORO modules
 import { STATUS } from '../lib/status';
 import RobotStatusManager from './status';
@@ -61,7 +61,7 @@ import {
 } from '../shared/attributes';
 import {
   AttributeDefinitions,
-  AttributeMappings,
+  AttrValues,
   queryRobotAttributeValues,
 } from '../lib/attributes';
 // import { AlertsConfig } from '../lib/alerts';
@@ -832,8 +832,24 @@ class AttributesManager {
     await this._attrDefsColl.findOneAsync({ attributeId })
   )
 
+  _getAttributeValuesDoc = async (robotId, attributeIds) => {
+    if (!robotId || !isString(robotId)) {
+      throw new Error('robotId must be a string');
+    }
+    if (attributeIds && !isArray(attributeIds)) {
+      throw new Error('attributeIds must be an array');
+    }
+    return AttrValues.findOneAsync(
+      { _id: robotId },
+      attributeIds ? { fields: attributeIds.reduce((acc, attr) => {
+        acc[attr] = 1;
+        return acc;
+      }, {}) } : {}
+    );
+  }
+
   _getAttributeDefinition = async (attributeId) => {
-    const doc = this._getAttributeDefinitionDoc(attributeId);
+    const doc = await this._getAttributeDefinitionDoc(attributeId);
     return doc?.definition;
   }
 
@@ -1377,8 +1393,7 @@ class AttributesManager {
     if (!await new OroRoles().canAccessRobot(this.userId, robotId, ACCESS_LEVEL_VIEW)) {
       throw new Meteor.Error(`User not authorized to view robot's ${robotId} data`);
     }
-    const robot = new Robot(robotId);
-    return await robot.getAttrValuesAsync(attributes);
+    return new AttributesManager().getRobotAttributeValues({ robotId, attributes });
   }
 
   /**
@@ -1411,6 +1426,36 @@ class AttributesManager {
     });
     return docs;
   }
+
+  /**
+   * Returns attribute values for a robot. This contains all attribute values or just those
+   * selected in the optional array argument.
+   * Return value is an object with { attributeId: { value, ts } }
+   * 
+   * If an attribute does not exist, the key is not present in the returned object.
+   * If an attribute exists but the robot never reported it, its value is set to null.
+   */
+  getRobotAttributeValues = async (robotId, attributes = null) => {
+    if (!robotId || !isString(robotId)) {
+      throw new Error('robotId must be a string');
+    }
+    if (attributes && !isArray(attributes)) {
+      throw new Error('attributes must be an array');
+    }
+    const doc = await this._getAttributeValuesDoc(robotId, attributes);
+    const defs = await this._getAttributeDefinitionDoc();
+    // For those attributes that have no value for this robot, set the value to null
+    // (This is different from not having the attribute defined)
+    if (attributes) {
+      attributes.forEach(attr => {
+        if (!doc[attr] && defs[attr]) {
+          doc[attr] = null; // no value
+        }
+      });
+    }
+    delete doc._id;
+    return doc;
+  };
 }
 
 Meteor.publish('attributes.mappings', async function () {
