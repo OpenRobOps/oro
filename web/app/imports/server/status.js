@@ -21,6 +21,7 @@ import {
   RobotStatus,
   RobotsWithStatus,
   StatusConfig,
+  AGG_STATUS_FIELD,
 } from '../lib/status';
 // import AlertsManager from './alertsManager';
 // import EventLog from './eventLogger';
@@ -71,15 +72,19 @@ export default class RobotStatusManager {
       added: (id, doc) => {
         const aggStatusValue = calculateAggregatedStatusValue(doc.statuses);
         if (matchesStatusFilter(statusFilter, aggStatusValue)) {
-          this.added(collectionName, id, doc);
+          this.added(collectionName, id, { ...doc, [AGG_STATUS_FIELD]: aggStatusValue });
         }
       },
       changed: (id, fields) => {
-        const aggStatusValue = calculateAggregatedStatusValue(fields.statuses);
-        if (matchesStatusFilter(statusFilter, aggStatusValue)) {
-          this.changed(collectionName, id, fields);
+        if (fields.statuses !== undefined) {
+          const aggStatusValue = calculateAggregatedStatusValue(fields.statuses);
+          if (matchesStatusFilter(statusFilter, aggStatusValue)) {
+            this.changed(collectionName, id, { ...fields, [AGG_STATUS_FIELD]: aggStatusValue });
+          } else {
+            this.removed(collectionName, id);
+          }
         } else {
-          this.removed(collectionName, id);
+          this.changed(collectionName, id, fields);
         }
       },
       removed: (id) => {
