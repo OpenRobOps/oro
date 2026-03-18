@@ -1446,7 +1446,6 @@ class AttributesManager {
     const defs = await this._getAttributeDefinitionDoc();
     // For those attributes that have no value for this robot, set the value to null
     // (This is different from not having the attribute defined)
-    console.log('getRobotAttributeValues 1', doc);
     if (attributes) {
       attributes.forEach(attr => {
         if (!doc[attr] && defs[attr]) {
@@ -1454,7 +1453,6 @@ class AttributesManager {
         }
       });
     }
-    console.log('getRobotAttributeValues 2', doc);
     delete doc._id;
     return doc;
   };
