@@ -34,9 +34,9 @@ const FleetStatusWidgetContainer = ({
 
   const isLoading = isRobotsLoading;
 
-  // TODO: Once the publication embeds a pre-computed aggregated status per robot,
-  // this client-side calculation of UI_AGG_STATUS should be removed and replaced
-  // by reading that field directly from the robot document.
+  // TODO: Now that the publication embeds AGG_STATUS_FIELD in each robot document,
+  // this client-side calculation of UI_AGG_STATUS should be refactored to read
+  // that field directly instead of recomputing it here.
   // Compute aggregated status field for each robot
   const robots = useMemo(() => {
     if (isEmpty(robotDocs)) return [];
