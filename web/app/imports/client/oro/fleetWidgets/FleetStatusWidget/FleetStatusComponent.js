@@ -105,7 +105,7 @@ const FleetStatusComponent = ({
       if (robotIdForStatus && attributeId) {
         cb('...');
         getRobotDetailedStatus({ robotId: robotIdForStatus, attributeId })
-          .then(message => cb(message));
+          .then(cb);
       }
     }
   }, [getRobotDetailedStatus]);
