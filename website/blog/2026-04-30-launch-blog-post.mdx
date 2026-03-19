@@ -1,24 +1,44 @@
 ---
-slug: mdx-blog-post
-title: OpenRobOps launch
+slug: introducing-openrobops
+title: "Introducing OpenRobOps: An Open Foundation for Robot Operations"
 authors: [herchu, florian]
-tags: [openrobops]
+tags: [openrobops, announcement, open-source]
 ---
 
-TODO Announcement.
+Autonomous mobile robots are showing up everywhere — in warehouses, hospitals, airports, sidewalks. The number of deployed robots is growing fast, and so is the complexity of keeping them running. But while the robots themselves have gotten remarkably capable, the way we manage fleets hasn't kept up.
 
-:::tip
+Today, every robot vendor ships its own proprietary operations dashboard. If you run robots from two different manufacturers, you get two disconnected views. If you want to customize how you monitor your fleet, you're limited to what the vendor exposes. And if you ever want to switch platforms, you're starting from scratch.
 
-This is a tip
-
-:::
+This is a familiar pattern in technology — and it's one that open source has solved before. Linux gave servers a common foundation. ROS gave robot developers a shared framework. Robot operations deserves the same.
 
 {/* truncate */}
 
-For example, use JSX to create an interactive button:
+## OpenRobOps is here
 
-```js
-<button onClick={() => alert('button clicked!')}>Click me!</button>
-```
+Today, we're launching **OpenRobOps** — an open-source platform for robot fleet management and operations. It's vendor-agnostic, fully self-hostable, and built for real-time monitoring and control of autonomous mobile robots at scale.
 
-<button onClick={() => alert('button clicked!')}>Click me!</button>
+OpenRobOps isn't just another dashboard. It's a foundation — one that the robotics industry can build on together. The platform is rooted in production-proven technology from [InOrbit.AI](https://www.inorbit.ai/), which has been used to manage thousands of robots in real-world deployments. Now, that experience is available to everyone under the Apache 2.0 license.
+
+## What OpenRobOps enables
+
+**See your entire fleet in one place.** OpenRobOps provides real-time telemetry, customizable dashboards, and incident tracking across your robots — regardless of who manufactured them. One platform, one view, any vendor.
+
+**Own your data and your infrastructure.** This is not a SaaS product you rent access to. OpenRobOps runs on your servers, under your control. Your robot data stays where you decide it stays.
+
+**Extend and customize freely.** The platform is designed to be yours. Pluggable ingest modules let you process any telemetry data. Custom widgets let you build the exact operational view your team needs. A declarative configuration API means you can define dashboards, attributes, and incidents as code.
+
+**Built on standards you already know.** OpenRobOps communicates over MQTT with Protocol Buffers, supports ROS and Open-RMF natively, and runs on a modern stack of Node.js, React, and MongoDB. If you've worked in robotics or web development, you'll feel at home.
+
+## Join us
+
+OpenRobOps is just getting started, and we're building it in the open. Whether you're running a fleet of warehouse robots, developing the next generation of AMRs, or just believe that robot operations infrastructure should be transparent and community-driven — there's a place for you here.
+
+Here's how to get involved:
+
+- **Try it out** — follow our [quick start guide](https://openrobops.org/docs/getting-started/quick-start) and have a fleet management platform running in under 10 minutes
+- **Star the repo** — show your support on [GitHub](https://github.com/OpenRobOps/oro)
+- **Join the community** — connect with us on [Discord](https://discord.gg/openrobops) or [Stack Overflow](https://stackoverflow.com/questions/tagged/openrobops)
+- **Contribute** — check our [contributing guide](https://openrobops.org/docs/contributing) for ways to help shape the platform
+- **Follow along** — keep up with the project on [X](https://x.com/openrobops)
+
+Robot operations should be open. Let's build it together.
