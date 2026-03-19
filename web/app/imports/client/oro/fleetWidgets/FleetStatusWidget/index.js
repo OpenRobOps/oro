@@ -46,6 +46,7 @@ const FleetStatusWidgetContainer = ({
           // distinct from 0 which means "OK" — rendered differently in the UI
           value: robot[AGG_STATUS_FIELD] ?? -1,
           label: '\u00A0', // non-breaking space keeps the table cell from collapsing when empty
+          agentOnline: robot.status?.agentOnline,
         }
       }
     }));
