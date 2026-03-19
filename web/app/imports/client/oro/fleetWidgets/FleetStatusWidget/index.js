@@ -1,14 +1,14 @@
 /**
  * FleetStatusWidget — Data Fetching Container
  *
- * Subscribes to the robots_with_status publication, computes aggregated robot statuses,
- * sorts robots, and passes data to FleetStatusComponent.
+ * Subscribes to the robots_with_status publication and passes data to FleetStatusComponent.
+ *
  */
 import React, { useMemo, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import moment from 'moment';
 import { isEmpty } from 'lodash';
-import { getAggregatedRobotStatus } from '../../../../lib/status';
+import { AGG_STATUS_FIELD } from '../../../../lib/status';
 import useRobotsWithStatus from '../../hooks/useRobotsWithStatus';
 import { useMethod } from '../../util/meteorUtils';
 import FleetStatusComponent from './FleetStatusComponent';
@@ -34,19 +34,22 @@ const FleetStatusWidgetContainer = ({
 
   const isLoading = isRobotsLoading;
 
-  // TODO: Now that the publication embeds AGG_STATUS_FIELD in each robot document,
-  // this client-side calculation of UI_AGG_STATUS should be refactored to read
-  // that field directly instead of recomputing it here.
-  // Compute aggregated status field for each robot
+  // Read the aggregated status value added by the publication(AGG_STATUS_FIELD)
+  // and reshape it into the UI_AGG_STATUS format consumed by fleetFilteringUtil.
   const robots = useMemo(() => {
     if (isEmpty(robotDocs)) return [];
     return robotDocs.map(robot => ({
       ...robot,
       [UI_AGG_STATUS]: {
-        [AGG_STATUSES_KEY]: getAggregatedRobotStatus(robot, statusList, true)
+        [AGG_STATUSES_KEY]: {
+          // -1 means "unknown/no data" (robot never reported status);
+          // distinct from 0 which means "OK" — rendered differently in the UI
+          value: robot[AGG_STATUS_FIELD] ?? -1,
+          label: '\u00A0', // non-breaking space keeps the table cell from collapsing when empty
+        }
       }
     }));
-  }, [robotDocs, statusList]);
+  }, [robotDocs]);
 
   // Set the widget title to "Fleet: <n>" when robots are available
   useEffect(() => {
