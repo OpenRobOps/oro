@@ -41,10 +41,8 @@ const config: Config = {
       {
         docs: {
           sidebarPath: './sidebars.ts',
-          // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
           editUrl:
-            'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
+            'https://github.com/OpenRobOps/oro/tree/main/website/',
         },
         blog: {
           showReadingTime: true,
@@ -52,10 +50,8 @@ const config: Config = {
             type: ['rss', 'atom'],
             xslt: true,
           },
-          // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
           editUrl:
-            'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
+            'https://github.com/OpenRobOps/oro/tree/main/website/',
           // Useful options to enforce blogging best practices
           onInlineTags: 'warn',
           onInlineAuthors: 'warn',
@@ -69,8 +65,7 @@ const config: Config = {
   ],
 
   themeConfig: {
-    // Replace with your project's social card
-    image: 'img/docusaurus-social-card.jpg',
+    image: 'img/logo.svg',
     colorMode: {
       respectPrefersColorScheme: true,
     },
@@ -87,7 +82,7 @@ const config: Config = {
           position: 'left',
           label: 'Docs',
         },
-        {to: '/api', label: 'API', position: 'left'},
+        {to: '/docs/api/overview', label: 'API', position: 'left'},
         {to: '/blog', label: 'Blog', position: 'left'},
         {
           href: 'https://github.com/OpenRobOps/oro',
@@ -103,8 +98,12 @@ const config: Config = {
           title: 'Docs',
           items: [
             {
-              label: 'Docs',
-              to: '/docs/intro',
+              label: 'Getting Started',
+              to: '/docs/getting-started/intro',
+            },
+            {
+              label: 'API Reference',
+              to: '/docs/api/overview',
             },
           ],
         },

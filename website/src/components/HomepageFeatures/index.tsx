@@ -15,8 +15,8 @@ const FeatureList: FeatureItem[] = [
     Svg: require('@site/static/img/undraw_docusaurus_mountain.svg').default,
     description: (
       <>
-        Bootstrap your fleet manager and connect your robotsin minutes. 
-        Includes documentation and templates for local and cloud deployments
+        Bootstrap your fleet manager and connect your robots in minutes.
+        Includes documentation and templates for local and cloud deployments.
       </>
     ),
   },
@@ -35,7 +35,7 @@ const FeatureList: FeatureItem[] = [
     Svg: require('@site/static/img/undraw_docusaurus_react.svg').default,
     description: (
       <>
-        Connect your robot fleet using a varity of protocols. 
+        Connect your robot fleet using a variety of protocols.
         Agents and SDKs available for ROS-based robots.
         Supports open standard ISO 21423.
       </>
