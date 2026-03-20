@@ -1,30 +1,96 @@
-/**
- * Any CSS included here will be global. The classic template
- * bundles Infima by default. Infima is a CSS framework designed to
- * work well for content-centric websites.
- */
+/* 
+Guide: https://docusaurus.io/docs/styling-layout 
 
-/* You can override the default Infima variables here. */
+Main color pallette (v0):
+    lilac #9E6FF3
+    suface #170E28
+    raised #0E0918
+
+    void #1A0F2E
+    border #251A38
+    body #BEAEDD
+    error FB7188
+
+Notes:
+  - Verify contrast ratio for light/dark themes in https://docusaurus.io/docs/styling-layout
+  - Check also "Exhaustive list of stable class names"
+  - See also Infima classes: https://docusaurus.community/knowledge/design/css/variables/ or https://gist.github.com/n4bb12/05cb485e2ac83b482ebcadee68e4ffaa
+*/
+
 :root {
-  --ifm-color-primary: #2e8555;
-  --ifm-color-primary-dark: #29784c;
-  --ifm-color-primary-darker: #277148;
-  --ifm-color-primary-darkest: #205d3b;
-  --ifm-color-primary-light: #33925d;
-  --ifm-color-primary-lighter: #359962;
-  --ifm-color-primary-lightest: #3cad6e;
-  --ifm-code-font-size: 95%;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+  --oro-color-lilac: #9E6FF3;
+  --oro-color-border: #251A38;
+  --oro-color-void: #1A0F2E;
+  --oro-color-raised: #0E0918;
+
+  --ifm-color-primary: var(--oro-color-lilac);
 }
 
-/* For readability concerns, you should choose a lighter palette in dark mode. */
+/*
 [data-theme='dark'] {
-  --ifm-color-primary: #25c2a0;
-  --ifm-color-primary-dark: #21af90;
-  --ifm-color-primary-darker: #1fa588;
-  --ifm-color-primary-darkest: #1a8870;
-  --ifm-color-primary-light: #29d5b0;
-  --ifm-color-primary-lighter: #32d8b4;
-  --ifm-color-primary-lightest: #4fddbf;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+  --ifm-color-primary-lightest: #e0d1fb;
+  --ifm-color-primary-lighter: #bfa0f7;
+  --ifm-color-primary-light: #b490f6;
+  --ifm-color-primary: #9E6FF3;
+  --ifm-color-primary-dark: #884ef0;
+  --ifm-color-primary-darker: #7d3eef;
+  --ifm-color-primary-darkest: #5e13e5;
+}
+[data-theme='light'] {
+  --ifm-color-primary-lightest: #e0d1fb;
+  --ifm-color-primary-lighter: #bfa0f7;
+  --ifm-color-primary-light: #b490f6;
+  --ifm-color-primary: #9E6FF3;
+  --ifm-color-primary-dark: #884ef0;
+  --ifm-color-primary-darker: #7d3eef;
+  --ifm-color-primary-darkest: #5e13e5;
+}
+*/
+
+
+/* Main - fonts. Light/Dark independent */
+/* dm-mono-regular - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'DM Mono';
+  font-style: normal;
+  font-weight: 400;
+  src: url('/static/fonts/dm-mono-v16-latin-regular.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+/* inter-regular - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  src: url('/static/fonts/inter-v20-latin-regular.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+html {
+  font-family: "Inter";
+}
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Inter";
+}
+pre,
+code {
+  font-family: "DM Mono";
+}
+
+
+/* Dark mode */
+[data-theme='dark'] {
+  --ifm-background-color: var(--oro-color-void);
+
+  pre,
+  code {
+    background-color: var(--oro-color-raised);
+  }
+}
+[data-theme='light'] {
+  --ifm-toc-border-color: var(--oro-color-border);
+
+  pre,
+  code {
+    background-color: var(--oro-color-raised);
+  }
 }

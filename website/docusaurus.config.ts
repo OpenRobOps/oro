@@ -67,7 +67,15 @@ const config: Config = {
   themeConfig: {
     image: 'img/logo.svg',
     colorMode: {
-      respectPrefersColorScheme: true,
+      defaultMode: 'dark',
+      disableSwitch: true
+    },
+    announcementBar: {
+      id: 'pre-release',
+      content: '<b>OpenRobOps is currently in pre-release. Please report any issues <a href="https://github.com/OpenRobOps/oro/issues">here</a></b>',
+      backgroundColor: '#9E6FF3',
+      textColor: '#000000',
+      isCloseable: false,
     },
     navbar: {
       title: 'OpenRobOps',
