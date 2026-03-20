@@ -15,7 +15,7 @@ const config: Config = {
   },
 
   // Set the production url of your site here
-  url: 'https://openrobops.org',
+  url: 'https://ornate-croquembouche-cc5482.netlify.app',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
   baseUrl: '/',
@@ -24,6 +24,7 @@ const config: Config = {
   // If you aren't using GitHub pages, you don't need these.
   organizationName: 'OpenRobOps', // Usually your GitHub org/user name.
   projectName: 'oro', // Usually your repo name.
+  trailingSlash: false, // From Netlify tutorial
 
   onBrokenLinks: 'throw',
 
