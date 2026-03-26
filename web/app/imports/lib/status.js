@@ -553,6 +553,7 @@ const sortRobotsByStatus = (robots, statusList, recentlyOnlineTime) => (
 
 export {
   RobotStatus,
+  RobotsWithStatus,
   StatusConfig,
   STATUS,
   getStatusColor,
