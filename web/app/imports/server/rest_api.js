@@ -13,13 +13,13 @@ import { isFunction } from 'lodash';
 // ORO modules
 import { Robot } from './model';
 import OroRoles from './roles';
-// import locksApiRoutes from './rest/locks_rest_api';
+import locksApiRoutes from './rest/locks_rest_api';
 import robotApiRoutes from './rest/robots';
 import attributesApiRoutes from './rest/attributes';
 // import auditLogsApiRoutes from './rest/auditLogs';
 // import incidentsApiRoutes from './rest/incidents';
 // import mapsApiRoutes from './rest/maps';
-// import acitonsApiRoutes from './rest/actions';
+import actionsApiRoutes from './rest/actions';
 import localizationApiRoutes from './rest/localization';
 // import missionTrackingRoutes from './rest/missionTracking';
 // import navigationRoutes from './rest/navigation';
@@ -85,12 +85,12 @@ const routes = [
   { path: /^\/test$/, method: 'GET', handler: testEndpoint, trackingId: 'test' },
 ].concat(
   // Routes imported from other modules
-  // locksApiRoutes,
+  locksApiRoutes,
   robotApiRoutes,
   attributesApiRoutes,
   // incidentsApiRoutes,
   // mapsApiRoutes,
-  // acitonsApiRoutes,
+  actionsApiRoutes,
   localizationApiRoutes,
   // missionTrackingRoutes,
   // navigationRoutes,

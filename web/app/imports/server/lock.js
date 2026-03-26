@@ -432,17 +432,14 @@ class LockManager {
         }
       }
     }
-    const res = await new ActionsEngine().runActions({
+    const res = await new ActionsEngine().runAction({
       robotId,
-      actionIds: [actionId],
+      actionId,
       context: { robotId },
       user,
       args
     });
-    if (!res.ok) {
-      // log failure from ActionsEngine if not already logged
-      logFailure(res.error || res.errors || 'Unknown error', actionDef);
-    }
+    // If result is not ok, the failure was already logged by ActionsEngine
     if (res.ok && autoLocked) {
       res.message = 'Action executed. Robot automatically locked';
     }

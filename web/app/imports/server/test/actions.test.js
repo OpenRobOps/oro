@@ -452,7 +452,7 @@ describe('ActionsManager: user created actions', () => {
 
   it('formats a script actions help message (no arguments)', async () => {
     const { id } = await createScriptAction(engine);
-    const action = await engine._getActionDefinition(id);
+    const action = await engine.getActionDefinition(id);
     assert.equal(
       formatScriptAction(action),
       // FIXME: This path refers to InOrbit agent, should be configurable
@@ -462,7 +462,7 @@ describe('ActionsManager: user created actions', () => {
 
   it('formats a script actions help message (user arguments)', async () => {
     const { id } = await createScriptActionWithUserArgs(engine);
-    const action = await engine._getActionDefinition(id);
+    const action = await engine.getActionDefinition(id);
     assert.equal(
       formatScriptAction(action),
       // FIXME: This path refers to InOrbit agent, should be configurable
@@ -493,7 +493,7 @@ describe('ActionsManager: user created actions', () => {
 
   it('formats a script actions help message (dummy arguments)', async () => {
     const { id } = await createScriptActionWithDummyArgs(engine);
-    const action = await engine._getActionDefinition(id);
+    const action = await engine.getActionDefinition(id);
     assert.equal(
       formatScriptAction(action),
       // FIXME: This path refers to InOrbit agent

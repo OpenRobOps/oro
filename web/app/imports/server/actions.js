@@ -57,6 +57,12 @@ import AttributesManager from './attributes';
 // Max life time of an action token in db
 const ACTION_TOKEN_EXPIRATION_MS = moment.duration(1, 'day').valueOf();
 
+/**
+ * Builds a result object representing an error message
+ */
+const buildErrorResult = message => ({ error: message });
+
+
 let instance;
 class ActionsEngine {
   constructor() {
@@ -134,15 +140,15 @@ class ActionsEngine {
     }
   };
 
-  _setActionDefinition = async (actionId, definition) => (
+  setActionDefinition = async (actionId, definition) => (
     ActionDefinitions.upsertAsync({ _id: actionId }, { $set: definition })
   )
 
-  _getActionDefinition = async (actionId) => (
+  getActionDefinition = async (actionId) => (
     ActionDefinitions.findOneAsync({ _id: actionId })
   )
 
-  _getActionDefinitions = async (actionIds) => (
+  getActionDefinitions = async (actionIds) => (
     keyBy(await ActionDefinitions.find({ _id: { $in: actionIds } }).fetchAsync(), '_id')
   )
 
@@ -191,7 +197,7 @@ class ActionsEngine {
    * exists. This is used to create default actions during DB initialization.
    */
   createDefaultActionDefinition = async (type, actionId, definition) => {
-    const existingDef = await this._getActionDefinition(actionId);
+    const existingDef = await this.getActionDefinition(actionId);
     if (existingDef !== undefined && !Meteor.isDevelopment) { // even with null, return
       return; // some action already exists; don't recreate it (except in development mode)
     }
@@ -268,7 +274,7 @@ class ActionsEngine {
       actionId = type + '-' + Random.secret(6);
     }
     // Create the action in DB
-    await this._setActionDefinition(actionId, action);
+    await this.setActionDefinition(actionId, action);
     user && new EventLog().logSetting({
       settingGroupName: EVENT_SETTINGS_SECTION_NAMES.ACTIONS,
       settingName: definition?.label,
@@ -321,7 +327,7 @@ class ActionsEngine {
     if (!actionId) {
       throw new Error('Missing actionId');
     }
-    const oldDefinition = await this._getActionDefinition(actionId);
+    const oldDefinition = await this.getActionDefinition(actionId);
     if (!oldDefinition) {
       throw new Error('Action not found');
     }
@@ -365,7 +371,7 @@ class ActionsEngine {
       );
     }
     // Create the action in DB
-    await this._setActionDefinition(actionId, newDefinition);
+    await this.setActionDefinition(actionId, newDefinition);
     user && new EventLog().logSetting({
       settingGroupName: EVENT_SETTINGS_SECTION_NAMES.ACTIONS,
       settingName: definition && definition.label,
@@ -390,7 +396,7 @@ class ActionsEngine {
     definition,
     user
   ) => {
-    const oldDefinition = await this._getActionDefinition(actionId);
+    const oldDefinition = await this.getActionDefinition(actionId);
     if (oldDefinition) {
       return this.updateActionDefinition({
         actionId,
@@ -412,9 +418,9 @@ class ActionsEngine {
    * @param {object} user A User object with { _id, profile } (or userId) that authors this change.
    */
   suppressActionDefinition = async (actionId, user) => {
-    const definition = await this._getActionDefinition(actionId);
+    const definition = await this.getActionDefinition(actionId);
     const label = definition?.label;
-    await this._setActionDefinition(actionId, null);
+    await this.setActionDefinition(actionId, null);
     const settingName = label || actionId;
     user && new EventLog().logSetting({
       user,
@@ -479,9 +485,18 @@ class ActionsEngine {
     args,
     user
   }) => {
+    if (!actionId) {
+      await this._logActionFailure({
+        actionId: 'unknown',
+        context: { robotId: context?.robotId },
+        type: 'unknown',
+        label: 'unknown'
+      }, user, 'Action ID is required');
+      return { errors: { actionId: true } };
+    }
     const prepared = await this.prepareActions({ actionIds: [actionId], context, args });
     if (prepared.errors) { // There are errors, stop
-      console.warn('Error preparing action for execution', actionId, prepared.errors);
+      console.warn(`Error preparing action "${actionId}" for execution: ${JSON.stringify(prepared.errors)}`);
       const robotId = context?.robotId;
       const [, errorReason] = Object.entries(prepared.errors)[0];
       if (robotId) {
@@ -618,7 +633,7 @@ class ActionsEngine {
     if (!Array.isArray(actionIds)) {
       throw new Error('actionIds must be an array');
     }
-    const actionsCfg = await this._getActionDefinitions(actionIds);
+    const actionsCfg = await this.getActionDefinitions(actionIds);
     let attributeValues = null;
     const actions = [];
     let errors = {};
@@ -693,7 +708,6 @@ class ActionsEngine {
 
     // load robot vitals for the collected attribute ids
     const attributeValues = await new AttributesManager().getRobotAttributeValues(robotId, Object.keys(attributeIds));
-    console.log('attributeValues', attributeValues, attributeIds);
     // discard attributeId and ts from the loaded values, keep values only
     const selectedAttributeValues = {};
     for (const attributeId of Object.keys(attributeValues)) {
@@ -796,27 +810,7 @@ class ActionsEngine {
     }
   };
 
-  /**
-   * Publishes a command on mqtt ros/loc/{command} to the robot of robotId with
-   * the payload generated with the pose passed in action.elementValues
-   * @param {object} action - action with the new pose on action.elementValues
-   * @param {string} robotId
-   * @param {string} command - string with the command to be called on the ros/loc publish
-   */
-  // TODO (franguerini): Consider moving this method to either localization module or nav2d module
-  //                     Similar to how it's done with NAVIGATE_PATH or CANCEL_NAV_GOAL
-  // eslint-disable-next-line class-methods-use-this
-  rosLocalizationPublish = async ({ command, robotId, action }) => {
-    const timestamp = Date.now();
-    const { pose, deltaPose } = action.elementValues;
-    const p = pose || deltaPose;
-    const payload = timestamp + '|' + p.x + '|' + p.y + '|' + p.theta;
-    // Take the opportunity to record RTT to the robot
-    // TOOD Move this to some other generic place
-    const result = await new Mqtt().publishAsync(robotId, `ros/loc/${command}`, payload);
-    await new RttManager().recordTiming(robotId, result);
-    return { ...result, ok: true };
-  };
+
 
   /**
    * Resolves the argument declared in `action` (they can be constants, placeholders
@@ -1042,7 +1036,7 @@ class ActionsEngine {
         }
         const nav2dModule = this._getNav2DModule();
         if (!nav2dModule) {
-          console.warn('Navigation2DModule instance not found.');
+          console.warn('NavigatePath: Navigation2DModule instance not found.');
           return logFailureAndReturn(buildErrorResult('Server error running navigation command'));
         }
         // Get arguments from the action
@@ -1112,20 +1106,36 @@ class ActionsEngine {
       }
       case ACTION_TYPES.RELOCALIZE: {
         console.log('Action exec: Relocalize', robotId);
-        // NOTE (franguerini): Make sure you are passing a delta "pose" inside elementValues
+        // NOTE: Make sure you are passing a delta "pose" inside elementValues
         //                    since 'set_pose' expects a delta pose inside the payload
         // Get arguments from the action
         const { deltaPose } = action.elementValues;
         const robotDeltaPose = await this._resolveDeltaPose(robotId, deltaPose);
-        await this.rosLocalizationPublish({
-          command: 'set_pose',
-          robotId,
-          action: {
-            elementValues: {
-              deltaPose: robotDeltaPose
-            }
+        const nav2dModule = this._getNav2DModule();
+        if (!nav2dModule) {
+          console.warn('Relocalize: Navigation2DModule instance not found.');
+          return logFailureAndReturn(buildErrorResult('Server error running navigation command'));
+        }
+
+        try {
+          // The result is sent to robot event logs (the current pose)
+          await nav2dModule.rosLocalizationPublish({
+            command: 'set_pose',
+            robotId,
+            deltaPose: robotDeltaPose
+          });
+        } catch (e) {
+          // We do not use custom exception classes, so interpret any exception with the "Timeout"
+          // word as a timeout
+          if (e.message.includes('Timeout')) {
+            return logFailureAndReturn(buildErrorResult('Timeout waiting for robot response'));
+          } else {
+            // Unknown error. Do not surface to the client (it can contain code details) but
+            // log it here
+            console.error('Error running sendNavGoal', e);
+            return logFailureAndReturn(buildErrorResult('Server error running navigation command'));
           }
-        });
+        }
         // we are sending delta pose for the robot event logs
         eventLogArguments = deltaPose;
         break;
@@ -1143,7 +1153,7 @@ class ActionsEngine {
 
         const nav2dModule = this._getNav2DModule();
         if (!nav2dModule) {
-          console.warn('Navigation2DModule instance not found.');
+          console.warn('NavigateTo: Navigation2DModule instance not found.');
           return logFailureAndReturn(buildErrorResult('Server error running navigation command'));
         }
 
@@ -1210,7 +1220,7 @@ class ActionsEngine {
         }
         const nav2dModule = this._getNav2DModule();
         if (!nav2dModule) {
-          console.warn('Navigation2DModule instance not found.');
+          console.warn('CancelNavGoal: Navigation2DModule instance not found.');
           return logFailureAndReturn(buildErrorResult('Server error running cancel navigation goal command'));
         }
         await nav2dModule.cancelNavGoal({
@@ -1527,10 +1537,12 @@ class ActionsEngine {
       pose.frameId = frameId;
     }
 
-    const tPose = await new SpatialTransformationsManager().transformPoseToRobotFrame(
-      robotId,
-      pose
-    );
+    // const tPose = await new SpatialTransformationsManager().transformPoseToRobotFrame(
+    //   robotId,
+    //   pose
+    // );
+    console.warn('_resolveNavigateToPose: Pose transformation not implemented yet');
+    const tPose = { ...pose };
     return { ok: true, pose: tPose };
   };
 
@@ -1552,14 +1564,17 @@ class ActionsEngine {
       frameId = robotLocalization.robotPose?.frameId;
     }
 
-    const transformedDeltaPoint = await new SpatialTransformationsManager().transformPoseToRobotFrame(
-      robotId,
-      { x, y, theta, frameId }
-    );
-    const origin = await new SpatialTransformationsManager().transformPoseToRobotFrame(
-      robotId,
-      { x: 0, y: 0, theta: 0, frameId }
-    );
+    console.warn('_resolveDeltaPose: Pose transformation not implemented yet');
+    const transformedDeltaPoint = { ...deltaPose }; // HACK
+    const origin = { x: 0, y: 0, theta: 0 }; // HACK
+    // const transformedDeltaPoint = await new SpatialTransformationsManager().transformPoseToRobotFrame(
+    //   robotId,
+    //   { x, y, theta, frameId }
+    // );
+    // const origin = await new SpatialTransformationsManager().transformPoseToRobotFrame(
+    //   robotId,
+    //   { x: 0, y: 0, theta: 0, frameId }
+    // );
     // The delta in the robot world frame is calculated by the subtraction of deltaPose and the
     // origin, both in the robot world frame
     const robotDeltaPose = {
@@ -1580,6 +1595,9 @@ class ActionsEngine {
    */
   // eslint-disable-next-line class-methods-use-this
   _logActionFailure = async (action, user, failureReason) => {
+    if (failureReason && !isString(failureReason)) {
+      throw new Error('failureReason must be a string');
+    }
     try {
       const robotId = action.context?.robotId;
       if (!robotId) {

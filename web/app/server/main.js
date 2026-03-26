@@ -25,6 +25,12 @@ import { seedMasterCredentials } from '../imports/server/mqttCredentialProvision
 import { addApiRoute } from '../imports/server/rest_api';
 import OroMqtt from '../imports/server/mqtt';
 import ActionsEngine from '../imports/server/actions';
+import {
+  // RobotLocalizationModule,
+  // ImagesModule,
+  Navigation2DModule,
+} from '../imports/server/modules';
+
 
 // Register accounts hooks at module level — before any login attempt
 registerAccountsHooks();
@@ -78,6 +84,9 @@ const oroAppMain = async () => {
   const mqtt = new OroMqtt();
   mqtt.run(Meteor.settings.mqtt);
 
+
+  // Pre-create SOME modules - the ones required to initialize any manager
+  moduleInstances.Navigation2DModule = new Navigation2DModule();
   // TODO add and initialize modules
   await new DashboardsManager().init();
   await new SearchManager().init();
@@ -88,9 +97,13 @@ const oroAppMain = async () => {
   await new AgentManager().init({ serverId: instanceValues.serverId });
   await new ActionsEngine().init({
     mqtt,
-    // nav2d: moduleInstances.Navigation2DModule,
+    nav2d: moduleInstances.Navigation2DModule,
     // images: moduleInstances.ImagesModule,
   });
+
+  // Load and start modules
+  // moduleInstances.RobotLocalizationModule.load();
+  moduleInstances.Navigation2DModule.load();  
 
   // Customize the passwordless login-token email
   Accounts.emailTemplates.sendLoginToken = {

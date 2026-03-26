@@ -17,7 +17,6 @@ import { notFoundApiError } from '../rest_api_common';
 async function apiGetRobotAttribute({ robot, attributeId }) {
   const doc = await new AttributesManager()
     .getRobotAttributeValues(robot._id, [attributeId]);
-    console.log('apiGetRobotAttribute 1', doc);
   if (!(attributeId in doc)) {
     return notFoundApiError('Attribute does no exist for this robot');
   } else {
