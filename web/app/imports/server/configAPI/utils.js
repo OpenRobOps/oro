@@ -40,7 +40,7 @@ const translateConfigApiExceptionToMeteorError = (exception) => {
 
 /**
  * Returns the list of entities that a given user has
- * access to. All the entities are assumed to be from account companyId.
+ * access to.
  *
  * This is used to whitelist config objects to users that don't have access to the entire
  * fleet.
@@ -65,20 +65,10 @@ const filterEntitiesWithAccess = async (
   const accessibleRobotIds = await new OroRoles().getAccessibleRobotIds(
     userId,
     robotIds,
-    companyId,
     permissionLevel
   );
-  const accessibleTagIds = await new OroRoles().getObjectIdsGrantedAccess({
-    subjectId: userId,
-    companyId,
-    resourceType: RESOURCE_TYPES.TAG,
-    permissionLevel
-  });
   return [
     ...otherEntities,
-    ...Array.from(accessibleTagIds).map(robotId => (
-      { entityId: robotId, entityType: ID_TYPE_COLLECTION, namespaceId: companyId }
-    )),
     ...accessibleRobotIds.map(robotId => ({ entityId: robotId, entityType: ID_TYPE_ROBOT }))
   ];
 };

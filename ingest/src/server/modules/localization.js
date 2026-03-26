@@ -404,10 +404,8 @@ export default class RobotLocalizationModule {
   }
 
   onPoseAndLaserData = async (robotId, msg) => {
-    console.log('onPoseAndLaserData: robotId=', robotId, 'msg=', msg);
     // Rate limiter note: Message de-serialization is done before rate-limiting because
     // limiting depends on the timestamp on the message and not the current time
-    // See IO-5895
     const decodedMsg = this.LocationAndPoseMessage.decode(msg);
     const ts = Number.parseInt(decodedMsg.ts.toNumber(), 10);
     // HACK(adamntivm) Limit data rate that is stored in Mongo DB
@@ -417,8 +415,8 @@ export default class RobotLocalizationModule {
     }
 
     const poseUpdates = {
-      x: decodedMsg.posX + decodedMsg.offsetX,
-      y: decodedMsg.posY + decodedMsg.offsetY,
+      x: decodedMsg.posX + (decodedMsg.offsetX || 0),
+      y: decodedMsg.posY + (decodedMsg.offsetY || 0),
       theta: decodedMsg.yaw,
       ts
     };
@@ -508,7 +506,7 @@ export default class RobotLocalizationModule {
         isAlphaGradient = true
       } = costmapPreference;
 
-      // TODO(adamantivm) Confirm that each color is exactly an array with three numbers
+      // TODO Confirm that each color is exactly an array with three numbers
 
       // If there is no gradientColorTo defined, then make it the same as the from so that
       // all data points end up being a uniform color.
@@ -944,7 +942,7 @@ export default class RobotLocalizationModule {
   _getSpatialAnnotation = async ({ robotId, frameId }) => {
     const types = [SPATIAL_ANNOTATION_TYPES.MAP];
     const annotations = await this.annotationsMgr.findAnnotations(
-      { companyId, entityId: robotId, entityType: ID_TYPE_ROBOT, annotationId: frameId, types }
+      { robotId, annotationId: frameId, types }
     );
     const annotationId = annotations.length && annotations[0].annotation?.annotationId
       ? annotations[0].annotation.annotationId

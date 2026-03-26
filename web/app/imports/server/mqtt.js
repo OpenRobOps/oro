@@ -201,7 +201,7 @@ export default class OroMqtt {
         const echo = Echo.decode(msg);
         // echo.payload contains the name of the OneOf protofile variable.
         const payload = echo[echo.payload];
-        tsAgent = echo.timeStamp.toNumber();
+        tsAgent = echo.timeStamp;
         [seq] = payload.split('|');
 
         tsAgent = Number.parseInt(tsAgent, 10);
@@ -263,6 +263,7 @@ export default class OroMqtt {
   publish = async (robotId, subtopic, msg, options = null) => {
     const broker = await this.getMqttBroker(robotId);
     if (broker) {
+      console.log(`publish: Publish ${subtopic} to robot ${robotId}`, msg);
       broker.client.publish('r/' + robotId + '/' + subtopic, msg, options);
     } else {
       // TODO A throttled log functionality should be extracted somewhere else

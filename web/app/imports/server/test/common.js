@@ -5,7 +5,7 @@ import { Accounts } from 'meteor/accounts-base';
 import { ROLE_VIEWER } from '../../shared/roles';
 import { Robots } from '../../lib/collections';
 
-// Company, user ids
+// User ids
 const BOB_USER = 'b0b';
 const BOB_EMAIL = 'bob@scalable.com';
 // Tags and collections ids

@@ -205,12 +205,9 @@ class RobotSearch extends React.Component {
    */
   dispatchNewQuery = (queryString) => {
     const {
-      companyId, selectedCollectionId, searchEntitiesMeteorCall
+      searchEntitiesMeteorCall
     } = this.props;
-    // For now, we only support same company queries,
-    const filters = {
-      companyId
-    };
+    const filters = {};
     const entityTypes = [ID_TYPE_ROBOT];
     if (searchEntitiesMeteorCall) {
       searchEntitiesMeteorCall({

@@ -7,11 +7,21 @@
  * of status.
  * Processing and dispatching is in the ingest service.
  */
-import { isEmpty } from 'lodash';
+import { isEmpty, isArray } from 'lodash';
+import { Meteor } from 'meteor/meteor';
+import { isString } from 'lodash';
+import { ACCESS_LEVEL_VIEW, COLLECTIONS } from '../shared/constants';
+import { matchesStatusFilter } from '../shared/status';
+import { Robots } from '../lib/collections';
+import OroRoles from '../server/roles';
 // InOrbit modules
 import { AsyncCache } from './simpleCache';
+
 import {
+  RobotStatus,
+  RobotsWithStatus,
   StatusConfig,
+  AGG_STATUS_FIELD,
 } from '../lib/status';
 // import AlertsManager from './alertsManager';
 // import EventLog from './eventLogger';
@@ -30,7 +40,60 @@ export default class RobotStatusManager {
   }
 
   init = async () => {
-    // Ignored. Placeholder.
+    await this._createRobotsWithStatusView();
+    Meteor.publish('robots_with_status', this._publishRobotsWithStatus);
+    Meteor.methods({
+      'status.getRobotDetailedStatus': this._meteorGetRobotDetailedStatus,
+    });
+  };
+
+  /**
+   * Publication for robots with status data.
+   * Filters robots server-side based on statusFilter and statusList.
+   */
+  // eslint-disable-next-line prefer-arrow-callback
+  _publishRobotsWithStatus = async function ({ statusList, statusFilter } = {}) {
+    if (!await new OroRoles().hasRole(this.userId)) {
+      return this.ready();
+    }
+    // Compute aggregated status value: max of configured status attribute values
+    const calculateAggregatedStatusValue = (statuses) => (
+      (isArray(statusList) ? statusList : []).reduce(
+        (aggStatus, attrId) => Math.max(aggStatus, (statuses?.[attrId]?.value) || 0),
+        0
+      )
+    );
+    const collectionName = COLLECTIONS.ROBOTS_WITH_STATUS;
+
+    const robotCollHandle = await RobotsWithStatus.find(
+      {},
+      { pollingIntervalMs: 3000 }
+    ).observeChangesAsync({
+      added: (id, doc) => {
+        const aggStatusValue = calculateAggregatedStatusValue(doc.statuses);
+        if (matchesStatusFilter(statusFilter, aggStatusValue)) {
+          this.added(collectionName, id, { ...doc, [AGG_STATUS_FIELD]: aggStatusValue });
+        }
+      },
+      changed: (id, fields) => {
+        if (fields.statuses !== undefined) {
+          const aggStatusValue = calculateAggregatedStatusValue(fields.statuses);
+          if (matchesStatusFilter(statusFilter, aggStatusValue)) {
+            this.changed(collectionName, id, { ...fields, [AGG_STATUS_FIELD]: aggStatusValue });
+          } else {
+            this.removed(collectionName, id);
+          }
+        } else {
+          this.changed(collectionName, id, fields);
+        }
+      },
+      removed: (id) => {
+        this.removed(collectionName, id);
+      }
+    });
+
+    this.ready();
+    this.onStop(() => robotCollHandle.stop());
   };
 
   /**
@@ -146,5 +209,52 @@ export default class RobotStatusManager {
   clearStatusConfig = async (attributeId) => (
     this._doUnsetStatusConfig(attributeId)
   );
-}
 
+  /**
+   * Create the MongoDB view that joins robots with their status.
+   * The view is backed by the `robots` collection and $lookups into `robot_status`.
+   */
+  // eslint-disable-next-line class-methods-use-this
+  _createRobotsWithStatusView = async () => {
+    const db = Robots.rawDatabase();
+    const viewName = COLLECTIONS.ROBOTS_WITH_STATUS;
+    try {
+      await db.createCollection(viewName, {
+        viewOn: COLLECTIONS.ROBOTS,
+        pipeline: [
+          {
+            $lookup: {
+              from: COLLECTIONS.ROBOT_STATUS,
+              localField: '_id',
+              foreignField: '_id',
+              as: '_statusDoc'
+            }
+          },
+          { $unwind: { path: '$_statusDoc', preserveNullAndEmptyArrays: true } },
+          {
+            $addFields: {
+              statuses: { $ifNull: ['$_statusDoc', {}] }
+            }
+          },
+          { $unset: '_statusDoc' }
+        ]
+      });
+    } catch (err) {
+      throw new Meteor.Error('Error creating robots_with_status view', err);
+    }
+  };
+
+  /**
+   * Returns full status data for a robot, used for tooltip details in FleetStatusWidget.
+   */
+  // eslint-disable-next-line prefer-arrow-callback
+  _meteorGetRobotDetailedStatus = async function ({ robotId }) {
+    if (!isString(robotId)) {
+      throw new Meteor.Error('robotId must be a string');
+    }
+    if (!await new OroRoles().canAccessRobot(this.userId, robotId, ACCESS_LEVEL_VIEW)) {
+      throw new Meteor.Error('Unauthorized');
+    }
+    return RobotStatus.findOneAsync({ _id: robotId });
+  };
+}

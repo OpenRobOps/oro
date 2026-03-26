@@ -54,8 +54,6 @@ const isSystemUser = user => user && user._id === SYSTEM_USER_ID;
  * it should be assumed they are the same values.
  */
 const RESOURCE_TYPES = {
-  // This string is 'company' for compatibility purposes; but these are
-  // "system" or account elements.
   SYSTEM: 'system',
   ROBOT: 'robot',
   DASHBOARD: 'dashboard',
@@ -63,9 +61,8 @@ const RESOURCE_TYPES = {
 };
 
 /**
- * The resource 'singletons' represent a single resource within a company
- * (account); such as "the billing parameters", "the API access" or
- * "integrations with 3rd party tools".
+ * The resource 'singletons' represent a single resource within ORO
+ * such as "the API access" or "integrations with 3rd party tools".
  *
  * This is mostly used to separate access to parts of the config screens, but
  * also other concepts like "using locks" are represented here. For a more
@@ -135,11 +132,7 @@ const isSingletonResourceId = id => id && id[0] == '~';
  * We are starting to qualify element names in Meteor.users' `roles` element, in the form
  * "entityType/entityId".
  * The two components are separated by the "/" symbol.
- * For now, this is only applied to collections; permissions on companies are left unqualified as
- * in the initial version (so a raw hexa ID means it's a company).
- * e.g. `{ collection/123acb456: [ "viewer" ] }`
- *
- * NOTE: This constant is also used in ingest for activation pipelines; don't modify it.
+ * e.g. `{ robot/1234: [ "viewer" ] }`
  */
 const SCOPE_SEPARATOR = '/';
 

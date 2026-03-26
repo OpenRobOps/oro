@@ -22,6 +22,7 @@
     "convert-units": "^2.3.4",
     "cron": "^4.4.0",
     "fastest-validator": "^1.19.1",
+    "handlebars": "^4.7.8",
     "ismobilejs": "^1.1.1",
     "js-yaml": "^4.1.1",
     "lodash": "^4.17.23",

@@ -58,7 +58,6 @@ const DEBUG_CALLBACKS = 0;
 const WithActionsContext = (props, WrappedComponent) => {
   const {
     actionsConfig = {},
-    companyId,
     robot = {},
     widget,
     uiConfig = {},
@@ -200,10 +199,7 @@ const WithActionsContext = (props, WrappedComponent) => {
         // NOTE(herchu) This is not a regular action object either. It comes from older billing
         // (and other?) notifications that could take the user setting pages.
         // TODO(migrate them to a ACTION_TYPES.GO_APP type of action
-
-        // For now, url can only be customized with company id
-        const newUrl = url.replace('{{companyId}}', companyId);
-        urlAction({ url: newUrl });
+        urlAction({ url });
       } else if (type === ACTION_TYPES.GO_GO_APP) { // client-side action
         if (args && args[ARGNAME_GO_PATH]) {
           urlAction({ url: action.args[ARGNAME_GO_PATH] });
@@ -645,8 +641,6 @@ const WithActionsContext = (props, WrappedComponent) => {
 WithActionsContext.propTypes = {
   // The action definitions object
   actionsConfig: PropTypes.object,
-  // The company id for this actions list.
-  companyId: PropTypes.string,
   // The robotid id for this actions list.
   robotId: PropTypes.string,
   // The robot object

@@ -20,7 +20,7 @@ const defaultMeteorErrorHandler = (error, meteorMethdoName, params) => {
 /**
  * Trigger a meteor promise call to obtain the company's Access Token for the event log.
  */
-const getEventLogAccessToken = companyId => Meteor.callAsync('eventLog.getAccessToken', { data: { companyId } });
+const getEventLogAccessToken = () => Meteor.callAsync('eventLog.getAccessToken', { data: {} });
 
 /**
  * Hook to allow invoking a Meteor method and obtaining its response data or error object.

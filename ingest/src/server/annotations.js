@@ -48,9 +48,8 @@ export default class AnnotationsManager {
   /**
    * Finds and returns all spatial annotations for a sublocation.
    *
-   * The annotation is asigned to either a location (identified by entityType=="collection")
-   * or a robot (with entityType=="robot"); from account `companyId`. The sublocation is identified
-   * by frameId.
+   * The annotation is asigned to either the location.
+   * The sublocation is identified by frameId.
    *
    * @param {String} companyId Represents the account
    * @param {String} entityId The id of the location or robot
