@@ -22,7 +22,6 @@ import { isEqual, isArray, isString } from 'lodash';
 // ORO modules
 import { STATUS } from '../lib/status';
 import RobotStatusManager from './status';
-import { ID_UNIQUE } from '../shared/constants';
 import { applyDefaults, assignIfDistinct } from '../lib/util';
 import OroRoles from './roles';
 import {
@@ -66,7 +65,7 @@ import {
 } from '../lib/attributes';
 // import { AlertsConfig } from '../lib/alerts';
 import {
-  RESOURCE_SINGLETONS, ACCESS_LEVEL_VIEW, ACCESS_LEVEL_CONFIGURE
+  ACCESS_LEVEL_VIEW
 } from '../shared/roles';
 // import { Robot } from './model';
 // import { publishSingleDocumentFromFunction } from './lib/publicationsHelpers';
@@ -912,13 +911,12 @@ class AttributesManager {
     // Suppress the attribute definition
     await this._unsetAttributeDefinition(attributeId);
     await this.propagateConfigChange();
-    console.log("TODO log event log", attributeId)
-    // new EventLog().logSetting({
-    //   settingGroupName: EVENT_SETTINGS_SECTION_NAMES.ATTRIBUTES,
-    //   settingName: oldAttrDef?.label || attributeId,
-    //   eventType: EVENT_TYPES.SETTING_REMOVED,
-    //   user
-    // });
+    new EventLog().logSetting({
+      settingGroupName: EVENT_SETTINGS_SECTION_NAMES.ATTRIBUTES,
+      settingName: oldAttrDef?.label || attributeId,
+      eventType: EVENT_TYPES.SETTING_REMOVED,
+      user
+    });
     return oldAttrDef;
   };
 
@@ -1435,26 +1433,31 @@ class AttributesManager {
    * If an attribute does not exist, the key is not present in the returned object.
    * If an attribute exists but the robot never reported it, its value is set to null.
    */
-  getRobotAttributeValues = async (robotId, attributes = null) => {
+  getRobotAttributeValues = async (robotId, attributeIds = null) => {
     if (!robotId || !isString(robotId)) {
       throw new Error('robotId must be a string');
     }
-    if (attributes && !isArray(attributes)) {
-      throw new Error('attributes must be an array');
+    if (!attributeIds || !attributeIds.length) {
+      return {}; // speed up saving a DB lookup
     }
-    const doc = await this._getAttributeValuesDoc(robotId, attributes);
+    if (!isArray(attributeIds)) {
+      throw new Error('attributeIds must be an array');
+    }
+    const doc = await this._getAttributeValuesDoc(robotId, attributeIds);
     const defs = await this._getAttributeDefinitionDoc();
     // For those attributes that have no value for this robot, set the value to null
     // (This is different from not having the attribute defined)
-    if (attributes) {
-      attributes.forEach(attr => {
+    if (doc) {
+      attributeIds.forEach(attr => {
         if (!doc[attr] && defs[attr]) {
           doc[attr] = null; // no value
         }
       });
+      delete doc._id;
+      return doc;
+    } else {
+      return {};
     }
-    delete doc._id;
-    return doc;
   };
 }
 

@@ -47,10 +47,6 @@ class NotFoundError extends Error {
   }
 }
 
-// Field in the company that servers as a flag to indicate that the company used config as code
-// for incident definitions
-const USED_CONFIG_AS_CODE_FLAG_FIELD = 'configAsCode';
-
 // Formats supported by the list operation
 const LIST_FORMAT_SHORT = 'short';
 const LIST_FORMAT_FULL = 'full';

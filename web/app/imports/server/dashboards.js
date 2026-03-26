@@ -60,13 +60,6 @@ class DashboardsManager {
         _id: sanitizedLabel
       });
     }));
-    // Create dashboard object to be associated to the company in ui preferences, and persist it
-    // const dashboards = ids.reduce((acc, id) => ({ ...acc, [id]: true }), {});
-    // await this._uiPrefsCnfg.setEntityConfig({
-    //   entityId: companyId,
-    //   entityType: ID_TYPE_COMPANY,
-    //   newConfig: { dashboards }
-    // });
     return ids;
   };
 
@@ -105,18 +98,6 @@ class DashboardsManager {
    * @return {String} dashboardId
    */
   deleteDashboard = async ({ dashboardId }) => {
-    // const roles = await new OroRoles().fetchCompanyRoles(companyId);
-    // const entities = Object.keys(companyRoles).map(roleId => ({
-    //   entityId: glueId(ID_TYPE_ROLE, companyId, roleId),
-    //   entityType: ID_TYPE_ROLE
-    // }));
-    // entities.push({ entityId: companyId, entityType: ID_TYPE_COMPANY });
-    // // Update any UIPrefs doc pointing to this dashboard
-    // await UIPreferences.updateAsync(
-    //   { $or: entities },
-    //   { $unset: { [`dashboards.${dashboardId}`]: 1 } },
-    //   { multi: true }
-    // );
     // Remove the dashboard
     const result = await Dashboards.removeAsync({
       _id: dashboardId,

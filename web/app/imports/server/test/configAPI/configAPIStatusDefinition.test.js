@@ -305,7 +305,6 @@ describe('configAPI:StatusDefinition', () => {
     });
     const ds1 = result.find(r => r.id === 'cpuLoadPercentage');
     const ds2 = result.find(r => r.id === 'anotherAttribute');
-    console.log("result", result)
     expect(ds1).deep.equal({
       id: 'cpuLoadPercentage',
       kind: KIND_STATUS_DEFINITION,
