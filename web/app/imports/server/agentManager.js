@@ -335,6 +335,15 @@ export default class AgentManager {
       moduleName: 'RosPoseAgentlet',
       minRunlevel: 5
     });
+    // Make RosLocalizationAgentlet loaded by default (new method)
+    // TODO Move to AgentManager when migrating from old AgentModuleRequests
+    // based method
+    await RobotModuleState.insertAsync({
+      entityId,
+      entityType,
+      moduleName: 'RosLocalizationAgentlet',
+      minRunlevel: 5
+    });
     // Make GPSAgentlet loaded by default (new method)
     // TODO Move to AgentManager when migrating from old AgentModuleRequests
     // based method

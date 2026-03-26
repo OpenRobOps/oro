@@ -60,7 +60,6 @@ export default class ConfigManager {
    * so that it ends up with:
    *  - the most specific (robot level) settings first,
    *  - then collections (in the reverse order they appear in the robot realm),
-   *  - then the company
    *  - finally system wide settings.
    *
    * @param obj1 A config object with { entityId, entityType } and any number of
