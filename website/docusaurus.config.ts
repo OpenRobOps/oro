@@ -7,7 +7,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 const config: Config = {
   title: 'OpenRobOps',
   tagline: 'The open source Robot Operations Platform',
-  favicon: 'img/favicon.ico',
+  favicon: 'img/favicon.svg',
 
   // Future flags, see https://docusaurus.io/docs/api/docusaurus-config#future
   future: {
@@ -82,7 +82,7 @@ const config: Config = {
       title: 'OpenRobOps',
       logo: {
         alt: 'OpenRobOps Logo',
-        src: 'img/logo.svg',
+        src: 'img/full-logo-small-size.svg',
       },
       items: [
         {
