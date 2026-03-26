@@ -56,7 +56,7 @@ export default class Model {
    * When not set, it just returns undefined.
    *
    * Example:
-   * new Company("abcd").getLastTs('email', 'email:newInvoiceOwed')
+   *   getLastTs('error', 'connectionError')
    */
   getLastTs = (namespace, actionId) => {
     if (!namespace || !actionId) {

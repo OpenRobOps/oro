@@ -441,8 +441,7 @@ export default class AgentManager {
   }
 
   /**
-   * Returns the full module configuration for a given robot, taking into
-   * account company defaults.
+   * Returns the full module configuration for a given robot, taking into system defaults.
    *
    * TODO Replace users of this with getCalculatedState
    */

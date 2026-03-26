@@ -24,6 +24,7 @@ import { CoreHttpApis } from '../imports/server/http_apis';
 import { seedMasterCredentials } from '../imports/server/mqttCredentialProvisioner';
 import { addApiRoute } from '../imports/server/rest_api';
 import OroMqtt from '../imports/server/mqtt';
+import ActionsEngine from '../imports/server/actions';
 
 // Register accounts hooks at module level — before any login attempt
 registerAccountsHooks();
@@ -85,6 +86,11 @@ const oroAppMain = async () => {
   await new OroRoles().createDefaultRoles();
   await new ConfigAPI().init({});
   await new AgentManager().init({ serverId: instanceValues.serverId });
+  await new ActionsEngine().init({
+    mqtt,
+    // nav2d: moduleInstances.Navigation2DModule,
+    // images: moduleInstances.ImagesModule,
+  });
 
   // Customize the passwordless login-token email
   Accounts.emailTemplates.sendLoginToken = {

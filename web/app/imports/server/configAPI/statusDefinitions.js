@@ -439,7 +439,6 @@ export default class StatusConfigAPIHandler {
     statusConfigs.forEach((statusConfig) => {
       statusConfig.dataSourceObject = dataSources[statusConfig.attributeId]
     });
-    console.log("statusConfigs", statusConfigs)
     // Transform the output to the right format used for Config as Code lists.
     if (format === LIST_FORMAT_SHORT) {
       return statusConfigs.map(statusConfigToListItem);

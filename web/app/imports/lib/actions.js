@@ -93,49 +93,36 @@ const Schemas = {};
 const ActionDefinitions = new Mongo.Collection(COLLECTIONS.ACTION_DEFINITIONS);
 /*
  * This schema contains lots of fields and details... Refer to design doc:
- * https://docs.google.com/document/d/14nbbXkgxc4-ICCvko5SWFmyAf8Usuji8w0E97xeBnis/edit
  *
- * entityId: string
- * entityType: string
- * <actionId> : { // each action template object, indexed by actionId
- *   type: string, // type from ACTION_TYPES
- *   label: string, // human readable, user set name
- *   description: string (optional), // human readable, action description
- *   icon: string,    // Icon for this action. Could be anything that goes into the 'src' field
- *                    // of an img, such as a base64 data or an image URL.
- *   tooltip: string, // Tooltip text for the action
- *   order: number,    // HACK(adamantivm) If present, used to sort actions by numerical order
- *     // NOTE icon, tooltip and order are
- *     // still experimental, under action-icons feature flag
- *     // NOTE order in particular should be
- *     // removed from here and moved to ui_preferences instead
- *   target: { type: String, optional: true },
- *   client: bool (optional), // (default: false) if this is a client-side action
- *   isTemplate: bool (optional) // if this action is a system template, not to be used directly
- *   context: { // context on which or for which this action will execute -- normally a robot
- *     robotId: null, // optional; if action applies to a robot, placeholder for robotId
- *     fleetId ?
- *   },
- *   confirmation { // if confirmation is needed. See design doc
- *     required: bool,
- *     message: string,
- *     buttonLabel: string
- *   }
- *   elementList: [array of argument names]
- *   elementValues: { // values (constants) or placeholders
- *     // for each argument required by this action
- *     arg1: { value: _, type: _, label: _ }
- *     ...
- *   }
- *   disableAddingArgs: bool, optional // if user can add more args to this template
- *   createdTs: Number // creation timestamp
- *   updatedTs: Number // last updte timestamp
- *   featureFlag: String // optional; if the action is controlled by a feature flag, place it here
+ * _id: string // actionId
+ * type: string, // type from ACTION_TYPES
+ * label: string, // human readable, user set name
+ * description: string (optional), // human readable, action description
+ * icon: string,    // Icon for this action. Could be anything that goes into the 'src' field
+ *                  // of an img, such as a base64 data or an image URL.
+ * tooltip: string, // Tooltip text for the action
+ * order: number,   // If present, used to sort actions by numerical order
+ * client: bool (optional), // (default: false) if this is a client-side action
+ * isTemplate: bool (optional) // if this action is a system template, not to be used directly
+ * context: { // context on which or for which this action will execute -- normally a robot
+ *   robotId: null, // optional; if action applies to a robot, placeholder for robotId
+ *   fleetId ?
  * },
+ * confirmation { // if confirmation is needed. See design doc
+ *   required: bool,
+ *   message: string,
+ *   buttonLabel: string
+ * }
+ * elementList: [array of argument names]
+ * elementValues: { // values (constants) or placeholders
+ *   // for each argument required by this action
+ *   arg1: { value: _, type: _, label: _ }
+ *   ...
+ * }
+ * disableAddingArgs: bool, optional // if user can add more args to this template
+ * createdTs: Number // creation timestamp
+ * updatedTs: Number // last updte timestamp
  */
-if (Meteor.isServer) {
-  ActionDefinitions.rawCollection().createIndex({ entityId: 1, entityType: 1 }, { unique: true });
-}
 
 
 const ActionTokens = new Mongo.Collection(COLLECTIONS.ACTION_TOKENS);

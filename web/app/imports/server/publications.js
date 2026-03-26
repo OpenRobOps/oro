@@ -127,7 +127,7 @@ Meteor.publish('robot.details', async function ({ robotId, robotIds }) {
       [robotId] = robotIds;
     }
   } else {
-    // No robotId(s) are received when viewing a new company (zero data), do not log it the error
+    // No robotId(s) are received (zero data), do not log it the error
     return this.ready();
   }
   // check permissions

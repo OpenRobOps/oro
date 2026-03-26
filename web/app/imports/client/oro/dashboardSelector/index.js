@@ -49,32 +49,7 @@ const DashboardSelectorContainer = withTracker(({ urlDashboardId }) => {
   //   return { isLoading: true };
   // }
 
-  // Note on this subscription and the getConfig below: The companyId for which this Dashbaords
-  // view is loaded (it is mandatory) is passed as parameter to getConfig. This way, the
-  // 'inheritance chain' of getConfig can go up to that company and not the user's default
-  // companyId. This is what allows viewing _any_ company (provided the user has access to it)
-  // const uiPreferencesHandle = Meteor.subscribe('ui.preferences', {
-  //   entityId: userId,
-  //   entityType: ID_TYPE_USER,
-  //   companyId,
-  //   widget: 'dashboards'
-  // });
-
-  // if (!uiPreferencesHandle.ready()) {
-  //   return { isLoading: true };
-  // }
-
-  // Get user dashboard Ids
-  // const configManager = new ConfigManager(UIPreferences);
-  // const dashboardCfg = (companyId && configManager.getEntityConfig({
-  //   entityId: userId,
-  //   entityType: ID_TYPE_USER,
-  //   namespaceId: companyId,
-  //   fields: ['dashboards']
-  // })) || {};
-
   const dashboardCfg = {};
-
   // Compute list of dashboard Ids for the current user by grabbing
   // all available dashboards in the Company -> Role -> User hierarchy,
   // and filtering out those not visible for the user's role.

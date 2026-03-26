@@ -58,69 +58,6 @@ export default class Model {
     return doc;
   };
 
-  /**
-   * Gets a "last happened" timestamp for a given `namespace` and `actionId`.
-   * See Companies field `lastTs` in collections module.
-   *
-   * When not set, it just returns undefined.
-   *
-   * Example:
-   * new Company("abcd").getLastTsAsync('email', 'email:newInvoiceOwed')
-   */
-  getLastTsAsync = async (namespace, actionId) => {
-    if (!namespace || !actionId) {
-      throw new Error('Namespace and actionId are required');
-    }
-    const doc = await this._fetchAsync({ [['lastTs', namespace, actionId].join('.') ]: 1, _id: 0 });
-    return doc.lastTs && doc.lastTs[namespace] && doc.lastTs[namespace][actionId];
-  };
-
-  /**
-   * Updates a "last happened" timestamp for a given `namespace` and `actionId` to `ts`.
-   * If `ts` is not given, it defaults to "now".
-   * See Companies field `lastTs` in collections module.
-   *
-   * Example,
-   * new Company("abcd").setLastTsAsync('email', 'email:newInvoiceOwed', now)
-   */
-  setLastTsAsync = async (namespace, actionId, ts = Date.now()) => {
-    if (!namespace || !actionId) {
-      throw new Error('Namespace and actionId are required');
-    }
-    await this._coll.updateAsync({ _id: this._id }, { $set: {
-      [['lastTs', namespace, actionId].join('.') ]: ts
-    }});
-  };
-
-  /**
-   * Tells if at least `durationMs` has elapsed since last time an action was
-   * marked as happened (or true, if the action never happened).
-   *
-   * Wrapper for getLastTsAsync and the logic for checking null-ness and comparing timestamps.
-   *
-   * @see getLastTsAsync and setLastTsAsync.
-   *
-   * Example,
-   * new Company("abcd").setLastTsAsync('email', 'email:newInvoiceOwed')
-   * ... Zzzzz ...
-   * new Company("abcd").isElapsedTsAsync('email', 'email:newInvoiceOwed', 1000)
-   * // returns true if over 1s has elapsed since last invoice email was sent.
-   *
-   */
-  isElapsedTsAsync = async (namespace, actionId, durationMs) => {
-    if (!namespace || !actionId) {
-      throw new Error('Namespace and actionId are required');
-    }
-    if (durationMs < 0) {
-      throw new Error('durationMs cannot be negative');
-    }
-    if (!durationMs) {
-      return true; // If duration = 0, always return true (used when timestamps are simply disabled)
-    }
-    const lastTs = await this.getLastTsAsync(namespace, actionId);
-    return !lastTs || lastTs + durationMs < Date.now();
-  };
-
   existsAsync = async () => {
     try {
       await this._fetchAsync();

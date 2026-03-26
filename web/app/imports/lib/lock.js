@@ -4,7 +4,7 @@
  * https://docs.google.com/document/d/1y0-htiDFGgDr1csOQwqk3CmRYEQZ6_hko9IGpNDYUm8
  */
 
-// Types of locks per company
+// Types of locks
 const LOCK_TYPES = {
   // disabled (default behavior): does not use locks.
   DISABLED: 'disabled',
@@ -14,7 +14,7 @@ const LOCK_TYPES = {
   AUTOMATIC: 'automatic'
 };
 
-// Types of locks per company
+// Types of locks 
 const LOCK_TYPES_LABELS = [
   { label: 'Disabled', _id: LOCK_TYPES.DISABLED },
   { label: 'Selectable', _id: LOCK_TYPES.EXPLICIT },

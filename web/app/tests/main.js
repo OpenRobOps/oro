@@ -2,6 +2,8 @@ import assert from "assert";
 
 import '../imports/server/test/roles.test.js'
 import '../imports/server/test/status.test.js'
+import '../imports/server/test/actions.test.js'
+import '../imports/server/test/locks.test.js'
 import '../imports/server/test/configAPI/configAPIStatusDefinition.test.js'
 
 describe("app", function () {
