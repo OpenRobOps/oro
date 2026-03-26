@@ -404,10 +404,8 @@ export default class RobotLocalizationModule {
   }
 
   onPoseAndLaserData = async (robotId, msg) => {
-    console.log('onPoseAndLaserData: robotId=', robotId, 'msg=', msg);
     // Rate limiter note: Message de-serialization is done before rate-limiting because
     // limiting depends on the timestamp on the message and not the current time
-    // See IO-5895
     const decodedMsg = this.LocationAndPoseMessage.decode(msg);
     const ts = Number.parseInt(decodedMsg.ts.toNumber(), 10);
     // HACK(adamntivm) Limit data rate that is stored in Mongo DB
@@ -417,8 +415,8 @@ export default class RobotLocalizationModule {
     }
 
     const poseUpdates = {
-      x: decodedMsg.posX + decodedMsg.offsetX,
-      y: decodedMsg.posY + decodedMsg.offsetY,
+      x: decodedMsg.posX + (decodedMsg.offsetX || 0),
+      y: decodedMsg.posY + (decodedMsg.offsetY || 0),
       theta: decodedMsg.yaw,
       ts
     };
