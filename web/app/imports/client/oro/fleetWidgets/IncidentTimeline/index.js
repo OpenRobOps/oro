@@ -6,7 +6,7 @@
  *
  * Wrapped with WithNoDataMessage to handle loading and zero-data states.
  */
-import React from 'react';
+import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { prepareTimeVarsForQuery, StartTsPropType } from '../../util/timeUtils';
 import WithNoDataMessage from '../../util/WithNoDataMessage';
@@ -27,7 +27,10 @@ const IncidentTimeline = ({
 }) => {
   const { startTs, endTs } = prepareTimeVarsForQuery(propStartTs, timeRangeMs, nowTs);
   const { isLoading: isRobotsLoading, robotsById } = useRobots();
-  const robotIds = isRobotsLoading ? null : Object.keys(robotsById);
+  const robotIds = useMemo(
+    () => (isRobotsLoading ? null : Object.keys(robotsById)),
+    [isRobotsLoading, robotsById]
+  );
   const { isLoading: isIncidentsLoading, incidents } = useIncidents({
     robotIds,
     startTs,

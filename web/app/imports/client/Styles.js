@@ -242,18 +242,18 @@ const theme = createTheme({
       zoneDefaultColor: '#FFCD87'
     },
     modes: {
-      mission: '#0E77BA',
-      idle: '#00B3D8',
+      mission: '#5ECFA8',
+      idle: '#A139C3',
       error: '#B41270',
-      charging: '#D5BD07',
-      others: '#7D9297',
+      charging: '#BA8A27',
+      others: '#BCBCBC',
       modeBrown: '#BB8900',
       modeBlue: '#507CCF'
     },
     incidents: {
       ok: '#3F93FF',
       warning: '#FFBB32',
-      error: '#CB3303',
+      error: '#FB7188',
       inactive: '#BCBCBC',
       staleOk: '#B2D3FF',
       staleWarning: '#FFE3AD',
