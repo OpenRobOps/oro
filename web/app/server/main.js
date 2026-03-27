@@ -30,7 +30,7 @@ import {
   // ImagesModule,
   Navigation2DModule,
 } from '../imports/server/modules';
-
+import InitializeStarterData from './bootstrapConfig';
 
 // Register accounts hooks at module level — before any login attempt
 registerAccountsHooks();
@@ -93,13 +93,16 @@ const oroAppMain = async () => {
   await new StatusManager().init();
   await new AttributesManager().init();
   await new OroRoles().createDefaultRoles();
-  await new ConfigAPI().init({});
+  const configApi = await new ConfigAPI().init({});
   await new AgentManager().init({ serverId: instanceValues.serverId });
   await new ActionsEngine().init({
     mqtt,
     nav2d: moduleInstances.Navigation2DModule,
     // images: moduleInstances.ImagesModule,
   });
+
+
+  await InitializeStarterData(configApi);
 
   // Load and start modules
   // moduleInstances.RobotLocalizationModule.load();

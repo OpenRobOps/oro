@@ -10,7 +10,8 @@
 import { isEmpty, isArray } from 'lodash';
 import { Meteor } from 'meteor/meteor';
 import { isString } from 'lodash';
-import { ACCESS_LEVEL_VIEW, COLLECTIONS } from '../shared/constants';
+import { COLLECTIONS } from '../shared/constants';
+import { ACCESS_LEVEL_VIEW } from '../shared/roles';
 import { matchesStatusFilter } from '../shared/status';
 import { Robots } from '../lib/collections';
 import OroRoles from '../server/roles';
