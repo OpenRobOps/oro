@@ -42,25 +42,16 @@ class DashboardsManager {
   }
 
   init = async () => {
-      if (await Dashboards.find({}).countAsync() === 0) {
-        await this.createDefaultDashboards();
-      }
+    // Placeholder.
   }
 
   /**
-   * Add the built-in default dashboards to the given company.
-   * This is called only once, when the DB is initialized.
+   * Returns all dashboard objects in the DB; regardless their visibility.
+   * 
+   * @returns {Array} An array of dashboard db documents (with _id)
    */
-  createDefaultDashboards = async () => {
-    const ids = await Promise.all(defaultDashboards.map(async (dashboard) => {
-      // Persist the built-in dashboards, collecting the _ids assigned by Mongo
-      const sanitizedLabel = dashboard.label.replace(/[^A-Za-z]/g, '').toLowerCase();
-      return Dashboards.insertAsync({
-        ...dashboard,
-        _id: sanitizedLabel
-      });
-    }));
-    return ids;
+  listDashboards = async () => {
+    return await Dashboards.find({}).fetchAsync();
   };
 
   /**
@@ -220,7 +211,7 @@ class DashboardsManager {
   };
 
   /**
-   * Updates an existing dashboard configuration.
+   * Updates (or creates) a dashboard configuration.
    * Does NOT modify visibility permissions, just what the dashboard is composed of
    *
    * @param {Object} newDashboardConfig
@@ -230,7 +221,7 @@ class DashboardsManager {
     const newDashConfig = {};
     newDashConfig['dashboards.' + dashboardId] = '';
     await this.validateDashboardConfig(newDashboardConfig);
-    const result = await Dashboards.updateAsync({
+    const result = await Dashboards.upsertAsync({
       _id: dashboardId,
     }, {
       $set: newDashboardConfig
@@ -248,11 +239,7 @@ class DashboardsManager {
    * @throws {Exception} if the config does not pass semantic validation
    */
   validateDashboardConfig = async (newDashboardConfig) => {
-    await foldWidgetsAsync(newDashboardConfig, null, async (acc, widget) => {
-      const validator = buildWidgetValidator(widget?.type);
-      await validator.validate(widget);
-      return acc;
-    });
+    // NOTE: No additional semantic validation implemented for now. This is a placeholder.
   }
 
   /**

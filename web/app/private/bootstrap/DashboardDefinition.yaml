@@ -1,0 +1,209 @@
+apiVersion: v0.1
+kind: DashboardDefinition
+metadata:
+  id: fleet
+spec:
+  label: Fleet
+  order: 1
+  sections:
+  - label: Fleet
+    scope: fleet
+    widgets:
+    - config:
+        statuses:
+        - id: cpuLoadPercentage
+          label: CPU
+        - id: diskUsagePercentage
+          label: RAM
+      label: Fleet Status
+      layout:
+        chroma: true
+        grid: 12
+      type: fleetStatus
+    withControlWidget: true
+  - label: Details
+    scope: fleet
+    widgets:
+    - label: Fleet Log
+      layout:
+        chroma: true
+        grid: 4
+        height: 1
+      type: auditLogFleet
+    - label: Incident List
+      layout:
+        chroma: true
+        grid: 8
+        height: 1
+      type: incidentList
+    - label: Incident Timeline
+      layout:
+        chroma: true
+        grid: 12
+        height: 1
+      type: incidentTimeline
+    withControlWidget: false
+---
+apiVersion: v0.1
+kind: DashboardDefinition
+metadata:
+  id: robot
+spec:
+  label: Robot
+  order: 2
+  sections:
+  - label: Health
+    scope: robot
+    widgets:
+    - config:
+        dataSources:
+        - id: cpuLoadPercentage
+          label: CPU usage
+          type: gauge
+          unit: '%'
+        - id: diskUsagePercentage
+          label: Disk usage
+          type: gauge
+          unit: '%'
+        - id: networkOroRate
+          label: Agent network rate
+          type: gauge
+          unit: kbps
+      label: Vitals
+      layout:
+        chroma: true
+        grid: 4
+        height: 1
+      type: vitals
+    - label: ROS Diagnostics
+      layout:
+        chroma: true
+        grid: 4
+        height: 1
+      type: diagnostics
+    withControlWidget: true
+  - label: Details
+    scope: robot
+    widgets:
+    - config:
+        chartType: linechart
+        dataSources:
+        - id: cpuLoadPercentage
+          label: CPU usage
+          precision: 1
+          scale: 100
+        - id: diskUsagePercentage
+          label: Disk usage
+          precision: 1
+          scale: 100
+        max: 100
+        min: 0
+      label: Timeline
+      layout:
+        chroma: true
+        grid: 8
+        height: 1
+      type: chart
+    - config: {}
+      label: Map
+      layout:
+        chroma: true
+        grid: 4
+        height: 1
+      type: localization
+    - config:
+        chartType: linechart
+        dataSources:
+        - id: networkInOrbitRate
+          label: InOrbit network rate
+          precision: 0
+        - id: networkTotalRate
+          label: Network rate
+          precision: 0
+        max: 100
+        min: 0
+      label: Network
+      layout:
+        chroma: true
+        grid: 8
+        height: 1
+      type: chart
+    - config: {}
+      label: Actions
+      layout:
+        chroma: true
+        grid: 4
+        height: 1
+      type: actionsWidget
+    - label: Data Bags
+      layout:
+        chroma: true
+        grid: 4
+        height: 1
+      type: dataBags
+    - label: Robot Log
+      layout:
+        chroma: true
+        grid: 4
+        height: 1
+      type: auditLog
+    - label: Key Value pairs
+      layout:
+        chroma: true
+        grid: 4
+        height: 1
+      type: keyValues
+    withControlWidget: false
+---
+apiVersion: v0.1
+kind: DashboardDefinition
+metadata:
+  id: navigation
+spec:
+  label: Navigation
+  order: 3
+  sections:
+  - label: Robot Navigation
+    scope: navigation
+    widgets:
+    - label: Navigation
+      layout:
+        grid: 12
+        height: 2
+      type: navigation
+    withControlWidget: true
+  - label: Details
+    scope: robot
+    widgets:
+    - config:
+        dataSources:
+        - id: cpuLoadPercentage
+          label: CPU usage
+          type: gauge
+          unit: '%'
+        - id: diskUsagePercentage
+          label: Disk usage
+          type: gauge
+          unit: '%'
+        - id: networkTotalRate
+          label: Network rate
+          type: text
+          unit: kbps
+        - id: distanceLinear
+          label: Linear distance
+          type: text
+          unit: m
+      label: Vitals
+      layout:
+        chroma: true
+        grid: 4
+        height: 1
+      type: vitals
+    - label: Data Bags
+      layout:
+        chroma: true
+        grid: 4
+        height: 1
+      type: dataBags
+    withControlWidget: false
+    
