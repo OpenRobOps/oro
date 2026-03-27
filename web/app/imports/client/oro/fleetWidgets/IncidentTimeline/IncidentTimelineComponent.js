@@ -28,30 +28,30 @@ const useStyles = makeStyles()(theme => ({
     textDecoration: 'underline'
   },
   vertical: {
-    borderLeft: '1px dashed #3E3155 !important',
+    borderLeft: `1px dashed ${theme.palette.background.borderLight} !important`,
     background: 'transparent'
   },
   horizontalLine: {
-    background: '#170E28 !important',
-    borderTop: '1px solid #4A3570 !important'
+    background: `${theme.palette.background.surface} !important`,
+    borderTop: `1px solid ${theme.palette.background.borderMedium} !important`
   },
   horizontalDashedLine: {
-    background: '#170E28 !important',
-    borderTop: '1px dashed #4A3570 !important'
+    background: `${theme.palette.background.surface} !important`,
+    borderTop: `1px dashed ${theme.palette.background.borderMedium} !important`
   },
   groupContainer: {
-    background: '#0E0918',
+    background: theme.palette.background.black,
     height: '100%'
   },
   incidentTitleContainer: {
-    border: '1px solid #3E3155',
+    border: `1px solid ${theme.palette.background.borderLight}`,
     borderBottom: 'initial',
     padding: '4px',
     display: 'flex',
     alignItems: 'center'
   },
   robotNameContainer: {
-    borderTop: '1px solid #3E3155',
+    borderTop: `1px solid ${theme.palette.background.borderLight}`,
     padding: '4px',
     display: 'flex',
     alignItems: 'center'
@@ -61,8 +61,8 @@ const useStyles = makeStyles()(theme => ({
     alignItems: 'center'
   },
   sideBarHeaderBorder: {
-    borderRight: '1px solid #3E3155',
-    borderLeft: '1px solid #3E3155'
+    borderRight: `1px solid ${theme.palette.background.borderLight}`,
+    borderLeft: `1px solid ${theme.palette.background.borderLight}`
   },
   sideBarText: {
     fontWeight: theme.fontWeight.medium,
@@ -92,8 +92,8 @@ const useStyles = makeStyles()(theme => ({
     justifyContent: 'center',
     fontSize: '14px',
     color: theme.palette.text.title,
-    borderLeft: '1px solid #3E3155',
-    borderBottom: '1px solid #3E3155'
+    borderLeft: `1px solid ${theme.palette.background.borderLight}`,
+    borderBottom: `1px solid ${theme.palette.background.borderLight}`
   },
   secondaryDateHeader: {
     height: '100%',
@@ -102,10 +102,10 @@ const useStyles = makeStyles()(theme => ({
     justifyContent: 'center',
     fontSize: '12px',
     color: theme.palette.text.title,
-    borderLeft: '1px solid #3E3155'
+    borderLeft: `1px solid ${theme.palette.background.borderLight}`
   },
   isSelectedIncident: {
-    background: '#251A38 !important',
+    background: `${theme.palette.background.lightGray} !important`,
   }
 }));
 
@@ -270,7 +270,7 @@ const IncidentTimelineWidget = ({
     const { key, ...parsedItemProps } = getItemProps(item.itemProps);
     const styleMerged = { ...parsedItemProps.style, ...item.itemProps.style };
     if (itemContext.selected) {
-      styleMerged.border = '2px solid #2A3C98';
+      styleMerged.border = `2px solid ${theme.palette.incidents.selectedBorder}`;
     }
     return (
       /* eslint-disable-next-line react/jsx-props-no-spreading */

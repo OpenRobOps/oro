@@ -240,6 +240,7 @@ const theme = createTheme({
       softGray: '#1A0F2E',
       borderGray: '#251A38',
       borderLight: '#3E3155',
+      borderMedium: '#4A3570',
       zoneDefaultColor: '#FFCD87'
     },
     modes: {
@@ -264,6 +265,7 @@ const theme = createTheme({
       // Used for disabling data sources according to mode.
       disabled: '#f3f3f3',
       disabledSelected: '#2b2e82',
+      selectedBorder: '#2A3C98',
     },
     teleop: {
       actionButton: '#F05523',
