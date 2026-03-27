@@ -76,7 +76,7 @@ const AppHeader = () => {
             {!avatar && getInitials(name)}
           </Avatar>
           <Box sx={{ display: 'flex', flexDirection: 'column', lineHeight: 1 }}>
-            <Typography sx={{ fontSize: '10px', color: '#FFFFFF', lineHeight: 'normal' }}>
+            <Typography sx={{ fontSize: '10px', color: '#FFFFFF', lineHeight: 'normal', textTransform: 'capitalize' }}>
               {name?.split(' ')[0] || 'User'}
             </Typography>
             <Typography sx={{ fontSize: '10px', color: '#AAAAAA', lineHeight: 'normal' }}>
