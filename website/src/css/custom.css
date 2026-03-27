@@ -94,3 +94,7 @@ code {
     background-color: var(--oro-color-raised);
   }
 }
+
+.navbar__logo {
+  margin-right: 1.2rem;
+}
