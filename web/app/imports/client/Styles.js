@@ -194,7 +194,11 @@ const theme = createTheme({
     mono: 'DM Mono, monospace',
   },
   palette: {
+    mode: 'dark',
     text: {
+      // MUI reads these for Typography color="text.primary" / "text.secondary"
+      primary: '#FAF0F0',
+      secondary: '#BEAEDD',
       icon: '#BEAEDD',
       notesLight: '#BEAEDD',
       title: '#D6CCE8',

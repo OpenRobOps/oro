@@ -49,11 +49,15 @@ const StyledTableCell = styled(TableCell, { name: 'StyledTableCell' })(({ theme,
     wordBreak: 'break-word',
     borderBottom: '1px solid #3E3155',
   },
+  // Inset shadow draws one continuous bottom edge per cell. With stickyHeader,
+  // MUI uses border-collapse: separate; per-cell border-bottom often misaligns
+  // (jagged line) at column joins — especially vs TableSortLabel vs plain text.
   '&.MuiTableCell-stickyHeader': {
     backgroundColor: '#170E28',
     fontWeight: 501,
     color: theme.palette.text.title,
-    borderBottom: '2px solid #3E3155'
+    borderBottom: 'none',
+    boxShadow: 'inset 0 -2px 0 0 #3E3155'
   }
 }));
 
