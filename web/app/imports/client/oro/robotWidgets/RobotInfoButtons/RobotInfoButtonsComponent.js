@@ -10,8 +10,9 @@ import PropTypes from 'prop-types';
 import { Button, Typography, Tooltip, Grid, Box }
   from '@mui/material';
 import {
-  Cancel, Settings, Refresh, Update, Navigation
+  Cancel, Refresh, Update
 } from '@mui/icons-material';
+import { Navigation, Settings } from 'lucide-react';
 import { withTracker } from 'meteor/react-meteor-data';
 import moment from 'moment';
 // ORO modules
@@ -45,8 +46,8 @@ const styles = theme => ({
   robotActions: {
     display: 'flex',
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center'
+    alignItems: 'center',
+    flex: 1,
   },
   actionButtonText: {
     color: theme.palette.text.title,
@@ -54,7 +55,8 @@ const styles = theme => ({
   },
   systemActions: {
     display: 'flex',
-    alignItems: 'center'
+    alignItems: 'center',
+    marginLeft: 'auto',
   },
   iconStyle: {
     paddingRight: '4px'
@@ -62,13 +64,14 @@ const styles = theme => ({
   lowerCaseButton: {
     textTransform: 'initial',
     fontWeight: theme.fontWeight.lightPlus,
-    color: theme.palette.text.content
+    color: '#C2C2C2',
+    marginLeft: '12px'
   },
   lastSeen: {
     padding: '0.2em 12px',
   },
   rowButton: {
-    color: theme.palette.text.content
+    color: '#C2C2C2'
   }
 });
 // Remove robot button timer: It allows deleting a robot after 5min of inactivity
@@ -288,7 +291,7 @@ class RobotInfoButtons extends React.Component {
     const agentStatus = this.agentStatus();
 
     return !isZeroData && !isRobotLoading ? (
-      <Grid container justifyContent="space-between" align="center">
+      <Grid container justifyContent="space-between" align="center" width="100%">
         <div className={classes.robotActions}>
           {restartAction && WrapWithTooltip(getActionTooltip(restartAction), (
             <Button
@@ -348,10 +351,7 @@ class RobotInfoButtons extends React.Component {
             onClick={onNavigationDetail}
             classes={{ text: classes.lowerCaseButton }}
           >
-            <Navigation
-              className={classes.iconStyle}
-              sx={{ fill: theme => theme.palette.text.title }}
-            />
+            <Navigation size={24} color="#C2C2C2" style={{ marginRight: '4px' }} />
             <Box sx={LG_BREAKPOINT}>
               Navigation
             </Box>
@@ -381,9 +381,9 @@ class RobotInfoButtons extends React.Component {
             )}
         </div>
         <div className={classes.systemActions}>
-        <Box sx={LG_BREAKPOINT}>
+          <Box sx={{ display: { lg: 'flex', xs: 'none' }, alignItems: 'center' }}>
             {offline && (
-              <Tooltip title={this.getLastSeenTime()} placement="top" disableInteractive>
+              <Tooltip title={this.getLastSeenTime()} disableInteractive>
                 <Typography variant="caption" className={classes.lastSeen}>
                   {this.getLastSeenInterval()}
                 </Typography>
@@ -400,10 +400,7 @@ class RobotInfoButtons extends React.Component {
               onClick={this.redirectToRobotSettings}
               title="Settings"
             >
-              <Settings
-                className={classes.iconStyle}
-                sx={{ fill: theme => theme.palette.text.title }}
-              />
+              <Settings size={24} color="#C2C2C2" />
             </Button>
           )}
         </div>

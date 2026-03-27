@@ -1,14 +1,14 @@
 /* this file is imported in client/main.jsx */
 
 :root {
-  /* Colors */
-  --color-background: hsl(210, 20%, 98%);
-  --color-foreground: hsl(220, 20%, 15%);
-  --color-card: hsl(0, 0%, 100%);
-  --color-primary: hsl(4, 70%, 55%);
-  --color-primary-hover: hsl(4, 70%, 45%);
-  --color-muted: hsl(220, 10%, 50%);
-  --color-border: hsl(220, 14%, 90%);
+  /* Colors — Deep Navy */
+  --color-background: #1A0F2E;
+  --color-foreground: #FAF0F0;
+  --color-card: #170E28;
+  --color-primary: #9E6FF3;
+  --color-primary-hover: #5C35A8;
+  --color-muted: #BEAEDD;
+  --color-border: #3E3155;
 
   /* Shadows */
   --shadow-card: 0 1px 3px 0 hsl(220 20% 15% / 0.04),

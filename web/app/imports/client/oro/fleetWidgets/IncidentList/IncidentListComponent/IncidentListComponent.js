@@ -17,8 +17,8 @@ import {
   TableSortLabel,
   TableFooter
 } from '@mui/material';
-import CheckIcon from '@mui/icons-material/Check';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { FolderOpen, CircleCheckBig } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 // ORO modules
 import {
   sortIncidentsByRobotStatus,
@@ -29,7 +29,6 @@ import {
   ICM_SEV_2,
   ICM_SEV_ALL
 } from '../../../../../shared/alerts';
-import OpenFolderIcon from '../../../graphics/OpenFolderIcon';
 import OnFeedbackContext from '../../../contexts/OnFeedbackContext';
 import { StyledTableBody, StyledTableCell, StyledTableContainer, StyledTableRow } from '../../../util/DefaultTable';
 import LabelZeroData from '../../../graphics/op/zeroDataIcons/LabelZeroData';
@@ -78,7 +77,7 @@ const styles = theme => ({
     bottom: 0,
     position: 'sticky',
     zIndex: 2,
-    borderTop: '1px solid rgba(224, 224, 224, 1)',
+    borderTop: '1px solid #3E3155',
     color: theme.palette.text.content
   },
   emptyCell: {
@@ -486,7 +485,7 @@ class IncidentListWidget extends React.Component {
               <StyledTableCell width="10%">
                 Data
               </StyledTableCell>
-              <StyledTableCell className={classes.emptyCell}>
+              <StyledTableCell width="5%">
               </StyledTableCell>
             </StyledTableRow>
           </TableHead>
@@ -574,7 +573,7 @@ class IncidentListWidget extends React.Component {
           />
         </StyledTableCell>
         <StyledTableCell width="5%">
-          <ExpandMoreIcon classes={{ root: classes.expandIconZeroData }} />
+          <ChevronDown size={20} color="#C2C2C2" />
         </StyledTableCell>
       </StyledTableRow>
     ));
@@ -643,12 +642,12 @@ class IncidentListWidget extends React.Component {
         >
           {incident.status == INCIDENT_STATUS_NEW ? (
             <div className={classes.iconContainer}>
-              <OpenFolderIcon />
+              <FolderOpen size={16} color="#C2C2C2" />
               &nbsp;Open
             </div>
           ) : (
             <div className={classes.iconContainer}>
-              <CheckIcon />
+              <CircleCheckBig size={16} color="#4CAF50" />
               &nbsp;Resolved
             </div>
           )}
@@ -698,7 +697,7 @@ class IncidentListWidget extends React.Component {
           {data}
         </StyledTableCell>
         <StyledTableCell width='5%'>
-          <ExpandMoreIcon classes={{ root: classes.expandIcon }} />
+          <ChevronDown size={20} color="#C2C2C2" />
         </StyledTableCell>
       </StyledTableRow>
     )];
@@ -722,7 +721,7 @@ class IncidentListWidget extends React.Component {
           selected={isSelected}
           className={classnames({ [classes.selectedRow]: isSelected })}
         >
-          <StyledTableCell width="90%">
+          <StyledTableCell colSpan={7} style={{ width: 'auto' }}>
             <ul>
               <li>
                 Message: {getIncidentMessage(incident)}

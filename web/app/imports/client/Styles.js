@@ -1,5 +1,5 @@
 /**
- * ORO Styles module.
+ * ORO Styles module — Deep Navy theme.
  *
  * We use this module file to create and export all top level
  * theme and style information for easier re-use.
@@ -19,7 +19,7 @@ const theme = createTheme({
             width: '12px'
           },
           '&::-webkit-scrollbar-thumb': {
-            background: '#C7C7C7',
+            background: '#BEAEDD',
             borderRadius: '6px',
             // padding-box causes the border of the element to be cut off
             // (along with the background color under it), so by setting the border to a fully
@@ -45,24 +45,24 @@ const theme = createTheme({
     },
     MuiSvgIcon: {
       styleOverrides: {
-        // Beakpoint-specific styles here
+        // Breakpoint-specific styles here
         root: {
           '@media (max-width: 900px)': {
-            fontSize: '1.2rem', // Adjust the size for screens with a maximum width of 900px
+            fontSize: '1.2rem',
           }
         }
       }
     },
     MuiButtonBase: {
       styleOverrides: {
-        // Beakpoint-specific styles here
+        // Breakpoint-specific styles here
         root: {
-          // To avoid showing a dark blue border when hovering the button
+          // To avoid showing a border when hovering the button
           '&:hover': {
             border: '0 !important'
           },
           '@media (max-width: 900px)': {
-            padding: '10px', // Adjust the size for screens with a maximum width of 900px
+            padding: '10px',
           }
         }
       }
@@ -70,14 +70,17 @@ const theme = createTheme({
     MuiTypography: {
       styleOverrides: {
         root: {
-          fontFamily: 'Roboto, Helvetica, Arial, sans-serif'
+          fontFamily: 'Inter, Helvetica, Arial, sans-serif',
+          color: '#FFFFFF',
+          letterSpacing: '0.01em',
+          fontOpticalSizing: 'auto'
         }
       },
       variants: [
         {
           props: { variant: 'errorMessage' },
           style: {
-            color: '#666666',
+            color: '#C2C2C2',
             fontWeight: 400,
             lineHeight: '1.2',
             textAlign: 'center',
@@ -86,13 +89,93 @@ const theme = createTheme({
         {
           props: { variant: 'errorMessageBold' },
           style: {
-            color: '#666666',
+            color: '#C2C2C2',
             lineHeight: '1.2',
             textAlign: 'center',
             fontWeight: 500,
           },
         },
       ],
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          backgroundColor: '#170E28',
+          color: '#FAF0F0',
+        },
+      },
+    },
+    MuiMenu: {
+      styleOverrides: {
+        paper: {
+          backgroundColor: '#170E28',
+          border: '1px solid #3E3155',
+          color: '#FAF0F0',
+        },
+      },
+    },
+    MuiMenuItem: {
+      styleOverrides: {
+        root: {
+          '&:hover': {
+            backgroundColor: '#251A38',
+          },
+        },
+      },
+    },
+    MuiAutocomplete: {
+      styleOverrides: {
+        paper: {
+          backgroundColor: '#170E28',
+          border: '1px solid #3E3155',
+          color: '#FAF0F0',
+        },
+        listbox: {
+          backgroundColor: '#170E28',
+        },
+        popper: {
+          zIndex: 1300,
+        },
+        option: {
+          fontSize: '14px',
+          backgroundColor: '#170E28',
+          '&:hover': {
+            backgroundColor: '#251A38 !important',
+          },
+          '&[aria-selected="true"]': {
+            backgroundColor: '#3A285A !important',
+          },
+        },
+        popupIndicator: {
+          color: '#BEAEDD',
+        },
+        clearIndicator: {
+          color: '#BEAEDD',
+        },
+      },
+    },
+    MuiTableCell: {
+      styleOverrides: {
+        root: {
+          color: '#FFFFFF',
+          borderBottomColor: '#3E3155',
+        },
+      },
+    },
+    MuiTableSortLabel: {
+      styleOverrides: {
+        root: {
+          '&:hover': {
+            color: '#FFFFFF',
+          },
+          '&.Mui-active': {
+            color: '#FFFFFF',
+          },
+          '&.Mui-active .MuiTableSortLabel-icon': {
+            color: '#FFFFFF',
+          },
+        },
+      },
     },
     MuiToolbar: {
       styleOverrides: {
@@ -106,45 +189,52 @@ const theme = createTheme({
     },
   },
   spacing: 8,
+  fontFamily: {
+    ui: 'Inter, Helvetica, Arial, sans-serif',
+    mono: 'DM Mono, monospace',
+  },
   palette: {
     text: {
-      icon: '#D7D7D7',
-      notesLight: '#BCBCBC',
-      title: '#666666',
-      notesMedium: '#454545',
-      notesDark: '#333333',
-      content: '#000000',
-      contrastText: '#FFFFFF',
-      darkBlue: '#2A3C98',
-      statusError: '#CB3303',
-      lightGray: '#ADADAD',
-      mediumDarkGray: '#757575'
+      icon: '#BEAEDD',
+      notesLight: '#BEAEDD',
+      title: '#D6CCE8',
+      notesMedium: '#BEAEDD',
+      notesDark: '#FAF0F0',
+      content: '#FAF0F0',
+      contrastText: '#FAF0F0',
+      darkBlue: '#9E6FF3',
+      statusError: '#FB7188',
+      lightGray: '#C2C2C2',
+      mediumDarkGray: '#BEAEDD'
     },
     background: {
-      blueLightBackground: '#DEEAF7',
-      lightBackground: '#E7EEF6',
-      tabSelected: '#71777E',
-      titleBar: '#282967',
-      spaceIntelligence: '#595959',
-      navLight: '#606060',
-      navMedium: '#303030',
-      navDark: '#434343',
+      default: '#1A0F2E',
+      paper: '#170E28',
+      blueLightBackground: '#1A0F2E',
+      lightBackground: '#1A0F2E',
+      tabSelected: '#9E6FF3',
+      titleBar: '#170E28',
+      spaceIntelligence: '#251A38',
+      navLight: '#1A0F2E',
+      navMedium: '#170E28',
+      navDark: '#0E0918',
       white: '#FFFFFF',
-      lightBlue: '#F5FAFF',
-      veryLightGray: '#f2f2f2',
-      lightGray: '#E8E8E8',
-      gray: '#D7D7D7',
-      darkGray: '#3E3E3E',
-      black: '#000000',
-      brightBlue: '#3F93FF',
-      devMagenta: '#C83596',
-      loadingBarGray: '#E1E1E1',
-      loadingBarTransparentGray: '#E1E1E100',
-      onHoverGray: '#DBDBDB',
-      zeroData: '#EBEBEB',
-      robOpsCopilotTable: '#DEEAF7',
-      softGray: '#F5F5F5',
-      borderGray: '#DDDDDD',
+      surface: '#170E28',
+      lightBlue: '#1A0F2E',
+      veryLightGray: '#1A0F2E',
+      lightGray: '#251A38',
+      gray: '#251A38',
+      darkGray: '#251A38',
+      black: '#0E0918',
+      brightBlue: '#9E6FF3',
+      devMagenta: '#9E6FF3',
+      loadingBarGray: '#251A38',
+      loadingBarTransparentGray: '#251A3800',
+      onHoverGray: '#251A38',
+      zeroData: '#251A38',
+      robOpsCopilotTable: '#1A0F2E',
+      softGray: '#1A0F2E',
+      borderGray: '#251A38',
       zoneDefaultColor: '#FFCD87'
     },
     modes: {
@@ -194,9 +284,9 @@ const theme = createTheme({
       lightBeige: '#E5C494'
     },
     shadowColor: {
-      gray: 'rgba(0, 0, 0, 0.3)',
-      white: 'rgba(255, 255, 255, 0.5)',
-      darkGrayWithOpacity: 'rgba(87, 90, 91, 0.1)'
+      gray: 'rgba(0, 0, 0, 0.5)',
+      white: 'rgba(250, 240, 240, 0.1)',
+      darkGrayWithOpacity: 'rgba(14, 9, 24, 0.3)'
     },
     teleopArrows: {
       darkBackground: '#2B2B2B',
@@ -210,21 +300,21 @@ const theme = createTheme({
       delayTime: '#FFBB32'
     },
     icons: {
-      lightGray: '#B2B2B2',
+      lightGray: '#BEAEDD',
       bigIcon: '60px',
       mediumIcon: '40px',
       smallIcon: '20px'
     },
-    primary: { // blues
-      lighter: '#edeef9',
-      light: '#C6C9E5', // Lighter Blue
-      main: '#2A3C98', // text.darkBlue
-      dark: '#282967', // background.titleBar
+    primary: {
+      lighter: '#1A0F2E',
+      light: '#251A38',
+      main: '#170E28',
+      dark: '#0E0918',
       contrastDefaultColor: 'light',
-      contrastText: '#fff'
+      contrastText: '#FAF0F0'
     },
     secondary: {
-      main: '#F05523', // used in checkboxs in Settings
+      main: '#9E6FF3',
     },
     laserPoints: {
       primary: '#3993FFCC',
@@ -241,16 +331,16 @@ const theme = createTheme({
       orangeLighter: '#F7D69B'
     },
     boxShadow: {
-      light: '#0000004d',
-      white: '#ffffff80'
+      light: '#0000007f',
+      white: '#faf0f019'
     },
     zone: {
       defaultColor: '#FFCD87'
     },
     copilotContextChips: {
-      color: '#1976D2',
-      bg: '#1976D214',
-      hoverBg: '#1976D229',
+      color: '#9E6FF3',
+      bg: '#9E6FF314',
+      hoverBg: '#9E6FF329',
     }
   },
   fontWeight: {

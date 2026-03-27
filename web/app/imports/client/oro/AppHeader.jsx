@@ -7,12 +7,12 @@ import {
   Avatar,
   Box,
   Divider,
-  IconButton,
   Menu,
   MenuItem,
   Toolbar,
   Typography,
 } from '@mui/material';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { useAuth } from './contexts/AuthContext';
 
@@ -41,21 +41,51 @@ const AppHeader = () => {
   };
 
   return (
-    <AppBar position="static" sx={{ bgcolor: 'primary.dark' }}>
+    <AppBar position="static" sx={{ bgcolor: '#170E28' }}>
       <Toolbar sx={{ justifyContent: 'space-between' }}>
-        <Typography variant="h6" component="div" sx={{ fontWeight: 700 }}>
-          OpenRobOps
-        </Typography>
-
-        <IconButton onClick={handleOpen} size="small" sx={{ ml: 2 }}>
+        <img src="/images/oro-logo.svg" alt="ORO" height="22" />
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Divider
+            orientation="vertical"
+            flexItem
+            sx={{ borderColor: '#3E3155', my: '12px', height: '22px' }}
+          />
+          <Box
+            onClick={handleOpen}
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              cursor: 'pointer',
+              py: '5px',
+              borderRadius: '4px',
+            }}
+          >
           <Avatar
             src={avatar || undefined}
-            sx={{ width: 36, height: 36, bgcolor: 'primary.light' }}
+            sx={{
+              width: 22,
+              height: 22,
+              bgcolor: '#3A285A',
+              fontSize: '11px',
+              fontWeight: 700,
+              color: '#D0D0D0',
+              fontFamily: 'Inter, Helvetica, Arial, sans-serif',
+            }}
           >
             {!avatar && getInitials(name)}
           </Avatar>
-        </IconButton>
-
+          <Box sx={{ display: 'flex', flexDirection: 'column', lineHeight: 1 }}>
+            <Typography sx={{ fontSize: '10px', color: '#FFFFFF', lineHeight: 'normal' }}>
+              {name?.split(' ')[0] || 'User'}
+            </Typography>
+            <Typography sx={{ fontSize: '10px', color: '#AAAAAA', lineHeight: 'normal' }}>
+              Admin
+            </Typography>
+          </Box>
+          <KeyboardArrowDownIcon sx={{ color: '#AAAAAA', fontSize: '18px' }} />
+          </Box>
+        </Box>
         <Menu
           anchorEl={anchorEl}
           open={menuOpen}

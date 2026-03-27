@@ -28,30 +28,30 @@ const useStyles = makeStyles()(theme => ({
     textDecoration: 'underline'
   },
   vertical: {
-    borderLeft: `1px dashed ${theme.palette.background.gray} !important`,
-    background: 'initial'
+    borderLeft: '1px dashed #3E3155 !important',
+    background: 'transparent'
   },
   horizontalLine: {
-    background: `${theme.palette.background.white} !important`,
-    borderTop: `1px solid ${theme.palette.background.gray} !important`
+    background: '#170E28 !important',
+    borderTop: '1px solid #4A3570 !important'
   },
   horizontalDashedLine: {
-    background: `${theme.palette.background.white} !important`,
-    borderTop: `1px dashed ${theme.palette.background.gray} !important`
+    background: '#170E28 !important',
+    borderTop: '1px dashed #4A3570 !important'
   },
   groupContainer: {
-    background: '#F5F5F5',
+    background: '#0E0918',
     height: '100%'
   },
   incidentTitleContainer: {
-    border: `1px solid ${theme.palette.background.gray}`,
+    border: '1px solid #3E3155',
     borderBottom: 'initial',
     padding: '4px',
     display: 'flex',
     alignItems: 'center'
   },
   robotNameContainer: {
-    borderTop: `1px solid ${theme.palette.background.gray}`,
+    borderTop: '1px solid #3E3155',
     padding: '4px',
     display: 'flex',
     alignItems: 'center'
@@ -61,8 +61,8 @@ const useStyles = makeStyles()(theme => ({
     alignItems: 'center'
   },
   sideBarHeaderBorder: {
-    borderRight: `1px solid ${theme.palette.background.gray}`,
-    borderLeft: `1px solid ${theme.palette.background.gray}`
+    borderRight: '1px solid #3E3155',
+    borderLeft: '1px solid #3E3155'
   },
   sideBarText: {
     fontWeight: theme.fontWeight.medium,
@@ -92,8 +92,8 @@ const useStyles = makeStyles()(theme => ({
     justifyContent: 'center',
     fontSize: '14px',
     color: theme.palette.text.title,
-    borderLeft: `1px solid ${theme.palette.background.gray}`,
-    borderBottom: `1px solid ${theme.palette.background.gray}`
+    borderLeft: '1px solid #3E3155',
+    borderBottom: '1px solid #3E3155'
   },
   secondaryDateHeader: {
     height: '100%',
@@ -102,10 +102,10 @@ const useStyles = makeStyles()(theme => ({
     justifyContent: 'center',
     fontSize: '12px',
     color: theme.palette.text.title,
-    borderLeft: `1px solid ${theme.palette.background.gray}`
+    borderLeft: '1px solid #3E3155'
   },
   isSelectedIncident: {
-    background: `${theme.palette.background.veryLightGray} !important`,
+    background: '#251A38 !important',
   }
 }));
 

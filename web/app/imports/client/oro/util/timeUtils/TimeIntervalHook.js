@@ -45,23 +45,39 @@ const useStyles = makeStyles()(theme => ({
     margin: '0 2px'
   },
   button: {
-    padding: '2px',
-    color: theme.palette.text.title,
+    padding: '2px 8px',
+    color: '#D9D9D9',
     fontSize: '0.8125rem',
+    fontFamily: 'Inter, Helvetica, Arial, sans-serif',
+    fontWeight: 500,
     textTransform: 'capitalize',
-    border: `1px solid ${theme.palette.text.title}`,
+    border: '1px solid #3E3155',
+    backgroundColor: '#1A0F2E',
     '&:hover': {
-      backgroundColor: 'rgba(0, 0, 0, 0.15)',
-      border: `1px solid ${theme.palette.text.title} !important`
-    }
+      backgroundColor: '#251A38',
+      border: '1px solid #3E3155 !important',
+      opacity: 0.7,
+    },
+    '&.Mui-disabled': {
+      color: '#D9D9D9',
+      opacity: 0.4,
+      border: '1px solid #3E3155',
+      backgroundColor: '#1A0F2E',
+    },
   },
   selected: {
-    color: `${theme.palette.text.contrastText} !important`,
-    background: theme.palette.text.title,
-    border: '0px !important'
+    color: '#FAF0F0 !important',
+    opacity: '1 !important',
+    backgroundColor: '#5C35A8 !important',
+    border: '1px solid #3E3155 !important',
+    '&.Mui-disabled': {
+      color: '#FAF0F0 !important',
+      opacity: '1 !important',
+      backgroundColor: '#5C35A8 !important',
+    },
   },
   disabled: {
-    color: theme.palette.text.icon
+    color: '#D9D9D9'
   }
 }));
 

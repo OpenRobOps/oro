@@ -11,6 +11,7 @@ import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import { withStyles } from 'tss-react/mui';
 import { TextField, Typography, Chip, Autocomplete } from '@mui/material';
+import { Bot } from 'lucide-react';
 // ORO modules
 import { ID_TYPE_ROBOT } from '../../../../shared/constants';
 import { DarkModeContext } from '../../contexts/DarkModeContext';
@@ -22,6 +23,7 @@ const styles = theme => ({
   autocompleteInput: {
     '&.MuiOutlinedInput-root': {
       padding: '5px',
+      color: '#FAF0F0',
     },
   },
   autocompleteInputFullscreen: {
@@ -47,9 +49,9 @@ const styles = theme => ({
     color: 'white'
   },
   searchBoxContainer: {
-    background: theme.palette.background.lightBlue,
-    boxShadow: 'inset 1px 1px 3px 1px rgba(0, 0, 0, 0.3)',
-    borderRadius: '5px',
+    background: '#0E0918',
+    border: '1px solid #3E3155',
+    borderRadius: '4px',
     maxWidth: '200px',
     width: '100%',
     position: 'relative'
@@ -69,9 +71,9 @@ const styles = theme => ({
     alignItems: 'center'
   },
   chipTag: {
-    background: theme.palette.text.title,
+    background: '#3A285A',
     borderRadius: '5px',
-    color: 'white',
+    color: '#FAF0F0',
     margin: '2px',
     fontSize: '13px',
     maxHeight: '26px'
@@ -81,19 +83,20 @@ const styles = theme => ({
   },
   chipHover: {
     '&:hover': {
-      backgroundColor: theme.palette.text.title
+      backgroundColor: '#4A3570'
     }
   },
   deleteIcon: {
-    color: `${theme.palette.background.lightGray} !important`,
+    color: '#BEAEDD !important',
     '&:hover': {
-      color: `${theme.palette.background.white} !important`,
+      color: '#FAF0F0 !important',
     }
   },
   hiddenTextInputRoot: {
-    width: '25px',
-    padding: '0 10px',
-    marginLeft: 'auto'
+    width: '0px',
+    padding: '0',
+    marginLeft: 'auto',
+    overflow: 'hidden',
   },
   showTextInputRoot: {
     width: '100%',
@@ -102,7 +105,8 @@ const styles = theme => ({
   },
   showTextInputInput: {
     fontSize: '14px',
-    justifySelf: 'flex-end'
+    justifySelf: 'flex-end',
+    color: '#FAF0F0',
   },
   searchBoxContainerWithChip: {
     minWidth: '350px',
@@ -131,7 +135,8 @@ const styles = theme => ({
   },
   popper: {
     width: '200px !important',
-    right: 0
+    right: 0,
+    zIndex: '1300 !important',
   },
   outlinedInput: {
     padding: '6px !important'
@@ -267,10 +272,12 @@ class RobotSearch extends React.Component {
                 inputRoot: classes.autocompleteInputFullscreen,
                 popupIndicator: classes.popupIndicator,
                 listbox: classes.listboxFullScreen,
-                option: classes.optionFullScreen
+                option: classes.optionFullScreen,
+                popper: classes.popper,
               } : {
                 inputRoot: classes.autocompleteInput,
-                option: classes.optionTypography
+                option: classes.optionTypography,
+                popper: classes.popper,
               }
             }
             renderOption={(props, option) => (
@@ -285,6 +292,7 @@ class RobotSearch extends React.Component {
                     {selectedRobot && !optionsOpened && (
                       WrapWithTooltip(robotVersionTooltip, (
                         <Chip
+                          icon={<Bot size={16} color="#BEAEDD" />}
                           className={classnames(classes.chipTagRobot, classes.chipTag)}
                           classes={{ deleteIcon: classes.deleteIcon, clickable: classes.chipHover }}
                           label={isRobotLoading ? (

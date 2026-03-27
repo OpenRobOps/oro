@@ -28,12 +28,26 @@ const useStyles = makeStyles()(theme => ({
     display: 'flex'
   },
   liveButton: {
-    background: theme.palette.background.brightBlue,
+    background: '#3F93FF',
     borderRadius: '3px',
     margin: '0 auto 0 10px',
     display: 'flex',
     height: '20px',
-    minWidth: 'auto'
+    minWidth: 'auto',
+    padding: '3px 4px',
+    gap: '3px',
+    color: '#1A0F2E',
+    fontSize: '10px',
+    fontFamily: 'Inter, Helvetica, Arial, sans-serif',
+    fontWeight: 500,
+    textTransform: 'none',
+    '&:hover': {
+      background: '#3F93FF',
+    },
+    '&.Mui-disabled': {
+      background: '#3F93FF',
+      color: '#1A0F2E',
+    },
   },
   mobileLiveButton: {
     margin: '0',
@@ -41,7 +55,11 @@ const useStyles = makeStyles()(theme => ({
     minWidth: '30px'
   },
   liveButtonOff: {
-    background: theme.palette.text.notesLight
+    background: '#251A38',
+    color: '#BEAEDD',
+    '&:hover': {
+      background: '#251A38',
+    },
   },
   liveButtonStartIcon: {
     margin: 0
@@ -92,7 +110,9 @@ const LiveButton = ({ startTs, setStartTime, alwaysLive, timeRangeMs, isLive }) 
           onClick={onLiveButtonClick}
           disabled={alwaysLive}
           data-test="live-button-on"
-        />
+        >
+          Live
+        </Button>
       ) : (
         <Button
           className={
@@ -111,7 +131,9 @@ const LiveButton = ({ startTs, setStartTime, alwaysLive, timeRangeMs, isLive }) 
           startIcon={<LiveIconOff />}
           onClick={onSetLiveTime}
           data-test="live-button-off"
-        />
+        >
+          Live
+        </Button>
       )}
     </Grid>
   );

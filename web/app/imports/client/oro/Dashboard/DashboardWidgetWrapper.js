@@ -16,7 +16,7 @@ import { useWidgetData, WidgetDataProvider } from '../contexts/WidgetDataContext
 
 const useStyles = makeStyles()(theme => ({
   container: {
-    padding: '6px'
+    padding: '9.5px'
   },
   withoutPadding: {
     padding: 0
@@ -24,8 +24,8 @@ const useStyles = makeStyles()(theme => ({
   widget: {
     display: 'flex',
     flexDirection: 'column',
-    background: 'white',
-    boxShadow: `5px 5px 10px ${theme.palette.boxShadow.light}, -3px -3px 5px 1px ${theme.palette.boxShadow.white}`,
+    background: theme.palette.background.surface,
+    border: '1px solid #3E3155',
     borderRadius: '10px',
     padding: '12px'
   },
@@ -51,9 +51,12 @@ const useStyles = makeStyles()(theme => ({
     paddingBottom: '6px'
   },
   widgetLabel: {
-    fontFamily: 'Roboto',
+    fontFamily: 'Inter, Helvetica, Arial, sans-serif',
     fontWeight: '300',
-    fontSize: '1.125rem'
+    fontSize: '1.125rem',
+    display: 'flex',
+    height: '22px',
+    alignItems: 'center'
   },
   widgetToolbar: {
     float: 'right',

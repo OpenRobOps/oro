@@ -14,7 +14,6 @@ import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { Typography, CircularProgress } from '@mui/material';
 import { withStyles } from 'tss-react/mui';
-import { grey } from '@mui/material/colors';
 import VitalsHeaderLegend from '../VitalsHeaderLegend';
 import { formatWithUnit } from '../../../../../lib/util';
 
@@ -28,8 +27,8 @@ const styles = theme => ({
     position: 'absolute',
     display: 'block',
     fontWeight: theme.fontWeight.medium,
-    color: theme.palette.text.darkBlue,
-    fontSize: '36px'
+    color: '#FFFFFF',
+    fontSize: '35px'
   },
   valueDisabled: {
     color: theme.palette.incidents.inactive
@@ -39,18 +38,17 @@ const styles = theme => ({
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingBottom: '1em'
+    paddingBottom: '0.5em'
   },
   backgroundRing: {
-    color: grey[300],
+    color: '#251A38',
   },
   backgroundRingDisabled: {
-    color: theme.palette.background.gray
+    color: '#251A38'
   },
   foregroundRing: {
-    color: theme.palette.incidents.ok,
+    color: '#FFFFFF',
     position: 'absolute',
-    boxShadow: 'inset 0px 4px 4px rgba(0, 0, 0, 0.3)',
     borderRadius: '50%'
   },
   unitLabel: {

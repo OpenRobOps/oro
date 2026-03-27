@@ -27,17 +27,22 @@ import { countDashboardSectionsWithScopes } from '../../../../shared/dashboards'
 
 const StyledTabs = styled(Tabs)(({ theme }) => ({
   '&.MuiTabs-root': {
-    background: theme.palette.background.lightBackground,
+    background: '#0E0918',
     minHeight: '32px', // MUI's default is 48
-    height: '45px',
+    height: '44px',
     flex: 1,
   },
   '& .MuiTab-root': {
-    fontSize: '18px',
-    minHeight: '45px',
+    fontFamily: 'Inter, Helvetica, Arial, sans-serif',
+    fontSize: '16px',
+    minHeight: '44px',
+    color: '#AAAAAA',
     textTransform: 'capitalize',
     padding: '0px 28px',
-    minWidth: '100px',
+    minWidth: '180px',
+    letterSpacing: '0.01em',
+    fontOpticalSizing: 'auto',
+    fontWeight: 400
   },
   '& .MuiTabs-indicator': {
     display: 'none'
@@ -49,7 +54,7 @@ const StyledTab = styled(props => (
 ))(({ theme }) => ({
   '&.Mui-selected': {
     color: theme.palette.text.contrastText,
-    backgroundColor: theme.palette.background.tabSelected
+    borderBottom: `3px solid ${theme.palette.background.tabSelected}`
   }
 }));
 
@@ -65,8 +70,7 @@ const TabsContainer = styled('div')(({ theme }) => ({
   top: 0,
   zIndex: 1000,
   height: '45px',
-  flexShrink: 0,
-  boxShadow: `5px 5px 10px 2px ${theme.palette.boxShadow.light}`,
+  flexShrink: 0
 }));
 
 /**
