@@ -36,8 +36,8 @@ const useStyles = makeStyles()(theme => ({
     boxSizing: 'border-box',
   },
   bodySelected: {
-    backgroundColor: '#0E0918',
-    border: '1px solid #9747FF',
+    backgroundColor: '#3E3155',
+    border: '1px solid #3E3155',
   },
   robotName: {
     width: '100%',

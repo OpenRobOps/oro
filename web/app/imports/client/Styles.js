@@ -204,7 +204,7 @@ const theme = createTheme({
       title: '#D6CCE8',
       notesMedium: '#BEAEDD',
       notesDark: '#FAF0F0',
-      content: '#FAF0F0',
+      content: '#C2C2C2',
       contrastText: '#FAF0F0',
       darkBlue: '#9E6FF3',
       statusError: '#FB7188',
@@ -239,6 +239,7 @@ const theme = createTheme({
       robOpsCopilotTable: '#1A0F2E',
       softGray: '#1A0F2E',
       borderGray: '#251A38',
+      borderLight: '#3E3155',
       zoneDefaultColor: '#FFCD87'
     },
     modes: {

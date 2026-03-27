@@ -1,70 +1,59 @@
 /**
- * Styled table components for widget tables.
+ * Table components for widget tables.
  *
- * Uses normal table layout with stickyHeader on <Table> for fixed headers.
- * The container handles overflow/scrolling, keeping columns naturally aligned.
+ * Thin wrappers over plain MUI Table components with oro theme colors.
+ * Keeps the same export names so consumers don't need changes.
  *
  *!Important: The Table Component that's imported of MUI should have as
  *            property stickyHeader to make the header fixed at the top
  *            (not scrolling), and size: 'small' to have the same padding on all the cells
  */
 
-import { styled } from '@mui/material/styles';
 import {
   TableRow,
   TableBody,
   TableCell,
+  TableContainer,
 } from '@mui/material';
-import TableContainer from '@mui/material/TableContainer';
 
-/**
- * Styled table container — handles max-height and scroll.
- * The stickyHeader prop on <Table> keeps the header fixed.
- */
-const StyledTableContainer = styled(TableContainer, { name: 'StyledTableContainer' })({
-  '&.MuiTableContainer-root': {
-    maxHeight: '100%',
-    overflowY: 'auto',
-  },
-  '& .MuiTable-root': {
-    tableLayout: 'fixed',
-    width: '100%',
-  },
-});
+const StyledTableContainer = (props) => (
+  <TableContainer
+    {...props}
+    sx={{
+      maxHeight: '100%',
+      overflowY: 'auto',
+      '& .MuiTable-root': {
+        tableLayout: 'fixed',
+        width: '100%',
+      },
+      ...props.sx,
+    }}
+  />
+);
 
-/**
- * Styled table body — no display hacks, just standard table-row-group.
- */
-const StyledTableBody = styled(TableBody, { name: 'StyledTableBody' })({});
+const StyledTableBody = TableBody;
 
-/**
- * Styled table cell.
- * Width is '20%' by default, override per widget with the width prop.
- */
-const StyledTableCell = styled(TableCell, { name: 'StyledTableCell' })(({ theme, width }) => ({
-  '&.MuiTableCell-root': {
-    width: width || '20%',
-    fontSize: '13px',
-    padding: '7px 10px',
-    wordBreak: 'break-word',
-    borderBottom: '1px solid #3E3155',
-  },
-  // Inset shadow draws one continuous bottom edge per cell. With stickyHeader,
-  // MUI uses border-collapse: separate; per-cell border-bottom often misaligns
-  // (jagged line) at column joins — especially vs TableSortLabel vs plain text.
-  '&.MuiTableCell-stickyHeader': {
-    backgroundColor: '#170E28',
-    fontWeight: 501,
-    color: theme.palette.text.title,
-    borderBottom: 'none',
-    boxShadow: 'inset 0 -2px 0 0 #3E3155'
-  }
-}));
+const StyledTableCell = ({ width, sx, ...props }) => (
+  <TableCell
+    {...props}
+    sx={(theme) => ({
+      width: width || '20%',
+      fontSize: '13px',
+      padding: '7px 10px',
+      wordBreak: 'break-word',
+      borderBottom: `1px solid ${theme.palette.background.borderLight}`,
+      '&.MuiTableCell-stickyHeader': {
+        backgroundColor: theme.palette.background.surface,
+        fontWeight: 501,
+        color: theme.palette.text.title,
+        borderBottom: `1px solid ${theme.palette.background.borderLight}`,
+      },
+      ...(typeof sx === 'function' ? sx(theme) : sx),
+    })}
+  />
+);
 
-/**
- * Styled table row — standard table layout, no display overrides.
- */
-const StyledTableRow = styled(TableRow, { name: 'StyledTableRow' })({});
+const StyledTableRow = TableRow;
 
 export {
   StyledTableContainer,

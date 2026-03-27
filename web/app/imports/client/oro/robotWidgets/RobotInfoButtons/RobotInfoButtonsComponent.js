@@ -217,23 +217,12 @@ class RobotInfoButtons extends React.Component {
       if (operation == 'updateAgent') {
         this.handleUpdateAgent();
       } else {
-        // NOTE(adamantivm) This is now only used for the Delete Robot button
-        // TODO Migrate the Delete Robot action to be a proper action
         Meteor.call('robot.' + operation, { robotId }, (err) => {
           if (err) {
             onFeedback && onFeedback((err && err.error) || 'Error');
           } else {
             // After successfully deleting the robot, remove it from the context
             selectRobotCallback();
-
-            // TODO (franguerini): Uncomment this line (or move it somewhere else) to have
-            //                     snackbar messages after the robot is deleted
-            //                     by having the remove of the deleted robot it is re-rendering
-            //                     with an empty robotId (because it changed to undefined)
-            //                     I believe the proper solution to this would be to move this logic
-            //                     outside of this component (refactor it) so that the onFeedback
-            //                     does not depend on the state of this component
-            // onFeedback && onFeedback(confirmSuccessMessage, SnackbarVariants.SUCCESS);
           }
         });
       }
@@ -390,8 +379,6 @@ class RobotInfoButtons extends React.Component {
               </Tooltip>
             )}
           </Box>
-          { /* NOTE(Gus) Since settings are now only offered to Admins, show the
-                settings button only to admins. See IO-633 for more info */ }
           {showSettings && (
             <Button
               variant="text"
