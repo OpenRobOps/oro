@@ -6,6 +6,7 @@ import '../imports/server/test/actions.test.js'
 import '../imports/server/test/locks.test.js'
 import '../imports/server/test/configAPI/configAPIStatusDefinition.test.js'
 import '../imports/server/test/configAPI/configAPIDashboards.test.js'
+import '../imports/server/test/configAPI/configAPIActionDefinitions.test.js'
 
 describe("app", function () {
   it("package.json has correct name", async function () {
