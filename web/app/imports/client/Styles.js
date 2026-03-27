@@ -253,6 +253,7 @@ const theme = createTheme({
     },
     incidents: {
       ok: '#3F93FF',
+      resolved: '#4CAF50',
       warning: '#FFBB32',
       error: '#FB7188',
       inactive: '#BCBCBC',

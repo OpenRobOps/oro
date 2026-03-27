@@ -77,7 +77,7 @@ const styles = theme => ({
     bottom: 0,
     position: 'sticky',
     zIndex: 2,
-    borderTop: '1px solid #3E3155',
+    borderTop: `1px solid ${theme.palette.background.borderLight}`,
     color: theme.palette.text.content
   },
   emptyCell: {
@@ -573,7 +573,7 @@ class IncidentListWidget extends React.Component {
           />
         </StyledTableCell>
         <StyledTableCell width="5%">
-          <ChevronDown size={20} color="#C2C2C2" />
+          <ChevronDown size={20} color={theme.palette.text.lightGray} />
         </StyledTableCell>
       </StyledTableRow>
     ));
@@ -642,12 +642,12 @@ class IncidentListWidget extends React.Component {
         >
           {incident.status == INCIDENT_STATUS_NEW ? (
             <div className={classes.iconContainer}>
-              <FolderOpen size={16} color="#C2C2C2" />
+              <FolderOpen size={16} color={theme.palette.text.lightGray} />
               &nbsp;Open
             </div>
           ) : (
             <div className={classes.iconContainer}>
-              <CircleCheckBig size={16} color="#4CAF50" />
+              <CircleCheckBig size={16} color={theme.palette.incidents.resolved} />
               &nbsp;Resolved
             </div>
           )}
@@ -697,7 +697,7 @@ class IncidentListWidget extends React.Component {
           {data}
         </StyledTableCell>
         <StyledTableCell width='5%'>
-          <ChevronDown size={20} color="#C2C2C2" />
+          <ChevronDown size={20} color={theme.palette.text.lightGray} />
         </StyledTableCell>
       </StyledTableRow>
     )];

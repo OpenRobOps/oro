@@ -25,7 +25,7 @@ const useStyles = makeStyles()(theme => ({
     display: 'flex',
     flexDirection: 'column',
     background: theme.palette.background.surface,
-    border: '1px solid #3E3155',
+    border: `1px solid ${theme.palette.background.borderLight}`,
     borderRadius: '10px',
     padding: '12px'
   },
@@ -100,7 +100,7 @@ const useStyles = makeStyles()(theme => ({
     marginLeft: '10px',
   },
   labelIcon: {
-    color: '#BCBCBC'
+    color: theme.palette.incidents.inactive
   },
   numberOfTags: {
     position: 'absolute',

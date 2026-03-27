@@ -64,14 +64,14 @@ const styles = theme => ({
   lowerCaseButton: {
     textTransform: 'initial',
     fontWeight: theme.fontWeight.lightPlus,
-    color: '#C2C2C2',
+    color: theme.palette.text.lightGray,
     marginLeft: '12px'
   },
   lastSeen: {
     padding: '0.2em 12px',
   },
   rowButton: {
-    color: '#C2C2C2'
+    color: theme.palette.text.lightGray
   }
 });
 // Remove robot button timer: It allows deleting a robot after 5min of inactivity
@@ -259,7 +259,7 @@ class RobotInfoButtons extends React.Component {
 
   render() {
     const {
-      offline, isZeroData, classes,
+      offline, isZeroData, classes, theme,
       onNavigationDetail, updateStamp,
       actionsConfig, lock, enableLock, robotId, isRobotLoading
     } = this.props;
@@ -340,7 +340,7 @@ class RobotInfoButtons extends React.Component {
             onClick={onNavigationDetail}
             classes={{ text: classes.lowerCaseButton }}
           >
-            <Navigation size={24} color="#C2C2C2" style={{ marginRight: '4px' }} />
+            <Navigation size={24} color={theme.palette.text.lightGray} style={{ marginRight: '4px' }} />
             <Box sx={LG_BREAKPOINT}>
               Navigation
             </Box>
@@ -387,7 +387,7 @@ class RobotInfoButtons extends React.Component {
               onClick={this.redirectToRobotSettings}
               title="Settings"
             >
-              <Settings size={24} color="#C2C2C2" />
+              <Settings size={24} color={theme.palette.text.lightGray} />
             </Button>
           )}
         </div>

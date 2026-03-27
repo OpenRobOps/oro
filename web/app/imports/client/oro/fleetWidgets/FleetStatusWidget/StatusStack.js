@@ -36,8 +36,8 @@ const useStyles = makeStyles()(theme => ({
     boxSizing: 'border-box',
   },
   bodySelected: {
-    backgroundColor: '#3E3155',
-    border: '1px solid #3E3155',
+    backgroundColor: theme.palette.background.borderLight,
+    border: `1px solid ${theme.palette.background.borderLight}`,
   },
   robotName: {
     width: '100%',
@@ -51,7 +51,7 @@ const useStyles = makeStyles()(theme => ({
     whiteSpace: 'pre-wrap',
   },
   robotNameSelected: {
-    color: '#fff',
+    color: theme.palette.background.white,
   },
   statusChipContainer: {
     height: '100%',
