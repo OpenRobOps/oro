@@ -277,7 +277,6 @@ class RobotInfoButtons extends React.Component {
     const showDeleteRobot = true; // TODO check access: clientGrantsSpecificAccess(this.context && userGrants,
       //null, [RESOURCE_SINGLETONS.FLEET], ACCESS_LEVEL_CONFIGURE);
     const showUpdateAgent = showDeleteRobot;
-    const showSettings = true; // TODO check access: clientGrantsSpecificAccess(this.context && userGrants,
       //null, [RESOURCE_SINGLETONS.DATASOURCES], ACCESS_LEVEL_CONFIGURE);
     const restartAction = actionsConfig && actionsConfig[RESTART_AGENT_ACTION_ID];
     const updateAction = actionsConfig && actionsConfig[UPDATE_AGENT_ACTION_ID];
@@ -390,22 +389,6 @@ class RobotInfoButtons extends React.Component {
               </Tooltip>
             )}
           </Box>
-          { /* NOTE(Gus) Since settings are now only offered to Admins, show the
-                settings button only to admins. See IO-633 for more info */ }
-          {showSettings && (
-            <Button
-              variant="text"
-              size="small"
-              aria-label="Settings"
-              onClick={this.redirectToRobotSettings}
-              title="Settings"
-            >
-              <Settings
-                className={classes.iconStyle}
-                sx={{ fill: theme => theme.palette.text.title }}
-              />
-            </Button>
-          )}
         </div>
         <ConfirmationDialog
           onDone={this.confirmResponse}

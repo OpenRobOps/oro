@@ -12,7 +12,20 @@
             "index": 1,
             "label": "Fleet Status",
             "type": "fleetStatus",
-            "config": {},
+            "config": {
+              "elementList": [
+                "cpuLoadPercentage",
+                "diskUsagePercentage"
+              ],
+              "elementValues": {
+                "cpuLoadPercentage": {
+                  "label": "CPU"
+                },
+                "diskUsagePercentage": {
+                  "label": "RAM"
+                }
+              }              
+            },
             "layout": {
               "grid": 12,
               "chroma": true

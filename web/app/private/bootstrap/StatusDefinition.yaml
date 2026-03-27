@@ -1,0 +1,61 @@
+apiVersion: v0.1
+kind: StatusDefinition
+metadata:
+  id: cpuLoadPercentage
+  scope: ''
+spec:
+  rules:
+  - function: ABOVE
+    params:
+    - 0.95
+    status: ERROR
+    sustainedForSeconds: 60
+  - function: ABOVE
+    params:
+    - 0.85
+    status: WARNING
+    sustainedForSeconds: 60
+---
+apiVersion: v0.1
+kind: StatusDefinition
+metadata:
+  id: diskUsagePercentage
+  scope: ''
+spec:
+  rules:
+  - function: ABOVE
+    params:
+    - 0.9
+    status: ERROR
+  - function: ABOVE
+    params:
+    - 0.7
+    status: WARNING
+---
+apiVersion: v0.1
+kind: StatusDefinition
+metadata:
+  id: rosMasterStatus
+  scope: ''
+spec:
+  rules:
+  - function: NOT_EQUALS
+    params:
+    - 1
+    status: ERROR
+---
+apiVersion: v0.1
+kind: StatusDefinition
+metadata:
+  id: rosDiagnosticsStatus
+  scope: ''
+spec:
+  rules:
+  - function: EQUALS
+    params:
+    - 2
+    status: ERROR
+  - function: EQUALS
+    params:
+    - 1
+    status: WARNING
