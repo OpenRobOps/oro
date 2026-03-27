@@ -1,0 +1,3 @@
+# Adding gitignore here temporarily until website branch gets merged
+website/.docusaurus
+website/node_modules

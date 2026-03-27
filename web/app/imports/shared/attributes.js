@@ -13,13 +13,13 @@ const VITAL_AGENT_DISK_USAGE_MB = 'diskOroUsageMb';
 const VITAL_NET_TOTAL_TX_RATE = 'networkTotalTxRate';
 const VITAL_NET_TOTAL_RX_RATE = 'networkTotalRxRate';
 const VITAL_NET_TOTAL_RATE = 'networkTotalRate';
-const VITAL_NET_ORO_TX_RATE = 'networkOroTxRate';
-const VITAL_NET_ORO_RX_RATE = 'networkOroRxRate';
-const VITAL_NET_ORO_RATE = 'networkOroRate';
+const VITAL_NET_AGENT_TX_RATE = 'networkOroTxRate';
+const VITAL_NET_AGENT_RX_RATE = 'networkOroRxRate';
+const VITAL_NET_AGENT_RATE = 'networkOroRate';
 const VITAL_NET_TOTAL_TX_BYTES = 'networkTotalTxBytes';
 const VITAL_NET_TOTAL_RX_BYTES = 'networkTotalRxBytes';
-const VITAL_NET_ORO_TX_BYTES = 'networkOroTxBytes';
-const VITAL_NET_ORO_RX_BYTES = 'networkOroRxBytes';
+const VITAL_NET_AGENT_TX_BYTES = 'networkOroTxBytes';
+const VITAL_NET_AGENT_RX_BYTES = 'networkOroRxBytes';
 const VITAL_SPEED_LINEAR = 'speedLinear';
 const VITAL_SPEED_ANGULAR = 'speedAngular';
 const VITAL_DISTANCE_LINEAR_SINCE = 'distanceLinearSince';
@@ -267,13 +267,13 @@ export {
   VITAL_NET_TOTAL_TX_RATE,
   VITAL_NET_TOTAL_RX_RATE,
   VITAL_NET_TOTAL_RATE,
-  VITAL_NET_ORO_TX_RATE,
-  VITAL_NET_ORO_RX_RATE,
-  VITAL_NET_ORO_RATE,
+  VITAL_NET_AGENT_TX_RATE,
+  VITAL_NET_AGENT_RX_RATE,
+  VITAL_NET_AGENT_RATE,
   VITAL_NET_TOTAL_TX_BYTES,
   VITAL_NET_TOTAL_RX_BYTES,
-  VITAL_NET_ORO_TX_BYTES,
-  VITAL_NET_ORO_RX_BYTES,
+  VITAL_NET_AGENT_TX_BYTES,
+  VITAL_NET_AGENT_RX_BYTES,
   VITAL_SPEED_LINEAR,
   VITAL_SPEED_ANGULAR,
   VITAL_DISTANCE_LINEAR_SINCE,

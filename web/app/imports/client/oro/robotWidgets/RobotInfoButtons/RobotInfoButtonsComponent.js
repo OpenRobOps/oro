@@ -269,7 +269,6 @@ class RobotInfoButtons extends React.Component {
     const showDeleteRobot = true; // TODO check access: clientGrantsSpecificAccess(this.context && userGrants,
       //null, [RESOURCE_SINGLETONS.FLEET], ACCESS_LEVEL_CONFIGURE);
     const showUpdateAgent = showDeleteRobot;
-    const showSettings = true; // TODO check access: clientGrantsSpecificAccess(this.context && userGrants,
       //null, [RESOURCE_SINGLETONS.DATASOURCES], ACCESS_LEVEL_CONFIGURE);
     const restartAction = actionsConfig && actionsConfig[RESTART_AGENT_ACTION_ID];
     const updateAction = actionsConfig && actionsConfig[UPDATE_AGENT_ACTION_ID];
@@ -379,17 +378,6 @@ class RobotInfoButtons extends React.Component {
               </Tooltip>
             )}
           </Box>
-          {showSettings && (
-            <Button
-              variant="text"
-              size="small"
-              aria-label="Settings"
-              onClick={this.redirectToRobotSettings}
-              title="Settings"
-            >
-              <Settings size={24} color={theme.palette.text.lightGray} />
-            </Button>
-          )}
         </div>
         <ConfirmationDialog
           onDone={this.confirmResponse}
