@@ -30,7 +30,7 @@ import {
   // ImagesModule,
   Navigation2DModule,
 } from '../imports/server/modules';
-import InitializeStarterData from './bootstrapConfig';
+import { bootstrapConfigData } from './bootstrapConfig';
 
 // Register accounts hooks at module level — before any login attempt
 registerAccountsHooks();
@@ -101,8 +101,8 @@ const oroAppMain = async () => {
     // images: moduleInstances.ImagesModule,
   });
 
-
-  await InitializeStarterData(configApi);
+  // Bootstrap default configuration data
+  await bootstrapConfigData(configApi);
 
   // Load and start modules
   // moduleInstances.RobotLocalizationModule.load();
