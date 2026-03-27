@@ -41,7 +41,12 @@ const AppHeader = () => {
   };
 
   return (
-    <AppBar position="static" sx={{ bgcolor: '#170E28' }}>
+    <AppBar
+      position="static"
+      elevation={0}
+      color="transparent"
+      sx={{ bgcolor: '#170E28' }}
+    >
       <Toolbar sx={{ justifyContent: 'space-between' }}>
         <img src="/images/oro-logo.svg" alt="ORO" height="22" />
         <Box sx={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

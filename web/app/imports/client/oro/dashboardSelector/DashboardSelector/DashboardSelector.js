@@ -27,7 +27,7 @@ import { countDashboardSectionsWithScopes } from '../../../../shared/dashboards'
 
 const StyledTabs = styled(Tabs)(({ theme }) => ({
   '&.MuiTabs-root': {
-    background: '#0E0918',
+    background: theme.palette.background.navDark,
     minHeight: '32px', // MUI's default is 48
     height: '44px',
     flex: 1,
@@ -65,7 +65,7 @@ const TabsContainer = styled('div')(({ theme }) => ({
   display: 'flex',
   flexDirection: 'row',
   alignItems: 'stretch',
-  background: theme.palette.background.lightBackground,
+  background: theme.palette.background.navDark,
   position: 'sticky',
   top: 0,
   zIndex: 1000,
