@@ -18,7 +18,23 @@ import yaml from 'js-yaml';
 const ORO_USER = { _id: 'oro' };
 
 /**
- * Imports all objects from a YAML file -- its contents already read into `fileContents` string.
+ * Imports all objects from a YAML file.
+ * The objects must all be from the same `kind`.
+ */
+const importDefaultKindData = async (configApi, kind) => {
+  // Load the startup data file for this kind
+  let fileContents;
+  try {
+    fileContents = await Assets.getTextAsync(`bootstrap/${kind}.yaml`);
+  } catch (error) {
+    // No data for this kind; ignore
+    return;
+  }
+  await importKindData(configApi, kind, fileContents);
+}
+
+/**
+ * Imports all objects from a YAML file, already loaded onto a `fileContents` string.
  * The objects must all be from the same `kind`.
  */
 const importKindData = async (configApi, kind, fileContents) => {
@@ -26,7 +42,7 @@ const importKindData = async (configApi, kind, fileContents) => {
   try {
     data = yaml.loadAll(fileContents);
   } catch (error) {
-    console.error(`bootstrap(${kind}): Error parsing YAML`);
+    console.error(`bootstrap(${kind}): Error parsing YAML`, error);
     return;
   }
   console.log(`bootstrap(${kind}): loading ${data.length} items`);
@@ -83,17 +99,12 @@ const bootstrapConfigData = async (configApi) => {
       console.log(`bootstrap(${kind}): ${objects.length} objects already exist; skipping`);
       continue;
     }
-    // Load the startup data file for this kind
-    let data;
-    try {
-      data = await Assets.getTextAsync(`bootstrap/${kind}.yaml`);
-    } catch (error) {
-      // No data for this kind; ignore
-      continue;
-    }
-    await importKindData(configApi, kind, data);
+    await importDefaultKindData(configApi, kind);
   }
-
 }
 
-export default bootstrapConfigData;
+export {
+  importKindData,
+  importDefaultKindData,
+  bootstrapConfigData,
+}
