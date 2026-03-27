@@ -12,13 +12,13 @@ import {
   VITAL_NET_TOTAL_TX_RATE,
   VITAL_NET_TOTAL_RX_RATE,
   VITAL_NET_TOTAL_RATE,
-  VITAL_NET_ORO_TX_RATE,
-  VITAL_NET_ORO_RX_RATE,
-  VITAL_NET_ORO_RATE,
+  VITAL_NET_AGENT_TX_RATE,
+  VITAL_NET_AGENT_RX_RATE,
+  VITAL_NET_AGENT_RATE,
   VITAL_NET_TOTAL_TX_BYTES,
   VITAL_NET_TOTAL_RX_BYTES,
-  VITAL_NET_ORO_TX_BYTES,
-  VITAL_NET_ORO_RX_BYTES
+  VITAL_NET_AGENT_TX_BYTES,
+  VITAL_NET_AGENT_RX_BYTES
 } from '../../shared/attributes';
 
 // TODO Change to ES6 imports format
@@ -86,13 +86,13 @@ export default class SystemModule {
         [VITAL_NET_TOTAL_TX_RATE]: { value: rateTotalTx },
         [VITAL_NET_TOTAL_RX_RATE]: { value: rateTotalRx },
         [VITAL_NET_TOTAL_RATE]: { value: rateTotal },
-        [VITAL_NET_ORO_TX_RATE]: { value: rateAgentTx },
-        [VITAL_NET_ORO_RX_RATE]: { value: rateAgentRx },
-        [VITAL_NET_ORO_RATE]: { value: rateAgent },
+        [VITAL_NET_AGENT_TX_RATE]: { value: rateAgentTx },
+        [VITAL_NET_AGENT_RX_RATE]: { value: rateAgentRx },
+        [VITAL_NET_AGENT_RATE]: { value: rateAgent },
         [VITAL_NET_TOTAL_TX_BYTES]: { value: totalTx },
         [VITAL_NET_TOTAL_RX_BYTES]: { value: totalRx },
-        [VITAL_NET_ORO_TX_BYTES]: { value: agentTx },
-        [VITAL_NET_ORO_RX_BYTES]: { value: agentRx },
+        [VITAL_NET_AGENT_TX_BYTES]: { value: agentTx },
+        [VITAL_NET_AGENT_RX_BYTES]: { value: agentRx },
         [VITAL_RAM_USAGE_PERCENTAGE]: { value: decodedMsg.ramUsagePercentage }
       };
 

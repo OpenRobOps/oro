@@ -33,13 +33,13 @@ import {
   VITAL_NET_TOTAL_TX_RATE,
   VITAL_NET_TOTAL_RX_RATE,
   VITAL_NET_TOTAL_RATE,
-  VITAL_NET_ORO_TX_RATE,
-  VITAL_NET_ORO_RX_RATE,
-  VITAL_NET_ORO_RATE,
+  VITAL_NET_AGENT_TX_RATE,
+  VITAL_NET_AGENT_RX_RATE,
+  VITAL_NET_AGENT_RATE,
   VITAL_NET_TOTAL_TX_BYTES,
   VITAL_NET_TOTAL_RX_BYTES,
-  VITAL_NET_ORO_TX_BYTES,
-  VITAL_NET_ORO_RX_BYTES,
+  VITAL_NET_AGENT_TX_BYTES,
+  VITAL_NET_AGENT_RX_BYTES,
   VITAL_SPEED_LINEAR,
   VITAL_SPEED_ANGULAR,
   VITAL_DISTANCE_LINEAR,
@@ -134,19 +134,19 @@ const VITAL_DEFAULT_DEFINITIONS = {
     label: 'Network rate',
     precision: 0
   },
-  [VITAL_NET_ORO_TX_RATE]: {
+  [VITAL_NET_AGENT_TX_RATE]: {
     unit: 'kB/s',
     label: 'InOrbit upload rate',
     precision: 0,
     internal: true
   },
-  [VITAL_NET_ORO_RX_RATE]: {
+  [VITAL_NET_AGENT_RX_RATE]: {
     unit: 'kB/s',
     label: 'InOrbit download rate',
     precision: 0,
     internal: true
   },
-  [VITAL_NET_ORO_RATE]: {
+  [VITAL_NET_AGENT_RATE]: {
     unit: 'kB/s',
     label: 'InOrbit network rate',
     precision: 0,
@@ -172,7 +172,7 @@ const VITAL_DEFAULT_DEFINITIONS = {
       field: 'totalRx'
     }
   },
-  [VITAL_NET_ORO_TX_BYTES]: {
+  [VITAL_NET_AGENT_TX_BYTES]: {
     unit: 'bytes',
     label: 'InOrbit network upload',
     precision: 0,
@@ -182,7 +182,7 @@ const VITAL_DEFAULT_DEFINITIONS = {
       field: 'inorbitTx'
     }
   },
-  [VITAL_NET_ORO_RX_BYTES]: {
+  [VITAL_NET_AGENT_RX_BYTES]: {
     unit: 'bytes',
     label: 'InOrbit network download',
     precision: 0,
@@ -280,304 +280,6 @@ class AttributesManager {
    */
   init = async () => {
     this._attrDefsColl = AttributeDefinitions;
-    await this._addDefaults();
-  };
-
-  _addDefaults = async () => {
-    console.log('AttributesManager: Creating default attribute/ui');
-    await this.createDefaultAttribute(VITAL_CPU_LOAD_PERCENTAGE, {
-      unit: '%',
-      label: 'CPU usage',
-      precision: 1
-    }, {
-      status: [
-        { functionName: 'sustainedHigherThan', params: { maxValue: 0.95, minSeconds: 60 }, status: STATUS.ERROR.value },
-        { functionName: 'sustainedHigherThan', params: { maxValue: 0.85, minSeconds: 60 }, status: STATUS.WARN.value },
-      ],
-      ui: {
-        vitalsWidget: {
-          type: 'gauge'
-        },
-        timelineWidget: {}
-      }
-    });
-    await this.createDefaultAttribute(VITAL_RAM_USAGE_PERCENTAGE, {
-      unit: '%',
-      label: 'RAM usage',
-      precision: 1,
-      internal: true
-    }, { ui: false, status: false });
-    await this.createDefaultAttribute(VITAL_DISK_USAGE_PERCENTAGE, {
-      unit: '%',
-      label: 'Disk usage',
-      precision: 1
-    }, {
-      status: [
-        { functionName: 'higherThan', params: { max: 0.9 }, status: STATUS.ERROR.value },
-        { functionName: 'higherThan', params: { max: 0.7 }, status: STATUS.WARN.value },
-      ],
-      ui: {
-        vitalsWidget: {
-          type: 'gauge'
-        },
-        timelineWidget: {}
-      }
-    });
-    await this.createDefaultAttribute(
-      VITAL_AGENT_DISK_USAGE_PERCENTAGE,
-      {
-        unit: '%',
-        label: 'InOrbit disk usage (%)',
-        precision: 1,
-        internal: true
-      },
-      {
-        ui: false,
-        status: false
-      }
-    );
-    await this.createDefaultAttribute(VITAL_AGENT_DISK_USAGE_MB, {
-      unit: 'Mb',
-      label: 'InOrbit disk usage (Mb)',
-      precision: 0,
-      internal: true
-    }, { ui: false, status: false });
-    // This is a snapshot of the current transfer rate for all network interfaces
-    // except localhost.
-    await this.createDefaultAttribute(VITAL_NET_TOTAL_RATE, {
-      unit: 'kB/s',
-      label: 'Network rate',
-      precision: 0,
-      timeline: {}
-    }, {
-      ui: {
-        vitalsWidget: {
-          label: 'Network',
-          type: 'text'
-        },
-        timelineWidget: false
-      },
-      status: false
-    });
-    await this.createDefaultAttribute(VITAL_NET_ORO_RATE, {
-      unit: 'kB/s',
-      label: 'Agent network rate',
-      precision: 0,
-      internal: true,
-      timeline: {}
-    }, {
-      ui: {
-        vitalsWidget: {
-          label: 'Agent',
-          type: 'text'
-        },
-        timelineWidget: false
-      },
-      status: false
-    });
-    await this.createDefaultAttribute(VITAL_NET_TOTAL_TX_RATE, {
-      unit: 'kb/s',
-      label: 'Network upload rate',
-      precision: 0,
-      timeline: {
-        disabled: true
-      },
-      internal: true
-    }, { ui: false, status: false });
-    await this.createDefaultAttribute(VITAL_NET_TOTAL_RX_RATE, {
-      unit: 'kB/s',
-      label: 'Network download rate',
-      precision: 0,
-      timeline: {
-        disabled: true
-      },
-      internal: true
-    }, { ui: false, status: false });
-    await this.createDefaultAttribute(VITAL_NET_ORO_TX_RATE, {
-      unit: 'kB/s',
-      label: 'Agent upload rate',
-      precision: 0,
-      timeline: {
-        disabled: true
-      },
-      internal: true
-    }, { ui: false, status: false });
-    await this.createDefaultAttribute(VITAL_NET_ORO_RX_RATE, {
-      unit: 'kB/s',
-      label: 'Agent download rate',
-      precision: 0,
-      timeline: {
-        disabled: true
-      },
-      internal: true
-    }, { ui: false, status: false });
-    // The following 4 attributes are accumulators, meant to be collected and sent to timeseries
-    await this.createDefaultAttribute(VITAL_NET_TOTAL_TX_BYTES, {
-      unit: 'bytes',
-      label: 'Network upload',
-      precision: 0,
-      internal: true
-    }, { ui: false, status: false });
-    await this.createDefaultAttribute(VITAL_NET_TOTAL_RX_BYTES, {
-      unit: 'bytes',
-      label: 'Network download',
-      precision: 0,
-      internal: true
-    }, { ui: false, status: false });
-    await this.createDefaultAttribute(VITAL_NET_ORO_TX_BYTES, {
-      unit: 'bytes',
-      label: 'Agent network upload',
-      precision: 0,
-      internal: true
-    }, { ui: false, status: false });
-    await this.createDefaultAttribute(VITAL_NET_ORO_RX_BYTES, {
-      unit: 'bytes',
-      label: 'Agent network download',
-      precision: 0,
-      internal: true
-    }, { ui: false, status: false });
-    await this.createDefaultAttribute(VITAL_SPEED_LINEAR, {
-      unit: 'm/s',
-      label: 'Linear speed',
-      precision: 3,
-      timeline: {
-        disabled: true
-      },
-      internal: true
-    }, { ui: false, status: false });
-    await this.createDefaultAttribute(VITAL_SPEED_ANGULAR, {
-      unit: 'rad/s',
-      label: 'Angular speed',
-      precision: 3,
-      timeline: {
-        disabled: true
-      },
-      internal: true
-    }, { ui: false, status: false });
-    await this.createDefaultAttribute(VITAL_DISTANCE_LINEAR_SINCE, {
-      // Accumulated since tsStart (Used to calculate deltas for VITAL_DISTANCE_LINEAR)
-      unit: 'm',
-      label: 'Accumulated linear distance',
-      precision: 3,
-      internal: true
-    }, { ui: false, status: false });
-    await this.createDefaultAttribute(VITAL_DISTANCE_ANGULAR_SINCE, {
-      // Accumulated since tsStart (Used to calculate deltas for VITAL_DISTANCE_ANGULAR)
-      unit: 'rad',
-      label: 'Accumulated angular distance',
-      precision: 3,
-      timeline: {
-        disabled: true
-      },
-      internal: true
-    }, { ui: false, status: false });
-    await this.createDefaultAttribute(VITAL_DISTANCE_LINEAR, {
-      unit: 'm',
-      label: 'Linear distance',
-      precision: 3
-    }, { ui: false, status: false });
-    await this.createDefaultAttribute(VITAL_DISTANCE_ANGULAR, {
-      unit: 'rad',
-      label: 'Angular distance',
-      precision: 3,
-      internal: true,
-      timeline: {}
-    }, { ui: false, status: false });
-    await this.createDefaultAttribute(VITAL_ROS_MASTER_STATUS, {
-      label: 'ROS Status'
-    }, {
-      status: [
-        { functionName: 'notEquals', params: { value: 1 }, status: STATUS.ERROR.value }
-      ],
-      ui: {
-        vitalsWidget: false,
-        timelineWidget: false
-      }
-    });
-    await this.createDefaultAttribute(VITAL_ONLINE, {
-      label: 'Online',
-      internal: true
-    }, {
-      status: false,
-      ui: false
-    });
-    await this.createDefaultAttribute(VITAL_AGENT_VERSION, {
-      label: 'Agent version',
-      internal: true
-    }, {
-      status: false,
-      ui: false
-    });
-    await this.createDefaultAttribute(TMP_VITAL_ROS_DIAGNOSTICS, {
-      label: 'ROS Diagnostics - legacy',
-      internal: true,
-      timeline: {
-        disabled: true
-      },
-    }, {
-      status: false,
-      ui: {
-        vitalsWidget: false,
-        timelineWidget: false
-      }
-    });
-    await this.createDefaultAttribute(VITAL_ROS_DIAGNOSTICS_STATUS, {
-      label: 'ROS Diagnostics',
-      internal: true,
-      timeline: {
-        disabled: true
-      },
-    }, {
-      status: [
-        { functionName: 'equals', params: { value: 2 }, status: STATUS.ERROR.value },
-        { functionName: 'equals', params: { value: 1 }, status: STATUS.WARN.value }
-      ],
-      ui: {
-        vitalsWidget: false,
-        timelineWidget: false
-      }
-    });
-    await this.createDefaultAttribute(VITAL_PING_RTT_AVG, {
-      unit: 'ms',
-      label: 'Averaged Ping Time',
-      internal: true
-    }, {
-      status: false,
-      ui: false
-    });
-    await this.createDefaultAttribute(VITAL_PING_RTT_LAST, {
-      unit: 'ms',
-      label: 'Raw Ping Time',
-      internal: true
-    }, {
-      status: false,
-      ui: false
-    });
-    await this.createDefaultAttribute(VITAL_POSE, {
-      label: 'Robot Pose',
-      type: ATTRIBUTE_TYPES.JSON,
-      internal: true,
-      timeline: {
-        // pose is (still) saved to timeseries as a string, without ".str" suffix, so it needs
-        // explicit configuration
-        fieldType: 'string',
-        fieldName: VITAL_POSE,
-        // We decided to reduce precision to millimeters in order to avoid storing
-        // unnecessarily long strings for poses.
-        fieldPrecision: 3
-      }
-    }, {
-      status: false,
-      ui: false
-    });
-    await this.createDefaultAttribute(VITAL_GPSFIX, {
-      label: 'GPS Fix',
-      type: ATTRIBUTE_TYPES.JSON,
-      internal: true,
-    }, {
-      status: false,
-      ui: false
-    });
   };
 
   /**
