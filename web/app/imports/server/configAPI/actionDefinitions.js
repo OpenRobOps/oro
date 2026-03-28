@@ -151,7 +151,7 @@ const actionDefinitionArgumentToConfigObject = ({ key, value }) => {
  *
  * @returns {object}
  */
-const actionDefinitionToConfigObject = ({ _id: id, group, widgets, ...definition }) => {
+const actionDefinitionToConfigObject = ({ _id: id, widgets, ...definition }) => {
   const configObject = {
     metadata: {
       id,
@@ -164,13 +164,12 @@ const actionDefinitionToConfigObject = ({ _id: id, group, widgets, ...definition
   }
   const spec = {};
   configObject.spec = spec;
+  console.log('actionDefinitionToConfigObject', definition);
   const {
-    type, label, description, lock, confirmation, conditions,
-    elementList, elementValues
+    type, label, description, lock, confirmation, conditions, group, elementList, elementValues
   } = definition;
   spec.type = type;
   spec.label = label;
-  spec.group = (group || {}).label;
   if (widgets && widgets.length) {
     spec.widgets = widgets.map((path) => {
       const [screenKey, widgetId] = path.split('.');
@@ -180,8 +179,7 @@ const actionDefinitionToConfigObject = ({ _id: id, group, widgets, ...definition
       return widgetMapping ? widgetMapping[0] : null;
     }).filter(x => x);
   }
-  // Note: Always exposing the Lock value, even if the account has no access to it (it is
-  // feature flagged). It is validated during apply()
+  // Note: Always exposing the Lock value, It is validated during apply()
   spec.lock = Boolean(lock);
   spec.description = description;
   spec.confirmation = confirmation; // || { required: false }; // default behavior
@@ -244,11 +242,9 @@ const configObjectToActionDefinition = (configObject) => {
     lock,
     confirmation,
     elementList,
-    elementValues
+    elementValues,
+    group
   };
-  if (group) {
-    definition.group = group;
-  }
   if (condition && condition.rules) {
     definition.conditions = condition.rules;
   }
