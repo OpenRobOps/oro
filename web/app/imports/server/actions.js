@@ -140,8 +140,22 @@ class ActionsEngine {
     }
   };
 
-  setActionDefinition = async (actionId, definition) => (
-    ActionDefinitions.upsertAsync({ _id: actionId }, { $set: definition })
+  setActionDefinition = async (actionId, definition) => {
+    const update = { $set: definition };
+    const unsetFields = {};
+    for (const field of Object.keys(definition)) {
+      if (definition[field] === undefined) {
+        unsetFields[field] = true;
+      }
+    }
+    if (!isEmpty(unsetFields)) {
+      update.$unset = unsetFields;
+    }
+    await ActionDefinitions.upsertAsync({ _id: actionId }, update)
+  }
+
+  unsetActionDefinition = async (actionId) => (
+    ActionDefinitions.removeAsync({ _id: actionId })
   )
 
   getActionDefinition = async (actionId) => (
@@ -149,7 +163,11 @@ class ActionsEngine {
   )
 
   getActionDefinitions = async (actionIds) => (
-    keyBy(await ActionDefinitions.find({ _id: { $in: actionIds } }).fetchAsync(), '_id')
+    keyBy(
+      actionIds
+      ? await ActionDefinitions.find({ _id: { $in: actionIds } }).fetchAsync()
+      : await ActionDefinitions.find({}).fetchAsync()
+    , '_id')
   )
 
   _getMqttModule = () => {
@@ -292,23 +310,16 @@ class ActionsEngine {
    * @param {object} user A User object with { _id, profile } (or userId) that authors this change.
    */
   removeActionDefinition = async (actionId, user) => {
-    throw new Error('not implemented'); //xxxxxxxxxxxxxx
-    // Create the action in DB
-    const oldDefinition = (await this._actionsCfg.getEntityConfig(entity))[actionId];
-    await this._actionsCfg.setEntityConfig({
-      ...entity,
-      newConfig: {
-        [actionId]: undefined
-      }
-    });
+    await this.unsetActionDefinition(actionId);
     // Propagate removal to any incident calling this action
-    await new AlertsManager().removeActionFromAllIncidents({ entity, actionId });
-    user && new EventLog().logSetting({
-      settingGroupName: EVENT_SETTINGS_SECTION_NAMES.ACTIONS,
-      settingName: oldDefinition && oldDefinition.label,
-      eventType: EVENT_TYPES.SETTING_REMOVED,
-      user
-    });
+    console.warn('removeActionDefinition: TODO propagate to alerts');
+    // await new AlertsManager().removeActionFromAllIncidents({ entity, actionId });
+    // user && new EventLog().logSetting({
+    //   settingGroupName: EVENT_SETTINGS_SECTION_NAMES.ACTIONS,
+    //   settingName: oldDefinition && oldDefinition.label,
+    //   eventType: EVENT_TYPES.SETTING_REMOVED,
+    //   user
+    // });
     return true;
   };
 
@@ -398,17 +409,9 @@ class ActionsEngine {
   ) => {
     const oldDefinition = await this.getActionDefinition(actionId);
     if (oldDefinition) {
-      return this.updateActionDefinition({
-        actionId,
-        definition,
-        user
-      });
+      return this.updateActionDefinition(actionId, definition, user);
     } else {
-      return this.createActionDefinition({
-        actionId,
-        definition,
-        user
-      });
+      return this.createActionDefinition({ actionId, definition, user });
     }
   };
 
@@ -420,7 +423,7 @@ class ActionsEngine {
   suppressActionDefinition = async (actionId, user) => {
     const definition = await this.getActionDefinition(actionId);
     const label = definition?.label;
-    await this.setActionDefinition(actionId, null);
+    await this.unsetActionDefinition(actionId);
     const settingName = label || actionId;
     user && new EventLog().logSetting({
       user,
@@ -1294,8 +1297,7 @@ class ActionsEngine {
     }
 
     // Log event. Use the Id of the robot that called the action
-    console.log("TODO eventLog for action", action.actionId);
-    // await new EventLog().logExecutedAction(new Robot(callerRobotId), action, user, eventLogArguments);
+    await new EventLog().logExecutedAction(new Robot(robotId), action, user, eventLogArguments);
 
     // If it gets to this point, the action was run. Return a success object:
     return {

@@ -61,7 +61,7 @@ const WIDGET_TYPES = {
   KEY_VALUES: 'keyValues',
   // CUSTOM_DATA: 'customData',
   // LOGS: 'logsWidget',
-  // ACTIONS: 'actionsWidget',
+  ACTIONS: 'actionsWidget',
   // CAMERA: 'cameraWidget',
   // AUDIT_LOG: 'auditLog',
   LIST_DATA: 'listData'

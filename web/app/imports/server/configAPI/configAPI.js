@@ -8,7 +8,7 @@ import { isEmpty, isObject } from 'lodash';
 // import IncidentsConfigAPIHandler from './incidentDefinitions';
 // import RobotCameraAPIHandler from './robotCamera';
 import DataSourcesConfigAPIHandler from './dataSourceDefinitions';
-// import ActionConfigAPIHandler from './actionDefinitions';
+import ActionConfigAPIHandler from './actionDefinitions';
 import DashboardsConfigAPIHandler from './dashboards';
 import StatusConfigAPIHandler from './statusDefinitions';
 // import MissionTrackingAPIHandler from './missionTracking';
@@ -84,7 +84,7 @@ export default class ConfigAPI {
       // [KIND_ROBOT_CAMERA]: new RobotCameraAPIHandler(this),
       [KIND_DATASOURCE_DEFINITION]: new DataSourcesConfigAPIHandler(this),
       [KIND_STATUS_DEFINITION]: new StatusConfigAPIHandler(this),
-      // [KIND_ACTION_DEFINITION]: new ActionConfigAPIHandler(this),
+      [KIND_ACTION_DEFINITION]: new ActionConfigAPIHandler(this),
       [KIND_DASHBOARD_DEFINITION]: new DashboardsConfigAPIHandler(this),
       // [KIND_MISSION_TRACKING]: new MissionTrackingAPIHandler(this),
       // [KIND_ROBOT_FOOTPRINT]: new RobotFootprintAPIHandler(this),

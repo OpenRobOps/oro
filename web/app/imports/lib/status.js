@@ -306,28 +306,6 @@ const compareStatusValue = (
 };
 
 /**
- * Tells if a given status (value), of the form
- *   `{ value: _, enabledModes: <optional array>, ...}`,
- * is enabled in a given robot -- which means the robot is currently in one of those collections
- * mentioned in `enabledModes` (when present).
- *
- * Note that this function assumes conditional modes
- * (FEATURES.MODES_CONDITIONAL_RENDERING) is enabled; so it does not need to have
- * access to 'features' module.
- */
-const isStatusEnabled = (robot, statusValue) => {
-  // NOTE Flag `enabledModes` for a status is ill-named, as it actually represents
-  // any collection (not just a mode).
-  const enabledModes = statusValue && statusValue.enabledModes;
-  // If no conditional rendering is enabled on this status,
-  // or no collection is reported on the robot, assume it's enabled
-  if (isArray(enabledModes) && isArray(robot.collections)) {
-    return intersection(enabledModes, robot.collections).length > 0;
-  }
-  return true;
-};
-
-/**
  * Given a set of robot status values: if it is online and the status values from
  * the DB, and given a list of statuses we care about, it returns an aggregated
  * "robot status" with three elements { agentOnline, value, ts } with the
@@ -361,58 +339,6 @@ const getAggregatedRobotStatus = (robot, statusList, addEmptyLabel = false) => {
     ret.label = '\u00A0';
   }
   return ret;
-};
-
-/**
- * Strips out status values from a robot status if they are only conditionally
- * enabled, and the robot is not in the right collection or mode.
- *
- * NOTE: This function is _destructive_ as it deleted data from each robot status!
- *       The reason is that this needs to be processed frequently and rendering of Locations
- *       components depends on this, so we opted not to do an entire copy of the status objects
- *       just to delete _some_ fields of _some_ robots.
- *
- * @arg statusConfigList is an array of attributeIds, the statuses to display
- *      (elementList in uiPrefs)
- * @arg statusConfigValues is an object of each status configuration, to determine if each
- *      status is conditionally enabled. (the elementValues part of uiPrefs)
- * @arg robot is a Robot object
- * @arg statusValues a map (attrId => statusValue), as retrieved from the DB (This argument
- *      is modified)
- */
-const removeConditionalStatusValues = (
-  statusConfigList, statusConfigValues, robot, statusValues
-) => {
-  statusConfigList.forEach((attrId) => {
-    if (statusValues[attrId]
-      && !isStatusEnabled(robot, statusConfigValues && statusConfigValues[attrId])) {
-      delete statusValues[attrId];
-    }
-  });
-};
-
-/**
- * Strips out status values from all robot statuses when they are only conditionally
- * enabled, and the robot is not in the right collection or mode.
- * This is the same as `removeConditionalStatusValues`, over a list of robots.
- *
- * NOTE: This function is _destructive_ as it deleted data from each statusValuesByRobot!
- *       The reason is that this needs to be processed frequently and rendering of Locations
- *       components depends on this, so we opted not to do an entire copy of the status objects
- *       just to delete _some_ fields of _some_ robots.
- *
- * @arg statusConfigList is an array of attributeIds, the statuses to display
- *      (elementList in uiPrefs)
- * @arg statusConfigValues is an object of each status configuration, to determine if each
- *      status is conditionally enabled. (the elementValues part of uiPrefs)
- * @arg robots is an array of Robot objects containing each robot statuses
- */
-const removeConditionalStatusValuesForRobots = (
-  statusConfigList, statusConfigValues, robots
-) => {
-  robots.forEach(r => r.statuses && removeConditionalStatusValues(
-    statusConfigList, statusConfigValues, r, r.statuses
-  ));
 };
 
 /**
@@ -561,13 +487,10 @@ export {
   getStatusFromValue,
   getAggregatedRobotStatus,
   getAggregatedFleetStatus,
-  removeConditionalStatusValues,
-  removeConditionalStatusValuesForRobots,
   compareStatusValue,
   lexCompare,
   sortRobotsByStatus,
   compareByVisibleStatus,
-  isStatusEnabled,
   isLongOffline,
   OFFLINE_STATUS_TIME,
   STALE_STATUS_TIME,

@@ -77,9 +77,9 @@ const ACTION_UPDATE_USER_FIELDS = [
   // main fields
   'label', 'type', 'elementList', 'elementValues', 'description',
   // flags and options
-  'lock', 'confirmation', 'conditions',
-  // other experimental features
-  'icon', 'tooltip', 'order'
+  'lock', 'confirmation', 'conditions', 
+  // other experimental features and UI fields
+  'tooltip', 'order', 'group'
 ];
 
 /**

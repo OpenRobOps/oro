@@ -311,7 +311,7 @@ const zipKeyValueList = (elementList, elementValues) => (
  * object with { key: value } for each of the keys from `elementList`
  * and their corresponding values in `elementValues`.
  *
- * Note that this is easily accomplished by subObject from this module;
+ * Note that this is easily accomplished by lodash.pick from this module;
  * but it's added here for clarity and possibly moving all key/value handling
  * functions to its own module.
  *
@@ -1009,7 +1009,6 @@ export {
   applyDefaults,
   cleanNulls,
   assignIfDistinct,
-  subObject,
   configKeysCount,
   renameKeys,
   validateFormValues,
