@@ -192,6 +192,9 @@ const actionDefinitionToConfigObject = ({ _id: id, group, widgets, ...definition
   if (conditions) {
     spec.condition = { rules: conditions };
   }
+  if (group) {
+    spec.group = group;
+  }
   const args = zipKeyValueList(Array.isArray(elementList) ? elementList : [], elementValues);
   spec.arguments = args.map(actionDefinitionArgumentToConfigObject);
   actionDefinitionSpecValidator(spec); // used as sanitizer, adds default values to required fields
@@ -212,7 +215,8 @@ const configObjectToActionDefinition = (configObject) => {
     description,
     confirmation,
     condition,
-    arguments: args
+    arguments: args,
+    group
   } = spec;
 
   // Parse args
@@ -242,11 +246,12 @@ const configObjectToActionDefinition = (configObject) => {
     elementList,
     elementValues
   };
+  if (group) {
+    definition.group = group;
+  }
   if (condition && condition.rules) {
     definition.conditions = condition.rules;
   }
-  // TODO(herchu): Reject other `conditions` fields
-
   return definition;
 };
 
@@ -287,16 +292,13 @@ export default class ActionDefinitionConfigAPI {
     // Retrieve configs filtering by id
     let actionDefinitions = Object.values(await this.actionsEngine.getActionDefinitions(id ? [id] : undefined));
     
-    // TODO re-enable this code or refactor how groups work
-    // const actionToGroupMapping = await new UIPreferencesManager().getActionToGroupMapping({
-    // });
+    // TODO re-enable this code
     // const actionToWidgetMapping = await new UIPreferencesManager().getActionToWidgetsMapping({
     // });
     // Complete the group for each definition
     actionDefinitions.forEach((i) => {
       // i.group = actionToGroupMapping[i.id] || { label: GROUP_LABEL_NONE };
       // i.widgets = actionToWidgetMapping[i.id];
-      i.group = { _id: 'Other', label: 'Other' };
     });
 
     // Transform the output to the right format used for Config as Code lists.
@@ -348,7 +350,6 @@ export default class ActionDefinitionConfigAPI {
         definition,
         user
       );
-      await this._updateActionGroup(actionId, configObject.spec.group, user);
       await this._updateActionEmbeds({ actionId, user, widgets: spec.widgets });
     } else {
       console.log('suppressing action', actionId);
@@ -357,7 +358,6 @@ export default class ActionDefinitionConfigAPI {
         user
       );
       console.log("suppressed")
-      await this._updateActionGroupAfterDelete(actionId);
       await this._updateActionEmbeds({ actionId, user, widgets: null });
     }
     if (!result.success) {
@@ -397,60 +397,12 @@ export default class ActionDefinitionConfigAPI {
       return;
     }
     const result = await this.actionsEngine.removeActionDefinition(actionId, user);
-    await this._updateActionGroupAfterDelete(actionId);
     await this._updateActionEmbeds({ actionId, user, widgets: null });
 
     if (!result) {
       throw new Error('ActionsManager did not return a result');
     }
   };
-
-  /**
-   * Updates UI preferences at the after an action is deleted (cleared or suppressed).
-   *
-   * @param {string} actionId
-   */
-  _updateActionGroupAfterDelete = async (actionId) => {
-    // TODO re-enable 
-    console.warn('_updateActionGroupAfterDelete: TODO propagate to UIPreferences');
-    // await new UIPreferencesManager().removeActionFromGroups({ actionId });
-    // await new UIPreferencesManager().removeActionFromWidgetsEmbeddedActions({ actionId });
-  };
-
-  /**
-   * Updates UI preferences after an action is created or updated.
-   * If groupLabel is defined, the action is moved to that group.
-   *
-   * @param {string} actionId
-   * @param {string} groupLabel
-   * @param {object} user
-   */
-  // eslint-disable-next-line class-methods-use-this
-  _updateActionGroup = async (actionId, groupLabel, user) => {
-    let newGroupObj;
-    if (groupLabel) {
-      // Add action to the group
-      newGroupObj = { label: groupLabel };
-    } else {
-      // If the action isn't in any group, add it to the default one
-      console.warn('_updateActionGroup: TODO get current group');
-      const currentGroup = null;
-      // const currentGroup = await new UIPreferencesManager().getActionGroup({
-      //   actionId
-      // });
-      if (!currentGroup) {
-        newGroupObj = { label: GROUP_LABEL_NONE };
-      }
-    }
-    if (newGroupObj) {
-      console.warn('_updateActionGroup: TODO add action to group');
-      // await new UIPreferencesManager().addActionToGroup({
-      //   actionId,
-      //   newGroupObj,
-      //   user
-      // });
-    }
-  }
 
   /**
    * Updates the widgets an action is embedded on. This operation is delegated to the

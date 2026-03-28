@@ -398,6 +398,7 @@ class ActionsEngine {
     user
   ) => {
     const oldDefinition = await this.getActionDefinition(actionId);
+    console.log('oldDefinition', oldDefinition, definition);
     if (oldDefinition) {
       return this.updateActionDefinition(actionId, definition, user);
     } else {
@@ -1287,8 +1288,7 @@ class ActionsEngine {
     }
 
     // Log event. Use the Id of the robot that called the action
-    console.log("TODO eventLog for action", action.actionId);
-    // await new EventLog().logExecutedAction(new Robot(callerRobotId), action, user, eventLogArguments);
+    await new EventLog().logExecutedAction(new Robot(callerRobotId), action, user, eventLogArguments);
 
     // If it gets to this point, the action was run. Return a success object:
     return {
