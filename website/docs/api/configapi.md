@@ -2,11 +2,7 @@
 sidebar_position: 5
 ---
 
-# ConfigAPI
-
-:::warning
-This guide is still incomplete and needs a full reference of each configuration `kind`.
-:::
+# Config API
 
 The ConfigAPI provides declarative "configuration as code" management for OpenRobOps. It allows you to define data sources, status rules, and other platform behaviors through JSON configuration objects.
 
@@ -36,11 +32,15 @@ Configuration objects follow a consistent structure:
 
 | Kind | Description |
 |------|-------------|
-| `DataSourceDefinition` | Custom data source and attribute mappings |
-| `StatusDefinition` | Robot status computation rules |
+| [`DataSourceDefinition`](./configapikinds.md#datasourcedefinition) | Custom data source and attribute mappings |
+| [`StatusDefinition`](./configapikinds.md#statusdefinition) | Robot status computation rules |
+| [`ActionDefinition`](./configapikinds.md#actiondefinition) | Robot action definitions |
+| [`DashboardDefinition`](./configapikinds.md#dashboarddefinition) | Custom dashboard layouts with widgets |
+
+For detailed schemas and examples of each kind, see [Config API Kinds](./configapikinds.md).
 
 :::note
-Additional kinds (IncidentDefinition, ActionDefinition, DashboardDefinition, RobotCamera, and others) are defined in the codebase but not yet enabled. See the [Roadmap](../contributing/roadmap.md).
+Additional kinds (IncidentDefinition, RobotCamera, and others) are defined in the codebase but not yet enabled. See the [Roadmap](../contributing/roadmap.md).
 :::
 
 ---
