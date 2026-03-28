@@ -430,15 +430,10 @@ RobotInfoButtons.propTypes = {
 
 const RobotInfoButtonsContainer = withTracker(({ robotId }) => {
   if (robotId) {
-    const preferencesHandle = Meteor.subscribe('preferences', {
-      entityId: robotId, entityType: ID_TYPE_ROBOT, fields: ['agentVariant']
-    });
     const robotHandle = Meteor.subscribe('robot.details', { robotId });
-    const isPreferenceLoading = !preferencesHandle.ready();
     const robot = Robots.findOne({ _id: robotId });
     const offline = robot && robot.status && !robot.status.agentOnline;
     return {
-      isPreferenceLoading,
       isRobotLoading: !robotHandle.ready(),
       offline,
       updateStamp: robot && robot.updateStamp

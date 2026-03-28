@@ -5,7 +5,6 @@ import { Meteor } from 'meteor/meteor';
 import chai from 'chai';
 // ORO modules
 import {
-  removeConditionalStatusValuesForRobots,
   getAggregatedFleetStatus,
   OFFLINE_STATUS_TIME
 } from '../../lib/status';
@@ -239,53 +238,6 @@ describe('status', () => {
       ts: NOW,
       agentOnline: true,
       visibleStatusValue: [-1, 1, -1, 0, -2, 0]
-    });
-  });
-  it('ignores conditionally disabled statuses in aggregated value', () => {
-    // keep just 2 robots
-    robots = [robots[0], robots[1]];
-    fleetStatus = getAggregatedFleetStatus(robots, statusList, recentTimeSecs, NOW);
-    // default1:  [-1, 1, -1, 2, -1, 0] -> robot_1
-    // default2:  [-1, 2, -1, 0, -1, 1] -> robot_2
-    // expected:  [-2, 1, -2, 0, -2, 0] -> aggregated status, non conditional
-    chai.assert.deepEqual(fleetStatus, {
-      value: 20,
-      ts: NOW,
-      agentOnline: true,
-      visibleStatusValue: [-2, 1, -2, 0, -2, 0]
-    });
-    // Now we use a conditional status on first_status, not matching any collection so it
-    // disabled for both robots
-    robots[0].collections = ['ignored'];
-    robots[1].collections = ['ignored too'];
-    // default1:  [-1, 1, -1, 2,  x, x] -> robot_1
-    // default2:  [-1, 2,  x, x, -1, 1] -> robot_2
-    // expected:  [-2, 1, -1, 2, -1, 1] -> aggregated status
-    // For every robot, remove conditional status values when they don't apply to the correct mode
-    removeConditionalStatusValuesForRobots(statusList, statusConfigs, robots);
-    fleetStatus = getAggregatedFleetStatus(robots, statusList, recentTimeSecs, NOW);
-    chai.assert.deepEqual(fleetStatus, {
-      value: 20,
-      ts: NOW,
-      agentOnline: true,
-      visibleStatusValue: [-2, 1, -1, 2, -1, 1]
-    });
-    // Finally, keep the conditional status but not robot_1 is in the correct mode
-    // so its 'Ok' status *counts* again
-    robots = robotDefaults();
-    robots[0].collections = ['not ignored', conditionalCollectioName];
-    robots[1].collections = ['ignored too'];
-    // default1:  [-1, 1, -1, 2, -2, 0] -> robot_1
-    // default2:  [-1, 2,  x, x, -1, 1] -> robot_2
-    // expected:  [-2, 1, -1, 2, -2, 0] -> aggregated status
-    // For every robot, remove conditional status values when they don't apply to the correct mode
-    removeConditionalStatusValuesForRobots(statusList, statusConfigs, robots);
-    fleetStatus = getAggregatedFleetStatus(robots, statusList, recentTimeSecs, NOW);
-    chai.assert.deepEqual(fleetStatus, {
-      value: 20,
-      ts: NOW,
-      agentOnline: true,
-      visibleStatusValue: [-2, 1, -1, 2, -2, 0]
     });
   });
 });

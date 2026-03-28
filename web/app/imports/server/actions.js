@@ -140,9 +140,19 @@ class ActionsEngine {
     }
   };
 
-  setActionDefinition = async (actionId, definition) => (
-    ActionDefinitions.upsertAsync({ _id: actionId }, { $set: definition })
-  )
+  setActionDefinition = async (actionId, definition) => {
+    const update = { $set: definition };
+    const unsetFields = {};
+    for (const field of Object.keys(definition)) {
+      if (definition[field] === undefined) {
+        unsetFields[field] = true;
+      }
+    }
+    if (!isEmpty(unsetFields)) {
+      update.$unset = unsetFields;
+    }
+    await ActionDefinitions.upsertAsync({ _id: actionId }, update)
+  }
 
   unsetActionDefinition = async (actionId) => (
     ActionDefinitions.removeAsync({ _id: actionId })
@@ -1287,8 +1297,7 @@ class ActionsEngine {
     }
 
     // Log event. Use the Id of the robot that called the action
-    console.log("TODO eventLog for action", action.actionId);
-    // await new EventLog().logExecutedAction(new Robot(callerRobotId), action, user, eventLogArguments);
+    await new EventLog().logExecutedAction(new Robot(robotId), action, user, eventLogArguments);
 
     // If it gets to this point, the action was run. Return a success object:
     return {

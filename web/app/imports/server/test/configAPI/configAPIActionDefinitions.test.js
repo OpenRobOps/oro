@@ -190,7 +190,6 @@ describe('configAPI:ActionDefinition', function () {
         },
         spec: {
           label: 'test action',
-          group: GROUP_LABEL_NONE,
           type: ACTION_TYPES.RUN_SCRIPT,
           arguments: [{
             name: 'filename',
@@ -260,7 +259,6 @@ describe('configAPI:ActionDefinition', function () {
         },
         spec: {
           label: 'test action',
-          group: GROUP_LABEL_NONE,
           type: ACTION_TYPES.RUN_SCRIPT,
           arguments: [{
             name: 'filename',

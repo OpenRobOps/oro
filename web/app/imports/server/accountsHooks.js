@@ -47,7 +47,6 @@ const normalizeOAuthProfile = (options, user) => {
 
 const registerAccountsHooks = () => {
   Accounts.onCreateUser((options, user) => {
-    console.log("Accounts.onCreateUser", options, user);
     const { name, email, avatar } = normalizeOAuthProfile(options, user);
     user.profile = { name, email, avatar };
     // New users start with no roles — an admin must approve them
