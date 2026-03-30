@@ -7,6 +7,7 @@ import PropTypes from 'prop-types';
 import { Typography } from '@mui/material';
 import { withStyles } from 'tss-react/mui';
 import { BotOff } from 'lucide-react';
+import { legacyWithStyles } from '../withStyles';
 
 const styles = theme => ({
   container: {
@@ -61,4 +62,4 @@ RobotOfflineBar.propTypes = {
   lastUpdate: PropTypes.string
 };
 
-export default withStyles(RobotOfflineBar, styles, { withTheme: true });
+export default legacyWithStyles(RobotOfflineBar, styles, { withTheme: true });
