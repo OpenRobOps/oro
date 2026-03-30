@@ -27,7 +27,7 @@ const styles = theme => ({
   // TODO(herchu) these classes were copied unmodified from GroundControl;
   // adjust them as we add toolbars
   section: {
-    padding: '6px 24px'
+    padding: '4px 16.5px'
   },
   componentTitle: {
     fontWeight: theme.fontWeight.light,
@@ -42,7 +42,7 @@ const styles = theme => ({
   },
   titleButtons: {
     display: 'flex',
-    margin: '6px',
+    margin: '6px 9.5px',
     marginBottom: '4px',
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -63,7 +63,7 @@ const styles = theme => ({
     flexDirection: 'column'
   },
   labelIcon: {
-    color: '#BCBCBC'
+    color: theme.palette.modes.others
   },
   iconContent: {
     position: 'relative',

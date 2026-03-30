@@ -33,7 +33,7 @@ const SeverityToggleButton = styled(ToggleButton)(({ theme, value }) => ({
     backgroundColor: theme.palette.severityColor[value],
     opacity: 'initial',
     color: (value === ICM_SEV_2 || value === ICM_SEV_3)
-      ? theme.palette.text.content
+      ? theme.palette.common.black
       : theme.palette.text.contrastText,
     '&:hover': {
       opacity: '0.25',

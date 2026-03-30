@@ -28,30 +28,30 @@ const useStyles = makeStyles()(theme => ({
     textDecoration: 'underline'
   },
   vertical: {
-    borderLeft: `1px dashed ${theme.palette.background.gray} !important`,
-    background: 'initial'
+    borderLeft: `1px dashed ${theme.palette.background.borderLight} !important`,
+    background: 'transparent'
   },
   horizontalLine: {
-    background: `${theme.palette.background.white} !important`,
-    borderTop: `1px solid ${theme.palette.background.gray} !important`
+    background: `${theme.palette.background.surface} !important`,
+    borderTop: `1px solid ${theme.palette.background.borderMedium} !important`
   },
   horizontalDashedLine: {
-    background: `${theme.palette.background.white} !important`,
-    borderTop: `1px dashed ${theme.palette.background.gray} !important`
+    background: `${theme.palette.background.surface} !important`,
+    borderTop: `1px dashed ${theme.palette.background.borderMedium} !important`
   },
   groupContainer: {
-    background: '#F5F5F5',
+    background: theme.palette.background.black,
     height: '100%'
   },
   incidentTitleContainer: {
-    border: `1px solid ${theme.palette.background.gray}`,
+    border: `1px solid ${theme.palette.background.borderLight}`,
     borderBottom: 'initial',
     padding: '4px',
     display: 'flex',
     alignItems: 'center'
   },
   robotNameContainer: {
-    borderTop: `1px solid ${theme.palette.background.gray}`,
+    borderTop: `1px solid ${theme.palette.background.borderLight}`,
     padding: '4px',
     display: 'flex',
     alignItems: 'center'
@@ -61,8 +61,8 @@ const useStyles = makeStyles()(theme => ({
     alignItems: 'center'
   },
   sideBarHeaderBorder: {
-    borderRight: `1px solid ${theme.palette.background.gray}`,
-    borderLeft: `1px solid ${theme.palette.background.gray}`
+    borderRight: `1px solid ${theme.palette.background.borderLight}`,
+    borderLeft: `1px solid ${theme.palette.background.borderLight}`
   },
   sideBarText: {
     fontWeight: theme.fontWeight.medium,
@@ -92,8 +92,8 @@ const useStyles = makeStyles()(theme => ({
     justifyContent: 'center',
     fontSize: '14px',
     color: theme.palette.text.title,
-    borderLeft: `1px solid ${theme.palette.background.gray}`,
-    borderBottom: `1px solid ${theme.palette.background.gray}`
+    borderLeft: `1px solid ${theme.palette.background.borderLight}`,
+    borderBottom: `1px solid ${theme.palette.background.borderLight}`
   },
   secondaryDateHeader: {
     height: '100%',
@@ -102,10 +102,10 @@ const useStyles = makeStyles()(theme => ({
     justifyContent: 'center',
     fontSize: '12px',
     color: theme.palette.text.title,
-    borderLeft: `1px solid ${theme.palette.background.gray}`
+    borderLeft: `1px solid ${theme.palette.background.borderLight}`
   },
   isSelectedIncident: {
-    background: `${theme.palette.background.veryLightGray} !important`,
+    background: `${theme.palette.background.lightGray} !important`,
   }
 }));
 
@@ -270,7 +270,7 @@ const IncidentTimelineWidget = ({
     const { key, ...parsedItemProps } = getItemProps(item.itemProps);
     const styleMerged = { ...parsedItemProps.style, ...item.itemProps.style };
     if (itemContext.selected) {
-      styleMerged.border = '2px solid #2A3C98';
+      styleMerged.border = `2px solid ${theme.palette.incidents.selectedBorder}`;
     }
     return (
       /* eslint-disable-next-line react/jsx-props-no-spreading */

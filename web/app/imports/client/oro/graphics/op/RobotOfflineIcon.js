@@ -6,11 +6,13 @@
  */
 import React from 'react';
 import SvgIcon from '@mui/material/SvgIcon';
+import { useTheme } from '@mui/material/styles';
 
 const RobotOfflineIcon = props => {
   const { robotOfflineBar } = props;
+  const theme = useTheme();
   // If robotOfflineBar it's true the icon should be black, otherwise it should be grey
-  const robotOfflineColor = robotOfflineBar ? '#000000' : 'rgb(178, 178, 178)';
+  const robotOfflineColor = robotOfflineBar ? theme.palette.common.black : theme.palette.modes.others;
   return (
     <SvgIcon width="19" height="17" viewBox="0 0 19 17" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ enableBackground: 'new 0 0 606.3 606.3' }} {...props}>
       <g clip-path="url(#clip0_70_4226)">

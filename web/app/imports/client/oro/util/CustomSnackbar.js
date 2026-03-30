@@ -36,16 +36,16 @@ const VariantIcons = {
 
 const styles1 = theme => ({
   success: {
-    backgroundColor: '#43A047', // from MUI: green[600],
+    backgroundColor: theme.palette.snackbar.success,
   },
   error: {
-    backgroundColor: '#e53935', // from MUI: red[600]
+    backgroundColor: theme.palette.snackbar.error,
   },
   info: {
-    backgroundColor: '#1E88E5', // from MUI blue[600]
+    backgroundColor: theme.palette.snackbar.info,
   },
   warning: {
-    backgroundColor: '#FFA000', // from MUI: amber[700],
+    backgroundColor: theme.palette.snackbar.warning,
   },
   icon: {
     fontSize: 20,

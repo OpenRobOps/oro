@@ -9,7 +9,7 @@ import React from 'react';
 
 // Styles. Not importing them from our Styles class or any stylesheet library (see file comments)
 const containerStyle = {
-  'font-family': '"Roboto","Helvetica","Arial",sans-serif',
+  'font-family': '"Inter","Helvetica","Arial",sans-serif',
   padding: '16px'
 };
 const errorStyle = {

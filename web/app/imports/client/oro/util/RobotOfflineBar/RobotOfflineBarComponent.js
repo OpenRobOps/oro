@@ -6,7 +6,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Typography } from '@mui/material';
 import { withStyles } from 'tss-react/mui';
-import RobotOfflineIcon from '../../graphics/op/RobotOfflineIcon';
+import { BotOff } from 'lucide-react';
 
 const styles = theme => ({
   container: {
@@ -16,12 +16,10 @@ const styles = theme => ({
      to avoid being hidden by the shadow of the tab container and
      to not be on top of the menu selector. */
     zIndex: '1000',
-    backgroundColor: theme.palette.incidents.warning,
+    backgroundColor: theme.palette.background.offlineBar,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    // Match widget card shadow style
-    boxShadow: `5px 5px 10px ${theme.palette.boxShadow.light}, -3px -3px 5px 1px ${theme.palette.boxShadow.white}`,
     padding: '4px 16px',
     margin: '6px 45px 6px 30px',
     borderRadius: '10px',
@@ -29,7 +27,8 @@ const styles = theme => ({
   message: {
     fontWeight: 500,
     fontSize: '12px',
-    paddingLeft: '8px'
+    paddingLeft: '8px',
+    color: theme.palette.common.black
   },
   icon: {
     fontSize: '18px'
@@ -39,16 +38,13 @@ const styles = theme => ({
 const ROBOT_OFFLINE_TEXT = 'has been offline since';
 
 const RobotOfflineBar = (props) => {
-  const { robot, robotOnline, classes, lastUpdate } = props;
+  const { robot, robotOnline, classes, lastUpdate, theme } = props;
   const robotName = robot && robot.name;
   return (
     <>
       {robot && !robotOnline && (
         <div className={classes.container} data-test="robot-offline-bar">
-          <RobotOfflineIcon
-            robotOfflineBar
-            classes={{ root: classes.icon }}
-          />
+          <BotOff size={18} color={theme.palette.common.black} />
           <Typography className={classes.message}>
             {robotName} {ROBOT_OFFLINE_TEXT} {lastUpdate}
           </Typography>
