@@ -25,7 +25,7 @@ const styles = theme => ({
   },
   value: {
     fontSize: '36px',
-    color: '#FFFFFF',
+    color: theme.palette.common.white,
     fontWeight: theme.fontWeight.medium,
     maxWidth: '100%',
     display: 'flex',
@@ -43,13 +43,13 @@ const styles = theme => ({
     fontWeight: theme.fontWeight.medium,
     fontSize: '24px',
     textAlign: 'center',
-    color: '#FFFFFF',
+    color: theme.palette.common.white,
     height: '120px',
     display: 'flex',
     alignItems: 'center'
   },
   circleContainer: {
-    border: '1px solid #3E3155',
+    border: `1px solid ${theme.palette.background.borderLight}`,
     borderRadius: '50%',
     height: '115px',
     width: '115px',

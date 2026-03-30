@@ -63,7 +63,7 @@ const styles = theme => ({
     flexDirection: 'column'
   },
   labelIcon: {
-    color: '#BCBCBC'
+    color: theme.palette.modes.others
   },
   iconContent: {
     position: 'relative',

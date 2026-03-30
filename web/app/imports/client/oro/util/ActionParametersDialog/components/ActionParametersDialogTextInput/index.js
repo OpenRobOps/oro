@@ -20,12 +20,12 @@ import {
 import { ACTION_ARGUMENT_INPUT_TYPES } from '../../../../../../shared/actions';
 import { getOptionValue, getOptionLabel } from '../../../../../../lib/util';
 
-const useStyles = makeStyles()(() => ({
+const useStyles = makeStyles()((theme) => ({
   selectContainer: {
     width: '100%'
   },
   inputLabel: {
-    color: '#757575',
+    color: theme.palette.text.inputLabel,
     fontSize: '13px',
   },
   input: {

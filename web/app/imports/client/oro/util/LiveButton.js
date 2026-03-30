@@ -28,7 +28,7 @@ const useStyles = makeStyles()(theme => ({
     display: 'flex'
   },
   liveButton: {
-    background: '#3F93FF',
+    background: theme.palette.incidents.ok,
     borderRadius: '3px',
     margin: '0 auto 0 10px',
     display: 'flex',
@@ -36,17 +36,17 @@ const useStyles = makeStyles()(theme => ({
     minWidth: 'auto',
     padding: '3px 4px',
     gap: '3px',
-    color: '#1A0F2E',
+    color: theme.palette.background.default,
     fontSize: '10px',
     fontFamily: 'Inter, Helvetica, Arial, sans-serif',
     fontWeight: 500,
     textTransform: 'none',
     '&:hover': {
-      background: '#3F93FF',
+      background: theme.palette.incidents.ok,
     },
     '&.Mui-disabled': {
-      background: '#3F93FF',
-      color: '#1A0F2E',
+      background: theme.palette.incidents.ok,
+      color: theme.palette.background.default,
     },
   },
   mobileLiveButton: {
@@ -55,10 +55,10 @@ const useStyles = makeStyles()(theme => ({
     minWidth: '30px'
   },
   liveButtonOff: {
-    background: '#251A38',
-    color: '#BEAEDD',
+    background: theme.palette.background.spaceIntelligence,
+    color: theme.palette.text.secondary,
     '&:hover': {
-      background: '#251A38',
+      background: theme.palette.background.spaceIntelligence,
     },
   },
   liveButtonStartIcon: {

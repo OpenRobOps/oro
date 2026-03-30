@@ -125,7 +125,7 @@ const LoginPage = () => {
           flexDirection: 'column',
           alignItems: 'center',
           gap: 2,
-          border: '1px solid #3E3155',
+          border: (theme) => `1px solid ${theme.palette.background.borderLight}`,
           bgcolor: 'background.paper',
           color: 'text.primary',
         }}
@@ -248,7 +248,7 @@ const LoginPage = () => {
               width: '100%',
               my: 1,
               color: 'text.secondary',
-              '&::before, &::after': { borderColor: '#3E3155' },
+              '&::before, &::after': { borderColor: 'background.borderLight' },
             }}
           >
             or

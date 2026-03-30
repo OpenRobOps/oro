@@ -36,7 +36,7 @@ const StyledTabs = styled(Tabs)(({ theme }) => ({
     fontFamily: 'Inter, Helvetica, Arial, sans-serif',
     fontSize: '16px',
     minHeight: '44px',
-    color: '#AAAAAA',
+    color: theme.palette.text.muted,
     textTransform: 'capitalize',
     padding: '0px 28px',
     minWidth: '180px',

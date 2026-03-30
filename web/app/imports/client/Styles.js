@@ -209,7 +209,11 @@ const theme = createTheme({
       darkBlue: '#9E6FF3',
       statusError: '#FB7188',
       lightGray: '#C2C2C2',
-      mediumDarkGray: '#BEAEDD'
+      mediumDarkGray: '#BEAEDD',
+      muted: '#AAAAAA',
+      subtle: '#D0D0D0',
+      buttonText: '#D9D9D9',
+      inputLabel: '#757575',
     },
     background: {
       default: '#1A0F2E',
@@ -241,6 +245,9 @@ const theme = createTheme({
       borderGray: '#251A38',
       borderLight: '#3E3155',
       borderMedium: '#4A3570',
+      chip: '#3A285A',
+      selected: '#5C35A8',
+      offlineBar: '#F4935A',
       zoneDefaultColor: '#FFCD87'
     },
     modes: {
@@ -344,6 +351,12 @@ const theme = createTheme({
     },
     zone: {
       defaultColor: '#FFCD87'
+    },
+    snackbar: {
+      success: '#43A047',
+      error: '#e53935',
+      info: '#1E88E5',
+      warning: '#FFA000',
     },
     copilotContextChips: {
       color: '#9E6FF3',

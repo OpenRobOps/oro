@@ -45,7 +45,7 @@ const AppHeader = () => {
       position="static"
       elevation={0}
       color="transparent"
-      sx={{ bgcolor: '#170E28' }}
+      sx={{ bgcolor: 'background.paper' }}
     >
       <Toolbar sx={{ justifyContent: 'space-between' }}>
         <img src="/images/oro-logo.svg" alt="ORO" height="22" />
@@ -53,7 +53,7 @@ const AppHeader = () => {
           <Divider
             orientation="vertical"
             flexItem
-            sx={{ borderColor: '#3E3155', my: '12px', height: '22px' }}
+            sx={{ borderColor: 'background.borderLight', my: '12px', height: '22px' }}
           />
           <Box
             onClick={handleOpen}
@@ -71,24 +71,24 @@ const AppHeader = () => {
             sx={{
               width: 22,
               height: 22,
-              bgcolor: '#3A285A',
+              bgcolor: 'background.chip',
               fontSize: '11px',
               fontWeight: 700,
-              color: '#D0D0D0',
+              color: 'text.subtle',
               fontFamily: 'Inter, Helvetica, Arial, sans-serif',
             }}
           >
             {!avatar && getInitials(name)}
           </Avatar>
           <Box sx={{ display: 'flex', flexDirection: 'column', lineHeight: 1 }}>
-            <Typography sx={{ fontSize: '10px', color: '#FFFFFF', lineHeight: 'normal', textTransform: 'capitalize' }}>
+            <Typography sx={{ fontSize: '10px', color: 'common.white', lineHeight: 'normal', textTransform: 'capitalize' }}>
               {name?.split(' ')[0] || 'User'}
             </Typography>
-            <Typography sx={{ fontSize: '10px', color: '#AAAAAA', lineHeight: 'normal' }}>
+            <Typography sx={{ fontSize: '10px', color: 'text.muted', lineHeight: 'normal' }}>
               Admin
             </Typography>
           </Box>
-          <KeyboardArrowDownIcon sx={{ color: '#AAAAAA', fontSize: '18px' }} />
+          <KeyboardArrowDownIcon sx={{ color: 'text.muted', fontSize: '18px' }} />
           </Box>
         </Box>
         <Menu

@@ -46,38 +46,38 @@ const useStyles = makeStyles()(theme => ({
   },
   button: {
     padding: '2px 8px',
-    color: '#D9D9D9',
+    color: theme.palette.text.buttonText,
     fontSize: '0.8125rem',
     fontFamily: 'Inter, Helvetica, Arial, sans-serif',
     fontWeight: 500,
     textTransform: 'capitalize',
-    border: '1px solid #3E3155',
-    backgroundColor: '#1A0F2E',
+    border: `1px solid ${theme.palette.background.borderLight}`,
+    backgroundColor: theme.palette.background.default,
     '&:hover': {
-      backgroundColor: '#251A38',
-      border: '1px solid #3E3155 !important',
+      backgroundColor: theme.palette.background.spaceIntelligence,
+      border: `1px solid ${theme.palette.background.borderLight} !important`,
       opacity: 0.7,
     },
     '&.Mui-disabled': {
-      color: '#D9D9D9',
+      color: theme.palette.text.buttonText,
       opacity: 0.4,
-      border: '1px solid #3E3155',
-      backgroundColor: '#1A0F2E',
+      border: `1px solid ${theme.palette.background.borderLight}`,
+      backgroundColor: theme.palette.background.default,
     },
   },
   selected: {
-    color: '#FAF0F0 !important',
+    color: `${theme.palette.text.primary} !important`,
     opacity: '1 !important',
-    backgroundColor: '#5C35A8 !important',
-    border: '1px solid #3E3155 !important',
+    backgroundColor: `${theme.palette.background.selected} !important`,
+    border: `1px solid ${theme.palette.background.borderLight} !important`,
     '&.Mui-disabled': {
-      color: '#FAF0F0 !important',
+      color: `${theme.palette.text.primary} !important`,
       opacity: '1 !important',
-      backgroundColor: '#5C35A8 !important',
+      backgroundColor: `${theme.palette.background.selected} !important`,
     },
   },
   disabled: {
-    color: '#D9D9D9'
+    color: theme.palette.text.buttonText
   }
 }));
 

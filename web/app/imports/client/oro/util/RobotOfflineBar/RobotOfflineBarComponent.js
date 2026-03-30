@@ -16,7 +16,7 @@ const styles = theme => ({
      to avoid being hidden by the shadow of the tab container and
      to not be on top of the menu selector. */
     zIndex: '1000',
-    backgroundColor: '#F4935A',
+    backgroundColor: theme.palette.background.offlineBar,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -28,7 +28,7 @@ const styles = theme => ({
     fontWeight: 500,
     fontSize: '12px',
     paddingLeft: '8px',
-    color: '#000000'
+    color: theme.palette.common.black
   },
   icon: {
     fontSize: '18px'
@@ -38,13 +38,13 @@ const styles = theme => ({
 const ROBOT_OFFLINE_TEXT = 'has been offline since';
 
 const RobotOfflineBar = (props) => {
-  const { robot, robotOnline, classes, lastUpdate } = props;
+  const { robot, robotOnline, classes, lastUpdate, theme } = props;
   const robotName = robot && robot.name;
   return (
     <>
       {robot && !robotOnline && (
         <div className={classes.container} data-test="robot-offline-bar">
-          <BotOff size={18} color="#000000" />
+          <BotOff size={18} color={theme.palette.common.black} />
           <Typography className={classes.message}>
             {robotName} {ROBOT_OFFLINE_TEXT} {lastUpdate}
           </Typography>

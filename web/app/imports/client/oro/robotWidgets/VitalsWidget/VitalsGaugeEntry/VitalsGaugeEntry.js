@@ -27,7 +27,7 @@ const styles = theme => ({
     position: 'absolute',
     display: 'block',
     fontWeight: theme.fontWeight.medium,
-    color: '#FFFFFF',
+    color: theme.palette.common.white,
     fontSize: '35px'
   },
   valueDisabled: {
@@ -41,13 +41,13 @@ const styles = theme => ({
     paddingBottom: '0.5em'
   },
   backgroundRing: {
-    color: '#251A38',
+    color: theme.palette.background.spaceIntelligence,
   },
   backgroundRingDisabled: {
-    color: '#251A38'
+    color: theme.palette.background.spaceIntelligence
   },
   foregroundRing: {
-    color: '#FFFFFF',
+    color: theme.palette.common.white,
     position: 'absolute',
     borderRadius: '50%'
   },

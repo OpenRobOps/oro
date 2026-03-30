@@ -23,7 +23,7 @@ const styles = theme => ({
   autocompleteInput: {
     '&.MuiOutlinedInput-root': {
       padding: '5px',
-      color: '#FAF0F0',
+      color: theme.palette.text.primary,
     },
   },
   autocompleteInputFullscreen: {
@@ -49,8 +49,8 @@ const styles = theme => ({
     color: 'white'
   },
   searchBoxContainer: {
-    background: '#0E0918',
-    border: '1px solid #3E3155',
+    background: theme.palette.background.black,
+    border: `1px solid ${theme.palette.background.borderLight}`,
     borderRadius: '4px',
     maxWidth: '200px',
     width: '100%',
@@ -71,9 +71,9 @@ const styles = theme => ({
     alignItems: 'center'
   },
   chipTag: {
-    background: '#3A285A',
+    background: theme.palette.background.chip,
     borderRadius: '5px',
-    color: '#FAF0F0',
+    color: theme.palette.text.primary,
     margin: '2px',
     fontSize: '13px',
     maxHeight: '26px'
@@ -83,13 +83,13 @@ const styles = theme => ({
   },
   chipHover: {
     '&:hover': {
-      backgroundColor: '#4A3570'
+      backgroundColor: theme.palette.background.borderMedium
     }
   },
   deleteIcon: {
-    color: '#BEAEDD !important',
+    color: `${theme.palette.text.secondary} !important`,
     '&:hover': {
-      color: '#FAF0F0 !important',
+      color: `${theme.palette.text.primary} !important`,
     }
   },
   hiddenTextInputRoot: {
@@ -106,7 +106,7 @@ const styles = theme => ({
   showTextInputInput: {
     fontSize: '14px',
     justifySelf: 'flex-end',
-    color: '#FAF0F0',
+    color: theme.palette.text.primary,
   },
   searchBoxContainerWithChip: {
     minWidth: '350px',
@@ -292,7 +292,7 @@ class RobotSearch extends React.Component {
                     {selectedRobot && !optionsOpened && (
                       WrapWithTooltip(robotVersionTooltip, (
                         <Chip
-                          icon={<Bot size={16} color="#BEAEDD" />}
+                          icon={<Bot size={16} color={this.props.theme.palette.text.secondary} />}
                           className={classnames(classes.chipTagRobot, classes.chipTag)}
                           classes={{ deleteIcon: classes.deleteIcon, clickable: classes.chipHover }}
                           label={isRobotLoading ? (
