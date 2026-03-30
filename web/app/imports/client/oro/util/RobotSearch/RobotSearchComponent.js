@@ -17,6 +17,7 @@ import { ID_TYPE_ROBOT } from '../../../../shared/constants';
 import { DarkModeContext } from '../../contexts/DarkModeContext';
 import LoadingBar from '../LoadingBar';
 import WrapWithTooltip from '../WrapWithTooltip';
+import { legacyWithStyles } from '../withStyles';
 
 
 const styles = theme => ({
@@ -380,4 +381,4 @@ RobotSearch.propTypes = {
   isRobotLoading: PropTypes.bool // selected robot is loading
 };
 
-export default withStyles(RobotSearch, styles, { withTheme: true });
+export default legacyWithStyles(RobotSearch, styles, { withTheme: true });
