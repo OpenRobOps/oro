@@ -2,6 +2,7 @@
  * Navigation REST API.
  */
 import Validator from 'fastest-validator';
+import pick from 'lodash/pick';
 // ORO modules
 import LockManager from '../lock';
 import { ACCESS_LEVEL_OPERATE } from '../../shared/roles';
@@ -52,11 +53,12 @@ const apiNavigateWaypointsExecute = async ({ robot, user, body: navigateWaypoint
 
   try {
     // Run the action as the invoking user
+    const pose = pick(waypoints[0], ['x', 'y', 'theta', 'frameId']);
     const result = await new LockManager().runRobotAction({
       actionId: NAVIGATE_TO_ACTION_ID,
       robotId: robot.getId(),
       user,
-      args: { pose: waypoints[0] }
+      args: { pose }
     });
 
     // Format the result and return it
@@ -66,7 +68,7 @@ const apiNavigateWaypointsExecute = async ({ robot, user, body: navigateWaypoint
       throw new Error(`Error executing ${NAVIGATE_TO_ACTION_ID} on robot ${robot.getId()}: ${message}`);
     }
 
-    return [{ message: result.message || 'Action executed' } || '', 200];
+    return [{ message: result.message || 'Action executed' }, 200];
   } catch (e) {
     console.warn('Error executing navigation waypoints', e);
     return [{ error: e.message }, 500];
