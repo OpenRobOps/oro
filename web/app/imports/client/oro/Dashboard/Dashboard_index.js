@@ -60,7 +60,7 @@ import FleetStatusWidget from '../fleetWidgets/FleetStatusWidget';
 import RobotControlBar from '../robotWidgets/RobotControlBar';
 // import ROSDiagnosticsFilter from './widgetToolbars/ToolbarFilters/ROSDiagnosticsFilter';
 // import MissionToolbar from './widgetToolbars/MissionToolbar';
-// import NavigationControlBar from '../navigationWidgets/NavigationControlBar';
+import NavigationControlBar from '../navigationWidgets/NavigationControlBar';
 // import AISummaryToolbar from './widgetToolbars/AISummaryToolbar';
 // import {
 //   SECTION_ROBOT_DATA,
@@ -807,16 +807,14 @@ const WIDGET_FACTORY = {
     </NowTimeContext.Consumer>
   ),
 
-  // [WIDGET_TYPES_IDS.NAVIGATION_CONTROL_BAR]: ({
-  //   context, setContext, scope
-  // }) => (
-  //   <NavigationControlBar
-  //     robotId={getRobotId(context, scope)}
-  //     selectRobotCallback={setRobotId(setContext, scope)}
-  //     mapLabel={getNavigationMap(context, scope)}
-  //     setMapLabel={setNavigationMap(setContext, scope)}
-  //   />
-  // ),
+  [WIDGET_TYPES_IDS.NAVIGATION_CONTROL_BAR]: ({
+    context, setContext, scope
+  }) => (
+    <NavigationControlBar
+      robotId={getRobotId(context, scope)}
+      selectRobotCallback={setRobotId(setContext, scope)}
+    />
+  ),
 
   // [WIDGET_TYPES_IDS.MISSION_TRACKER]: ({
   //   context, setContext, scope, switchTo, isZeroData

@@ -24,8 +24,6 @@ const ActionsWidget = ({
   classes,
   actionIds,
   robotId,
-  companyId,
-  collectionsConfig,
   expanded,
   bigButtons,
   ActionsButtons,
@@ -35,8 +33,6 @@ const ActionsWidget = ({
     <ActionsButtons
       robotId={robotId}
       actionIds={actionIds}
-      companyId={companyId}
-      collectionsConfig={collectionsConfig}
       variant="grouped"
       hideLocalActions
       expanded={expanded}
@@ -49,9 +45,6 @@ const ActionsWidget = ({
 ActionsWidget.propTypes = {
   classes: PropTypes.object,
   robotId: PropTypes.string,
-  companyId: PropTypes.string,
-  // collectionsConfig: optional, to display better tooltip msgs for disabled actions
-  collectionsConfig: PropTypes.object,
   ActionsButtons: PropTypes.object,
   expanded: PropTypes.bool,
   bigButtons: PropTypes.bool,

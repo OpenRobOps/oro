@@ -4,7 +4,7 @@
  * It is self sufficient as it uses the searchManager to find robots
  * given a string, company and (optionally) a collectionId.
  * The queries will always be limited in the backend to what a user
- * can see, even if no companyId/collectionId or string are provided
+ * can see.
  */
 import React from 'react';
 import PropTypes from 'prop-types';
@@ -364,7 +364,6 @@ RobotSearch.contextType = DarkModeContext;
 RobotSearch.propTypes = {
   classes: PropTypes.object,
   className: PropTypes.string,
-  companyId: PropTypes.string,
   label: PropTypes.string,
   activeFilter: PropTypes.object,
   robots: PropTypes.array,

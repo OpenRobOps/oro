@@ -44,9 +44,7 @@ const OroRoutes = () => {
       {/* ---------------------------------------------- */}
 
       <Route path="/configuration/:section?" Component={SettingsScreen} />
-      {/* Dashboard are accessible under /dashboards/... route.
-          Note that without a companyId, this will fail to match and use the RedirectWithParams
-          at the end (so the primary companyId of the user is added to the URL */}
+      {/* Dashboard are accessible under /dashboards/... route */}
       <Route path="/dashboards/:dashboardId?" Component={DashboardSelector} />
 
       {/* If the user reached a path that does not match any of the above, redirect them to

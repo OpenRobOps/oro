@@ -29,8 +29,7 @@ const createUser = async ({
   })
 );
 
-// Helper function to create a robot belonging to some default tags
-// (don't change these tags! many unit tests below rely on this structure)
+// Helper function to create a robot 
 const createRobot = async ({
   id = WALL_E_ROBOT,
   name = 'Wall-E'

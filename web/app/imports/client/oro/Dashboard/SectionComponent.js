@@ -20,7 +20,7 @@ import classnames from 'classnames';
 // ORO modules
 import DashboardWidgetWrapper from './DashboardWidgetWrapper';
 import { SECTION_SCOPES, WIDGET_CONFIG, WIDGET_TYPE_GROUP, WIDGET_TYPES_IDS } from '../../../lib/uiPreferences';
-// import { ActiveInteractionProvider } from '../../contexts/ActiveInteractionContext';
+import { ActiveInteractionProvider } from '../contexts/ActiveInteractionContext';
 // import { LayoutProvider } from '../../navigationWidgets/LayoutManager';
 
 const styles = theme => ({
@@ -223,36 +223,36 @@ const Section = (props) => {
   // It cannot be rendered by NavigationDetailComponent itself since it needs to be shared with
   // its control bar. So we include the provider in the render at section level
   return (
-    // <ActiveInteractionProvider>
-    // <LayoutProvider>
-    // </LayoutProvider>
-    // </ActiveInteractionProvider>
-    <Grid container className={classes.section} key={id}>
-      {label && (
-        <Grid className={classes.labelContainer} size={12}>
-          <div
-            className={
-              classnames(classes.titleButtons, { [classes.titleMobile]: isMobile })
-            }
-          >
-            {label && (
-              <div className={classes.titleFlex}>
-                <div className={classes.infoName}>
-                  <Typography className={classes.componentTitle} data-test="dashboard-section-label">
-                    {label}
-                  </Typography>
+    <ActiveInteractionProvider>
+    {/* // <LayoutProvider>
+    // </LayoutProvider> */}
+      <Grid container className={classes.section} key={id}>
+        {label && (
+          <Grid className={classes.labelContainer} size={12}>
+            <div
+              className={
+                classnames(classes.titleButtons, { [classes.titleMobile]: isMobile })
+              }
+            >
+              {label && (
+                <div className={classes.titleFlex}>
+                  <div className={classes.infoName}>
+                    <Typography className={classes.componentTitle} data-test="dashboard-section-label">
+                      {label}
+                    </Typography>
+                  </div>
                 </div>
-              </div>
-            )}
-            {withControlWidget && CONTROL_WIDGET_CONFIGS[scope]
-              && renderWidget(CONTROL_WIDGET_CONFIGS[scope], true)}
-          </div>
+              )}
+              {withControlWidget && CONTROL_WIDGET_CONFIGS[scope]
+                && renderWidget(CONTROL_WIDGET_CONFIGS[scope], true)}
+            </div>
+          </Grid>
+        )}
+        <Grid size={12}>
+          {render(widgets)}
         </Grid>
-      )}
-      <Grid size={12}>
-        {render(widgets)}
       </Grid>
-    </Grid>
+    </ActiveInteractionProvider>
   );
 };
 
