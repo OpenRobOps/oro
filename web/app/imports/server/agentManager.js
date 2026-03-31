@@ -487,9 +487,7 @@ export default class AgentManager {
    *
    * Note that the id/type can be ambiguous in case objects have the chance to be shared across
    * companies, for example with collections (this is a long debt or design problem). So to
-   * make this search work in all cases, it also accepts a companyId argument to "qualify" the
-   * operation. The argument is optional for compatibility with MANY older uses of this method, but
-   * we should start to pass it in all cases.
+   * make this search work in all cases, 
     */
   setModuleState2 = async (
     entityId, entityType, moduleName, newState, update = true
@@ -504,7 +502,7 @@ export default class AgentManager {
 
     const mqtt = new OroMqtt();
     if (update) {
-      const robotIds = await ConfigManager.getRobotIds({ entityId, entityType, companyId });
+      const robotIds = await ConfigManager.getRobotIds({ entityId, entityType });
       await Promise.all(robotIds.map(async (robotId) => {
         // Re-fetch the configuration for each robot
         const state = await getCalculatedStateAsync({ robotId, moduleName, keys: updatedKeys });

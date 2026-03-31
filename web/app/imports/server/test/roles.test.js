@@ -211,7 +211,7 @@ describe('roles: use of canAccessRobot wrapper api', () => {
     await createUser();
     await createRobot();
     await instance.setRole({ userId: BOB_USER, roleId: null });
-    // Make sure Bob has no access to these tags
+    // Make sure Bob has no access 
     assert.isFalse(await instance.canAccessRobot(BOB_USER, WALL_E_ROBOT, ACCESS_LEVEL_VIEW));
     // Now assign viewer permission and try again
     await instance.setRole({ userId: BOB_USER, roleId: ROLE_VIEWER });

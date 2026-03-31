@@ -40,54 +40,6 @@ const ActionTemplateSchema = new SimpleSchema({
   elementValues: { type: Object, required: false, defaultValue: {}, blackbox: true }
 });
 
-/**
- * Client-side method.
- * Resolves any conditional rendering of an action, given the actions configuration.
- * It modifies the actions configuration in place, adding or editing `ui` element to them.
- * This object has the following flags:
- *  - `isDisabled`: If the action is disabled because of at least one condition
- *  - `label`: Label to display (for now: a copy of the action's label)
- *  - `disabledTooltip`: Tooltip to display on mouse hover when the action is disabled
- */
-const resolveConditionalActionsRendering = ({
-  actionsConfig, collectionsConfig, robot, actionIds, userId, lockConfig
-}) => {
-  if (actionIds && !Array.isArray(actionIds)) {
-    throw new Error('actionIds must be an array');
-  }
-  if (!actionIds) {
-    actionIds = Object.keys(actionsConfig);
-  }
-  actionIds.forEach((actionId) => {
-    if (actionsConfig && isObject(actionsConfig[actionId])) {
-      const action = actionsConfig[actionId];
-      const actionNewConfig = action.ui || {};
-      if (robot && robot.status && !robot.status.agentOnline) {
-        actionNewConfig.isDisabled = true;
-        actionNewConfig.disabledTooltip = 'Robot is offline';
-      } else {
-        const { lock } = robot || {};
-        // Check that the action is not disabled due to a lock condition
-        const actionLockDisabled = isActionDisabledLocked({
-          action, lockConfig, robotLock: lock, userId
-        });
-        // If we can't evaluate the conditional action for any reason (e.g. still loading),
-        // defer to the server the real validation -- be flexible here. Or if we can safely
-        // determine the action can be executed; also enable the button.
-        if (actionLockDisabled.disabled) {
-          actionNewConfig.isDisabled = actionLockDisabled.disabled;
-          actionNewConfig.disabledTooltip = actionLockDisabled.message;
-        } else {
-          actionNewConfig.isDisabled = false;
-        }
-      }
-      actionNewConfig.label = action.label;
-      action.ui = actionNewConfig;
-    }
-  });
-};
-
-
 const Schemas = {};
 
 const ActionDefinitions = new Mongo.Collection(COLLECTIONS.ACTION_DEFINITIONS);
@@ -176,5 +128,4 @@ export {
   ARGNAME_GO_PATH,
   // Utility functions
   createInternalActionId,
-  resolveConditionalActionsRendering
 };

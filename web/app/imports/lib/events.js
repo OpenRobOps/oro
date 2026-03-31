@@ -207,7 +207,6 @@ const TAGS_AND_FIELDS_WHITELIST = {
     includedFields: {
       robotName: true,
       locationLabel: true,
-      locationId: true,
       zoneLabel: true,
       zoneId: true,
       zoneState: true,
@@ -307,7 +306,6 @@ EventSchemas.MissionEvent.extend(EventSchemas.UserData);
 EventSchemas.MissionEvent.extend(EventSchemas.OptionalRobotData);
 
 EventSchemas.TrafficManagementZoneEvent = new SimpleSchema({
-  locationId: String,
   zoneId: String,
   zoneLabel: { type: String, optional: true },
   zoneState: { type: String, optional: true },

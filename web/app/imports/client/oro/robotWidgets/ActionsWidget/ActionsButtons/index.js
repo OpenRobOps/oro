@@ -5,7 +5,7 @@
  * See ActionsButtonsComponent.
  *
  * The actions that it displays may be templates (actions from config), when a
- * companyId and robotId are given, or a list of prepared actions if `preparedActions`
+ * robotId is given, or a list of prepared actions if `preparedActions`
  * is provided.
  *
  * This component is simply a Meteor wrapper over two big pieces of functionality:

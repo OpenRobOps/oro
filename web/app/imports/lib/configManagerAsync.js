@@ -158,7 +158,7 @@ export default class ConfigManager {
   /**
    * Fetches a configuration for an entity, applying defaults when necessary from
    * configurations of higher level
-   * @param  {string} entityId   Id of the entity (robotId, companyId, etc)
+   * @param  {string} entityId   Id of the entity (robotId, etc)
    * @param  {string} entityType type of the entity (robot, fleet, company, etc)
    * @param  {object} conditions conditions of the query,
    *                             e.g: {moduleName: "RosLocalizationAgentlet"}
@@ -209,7 +209,7 @@ export default class ConfigManager {
   /**
    * Sets a configuration on a particular entity, defined by an entityId and entityType.
    *
-   * @param  {string} entityId   Id of the entity (robotId, companyId, etc)
+   * @param  {string} entityId   Id of the entity (robotId, etc)
    * @param  {string} entityType type of the entity (robot, fleet, company, etc)
    * @param  {object} conditions conditions of the query, e.g: {moduleName:
    *                  "RosLocalizationAgentlet"}, e.g.2: {robot.status: 20},
@@ -270,7 +270,7 @@ export default class ConfigManager {
   /**
    * Unsets configurations  on a particular entityID and entityType.
    *
-   * @param  {string} options.entityId   Id of the entity (robotId, companyId, etc)
+   * @param  {string} options.entityId   Id of the entity (robotId, etc)
    * @param  {string} options.entityType type of the entity (robot, fleet, company, etc)
    * @param  {object} options.conditions conditions of the query,
    *                                     e.g: { moduleName: "RosLocalizationAgentlet" }

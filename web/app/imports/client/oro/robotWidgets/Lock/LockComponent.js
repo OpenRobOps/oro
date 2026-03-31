@@ -15,25 +15,9 @@ import classNames from 'classnames';
 import CustomSnackbar, { SnackbarVariants, SNACKBAR_DEFAULT_DURATION } from '../../util/CustomSnackbar';
 import { isLocked, isLockedForUser } from '../../../../lib/lock';
 import { formatDuration } from '../../../../lib/util';
-// import {
-//   clientGrantsSpecificAccess, RESOURCE_SINGLETONS, ACCESS_LEVEL_CONFIGURE
-// } from '../../../../shared/roles';
-// import UserGrantsContext from '../../contexts/UserGrantsContext';
+import { legacyWithStyles } from '../../util/withStyles';
 
 const styles = theme => ({
-  // (Contained) button style to display when robot is locked by other user
-  lockedNotOwned: {
-    color: 'black', // for lack of 'darker than theme.palette.text.title'
-    backgroundColor: theme.palette.teleop.actionButton
-  },
-  colorDarkMode: {
-    color: 'white',
-    backgroundColor: 'black',
-    '&:hover': {
-      color: 'white',
-      backgroundColor: 'black',
-    }
-  },
   mobileVersion: {
     [theme.breakpoints.down('md')]: {
       minWidth: '40px'
@@ -163,19 +147,12 @@ class Lock extends React.Component {
   };
 
   render() {
-    const { classes, lock, colorClassNames, fullscreen } = this.props;
+    const { classes, theme, lock, colorClassNames, fullscreen } = this.props;
     let { disabled = false } = this.props;
     const {
       unlockConfirmationOpen,
       statusMessage, statusSuccess, statusOpen
     } = this.state;
-    const ButtonClasses = {
-      // NOTE: The following case shows an orange button telling the user HAS permissions
-      // to break the lock. This should actually distinguish if users have or do not have
-      // permissions (see design slides 6 and 7)
-      // (Contained) button style to display when robot is locked by other user
-      containedSecondary: classes.lockedNotOwned
-    };
     const locked = isLocked(lock);
     const lockedForMe = isLockedForUser(lock, Meteor.userId());
     const lockedLabel = !lockedForMe ? 'Unlock' : 'Locked';
@@ -198,35 +175,27 @@ class Lock extends React.Component {
 
       // If it is locked by someone else, then clicking means "break the lock". This can only
       // be done by engineers, managers, etc. -- anyone with proper permissions on ~locks resource
-      disabled = disabled || !clientGrantsSpecificAccess(
-        this.context && this.context.userGrants,
-        null,
-        [RESOURCE_SINGLETONS.LOCKS],
-        ACCESS_LEVEL_CONFIGURE
-      );
+      // TODO : check permissions to break locks here
+      // disabled = disabled || !clientGrantsSpecificAccess(
+      //   this.context && this.context.userGrants,
+      //   null,
+      //   [RESOURCE_SINGLETONS.LOCKS],
+      //   ACCESS_LEVEL_CONFIGURE
+      // );
     }
     const lockedBtn = (
       <Button
         data-test="robot-lock-button"
         size="small"
-        // TODO (franguerini): Adjust locks color when new design is done IO-3866
         variant={locked ? 'contained' : 'text'}
-        color={lockedForMe ? 'secondary' : 'primary'}
-        classes={locked && fullscreen ? {
-          root: classNames(ButtonClasses, classes.colorDarkMode)
-        } : {
-          root: classNames(ButtonClasses, colorClassNames, classes.mobileVersion)
-        }}
+        style={{ backgroundColor: lockedForMe ? theme.palette.text.statusError : (locked ? theme.palette.text.lightGray : '') }}
         onClick={this.handleLockClicked}
         disabled={disabled}
         title={lockedBy}
       >
         <LockIcon
-          classes={fullscreen && locked ? {
-            root: classNames(classes.iconStyle, classes.colorDarkMode)
-          } : {
-            root: classNames(classes.iconStyle, classNames)
-          }}
+          // style={{ color: locked ? 'blue' : theme.palette.text.lightGray }}
+          style={{ color: locked ? theme.palette.background.default : theme.palette.text.lightGray }}
         />
         <Box sx={LG_BREAKPOINT}>
           {label}
@@ -284,4 +253,4 @@ Lock.propTypes = {
   colorClassNames: PropTypes.object
 };
 
-export default withStyles(Lock, styles, { withTheme: true });
+export default legacyWithStyles(Lock, styles, { withTheme: true });

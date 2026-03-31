@@ -482,7 +482,7 @@ WithActionsContext.propTypes = {
   }),
   // If embedded into a widget, the widget's id string
   widget: PropTypes.string,
-  // The lock Preferences object for this companyId
+  // The lock Preferences object 
   lockConfig: PropTypes.object,
 };
 
