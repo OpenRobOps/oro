@@ -152,6 +152,21 @@ const Section = (props) => {
 
   const isMobile = useMediaQuery('(max-width:900px)');
 
+  // For the fleet control bar, borrow elementList/elementValues from the
+  // FLEET_STATUS widget config in this section so it can populate the
+  // "Filter by components" selector.
+  const controlWidgetSpec = useMemo(() => {
+    const base = CONTROL_WIDGET_CONFIGS[scope];
+    if (!base) return null;
+    if (scope === SECTION_SCOPES.FLEET && widgets) {
+      const fleetStatusWidget = widgets.find(w => w.type === WIDGET_TYPES_IDS.FLEET_STATUS);
+      if (fleetStatusWidget?.config) {
+        return { ...base, config: fleetStatusWidget.config };
+      }
+    }
+    return base;
+  }, [scope, widgets]);
+
   /**
    * Render a single widget accordingly to the given widget specification.
    *
@@ -243,8 +258,8 @@ const Section = (props) => {
                   </div>
                 </div>
               )}
-              {withControlWidget && CONTROL_WIDGET_CONFIGS[scope]
-                && renderWidget(CONTROL_WIDGET_CONFIGS[scope], true)}
+              {withControlWidget && controlWidgetSpec
+                && renderWidget(controlWidgetSpec, true)}
             </div>
           </Grid>
         )}

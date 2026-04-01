@@ -213,6 +213,7 @@ const theme = createTheme({
       muted: '#AAAAAA',
       subtle: '#D0D0D0',
       buttonText: '#D9D9D9',
+      inactive: '#9488AA',
       inputLabel: '#757575',
     },
     background: {
