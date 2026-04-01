@@ -258,8 +258,8 @@ const Section = (props) => {
                   </div>
                 </div>
               )}
-              {withControlWidget && CONTROL_WIDGET_CONFIGS[scope]
-                && renderWidget(CONTROL_WIDGET_CONFIGS[scope], true)}
+              {withControlWidget && controlWidgetSpec
+                && renderWidget(controlWidgetSpec, true)}
             </div>
           </Grid>
         )}

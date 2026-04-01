@@ -76,7 +76,7 @@ const ChipOptionContainer = ({ handleFilterDelete, toggleShowingOptions, activeF
   const { classes, cx } = useStyles();
   const containerRef = useRef(null);
   const containerWidth = (
-    (containerRef.current && containerRef.current.offsetWidth) > maxChipContainerWidth
+    (containerRef.current?.offsetWidth) > maxChipContainerWidth
   );
 
   return (

@@ -8,15 +8,15 @@ import useRobots from '../../hooks/useRobots';
 import FleetControlWidgetComponent from './FleetControlWidgetComponent';
 
 const FleetControlWidget = ({
-  selectedRobotId,
-  sortBy,
-  robotStatus,
-  attributeStatus,
-  config,
-  onSortBySelected,
-  onRobotStatusSelected,
-  onAttributeStatusSelected,
-  onRobotSelected,
+  selectedRobotId = null,
+  sortBy = null,
+  robotStatus = null,
+  attributeStatus = null,
+  config = null,
+  onSortBySelected = null,
+  onRobotStatusSelected = null,
+  onAttributeStatusSelected = null,
+  onRobotSelected = null,
 }) => {
   const { robotsById } = useRobots();
   const robot = selectedRobotId ? robotsById[selectedRobotId] : null;
@@ -49,16 +49,5 @@ FleetControlWidget.propTypes = {
   onRobotSelected: PropTypes.func,
 };
 
-FleetControlWidget.defaultProps = {
-  selectedRobotId: null,
-  sortBy: null,
-  robotStatus: null,
-  attributeStatus: null,
-  config: null,
-  onSortBySelected: null,
-  onRobotStatusSelected: null,
-  onAttributeStatusSelected: null,
-  onRobotSelected: null,
-};
 
 export default FleetControlWidget;

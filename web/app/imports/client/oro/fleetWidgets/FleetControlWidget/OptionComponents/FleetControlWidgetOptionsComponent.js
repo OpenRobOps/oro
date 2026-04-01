@@ -1,15 +1,14 @@
 /**
  * FleetControlWidgetOptionsComponent - Expanded options panel for the FleetControlWidget.
- * Shows: filter by status pills + filter by components autocomplete + sort by selector.
+ * Shows: filter by status pills + filter by components selector + sort by selector.
  */
 import React, { useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { makeStyles } from 'tss-react/mui';
-import {
-  Typography, Autocomplete, TextField, InputAdornment,
-} from '@mui/material';
+import { Typography } from '@mui/material';
 import { Cancel, FiberManualRecordRounded } from '@mui/icons-material';
 import SortByComponent from './SortByComponent';
+import FilterByComponentSelector from './FilterByComponentSelector';
 import {
   FLAG_ERROR, FLAG_WARNING, FLAG_OK, FLAG_OFFLINE,
   DEFAULT_FLAGS_STRING, isInRobotStatusString, makeAttributeStatusUrlParam,
@@ -25,10 +24,6 @@ const STATUS_PILLS = [
 
 const noFilterItem = { label: 'No Filter', value: null };
 const makeMenuItem = (label, value, icon) => ({ label, value, icon });
-const getOptionLabel = option => option?.label || '';
-const isComponentOptionEqualToValue = (option, value) => (
-  JSON.stringify(option.value) === JSON.stringify(value.value)
-);
 
 const useStyles = makeStyles()(theme => ({
   modalBackdrop: {
@@ -112,68 +107,6 @@ const useStyles = makeStyles()(theme => ({
     fontSize: '12px !important',
     color: theme.palette.text.buttonText,
     flexShrink: 0,
-  },
-  autocomplete: {
-    width: '100%',
-  },
-  autocompleteInput: {
-    '& .MuiInputBase-root': {
-      background: theme.palette.background.black,
-      border: `1px solid ${theme.palette.background.borderLight}`,
-      borderRadius: '4px',
-      height: '32px',
-      padding: '0 8px !important',
-      color: theme.palette.text.buttonText,
-      fontSize: '13px',
-      fontFamily: '"Inter", sans-serif',
-      '&:before, &:after': { display: 'none' },
-      '&:hover': { borderColor: theme.palette.background.borderMedium },
-      '&.Mui-focused': { borderColor: theme.palette.background.borderMedium },
-    },
-    '& .MuiInputBase-input': {
-      padding: '0 !important',
-      fontSize: '13px',
-      fontFamily: '"Inter", sans-serif',
-      color: theme.palette.text.buttonText,
-      '&::placeholder': { color: theme.palette.text.inactive, opacity: 1 },
-    },
-    '& .MuiInputLabel-root': { display: 'none' },
-    '& .MuiAutocomplete-endAdornment': {
-      color: theme.palette.text.primary,
-      '& svg': { color: theme.palette.text.primary },
-    },
-  },
-  autocompleteAdornmentIcon: {
-    display: 'flex',
-    alignItems: 'center',
-    marginRight: '4px',
-    flexShrink: 0,
-  },
-  autocompletePaper: {
-    background: theme.palette.background.surface,
-    border: `1px solid ${theme.palette.background.borderLight}`,
-    borderRadius: '6px',
-    boxShadow: `0 8px 24px ${theme.palette.boxShadow.light}`,
-    '& .MuiAutocomplete-option': {
-      fontSize: '13px',
-      fontFamily: '"Inter", sans-serif',
-      color: theme.palette.text.buttonText,
-      '&[aria-selected="true"]': { background: theme.palette.background.borderLight },
-      '&.Mui-focused': { background: `${theme.palette.background.borderLight} !important` },
-    },
-    '& .MuiAutocomplete-noOptions': {
-      fontSize: '13px',
-      color: theme.palette.text.inactive,
-    },
-  },
-  optionIcon: {
-    display: 'flex',
-    alignItems: 'center',
-    marginRight: '8px',
-  },
-  optionLabel: {
-    fontSize: '13px',
-    fontFamily: '"Inter", sans-serif',
   },
 }));
 
@@ -281,42 +214,9 @@ const FleetControlWidgetOptionsComponent = ({
     return statusMenuOptions.find(item => JSON.stringify(item.value) === str) || noFilterItem;
   }, [statusMenuOptions, attributeStatus]);
 
-  const handleAttrFilterChange = useCallback((event, newValue) => {
-    onAttributeStatusSelected(newValue?.value || null);
+  const handleAttrFilterChange = useCallback((option) => {
+    onAttributeStatusSelected(option?.value || null);
   }, [onAttributeStatusSelected]);
-
-  const renderOption = useCallback((optionProps, option) => (
-    // eslint-disable-next-line react/jsx-props-no-spreading
-    <li {...optionProps} key={optionProps.id}>
-      {option.icon && <span className={classes.optionIcon}>{option.icon}</span>}
-      <Typography className={classes.optionLabel}>{option.label}</Typography>
-    </li>
-  ), []);  // eslint-disable-line react-hooks/exhaustive-deps
-
-  const renderComponentInput = useCallback((params) => (
-    <TextField
-      // eslint-disable-next-line react/jsx-props-no-spreading
-      {...params}
-      variant="standard"
-      placeholder="Select components"
-      className={classes.autocompleteInput}
-      slotProps={{
-        input: {
-          ...params.inputProps,
-          disableUnderline: true,
-          startAdornment: selectedAttributeStatusObj?.icon
-            ? (
-              <InputAdornment position="start">
-                <span className={classes.autocompleteAdornmentIcon}>
-                  {selectedAttributeStatusObj.icon}
-                </span>
-              </InputAdornment>
-            )
-            : null,
-        }
-      }}
-    />
-  ), [selectedAttributeStatusObj]);  // eslint-disable-line react-hooks/exhaustive-deps
 
   return [
     // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events
@@ -344,21 +244,10 @@ const FleetControlWidgetOptionsComponent = ({
       {statusList.length > 0 && (
         <div className={classes.section}>
           <Typography className={classes.sectionLabel}>Filter by components</Typography>
-          <Autocomplete
-            autoComplete
-            disableClearable
-            className={classes.autocomplete}
+          <FilterByComponentSelector
             options={statusMenuOptions}
             value={selectedAttributeStatusObj}
             onChange={handleAttrFilterChange}
-            getOptionLabel={getOptionLabel}
-            isOptionEqualToValue={isComponentOptionEqualToValue}
-            renderOption={renderOption}
-            data-test="fleet-search-status-filter"
-            slotProps={{
-              paper: { className: classes.autocompletePaper },
-            }}
-            renderInput={renderComponentInput}
           />
         </div>
       )}
