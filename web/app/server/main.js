@@ -25,6 +25,7 @@ import { seedMasterCredentials } from '../imports/server/mqttCredentialProvision
 import { addApiRoute } from '../imports/server/rest_api';
 import OroMqtt from '../imports/server/mqtt';
 import ActionsEngine from '../imports/server/actions';
+import LockManager from '../imports/server/lock';
 import {
   // RobotLocalizationModule,
   // ImagesModule,
@@ -93,6 +94,7 @@ const oroAppMain = async () => {
   await new StatusManager().init();
   await new AttributesManager().init();
   await new OroRoles().createDefaultRoles();
+  await new LockManager().init();
   const configApi = await new ConfigAPI().init({});
   await new AgentManager().init({ serverId: instanceValues.serverId });
   await new ActionsEngine().init({

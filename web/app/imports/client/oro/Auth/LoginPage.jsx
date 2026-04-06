@@ -124,11 +124,33 @@ const LoginPage = () => {
           flexDirection: 'column',
           alignItems: 'center',
           gap: 2,
+          border: (theme) => `1px solid ${theme.palette.background.borderLight}`,
+          bgcolor: 'background.paper',
+          color: 'text.primary',
         }}
       >
-        <Typography variant="h4" component="h1" gutterBottom>
-          OpenRobOps
-        </Typography>
+        <Box
+          component="h1"
+          sx={{
+            m: 0,
+            display: 'flex',
+            justifyContent: 'center',
+            width: '100%',
+            lineHeight: 0,
+          }}
+        >
+          <Box
+            component="img"
+            src="/images/oro-logo.svg"
+            alt="ORO"
+            sx={{
+              height: 44,
+              width: 'auto',
+              display: 'block',
+              maxWidth: '100%',
+            }}
+          />
+        </Box>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
           Sign in to continue
         </Typography>
@@ -151,15 +173,25 @@ const LoginPage = () => {
                 fullWidth
                 disabled={loading}
                 onKeyDown={(e) => e.key === 'Enter' && email && handleSendCode()}
+                slotProps={{
+                  inputLabel: { sx: { color: 'text.secondary', '&.Mui-focused': { color: 'secondary.main' } } },
+                  htmlInput: { sx: { color: 'text.primary' } },
+                }}
+                sx={{
+                  '& .MuiInput-underline:before': { borderColor: 'rgba(190, 174, 221, 0.4)' },
+                  '& .MuiInput-underline:hover:not(.Mui-disabled):before': { borderColor: 'text.secondary' },
+                  '& .MuiInput-underline:after': { borderColor: 'secondary.main' },
+                }}
               />
               <Button
                 variant="contained"
+                color="secondary"
                 onClick={handleSendCode}
                 disabled={loading || !email}
                 fullWidth
-                sx={{ textTransform: 'none' }}
+                sx={{ textTransform: 'none', color: 'common.white' }}
               >
-                {loading ? <CircularProgress size={20} /> : 'Send login code'}
+                {loading ? <CircularProgress size={20} color="inherit" /> : 'Send login code'}
               </Button>
             </>
           ) : (
@@ -175,19 +207,30 @@ const LoginPage = () => {
                 disabled={loading}
                 autoFocus
                 onKeyDown={(e) => e.key === 'Enter' && code && handleVerifyCode()}
+                slotProps={{
+                  inputLabel: { sx: { color: 'text.secondary', '&.Mui-focused': { color: 'secondary.main' } } },
+                  htmlInput: { sx: { color: 'text.primary' } },
+                }}
+                sx={{
+                  '& .MuiInput-underline:before': { borderColor: 'rgba(190, 174, 221, 0.4)' },
+                  '& .MuiInput-underline:hover:not(.Mui-disabled):before': { borderColor: 'text.secondary' },
+                  '& .MuiInput-underline:after': { borderColor: 'secondary.main' },
+                }}
               />
               <Button
                 variant="contained"
+                color="secondary"
                 onClick={handleVerifyCode}
                 disabled={loading || !code}
                 fullWidth
-                sx={{ textTransform: 'none' }}
+                sx={{ textTransform: 'none', color: 'common.white' }}
               >
-                {loading ? <CircularProgress size={20} /> : 'Verify code'}
+                {loading ? <CircularProgress size={20} color="inherit" /> : 'Verify code'}
               </Button>
               <Button
                 variant="text"
                 size="small"
+                color="secondary"
                 onClick={() => { setStep('email'); setCode(''); setError(null); }}
                 sx={{ textTransform: 'none' }}
               >
@@ -199,7 +242,16 @@ const LoginPage = () => {
 
         {ENABLED_OAUTH_PROVIDERS?.some(provider => provider != "email") &&
          ENABLED_OAUTH_PROVIDERS?.includes("email") && (
-          <Divider sx={{ width: '100%', my: 1 }}>or</Divider>
+          <Divider
+            sx={{
+              width: '100%',
+              my: 1,
+              color: 'text.secondary',
+              '&::before, &::after': { borderColor: 'background.borderLight' },
+            }}
+          >
+            or
+          </Divider>
         )}
 
         {OAUTH_PROVIDERS.map(({ id, label, icon, loginFn }) => (
@@ -207,11 +259,12 @@ const LoginPage = () => {
             <Button
               key={id}
               variant="outlined"
-              startIcon={loading ? <CircularProgress size={20} /> : icon}
+              color="secondary"
+              startIcon={loading ? <CircularProgress size={20} color="inherit" /> : icon}
               disabled={loading}
               onClick={() => handleLogin(loginFn)}
               fullWidth
-              sx={{ textTransform: 'none' }}
+              sx={{ textTransform: 'none', borderColor: 'secondary.main', color: 'text.primary' }}
             >
               {label}
             </Button>

@@ -10,8 +10,9 @@ import PropTypes from 'prop-types';
 import { Button, Typography, Tooltip, Grid, Box }
   from '@mui/material';
 import {
-  Cancel, Settings, Refresh, Update, Navigation
+  Cancel, Refresh, Update
 } from '@mui/icons-material';
+import { Navigation, Settings } from 'lucide-react';
 import { withTracker } from 'meteor/react-meteor-data';
 import moment from 'moment';
 // ORO modules
@@ -45,8 +46,8 @@ const styles = theme => ({
   robotActions: {
     display: 'flex',
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center'
+    alignItems: 'center',
+    flex: 1,
   },
   actionButtonText: {
     color: theme.palette.text.title,
@@ -54,7 +55,8 @@ const styles = theme => ({
   },
   systemActions: {
     display: 'flex',
-    alignItems: 'center'
+    alignItems: 'center',
+    marginLeft: 'auto',
   },
   iconStyle: {
     paddingRight: '4px'
@@ -62,13 +64,14 @@ const styles = theme => ({
   lowerCaseButton: {
     textTransform: 'initial',
     fontWeight: theme.fontWeight.lightPlus,
-    color: theme.palette.text.content
+    color: theme.palette.text.lightGray,
+    marginLeft: '12px'
   },
   lastSeen: {
     padding: '0.2em 12px',
   },
   rowButton: {
-    color: theme.palette.text.content
+    color: theme.palette.text.lightGray
   }
 });
 // Remove robot button timer: It allows deleting a robot after 5min of inactivity
@@ -214,23 +217,12 @@ class RobotInfoButtons extends React.Component {
       if (operation == 'updateAgent') {
         this.handleUpdateAgent();
       } else {
-        // NOTE(adamantivm) This is now only used for the Delete Robot button
-        // TODO Migrate the Delete Robot action to be a proper action
         Meteor.call('robot.' + operation, { robotId }, (err) => {
           if (err) {
             onFeedback && onFeedback((err && err.error) || 'Error');
           } else {
             // After successfully deleting the robot, remove it from the context
             selectRobotCallback();
-
-            // TODO (franguerini): Uncomment this line (or move it somewhere else) to have
-            //                     snackbar messages after the robot is deleted
-            //                     by having the remove of the deleted robot it is re-rendering
-            //                     with an empty robotId (because it changed to undefined)
-            //                     I believe the proper solution to this would be to move this logic
-            //                     outside of this component (refactor it) so that the onFeedback
-            //                     does not depend on the state of this component
-            // onFeedback && onFeedback(confirmSuccessMessage, SnackbarVariants.SUCCESS);
           }
         });
       }
@@ -267,7 +259,7 @@ class RobotInfoButtons extends React.Component {
 
   render() {
     const {
-      offline, isZeroData, classes,
+      offline, isZeroData, classes, theme,
       onNavigationDetail, updateStamp,
       actionsConfig, lock, enableLock, robotId, isRobotLoading
     } = this.props;
@@ -287,7 +279,7 @@ class RobotInfoButtons extends React.Component {
     const agentStatus = this.agentStatus();
 
     return !isZeroData && !isRobotLoading ? (
-      <Grid container justifyContent="space-between" align="center">
+      <Grid container justifyContent="space-between" align="center" width="100%">
         <div className={classes.robotActions}>
           {restartAction && WrapWithTooltip(getActionTooltip(restartAction), (
             <Button
@@ -347,10 +339,7 @@ class RobotInfoButtons extends React.Component {
             onClick={onNavigationDetail}
             classes={{ text: classes.lowerCaseButton }}
           >
-            <Navigation
-              className={classes.iconStyle}
-              sx={{ fill: theme => theme.palette.text.title }}
-            />
+            <Navigation size={24} color={theme.palette.text.lightGray} style={{ marginRight: '4px' }} />
             <Box sx={LG_BREAKPOINT}>
               Navigation
             </Box>
@@ -380,9 +369,9 @@ class RobotInfoButtons extends React.Component {
             )}
         </div>
         <div className={classes.systemActions}>
-        <Box sx={LG_BREAKPOINT}>
+          <Box sx={{ display: { lg: 'flex', xs: 'none' }, alignItems: 'center' }}>
             {offline && (
-              <Tooltip title={this.getLastSeenTime()} placement="top" disableInteractive>
+              <Tooltip title={this.getLastSeenTime()} disableInteractive>
                 <Typography variant="caption" className={classes.lastSeen}>
                   {this.getLastSeenInterval()}
                 </Typography>

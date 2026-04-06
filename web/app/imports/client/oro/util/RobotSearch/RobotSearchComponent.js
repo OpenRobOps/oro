@@ -4,24 +4,27 @@
  * It is self sufficient as it uses the searchManager to find robots
  * given a string, company and (optionally) a collectionId.
  * The queries will always be limited in the backend to what a user
- * can see, even if no companyId/collectionId or string are provided
+ * can see.
  */
 import React from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import { withStyles } from 'tss-react/mui';
 import { TextField, Typography, Chip, Autocomplete } from '@mui/material';
+import { Bot } from 'lucide-react';
 // ORO modules
 import { ID_TYPE_ROBOT } from '../../../../shared/constants';
 import { DarkModeContext } from '../../contexts/DarkModeContext';
 import LoadingBar from '../LoadingBar';
 import WrapWithTooltip from '../WrapWithTooltip';
+import { legacyWithStyles } from '../withStyles';
 
 
 const styles = theme => ({
   autocompleteInput: {
     '&.MuiOutlinedInput-root': {
       padding: '5px',
+      color: theme.palette.text.primary,
     },
   },
   autocompleteInputFullscreen: {
@@ -47,9 +50,9 @@ const styles = theme => ({
     color: 'white'
   },
   searchBoxContainer: {
-    background: theme.palette.background.lightBlue,
-    boxShadow: 'inset 1px 1px 3px 1px rgba(0, 0, 0, 0.3)',
-    borderRadius: '5px',
+    background: theme.palette.background.black,
+    border: `1px solid ${theme.palette.background.borderLight}`,
+    borderRadius: '4px',
     maxWidth: '200px',
     width: '100%',
     position: 'relative'
@@ -69,9 +72,9 @@ const styles = theme => ({
     alignItems: 'center'
   },
   chipTag: {
-    background: theme.palette.text.title,
+    background: theme.palette.background.chip,
     borderRadius: '5px',
-    color: 'white',
+    color: theme.palette.text.primary,
     margin: '2px',
     fontSize: '13px',
     maxHeight: '26px'
@@ -81,19 +84,20 @@ const styles = theme => ({
   },
   chipHover: {
     '&:hover': {
-      backgroundColor: theme.palette.text.title
+      backgroundColor: theme.palette.background.borderMedium
     }
   },
   deleteIcon: {
-    color: `${theme.palette.background.lightGray} !important`,
+    color: `${theme.palette.text.secondary} !important`,
     '&:hover': {
-      color: `${theme.palette.background.white} !important`,
+      color: `${theme.palette.text.primary} !important`,
     }
   },
   hiddenTextInputRoot: {
-    width: '25px',
-    padding: '0 10px',
-    marginLeft: 'auto'
+    width: '0px',
+    padding: '0',
+    marginLeft: 'auto',
+    overflow: 'hidden',
   },
   showTextInputRoot: {
     width: '100%',
@@ -102,7 +106,8 @@ const styles = theme => ({
   },
   showTextInputInput: {
     fontSize: '14px',
-    justifySelf: 'flex-end'
+    justifySelf: 'flex-end',
+    color: theme.palette.text.primary,
   },
   searchBoxContainerWithChip: {
     minWidth: '350px',
@@ -131,7 +136,8 @@ const styles = theme => ({
   },
   popper: {
     width: '200px !important',
-    right: 0
+    right: 0,
+    zIndex: '1300 !important',
   },
   outlinedInput: {
     padding: '6px !important'
@@ -267,10 +273,12 @@ class RobotSearch extends React.Component {
                 inputRoot: classes.autocompleteInputFullscreen,
                 popupIndicator: classes.popupIndicator,
                 listbox: classes.listboxFullScreen,
-                option: classes.optionFullScreen
+                option: classes.optionFullScreen,
+                popper: classes.popper,
               } : {
                 inputRoot: classes.autocompleteInput,
-                option: classes.optionTypography
+                option: classes.optionTypography,
+                popper: classes.popper,
               }
             }
             renderOption={(props, option) => (
@@ -285,6 +293,7 @@ class RobotSearch extends React.Component {
                     {selectedRobot && !optionsOpened && (
                       WrapWithTooltip(robotVersionTooltip, (
                         <Chip
+                          icon={<Bot size={16} color={this.props.theme.palette.text.secondary} />}
                           className={classnames(classes.chipTagRobot, classes.chipTag)}
                           classes={{ deleteIcon: classes.deleteIcon, clickable: classes.chipHover }}
                           label={isRobotLoading ? (
@@ -355,7 +364,6 @@ RobotSearch.contextType = DarkModeContext;
 RobotSearch.propTypes = {
   classes: PropTypes.object,
   className: PropTypes.string,
-  companyId: PropTypes.string,
   label: PropTypes.string,
   activeFilter: PropTypes.object,
   robots: PropTypes.array,
@@ -372,4 +380,4 @@ RobotSearch.propTypes = {
   isRobotLoading: PropTypes.bool // selected robot is loading
 };
 
-export default withStyles(RobotSearch, styles, { withTheme: true });
+export default legacyWithStyles(RobotSearch, styles, { withTheme: true });

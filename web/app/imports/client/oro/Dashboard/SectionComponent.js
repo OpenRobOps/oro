@@ -20,14 +20,14 @@ import classnames from 'classnames';
 // ORO modules
 import DashboardWidgetWrapper from './DashboardWidgetWrapper';
 import { SECTION_SCOPES, WIDGET_CONFIG, WIDGET_TYPE_GROUP, WIDGET_TYPES_IDS } from '../../../lib/uiPreferences';
-// import { ActiveInteractionProvider } from '../../contexts/ActiveInteractionContext';
+import { ActiveInteractionProvider } from '../contexts/ActiveInteractionContext';
 // import { LayoutProvider } from '../../navigationWidgets/LayoutManager';
 
 const styles = theme => ({
   // TODO(herchu) these classes were copied unmodified from GroundControl;
   // adjust them as we add toolbars
   section: {
-    padding: '6px 24px'
+    padding: '4px 16.5px'
   },
   componentTitle: {
     fontWeight: theme.fontWeight.light,
@@ -42,7 +42,7 @@ const styles = theme => ({
   },
   titleButtons: {
     display: 'flex',
-    margin: '6px',
+    margin: '6px 9.5px',
     marginBottom: '4px',
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -63,7 +63,7 @@ const styles = theme => ({
     flexDirection: 'column'
   },
   labelIcon: {
-    color: '#BCBCBC'
+    color: theme.palette.modes.others
   },
   iconContent: {
     position: 'relative',
@@ -152,6 +152,21 @@ const Section = (props) => {
 
   const isMobile = useMediaQuery('(max-width:900px)');
 
+  // For the fleet control bar, borrow elementList/elementValues from the
+  // FLEET_STATUS widget config in this section so it can populate the
+  // "Filter by components" selector.
+  const controlWidgetSpec = useMemo(() => {
+    const base = CONTROL_WIDGET_CONFIGS[scope];
+    if (!base) return null;
+    if (scope === SECTION_SCOPES.FLEET && widgets) {
+      const fleetStatusWidget = widgets.find(w => w.type === WIDGET_TYPES_IDS.FLEET_STATUS);
+      if (fleetStatusWidget?.config) {
+        return { ...base, config: fleetStatusWidget.config };
+      }
+    }
+    return base;
+  }, [scope, widgets]);
+
   /**
    * Render a single widget accordingly to the given widget specification.
    *
@@ -223,36 +238,36 @@ const Section = (props) => {
   // It cannot be rendered by NavigationDetailComponent itself since it needs to be shared with
   // its control bar. So we include the provider in the render at section level
   return (
-    // <ActiveInteractionProvider>
-    // <LayoutProvider>
-    // </LayoutProvider>
-    // </ActiveInteractionProvider>
-    <Grid container className={classes.section} key={id}>
-      {label && (
-        <Grid className={classes.labelContainer} size={12}>
-          <div
-            className={
-              classnames(classes.titleButtons, { [classes.titleMobile]: isMobile })
-            }
-          >
-            {label && (
-              <div className={classes.titleFlex}>
-                <div className={classes.infoName}>
-                  <Typography className={classes.componentTitle} data-test="dashboard-section-label">
-                    {label}
-                  </Typography>
+    <ActiveInteractionProvider>
+    {/* // <LayoutProvider>
+    // </LayoutProvider> */}
+      <Grid container className={classes.section} key={id}>
+        {label && (
+          <Grid className={classes.labelContainer} size={12}>
+            <div
+              className={
+                classnames(classes.titleButtons, { [classes.titleMobile]: isMobile })
+              }
+            >
+              {label && (
+                <div className={classes.titleFlex}>
+                  <div className={classes.infoName}>
+                    <Typography className={classes.componentTitle} data-test="dashboard-section-label">
+                      {label}
+                    </Typography>
+                  </div>
                 </div>
-              </div>
-            )}
-            {withControlWidget && CONTROL_WIDGET_CONFIGS[scope]
-              && renderWidget(CONTROL_WIDGET_CONFIGS[scope], true)}
-          </div>
+              )}
+              {withControlWidget && controlWidgetSpec
+                && renderWidget(controlWidgetSpec, true)}
+            </div>
+          </Grid>
+        )}
+        <Grid size={12}>
+          {render(widgets)}
         </Grid>
-      )}
-      <Grid size={12}>
-        {render(widgets)}
       </Grid>
-    </Grid>
+    </ActiveInteractionProvider>
   );
 };
 

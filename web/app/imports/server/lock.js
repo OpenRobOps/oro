@@ -39,6 +39,12 @@ class LockManager {
       instance = this;
       this._preferences = new PreferencesManager();
 
+    }
+    // eslint-disable-next-line no-constructor-return
+    return instance;
+  }
+
+  init = async () => {
       // Meteor methods to add, edit or remove attributes and mappings
       Meteor.methods({
         'robot.lock': this._meteorLockRobot,
@@ -46,9 +52,6 @@ class LockManager {
         'robot.checkLock': this._meteorCheckLockExpiration,
         'config.setLockPreferences': this._meteorSetLockPreferences
       });
-    }
-    // eslint-disable-next-line no-constructor-return
-    return instance;
   }
 
   /**
@@ -141,10 +144,11 @@ class LockManager {
     const config = await this._getLockPreferences();
     if (config && (!('notifications' in config) || config.notifications)) {
       // TODO(herchu) address this notification specifically to userId
-      await new NotificationsManager().makeGenericNotification(
-        msg,
-        { robotId }
-      );
+      console.log('TODO create notification for msg', msg, { robotId })
+      // await new NotificationsManager().makeGenericNotification(
+      //   msg,
+      //   { robotId }
+      // );
     }
   };
 

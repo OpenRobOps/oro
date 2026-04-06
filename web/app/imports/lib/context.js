@@ -98,7 +98,6 @@ const CTX_PROPS = {
   // Missions properties
   MISSION_LABEL_FILTER: 'label',
   // Location properties
-  LOCATION_ID: 'locationId',
   SUBLOCATION_ID: 'sublocationId',
   MAP_ID: 'mapId',
   // Orders properties

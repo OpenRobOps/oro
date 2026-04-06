@@ -51,7 +51,6 @@ export default class AnnotationsManager {
    * The annotation is asigned to either the location.
    * The sublocation is identified by frameId.
    *
-   * @param {String} companyId Represents the account
    * @param {String} entityId The id of the location or robot
    * @param {String} entityType The type of entity to be annotated:
    *    ID_TYPE_COLLECTION or ID_TYPE_ROBOT

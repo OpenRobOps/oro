@@ -345,7 +345,6 @@ export default class EventLog {
   /**
    * Logs all events related to traffic management zones.
    *
-   * @param {string} locationId The location ID.
    * @param {string} eventType The type of zone event (e.g., "zone.entered", "zone.exited").
    * @param {string} zoneId The unique identifier of the zone.
    * @param {string} zoneLabel The human-readable label of the zone.
@@ -357,7 +356,6 @@ export default class EventLog {
    * @param {number} ts The timestamp of the event (defaults to current time).
    */
   logZoneEvent = ({
-    locationId,
     eventType,
     zoneId,
     zoneLabel,
@@ -370,7 +368,6 @@ export default class EventLog {
     ts = Date.now(),
   }) => {
     this.sendEvent(buildEvent(EVENT_MODULES.TRAFFIC_MANAGEMENT, eventType, {
-      locationId,
       zoneId,
       zoneLabel,
       zoneState,

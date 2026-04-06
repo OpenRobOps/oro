@@ -55,12 +55,12 @@ import {
   readOrderProp,
   writeOrderProp,
 } from '../../../lib/context';
-// import FleetControlWidget from '../fleetWidgets/FleetControlWidget';
+import FleetControlWidget from '../fleetWidgets/FleetControlWidget';
 import FleetStatusWidget from '../fleetWidgets/FleetStatusWidget';
 import RobotControlBar from '../robotWidgets/RobotControlBar';
 // import ROSDiagnosticsFilter from './widgetToolbars/ToolbarFilters/ROSDiagnosticsFilter';
 // import MissionToolbar from './widgetToolbars/MissionToolbar';
-// import NavigationControlBar from '../navigationWidgets/NavigationControlBar';
+import NavigationControlBar from '../navigationWidgets/NavigationControlBar';
 // import AISummaryToolbar from './widgetToolbars/AISummaryToolbar';
 // import {
 //   SECTION_ROBOT_DATA,
@@ -603,23 +603,23 @@ const WIDGET_FACTORY = {
   //   />
   // ),
 
-  // [WIDGET_TYPES_IDS.FLEET_CONTROL]: ({ config, context, setContext, scope }) => (
-  //   <FleetControlWidget
-  //     config={config}
-  //     sortBy={getFleetSortBy(context, scope)}
-  //     onSortBySelected={setFleetSortBy(setContext, scope)}
-  //     groupBy={getFleetGroupBy(context, scope)}
-  //     onGroupBySelected={setFleetGroupBy(setContext, scope)}
-  //     onShowSummaryView={setSummary(setContext, scope)}
-  //     showSummaryView={getSummary(context, scope)}
-  //     attributeStatus={getFleetAttributeStatus(context, scope)}
-  //     onAttributeStatusSelected={setFleetAttributeStatus(setContext, scope)}
-  //     robotStatus={getFleetRobotStatus(context, scope)}
-  //     onRobotStatusSelected={setFleetRobotStatus(setContext, scope)}
-  //     selectedRobotId={getRobotId(context, scope)}
-  //     onRobotSelected={setRobotId(setContext, scope)}
-  //   />
-  // ),
+  [WIDGET_TYPES_IDS.FLEET_CONTROL]: ({ config, context, setContext, scope }) => (
+    <FleetControlWidget
+      config={config}
+      sortBy={getFleetSortBy(context, scope)}
+      onSortBySelected={setFleetSortBy(setContext, scope)}
+      groupBy={getFleetGroupBy(context, scope)}
+      onGroupBySelected={setFleetGroupBy(setContext, scope)}
+      onShowSummaryView={setSummary(setContext, scope)}
+      showSummaryView={getSummary(context, scope)}
+      attributeStatus={getFleetAttributeStatus(context, scope)}
+      onAttributeStatusSelected={setFleetAttributeStatus(setContext, scope)}
+      robotStatus={getFleetRobotStatus(context, scope)}
+      onRobotStatusSelected={setFleetRobotStatus(setContext, scope)}
+      selectedRobotId={getRobotId(context, scope)}
+      onRobotSelected={setRobotId(setContext, scope)}
+    />
+  ),
 
   // [WIDGET_TYPES_IDS.IMAGE]: ({ config, isZeroData }) => (
   //   <ImageWidget
@@ -807,16 +807,14 @@ const WIDGET_FACTORY = {
     </NowTimeContext.Consumer>
   ),
 
-  // [WIDGET_TYPES_IDS.NAVIGATION_CONTROL_BAR]: ({
-  //   context, setContext, scope
-  // }) => (
-  //   <NavigationControlBar
-  //     robotId={getRobotId(context, scope)}
-  //     selectRobotCallback={setRobotId(setContext, scope)}
-  //     mapLabel={getNavigationMap(context, scope)}
-  //     setMapLabel={setNavigationMap(setContext, scope)}
-  //   />
-  // ),
+  [WIDGET_TYPES_IDS.NAVIGATION_CONTROL_BAR]: ({
+    context, setContext, scope
+  }) => (
+    <NavigationControlBar
+      robotId={getRobotId(context, scope)}
+      selectRobotCallback={setRobotId(setContext, scope)}
+    />
+  ),
 
   // [WIDGET_TYPES_IDS.MISSION_TRACKER]: ({
   //   context, setContext, scope, switchTo, isZeroData

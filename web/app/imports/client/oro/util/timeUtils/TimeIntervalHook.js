@@ -45,23 +45,39 @@ const useStyles = makeStyles()(theme => ({
     margin: '0 2px'
   },
   button: {
-    padding: '2px',
-    color: theme.palette.text.title,
+    padding: '2px 8px',
+    color: theme.palette.text.buttonText,
     fontSize: '0.8125rem',
+    fontFamily: 'Inter, Helvetica, Arial, sans-serif',
+    fontWeight: 500,
     textTransform: 'capitalize',
-    border: `1px solid ${theme.palette.text.title}`,
+    border: `1px solid ${theme.palette.background.borderLight}`,
+    backgroundColor: theme.palette.background.default,
     '&:hover': {
-      backgroundColor: 'rgba(0, 0, 0, 0.15)',
-      border: `1px solid ${theme.palette.text.title} !important`
-    }
+      backgroundColor: theme.palette.background.spaceIntelligence,
+      border: `1px solid ${theme.palette.background.borderLight} !important`,
+      opacity: 0.7,
+    },
+    '&.Mui-disabled': {
+      color: theme.palette.text.buttonText,
+      opacity: 0.4,
+      border: `1px solid ${theme.palette.background.borderLight}`,
+      backgroundColor: theme.palette.background.default,
+    },
   },
   selected: {
-    color: `${theme.palette.text.contrastText} !important`,
-    background: theme.palette.text.title,
-    border: '0px !important'
+    color: `${theme.palette.text.primary} !important`,
+    opacity: '1 !important',
+    backgroundColor: `${theme.palette.background.selected} !important`,
+    border: `1px solid ${theme.palette.background.borderLight} !important`,
+    '&.Mui-disabled': {
+      color: `${theme.palette.text.primary} !important`,
+      opacity: '1 !important',
+      backgroundColor: `${theme.palette.background.selected} !important`,
+    },
   },
   disabled: {
-    color: theme.palette.text.icon
+    color: theme.palette.text.buttonText
   }
 }));
 

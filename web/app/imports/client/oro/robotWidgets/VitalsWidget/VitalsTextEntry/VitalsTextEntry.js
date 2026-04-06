@@ -25,7 +25,7 @@ const styles = theme => ({
   },
   value: {
     fontSize: '36px',
-    color: theme.palette.text.darkBlue,
+    color: theme.palette.common.white,
     fontWeight: theme.fontWeight.medium,
     maxWidth: '100%',
     display: 'flex',
@@ -43,23 +43,23 @@ const styles = theme => ({
     fontWeight: theme.fontWeight.medium,
     fontSize: '24px',
     textAlign: 'center',
-    color: theme.palette.text.darkBlue,
+    color: theme.palette.common.white,
     height: '120px',
     display: 'flex',
     alignItems: 'center'
   },
   circleContainer: {
-    border: `1px solid ${theme.palette.incidents.ok}`,
+    border: `1px solid ${theme.palette.background.borderLight}`,
     borderRadius: '50%',
     height: '115px',
     width: '115px',
     alignItems: 'center',
-    marginBottom: '1em',
+    marginBottom: '0.5em',
     display: 'flex',
     justifyContent: 'center'
   },
   gaugeContainer: {
-    paddingBottom: '1em',
+    paddingBottom: '0.5em',
     alignItems: 'center',
     alignContent: 'center',
     justifyContent: 'center',

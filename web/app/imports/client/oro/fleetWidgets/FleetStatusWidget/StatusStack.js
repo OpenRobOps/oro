@@ -27,15 +27,17 @@ const useStyles = makeStyles()(theme => ({
     flexDirection: 'column',
     overflowX: 'hidden',
     textOverflow: 'ellipsis',
-    width: theme.spacing(9),
+    width: theme.spacing(10),
     cursor: 'pointer',
     height: '100%',
     justifyContent: 'space-between',
     padding: theme.spacing(0.75 / 2),
+    border: '1px solid transparent',
+    boxSizing: 'border-box',
   },
   bodySelected: {
-    borderColor: theme.palette.primary.main,
-    backgroundColor: theme.palette.primary.main,
+    backgroundColor: theme.palette.background.borderLight,
+    border: `1px solid ${theme.palette.background.borderLight}`,
   },
   robotName: {
     width: '100%',
@@ -49,7 +51,7 @@ const useStyles = makeStyles()(theme => ({
     whiteSpace: 'pre-wrap',
   },
   robotNameSelected: {
-    color: '#fff',
+    color: theme.palette.background.white,
   },
   statusChipContainer: {
     height: '100%',

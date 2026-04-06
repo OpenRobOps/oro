@@ -22,7 +22,7 @@ import attributesApiRoutes from './rest/attributes';
 import actionsApiRoutes from './rest/actions';
 import localizationApiRoutes from './rest/localization';
 // import missionTrackingRoutes from './rest/missionTracking';
-// import navigationRoutes from './rest/navigation';
+import navigationRoutes from './rest/navigation';
 import configAPIRoutes from './rest/configAPI';
 // import expressionsRoutes from './rest/expressions';
 // import cameraImagesRoutes from './rest/cameraImages';
@@ -93,7 +93,7 @@ const routes = [
   actionsApiRoutes,
   localizationApiRoutes,
   // missionTrackingRoutes,
-  // navigationRoutes,
+  navigationRoutes,
   // auditLogsApiRoutes,
   configAPIRoutes,
   // expressionsRoutes,

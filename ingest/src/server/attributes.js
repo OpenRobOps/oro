@@ -204,15 +204,6 @@ class AttributesManager {
   };
 
   /**
-   * Retrieves the locationId from the robot
-   * This function is used in this._cacheRobotLocation inside an AsyncCache
-   *
-   * @param {string} robotId - The ID of the robot.
-   * @returns {Promise<string>} The locationId of the robot.
-   */
-  _getRobotLocationId = async (robotId) => this.collectionsManager.getRobotLocationId(robotId);
-
-  /**
    * Receives a batch of values from the 'system' agentlet from a robot, and saves
    * them those the robot has enabled and defined with a 'bultin' source (otherwise
    * they are ignored).
@@ -389,10 +380,8 @@ class AttributesManager {
     //       console.error(`Error queuing attributes updates to processing queues; robotId=${robotId}: ${e.message}`);
     //     });
     //   if (VITAL_POSE in attrValues) {
-    //     const locationId = await this._cacheRobotLocation.get(robotId);
     //     await this.poseMessageQueue.sendPoseUpdate(
     //       robotId,
-    //       locationId,
     //       attrValues[VITAL_POSE].value,
     //       ts
     //     ).catch((e) => {

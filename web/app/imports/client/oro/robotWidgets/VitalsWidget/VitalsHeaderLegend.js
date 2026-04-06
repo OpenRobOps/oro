@@ -15,7 +15,8 @@ const styles = theme => ({
     display: 'block',
     fontWeight: theme.fontWeight.medium,
     fontSize: '16px',
-    color: theme.palette.text.title
+    color: theme.palette.text.title,
+    marginBottom: '6px'
   },
   legendDisabled: {
     color: theme.palette.text.notesLight
