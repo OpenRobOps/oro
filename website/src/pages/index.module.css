@@ -21,3 +21,17 @@
   align-items: center;
   justify-content: center;
 }
+  
+.heroBanner :global(.button) {
+  background: var(--oro-color-cream);
+  color: var(--oro-color-void);
+  border: 1px solid var(--oro-color-cream);
+  border-radius: 6px;
+  font-weight: bold;
+}
+
+.heroBanner :global(.button:hover) {
+  background: var(--oro-color-white);
+  border-color: var(--oro-color-white);
+  color: var(--oro-color-void);
+}

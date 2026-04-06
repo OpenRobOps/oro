@@ -12,7 +12,7 @@ type FeatureItem = {
 const FeatureList: FeatureItem[] = [
   {
     title: 'Easy to Use',
-    Svg: require('@site/static/img/undraw_docusaurus_mountain.svg').default,
+    Svg: require('@site/static/img/easy-to-use-icon.svg').default,
     description: (
       <>
         Bootstrap your fleet manager and connect your robots in minutes.
@@ -22,7 +22,7 @@ const FeatureList: FeatureItem[] = [
   },
   {
     title: 'Simple & Scalable',
-    Svg: require('@site/static/img/undraw_docusaurus_tree.svg').default,
+    Svg: require('@site/static/img/simple-and-scalable-icon.svg').default,
     description: (
       <>
         OpenRobOps is designed to scale to large robot fleets.
@@ -32,7 +32,7 @@ const FeatureList: FeatureItem[] = [
   },
   {
     title: 'Connect',
-    Svg: require('@site/static/img/undraw_docusaurus_react.svg').default,
+    Svg: require('@site/static/img/connect-icon.svg').default,
     description: (
       <>
         Connect your robot fleet using a variety of protocols.
