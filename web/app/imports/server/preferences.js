@@ -4,6 +4,7 @@
 import { Meteor } from 'meteor/meteor';
 import { isString, isObject, isEmpty } from 'lodash';
 import { Preferences } from '../lib/collections';
+import OroRoles from './roles';
 
 let instance;
 
@@ -57,5 +58,29 @@ class PreferencesManager {
         return await Preferences.upsertAsync({ _id: key }, update);
     }
 };
+
+/**
+ * Publishes system wide preferences.
+ * Argument `keys` tell which preferences are to be published. 
+ * Alternatively (deprecated) argument `fields` tell which fields or preferences are to be published
+ * (for compatibility with old code; we should use `keys` instead)
+ */
+Meteor.publish('preferences', async function ({ keys, fields = null }) {
+    // Choose proper entity type based on parameters
+    if (!await new OroRoles().hasRole(this.userId)) {
+        console.warn(`Unauthorized (preferences): userId: ${this.userId}`);
+        return this.error(new Meteor.Error('Unauthorized'));
+    }
+    if (!keys) {
+        if (fields) {
+            console.warn('preferences: deprecated argument `fields` is used; use `keys` instead');
+        }
+        keys = fields;
+    }
+    if (!Array.isArray(keys)) {
+        throw new Meteor.Error('keys must be an array');
+    }
+    return Preferences.find({ _id: { $in: keys } });
+});
 
 export default PreferencesManager;

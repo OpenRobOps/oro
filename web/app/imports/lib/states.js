@@ -77,8 +77,6 @@ const getCalculatedStateAsync = async ({ robotId, moduleName, keys }) => {
       states = null;
     }
   }
-  console.log("GETCALCULATEDSTATE",states)
-
   return states;
 };
 

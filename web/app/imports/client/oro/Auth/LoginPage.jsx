@@ -69,7 +69,6 @@ const LoginPage = () => {
   const handleSendCode = useCallback(() => {
     setError(null);
     setLoading(true);
-    console.log("**********handleSendCode", email);
     Accounts.requestLoginTokenForUser(
       {
         selector: email,

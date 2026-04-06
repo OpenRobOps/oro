@@ -31,7 +31,7 @@ import VitalsWidget from '../robotWidgets/VitalsWidget';
 // import CameraView from '../robotWidgets/CameraView';
 import IncidentTimeline from '../fleetWidgets/IncidentTimeline';
 import IncidentList from '../fleetWidgets/IncidentList';
-// import ActionsWidget from '../robotWidgets/ActionsWidget';
+import ActionsWidget from '../robotWidgets/ActionsWidget';
 // import RobotMissionsTracker from '../robotWidgets/RobotMissionsTracker';
 // import RobotSearch from '../util/RobotSearch';
 import {
@@ -418,12 +418,6 @@ const TOOLBAR_FACTORY = {
   //     alwaysLive
   //   />
   // ),
-  // [WIDGET_TYPES.ACTIONS]: ({ isZeroData }) => (
-  //   <SettingsToolbar
-  //     settingsPage={SECTION_INSIGHTS}
-  //     isZeroData={isZeroData}
-  //   />
-  // ),
   // [WIDGET_TYPES_IDS.LOGS]: ({ context, setContext, scope }) => (
   //   <VerbosityLevelFilter
   //     robotId={getRobotId(context, scope)}
@@ -744,13 +738,13 @@ const WIDGET_FACTORY = {
   //   />
   // ),
 
-  // [WIDGET_TYPES.ACTIONS]: ({ config, context, scope, isZeroData }) => (
-  //   <ActionsWidget
-  //     robotId={getRobotId(context, scope)}
-  //     config={config}
-  //     isZeroData={isZeroData}
-  //   />
-  // ),
+  [WIDGET_TYPES.ACTIONS]: ({ config, context, scope, isZeroData }) => (
+    <ActionsWidget
+      robotId={getRobotId(context, scope)}
+      config={config}
+      isZeroData={isZeroData}
+    />
+  ),
 
   // [WIDGET_TYPES_IDS.AUDIT_LOG]: ({ setContext, context, scope, isZeroData }) => (
   //   <NowTimeContext.Consumer>

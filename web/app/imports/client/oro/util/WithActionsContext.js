@@ -25,7 +25,7 @@
  *
  */
 /* eslint-disable no-use-before-define */
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { Portal } from '@mui/material';
@@ -53,45 +53,26 @@ import { useFullscreenContext } from '../contexts/FullscreenContext';
 // debug it; and remove all occurrences of it (and the console.log calls) once this works ok.
 const DEBUG_CALLBACKS = 0;
 
-// TODO (franguerini) Refactor this component so that robot it does not need robot as prop
-// and having this component only work with robotId
 const WithActionsContext = (props, WrappedComponent) => {
   const {
-    actionsConfig = {},
-    robot = {},
-    widget,
-    uiConfig = {},
-    actionsList,
+    robot,
+    actions: inputActions,
     robotId
   } = props; /** @see WithActionsContext.propTypes */
+  // Local actions are excluded
+  const filterClientOrInternalActions = action => action && !action.client && !action.internal;
+  const actions = useMemo(() => (
+    (inputActions || []).filter(filterClientOrInternalActions)
+  ), [inputActions]);
 
   const { containerRef } = useFullscreenContext() || {};
-
   const navigate = useNavigate();
-
-  const [loading, setLoading] = useState(true);
 
   // variable use to indicate if an action is executing
   const [actionExecuting, setActionExecuting] = useState(false);
-  // User Id state.
-  const [userId, setUserId] = useState(null);
-
-  // This widget's actions state: a 'hardcoded' list of actions to display (embedded actions,
-  // or prepared actions e.g. in a banner)
-  const [widgetActions, setWidgetActions] = useState([]);
-  // Single Actions (1-click) state. An array of single click actions.
-  const [actionsSingle, setActionsSingle] = useState([]);
-  // Actions Groups state. An array of objects with defined actions groups.
-  const [actionsGroups, setActionsGroups] = useState([]);
-  const [defaultGroupFlag, setDefaultGroupFlag] = useState(true);
-  // Actions already in groups state. A Set of actions ids already in groups.
-  const [actionIdsInGroups, setActionIdsInGroups] = useState(new Set());
 
   // ActionId of the action in flight state. Null for no action in flight.
   const [actionInFlightId, setActionInFlightId] = useState(null);
-
-  // Enabled Features state. An array of enabled features ids
-  const [features, setFeatures] = useState([]);
 
   // Time id state. Null when timer has been cleared.
   const [timer, setTimer] = useState(null);
@@ -145,19 +126,6 @@ const WithActionsContext = (props, WrappedComponent) => {
         // registered to 'display a robot'. In that case, post a message to that child window;
         // otherwise open it here
         const handled = false; // (see comment below)
-        // NOTE(herchu) Since introduction of dashboards, there is no easy way to identify just from
-        // the URL if it points "to the robot dashboard". The following logic is broken, as is
-        // the MULTIPLE_WINDOWS support.
-        // TODO(herchu) Re-enable MULTIPLE_WINDOWS experimental feature, by looking at a URL and
-        // the dashboards configuration and decide from there if the URL should be handled in the
-        // child window.
-        // if (features.includes(FEATURES.MULTIPLE_WINDOWS)) {
-        //   const robotIdFromUrl = isRobotUrl(url);
-        //   if (robotIdFromUrl) {
-        //     // Attempt to have this URL action be handled in a child window (if there is any)
-        //     handled = theWindowsManager.sendRobotId({ robotId: robotIdFromUrl, url });
-        //   }
-        // }
         if (!handled) {
           navigate(url);
         } else {
@@ -427,7 +395,7 @@ const WithActionsContext = (props, WrappedComponent) => {
     }
     actionFeedbackUpdateRef.current = update;
     const { executionStatus, executionStatusDetails } = update;
-    // NOTE(Flor_Grosso): this is displaying execution details as given
+    // NOTE: this is displaying execution details as given
     // by the agent. Consider sending a sub status from the agent and
     // making the details string here based on that.
     if (executionStatus === EXECUTION_STATUS.ABORTED) {
@@ -464,183 +432,45 @@ const WithActionsContext = (props, WrappedComponent) => {
     }
   };
 
-  // Local actions are excluded
-  const filterClientOrInternalActions = action => action && !action.client && !action.internal;
-
-  // ComponentDidMount equivalent hook
-  useEffect(() => {
-    if (!userId) {
-      // On mount, set the userId to the Meteor.userId()
-      setUserId(Meteor.userId());
-    }
-  }, []);
-
-  // ComponentDidUpdate equivalent hook. Will update when actions or uiConfig props change.
-  // It updates the list of actions found and in which groups they appear.
-  // Input: actionsConfig, uiConfig, actionsList, widget
-  // Output state: widgetActions, actionIdsInGroups, defaultGroupFlag
-  useEffect(() => {
-    const {
-      actions = {},
-      [widget]: widgetConfig = { [EMBEDDED_ACTION_KEY]: [] }
-    } = uiConfig;
-    const { groups = null } = actions;
-    if (actionsList) {
-      // There is a fixed list of actions to display; use it and ignore groups
-      setWidgetActions(actionsList);
-      setDefaultGroupFlag(true);
-      return;
-    }
-    // if this HOC is rendering embedded actions, list only those
-    const widgetActionIds = widget
-      ? widgetConfig && widgetConfig[EMBEDDED_ACTION_KEY]
-      : Object.keys(actionsConfig);
-    const actionIdsInGroupsFound = new Set();
-    let definedActionsGroups = [];
-    let justDefGroupExists = true;
-    if (widgetActionIds && widgetActionIds.length && !isEmpty(actionsConfig)) {
-      // Check for empty groups object
-      if (groups && !isEmpty(groups)) {
-        definedActionsGroups = keyValueListToList(groups).map((group) => {
-          const { actionIds = [], _id } = group;
-          let foundActions = [];
-          if (actionIds && actionIds.length) {
-            foundActions = actionIds.map((actionId) => {
-              // Spread actionsConfig[actionId] to avoid modifying the prop actionsConfig
-              const foundAction = { ...actionsConfig[actionId] };
-              if (foundAction && !isEmpty(foundAction)) {
-                foundAction._id = actionId;
-                actionIdsInGroupsFound.add(actionId);
-                if (justDefGroupExists && _id !== GROUP_ID_NONE) {
-                  justDefGroupExists = false;
-                }
-                return foundAction;
-              }
-              return undefined;
-            });
-          }
-          const remoteActions = foundActions.filter(filterClientOrInternalActions);
-          return { ...group, actions: remoteActions };
-        });
-      }
-    }
-    // Find the actions in the widget's embedded actions list and keep the objects
-    const actionObjects = Array.isArray(widgetActionIds) && widgetActionIds.map(actionId => (
-      actionsConfig && { ...actionsConfig[actionId], _id: actionId }
-    )).filter(action => action);
-    // The previous loop collected `actions in groups` and determined the flag `justDefGroupExists`
-    // telling that there are logically no grouped actions (even if some are in the "Other" group).
-    // If this is true, clear the collection with all grouped actions.
-    if (justDefGroupExists) {
-      actionIdsInGroupsFound.clear();
-    }
-    // HACK(herchu/pisti) See IO-2206: This entire HOC has a weird props/state/effects logic that
-    // causes infinite re-rendering calls. Unable to solve the root problem we are simply
-    // avoiding setting the "same" state (with a different object) multiple times, to stop the
-    // chain or state, effect, and render calls.
-    !isEqual(actionsGroups, definedActionsGroups) && setActionsGroups(definedActionsGroups);
-    !isEqual(defaultGroupFlag, justDefGroupExists) && setDefaultGroupFlag(justDefGroupExists);
-    !isEqual(actionIdsInGroups, actionIdsInGroupsFound)
-      && setActionIdsInGroups(actionIdsInGroupsFound);
-    !isEqual(widgetActions, actionObjects) && setWidgetActions(actionObjects);
-  }, [actionsConfig, uiConfig, actionsList, widget]);
-
-  // ComponentDidUpdate equivalent Hook. When actionIdsInGroups and widgetActions state change,
-  // filter those in groups and adds them to `actionsSingle` array
-  // Input: actionIdsInGroups, widgetActions
-  // Output state: actionsSingle, loading,
-  useEffect(() => {
-    if (Array.isArray(actionsList)) {
-      // if the list of actions is fixed, copy it to 'actionsSingle' (with some processing
-      // for user arguments)
-      setActionsSingle(actionsList.map((action) => {
-        if (action.actionId) {
-          // this is an stored action. Since are executing it in the UI,
-          // grab the arguments' definitions from the config, as the user is able
-          // to provide argument values
-          const actionInConfig = (actionsConfig && actionsConfig[action.actionId]) || {};
-          return {
-            ...action,
-            elementList: actionInConfig.elementList,
-            elementValues: actionInConfig.elementValues
-          };
-        } else {
-          return { ...action };
-        }
-      }));
-      setLoading(false);
-    } else if (actionsConfig && actionIdsInGroups && actionIdsInGroups.size) {
-      const filteredActions = Object.keys(actionsConfig)
-        .filter(actionId => !actionIdsInGroups.has(actionId)
-          && widgetActions.find(action => action._id == actionId))
-        .map(filteredActionId => ({
-          _id: filteredActionId,
-          ...actionsConfig[filteredActionId]
-        }));
-      const remoteActions = filteredActions.filter(filterClientOrInternalActions);
-      setActionsSingle(remoteActions);
-      setLoading(false);
-    } else if (actionsConfig) {
-      // If no groups were found, add the single click actions (actions props) to the
-      // actionsSingle array.
-      const actionsArray = Object.keys(actionsConfig)
-        .filter(actionId => widgetActions.find(action => action._id == actionId))
-        .map(actionId => ({
-          _id: actionId,
-          ...actionsConfig[actionId]
-        }));
-      const remoteActions = actionsArray.filter(filterClientOrInternalActions);
-      setActionsSingle(remoteActions);
-      setLoading(false);
-    }
-  }, [actionIdsInGroups, widgetActions]);
-
-  // Skip rendering if still loading
-  if (!loading) {
-    return (
-      <>
-        <WrappedComponent
-          {...props}
-          actionsConfig={actionsConfig}
-          executeAction={executeAction}
-          actionsSingle={actionsSingle}
-          actionsGroups={actionsGroups}
-          defaultGroupFlag={defaultGroupFlag}
-          actionInFlightId={actionInFlightId}
-          actionExecuting={actionExecuting}
+  return (
+    <>
+      <WrappedComponent
+        {...props}
+        actions={actions}
+        executeAction={executeAction}
+        actionInFlightId={actionInFlightId}
+        actionExecuting={actionExecuting}
+      />
+      <Portal container={containerRef && containerRef.current}>
+        <CustomSnackbar
+          {...snackbarAlert}
         />
-        <Portal container={containerRef && containerRef.current}>
-          <CustomSnackbar
-            {...snackbarAlert}
+        {argsInputPrompt && (
+          <ActionParametersDialog
+            actionArguments={argsInputPrompt.action}
+            attributeValues={argsInputPrompt.attrValues}
+            open
+            handleClose={argsInputPrompt.onCancel}
+            saveChanges={argsInputPrompt.onAction}
           />
-          {argsInputPrompt && (
-            <ActionParametersDialog
-              actionArguments={argsInputPrompt.action}
-              attributeValues={argsInputPrompt.attrValues}
-              open
-              handleClose={argsInputPrompt.onCancel}
-              saveChanges={argsInputPrompt.onAction}
-            />
-          )}
-          {actionFeedback && actionFeedback.executionId && (
-            <ActionFeedback
-              robotId={robot._id}
-              updateCallback={feedbackCallback}
-              executionId={actionFeedback.executionId}
-              executionTs={actionFeedback.executionTs}
-            />
-          )}
-        </Portal>
-      </>
-    );
-  } else {
-    return null;
-  }
+        )}
+        {actionFeedback && actionFeedback.executionId && (
+          <ActionFeedback
+            robotId={robot._id}
+            updateCallback={feedbackCallback}
+            executionId={actionFeedback.executionId}
+            executionTs={actionFeedback.executionTs}
+          />
+        )}
+      </Portal>
+    </>
+  );
 };
 
 WithActionsContext.propTypes = {
-  // The action definitions object
-  actionsConfig: PropTypes.object,
+  // A list of actions to display. These could come from the configuration, or be
+  // a list of prepared actions (e.g. from a notification). 
+  actions: PropTypes.arrayOf(PropTypes.object),
   // The robotid id for this actions list.
   robotId: PropTypes.string,
   // The robot object
@@ -652,18 +482,8 @@ WithActionsContext.propTypes = {
   }),
   // If embedded into a widget, the widget's id string
   widget: PropTypes.string,
-  // The uiPreferences object for this companyId
-  uiConfig: PropTypes.object,
   // The lock Preferences object for this companyId
   lockConfig: PropTypes.object,
-  // A fixed list of actions to display. Normally this is not provided, and the
-  // actions list comes from actionsConfig. But when provided, the config is
-  // only used to determine actions' attributes such as confirmation or conditions;
-  // but the displayed list is this one. This is used for Banners and other places
-  // where there is a list of 'prepared' actions (including Dismiss, which is not
-  // even a proper Action object)
-  actionsList: PropTypes.array,
-  collectionsConfig: PropTypes.object
 };
 
 export default WithActionsContext;

@@ -12,7 +12,7 @@ type FeatureItem = {
 const FeatureList: FeatureItem[] = [
   {
     title: 'Easy to Use',
-    Svg: require('@site/static/img/easy-to-use-icon.svg').default,
+    Svg: require('@site/static/img/EasyToUse.svg').default,
     description: (
       <>
         Bootstrap your fleet manager and connect your robots in minutes.
@@ -22,7 +22,7 @@ const FeatureList: FeatureItem[] = [
   },
   {
     title: 'Simple & Scalable',
-    Svg: require('@site/static/img/simple-and-scalable-icon.svg').default,
+    Svg: require('@site/static/img/Simple.svg').default,
     description: (
       <>
         OpenRobOps is designed to scale to large robot fleets.
@@ -32,7 +32,7 @@ const FeatureList: FeatureItem[] = [
   },
   {
     title: 'Connect',
-    Svg: require('@site/static/img/connect-icon.svg').default,
+    Svg: require('@site/static/img/Connect.svg').default,
     description: (
       <>
         Connect your robot fleet using a variety of protocols.
@@ -47,7 +47,7 @@ function Feature({title, Svg, description}: FeatureItem) {
   return (
     <div className={clsx('col col--4')}>
       <div className="text--center">
-        <Svg className={styles.featureSvg} role="img" />
+        <Svg className={styles.featureSvg} role="img" style={{ width: '100%' }}/>
       </div>
       <div className="text--center padding-horiz--md">
         <Heading as="h3">{title}</Heading>

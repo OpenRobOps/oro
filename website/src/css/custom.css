@@ -22,32 +22,27 @@ Notes:
   --oro-color-void: #1A0F2E;
   --oro-color-surface: #170E28;
   --oro-color-raised: #0E0918;
-
   /* Borders */
   --oro-color-border: #251A38;
   --oro-color-border-strong: #444950;
   --oro-color-border-muted: #606770;
-
   /* Lilac scale */
   --oro-color-lilac: #9E6FF3;
   --oro-color-lilac-300: #B896FF;
   --oro-color-lilac-200: #D4BBFF;
-
   /* Text */
   --oro-color-text: #E3E3E3;
   --oro-color-text-muted: #DADDE1;
   --oro-color-text-faint: #9E9E9E;
   --oro-color-cream: #FAF0F0;
-
   /* Interactive */
   --oro-color-white: #FFFFFF;
   --oro-color-hover-bg: rgba(255, 255, 255, 0.05);
-
   --ifm-color-primary: var(--oro-color-lilac);
 }
 
 
-/* Main - fonts. Light/Dark independent */
+/* Main - fonts */
 /* dm-mono-regular - latin */
 @font-face {
   font-display: swap;
@@ -75,20 +70,10 @@ code {
   /*font-family: "DM Mono"; Not real monospace (bad for diagrams). TODO use it for code, but not diagrams */
 }
 
-
-/* Dark mode */
 [data-theme='dark'] {
   --ifm-background-color: var(--oro-color-void);
   --ifm-heading-color: var(--oro-color-text);
   --ifm-font-color-base: var(--oro-color-text);
-
-  pre,
-  code {
-    background-color: var(--oro-color-raised);
-  }
-}
-[data-theme='light'] {
-  --ifm-toc-border-color: var(--oro-color-border);
 
   pre,
   code {
@@ -117,7 +102,7 @@ code {
 
 /* ===== HOMEPAGE ===== */
 
-/* Hero section — override Docusaurus primary bg color */
+/* Hero section */
 .hero--primary {
   background-color: var(--oro-color-void);
   color: var(--oro-color-cream);
@@ -137,7 +122,6 @@ code {
 
 /* ===== BLOG PAGE ===== */
 
-/* Heading links inherit heading color instead of primary link color */
 h1 a, h2 a, h3 a, h4 a, h5 a, h6 a {
   color: inherit;
 }
