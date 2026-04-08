@@ -1,0 +1,53 @@
+syntax = "proto3";
+package oro.system;
+/**
+ * System protobuf definitions, for passing messages between services.
+ *
+ * (For messages between agents and services, see oro.proto)
+ */
+
+// Helper object to hold a value of a variant type. Used in attribute updates
+message VariantValue {
+  oneof value {
+    double doubleValue = 1;
+    string stringValue = 2;
+    bool boolValue = 3;
+    string jsonStringValue = 4;
+  }
+}
+
+// Set of attribute value updates
+// Sent to "attributes" exchange with "update-values" routing key
+message AttributesUpdate {
+  // NOTE: id=1 reserved (backwards compatibility)
+  // Source of this data update
+  string robot_id = 2;
+  // Attribute values, map from attributeId to its value update
+  map<string, AttributeValue> attributes = 3;
+}
+
+// Value of a data source, part of AttributesUpdate. It uses the "variant" data type (see above).
+// For now we care about timestamp and value, and ignore other fields that could
+// be part of the update (some attributes hold additional fields)
+message AttributeValue {
+  double ts = 1;
+  VariantValue value = 2;
+}
+
+// Test message to send probes or messages to try out queues
+message TestMessage {
+  string message = 1;
+}
+
+// Message used in AttributesManager (ingest/src/server/attributes.js) to send poses updates 
+// to the "poses" exchange
+message PoseUpdate {
+  // NOTE: id=1 reserved (backwards compatibility)
+  string robot_id = 2;
+  // NOTE: id=3 reserved (backwards compatibility)
+  string frame_id = 4;
+  float x = 5;
+  float y = 6;
+  float theta = 7;
+  int64 ts = 8;
+}

@@ -17,7 +17,7 @@
 // Disable linting rule as this file has multiple classes
 /* eslint max-classes-per-file: 0 */
 
-import { isString } from 'lodash';
+import { isString, keyBy } from 'lodash';
 import { AsyncCache } from './simpleCache';
 import moment from 'moment';
 // InOrbit modules
@@ -30,10 +30,10 @@ import {
   AttributeValueParser,
   VITAL_POSE
 } from '../shared/attributes';
-import { COLLECTIONS, ID_UNIQUE } from '../shared/constants';
+import { COLLECTIONS } from '../shared/constants';
+import { QUEUES } from './queues/messageQueue';
 // import PeerClient from '../peer';
 // import WorkerQueue, { QUEUES } from './messageQueue';
-// import { createExpression } from './derivedAttributes/processor';
 
 // "Outputs" (and: pieces of functionality in general) that can be individually
 // disabled in the AttributesManager. See setOfflineMode, setOutputEnabled
@@ -56,21 +56,10 @@ class AttributesManager {
       // this.storageManager = new StorageManager();
       this._attrDefsColl = this.mongoManager.getCollection(COLLECTIONS.ATTRIBUTE_DEFINITIONS);
       this._attrValuesColl = this.mongoManager.getCollection(COLLECTIONS.ATTRIBUTE_VALUES);
-      // Queues
-      // this.messageQueue = new WorkerQueue().buildExchangeDirect(QUEUES.ATTRIBUTES);
-      // this.poseMessageQueue = new WorkerQueue().buildExchangeTopic(QUEUES.POSES);
       // TODO We should invalidate caches when the config is updated and make cache times longer.
       this._vitalsConfigCache = new AsyncCache({
         maxAge: 1 * 60 * 1000, // 1 minute
         createFunction: this._doGetRobotVitalsConfig
-      });
-      // this._attrDefsCache = new AsyncCache({
-      //   maxAge: 60 * 1000, // 1 minute
-      //   createFunction: this._doGetRobotAttributeDefinitions
-      // });
-      this._derivedAttributesConfigCache = new AsyncCache({
-        maxAge: 60 * 1000, // 1 minute
-        createFunction: this._doGetRobotDerivedAttributesConfig
       });
       // this.peerClient = new PeerClient();
       this.options = {};
@@ -78,6 +67,16 @@ class AttributesManager {
       this.enableAllOutputs();
     }
     return instance;
+  }
+
+
+  init = async ({ workerQueue = null }) => {
+    if (workerQueue) {
+      this.messageQueue = workerQueue.buildExchangeDirect(QUEUES.ATTRIBUTES);
+      this.poseMessageQueue = workerQueue.buildExchangeTopic(QUEUES.POSES);
+    } else {
+      console.warn('AttributesManager: No worker queue provided');
+    }
   }
 
   /**
@@ -133,6 +132,7 @@ class AttributesManager {
 
   getRobotVitalsConfig = async (robotId) => this._vitalsConfigCache.get(robotId);
 
+  // @deprecated - migrate to new representation
   _doGetRobotVitalsConfig = async (robotId) => {
     // TODO rewrite this function and related attributes handling; it's inefficient and based
     // on the old data representation
@@ -147,23 +147,13 @@ class AttributesManager {
   };
 
   /**
-   * Returns the derived attributes configuration for a robot.
-   * Note that results are cached.
-   * @param {string} robotId
-   * @returns {DerivedAttributesConfig}
+   * Fetches the attributes configuration as a map by attributeId. This call should be cached.
    */
-  getRobotDerivedAttributesConfig = async (robotId) => this._derivedAttributesConfigCache.get(
-    robotId
-  );
-
-  /**
-   * Fetches the derived attributes configuration
-   * @param {string} robotId
-   * @returns {DerivedAttributesConfig}
-   */
-  _doGetRobotDerivedAttributesConfig = async (robotId) => {
-    const attrDefsConfig = await this.getRobotAttributeDefinitions(robotId);
-    return new DerivedAttributesConfig(attrDefsConfig);
+  fetchAttributesConfig = async () => {
+    // Load all attribute definitions as a map by attributeId
+    const docs = await this._attrDefsColl.find({}).toArray();
+    docs.forEach((doc) => { delete doc._id });
+    return keyBy(docs, 'attributeId');
   };
 
   /**
@@ -374,21 +364,21 @@ class AttributesManager {
       ts = Date.now();
     }
 
-    // if (this.isEnabled(OUTPUTS.QUEUES)) {
-    //   await this.messageQueue.sendAttributesUpdate(robotId, attrValues, ts)
-    //     .catch((e) => {
-    //       console.error(`Error queuing attributes updates to processing queues; robotId=${robotId}: ${e.message}`);
-    //     });
-    //   if (VITAL_POSE in attrValues) {
-    //     await this.poseMessageQueue.sendPoseUpdate(
-    //       robotId,
-    //       attrValues[VITAL_POSE].value,
-    //       ts
-    //     ).catch((e) => {
-    //       console.error(`Error queuing pose updates to processing queues; robotId=${robotId}: ${e.message}`);
-    //     });
-    //   }
-    // }
+    if (this.isEnabled(OUTPUTS.QUEUES) && this.messageQueue) {
+      await this.messageQueue.sendAttributesUpdate(robotId, attrValues, ts)
+        .catch((e) => {
+          console.error(`Error queuing attributes updates to processing queues; robotId=${robotId}: ${e.message}`);
+        });
+      if (VITAL_POSE in attrValues) {
+        await this.poseMessageQueue.sendPoseUpdate(
+          robotId,
+          attrValues[VITAL_POSE].value,
+          ts
+        ).catch((e) => {
+          console.error(`Error queuing pose updates to processing queues; robotId=${robotId}: ${e.message}`);
+        });
+      }
+    }
   }
 
   /**
@@ -659,157 +649,5 @@ class RobotVitalsConfig {
   }
 }
 
-/**
- * Derived attributes configuration for a given robot.
- *
- * NOTE: consider moving this to a separate module.
-
- */
-class DerivedAttributesConfig {
-  constructor(attrDefsConfig) {
-    this.attrDefsConfig = attrDefs;
-    // See RobotVitalsConfig.getDependentDerivedAttributes
-    this.memoDependentAttributes = {};
-    // See RobotVitalsConfig.getDerivedAttributeDependencies
-    this.memoDerivedAttrDeps = {};
-  }
-
-  /**
-   * Returns a set with the ids of derived attributes that depend on the attribute with id
-   * attributeId.
-   * Note that results are memoized for efficiency.
-   *
-   * @param {string} attributeId
-   */
-  getDependentDerivedAttributes(attributeId) {
-    // Memoize results to avoid computing the same dependencies many times
-    if (!this.memoDependentAttributes[attributeId]) {
-      this.memoDependentAttributes[attributeId] = this._getDependentDerivedAttributes(attributeId);
-    }
-    return this.memoDependentAttributes[attributeId];
-  }
-
-  /**
-   * Returns a list with the ids of all the derived attributes defined for this robot
-   * @returns {array}
-   */
-  _getDerivedAttributesIds = () => Object.entries(this.robotVitalsConfig.mappings || {})
-    .filter(([, mapping]) => mapping && mapping.source == SOURCES.DERIVED.value)
-    .map(([id]) => id);
-
-  /**
-   * Returns a set with the ids of derived attributes that depend on the attribute with id
-   * attributeId.
-   *
-   * @param {string} attributeId
-   */
-  _getDependentDerivedAttributes = (attributeId) => {
-    const dependents = new Set();
-    for (const derivedId of this._getDerivedAttributesIds()) {
-      // Find derived attributes that depend on attributeId
-      const { attributeIds } = this.getDerivedAttributeDependencies(derivedId);
-      if (attributeIds.has(attributeId)) {
-        dependents.add(derivedId);
-      }
-    }
-    return dependents;
-  };
-
-  /**
-   * Returns a list of attribute ids that a derived attribute depends on.
-   * Note that results are memoized for efficiency.
-   *
-   * @param {string} attributeId The derived attribute id
-   * @returns {array} List of ids of attributes that derived attribute expressions (transform or
-   * filter reference). 
-   */
-  getDerivedAttributeDependencies(attributeId) {
-    if (!this.memoDerivedAttrDeps[attributeId]) {
-      this.memoDerivedAttrDeps[attributeId] = this._getDerivedAttributeDependencies(attributeId);
-    }
-    return this.memoDerivedAttrDeps[attributeId];
-  }
-
-  /**
-   * Returns a list of attribute ids that a derived attribute depends on.
-   *
-   * @param {string} attributeId The derived attribute id
-   * @returns {array} List of ids of attributes that derived attribute expressions (transform or
-   * filter reference). 
-   */
-  _getDerivedAttributeDependencies = (attributeId) => {
-    const mapping = this.robotVitalsConfig.getAttributeMapping(attributeId);
-    if (!mapping || !mapping.source == SOURCES.DERIVED.value) {
-      // Not a derived attribute
-      return {};
-    }
-    const { attributeIds: explicitAttributeIds = [], filter, transform } = mapping;
-    const attributeIds = new Set();
-    const tags = new Set();
-    if (Array.isArray(explicitAttributeIds)) {
-      explicitAttributeIds.forEach(attributeIds.add, attributeIds);
-    }
-    let time;
-    for (const exprStr of [transform, filter]) {
-      if (exprStr) {
-        // Get attribute dependencies. To do this, the expression must be well formed.
-        try {
-          const expr = createExpression(exprStr, mapping);
-          const {
-            attributeIds: depAttributeIds,
-            time: depTime,
-            tags: depTags
-          } = expr.getDependencies();
-          if (depAttributeIds) {
-            depAttributeIds.forEach(attributeIds.add, attributeIds);
-          }
-          if (depTags) {
-            depTags.forEach(tags.add, tags);
-          }
-          if (depTime) {
-            // NOTE: if time elements are objects, we should do a merge. If they are timestamps,
-            // e.g. one says "every 10s" and the other one "every 30s", a clever merge is needed
-            time = time || depTime;
-          }
-        } catch (e) {
-          // Inore error to avoid spamming logs with bad configs
-          // TODO(herchu): Print a console warning only in development (local) mode
-        }
-      }
-    }
-    const ret = { attributeIds };
-    if (tags.size) {
-      ret.tags = tags;
-    }
-    if (time) {
-      ret.time = time;
-    }
-    // HACK(herchu) If the expression depends on time, add an artificial dependency on CPU usage,
-    // which we know it gets refreshed often (as long as the agent is online), rarely suppressed.
-    // Keep this hack isolated here to avoid hacking the dependencies inference (which depends
-    // on functions and will be spread in many points).
-    // TODO(herchu) Remove this hack when we implement proper time-based processing in
-    // svc-derived-attributes; find discussion in IO-6318.
-    if (ret.time) {
-      ret.attributeIds.add('cpuLoadPercentage'); // Not importing the constant, less lines to un-do
-    }
-    return ret;
-  };
-
-  /**
-   * Returns the expressions used by a derived attribute
-   * @param {string} attributeId
-   * @returns {object}
-   */
-  getExpressions = (attributeId) => {
-    const mapping = this.robotVitalsConfig.getAttributeMapping(attributeId) || {};
-    // include filter, expression and attributeIds; all necessary to know how this
-    // attribute will be evaluated
-    // NOTE: attributeIds (list of dependencies) is deprecated but still in use, so it is returned
-    const { filter, transform, attributeIds } = mapping;
-    return { filter, transform, attributeIds };
-  };
-}
-
 export default AttributesManager;
-export { OUTPUTS, RobotVitalsConfig, DerivedAttributesConfig };
+export { OUTPUTS, RobotVitalsConfig };

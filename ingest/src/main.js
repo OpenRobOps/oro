@@ -15,12 +15,13 @@ import OroMqtt from './server/mqtt';
 // import { RedisManager } from './shared/redis';
 import PeerClient from './server/peer';
 // import EventTracker from './shared/tracking';
-// import metricsProxy from './shared/server/metrics';
-// import { registerMetricsViews } from './metricsDefinitions';
 // import WorkerQueue from './server/messageQueue';
 import { anonymizeUri } from './lib/util';
 // import ObjectsManager from './server/objectsManager';
 // import EventLog from './shared/server/eventLogger';
+import AttributesManager from './server/attributes';
+import InMemoryWorkerQueues from './server/queues/memoryWorkerQueue';
+import DerivedAttributesService from './services/derivedAttributes/svcDerivedAttributes';
 
 import {
   BasicsModule,
@@ -59,6 +60,8 @@ let peerClient;
 let metrics;
 let queue;
 let objectsManager;
+let attributesManager;
+
 async function run() {
   console.log('---------------------------------------------------------');
   console.log('Ingest service starting at ' + moment().format());
@@ -70,14 +73,18 @@ async function run() {
   console.log('Profiler is ' + (settings.profiler?.enabled ? 'ON' : 'OFF'));
   console.log('Objects Manager ' + (settings.objectsManager?.enabled ? 'ON' : 'OFF'));
 
-  // Only start processing after all database
-  // connections are active
-  // Create metrics before mqtt and other modules that could use it
-  // queue = new WorkerQueue();
-  // await new WorkerQueue().init(settings.queue);
-  // metricsProxy.init(settings.metrics);
+
   mongo = new MongoManager();
   await mongo.init(settings.mongo);
+  // Create queues
+  queue = new InMemoryWorkerQueues();
+  await queue.init({ 
+    // logging: true 
+  });
+  await new AttributesManager().init({ workerQueue: queue });
+  // Only start processing after all database
+  // connections are active
+  // await new WorkerQueue().init(settings.queue);
   // redis = new RedisManager();
   // await redis.init(settings.redis);
   // storage = new StorageManager();
@@ -134,6 +141,9 @@ async function run() {
   // } else {
   //   console.warn('ImagesModule is disabled');
   // }
+
+  const derivedAttributesService = new DerivedAttributesService({});
+  await derivedAttributesService.init({ workerQueue: queue });
 
   // registerMetricsViews('ingest');
   console.log('Ingest service ready for business');
