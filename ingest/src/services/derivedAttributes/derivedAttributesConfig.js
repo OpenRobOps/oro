@@ -37,7 +37,9 @@ class DerivedAttributesConfig {
      * @returns {array}
      */
     _getDerivedAttributesIds = () => (
-      Object.keys(this._attrsConfig).filter(attributeId => this._attrsConfig[attributeId]?.mapping?.source == SOURCES.DERIVED.value)
+      Object.keys(this._attrsConfig).filter(
+        attributeId => this._attrsConfig[attributeId]?.mapping?.source == SOURCES.DERIVED.value
+      )
     )
   
     /**
@@ -82,7 +84,7 @@ class DerivedAttributesConfig {
      */
     _getDerivedAttributeDependencies = (attributeId) => {
         const { mapping } = this._attrsConfig[attributeId] || {};
-      if (!mapping?.source == SOURCES.DERIVED.value) {
+      if (mapping?.source != SOURCES.DERIVED.value) {
         // Not a derived attribute
         return {};
       }
@@ -111,7 +113,7 @@ class DerivedAttributesConfig {
             }
           } catch (e) {
             // Throttle error to avoid spamming logs with bad configs
-            this._throttledLogger && this.throttledLogger.error(
+            this._throttledLogger && this._throttledLogger.error(
                 'derivedExpressionError:' + attributeId,
                 `getDerivedAttributeDependencies expression error for attribute ${attributeId}: ${e}`
             );
@@ -141,7 +143,7 @@ class DerivedAttributesConfig {
      */
     getExpressions = (attributeId) => {
       const { mapping } = this._attrsConfig[attributeId] || {};
-      if (!mapping?.source == SOURCES.DERIVED.value) {
+      if (mapping?.source != SOURCES.DERIVED.value) {
         // Not a derived attribute
         return {};
       }

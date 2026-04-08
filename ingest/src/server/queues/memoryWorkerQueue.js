@@ -83,7 +83,7 @@ class InMemoryWorkerQueues extends BaseWorkerQueues {
             try {
                 callback({ content: buffer }); // missing to send: { fields, properties }
             } catch (error) {
-                console.error(`Error calling queue ${queue} callback: ${error}`);
+                console.error(`Error calling a exchange ${exchange} callback: ${error}`);
             }
         }
     };

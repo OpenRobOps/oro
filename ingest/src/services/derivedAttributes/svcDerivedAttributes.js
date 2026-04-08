@@ -98,7 +98,8 @@ class DerivedAttributesService {
       // See TODO in handleEvalApi()
       const processor = new RobotDerivedAttributesProcessor({
         robotId,
-        cache: this._cache
+        cache: this._cache,
+        throttledLogger: this._throttledLogger
       });
       const stats = await processor.processUpdate(attributeValues);
       this._processUpdateStats(robotId, stats);
@@ -179,7 +180,8 @@ class DerivedAttributesService {
       // See TODO in DerivedAttributesService.processAttributesUpdate()
       const processor = new RobotDerivedAttributesProcessor({
         robotId,
-        cache: this._cache
+        cache: this._cache,
+        throttledLogger: new ThrottledLogger({}) // a new logger will log any error; it's just used for 1 call
       });
       try {
         const result = await processor.evaluateAdHocSafeExpression({
