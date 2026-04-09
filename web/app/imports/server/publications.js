@@ -5,7 +5,49 @@ import { isString, isArray } from 'lodash';
 import OroRoles from '../server/roles';
 import { ACCESS_LEVEL_VIEW } from '../shared/roles';
 import { queryIncidentsForRobots } from '../lib/alerts';
-import { Robots, RobotKeyValues, RobotCustomData } from '../lib/collections';
+import { Robots, RobotKeyValues, RobotCustomData, RobotLocalization, SpatialAnnotations } from '../lib/collections';
+
+/**
+ * Publish localization data (pose, map metadata + URL) for one or more robots.
+ * The `lowBandwidth` flag omits laser ranges and paths to reduce data transfer.
+ */
+Meteor.publish('localization', async function ({ robotIds, lowBandwidth = false }) {
+  if (!this.userId) return this.ready();
+  if (!Array.isArray(robotIds) || robotIds.length === 0) return this.ready();
+  if (!await new OroRoles().canAccessRobots(this.userId, robotIds, ACCESS_LEVEL_VIEW)) {
+    return this.error(new Meteor.Error('Unauthorized'));
+  }
+  const fields = {
+    robotPose: 1,
+    robotPoseUpdatedTs: 1,
+    map: 1,
+    mapUpdatedTs: 1,
+    defaultMap: 1,
+  };
+  if (!lowBandwidth) {
+    fields.laserRanges = 1;
+    fields.laserRangesUpdatedTs = 1;
+    fields.paths = 1;
+    fields.pathsUpdatedTs = 1;
+  }
+  return RobotLocalization.find({ _id: { $in: robotIds } }, { fields });
+});
+
+/**
+ * Publish the map annotation (metadata + image data) for a robot.
+ * Clients use `map.objectUrl` when available, otherwise `map.data` (base64 PNG) as fallback.
+ */
+Meteor.publish('spatial_annotations.map', async function ({ robotId, label = 'map' }) {
+  if (!this.userId) return this.ready();
+  if (!robotId) return this.ready();
+  if (!await new OroRoles().canAccessRobot(this.userId, robotId, ACCESS_LEVEL_VIEW)) {
+    return this.error(new Meteor.Error('Unauthorized'));
+  }
+  return SpatialAnnotations.find(
+    { entityType: 'robot', entityId: robotId, label },
+    { fields: { entityType: 1, entityId: 1, label: 1, map: 1 } }
+  );
+});
 
 Meteor.publish('robots', async function ({
   options = {},

@@ -1005,6 +1005,31 @@ const isIncluded = (stringA, defaultString) => {
   return [...defaultStringSet].every(char => stringASet.has(char));
 };
 
+/**
+ * Converts an object map keyed by id into an array of values.
+ * Each entry gets an `id` property set to its key.
+ * @param {Object} map - e.g. { 'abc': { name: 'Zone A' }, ... }
+ * @returns {Array}
+ */
+const mapByIdToArray = (map) => {
+  if (!map || typeof map !== 'object') return [];
+  return Object.entries(map).map(([id, value]) => ({ id, ...value }));
+};
+
+/**
+ * Converts an array of objects into a map keyed by a given field (default: '_id').
+ * @param {Array} arr - e.g. [{ _id: 'abc', name: 'Zone A' }, ...]
+ * @param {string} keyName - the field to use as the map key
+ * @returns {Object} - e.g. { 'abc': { _id: 'abc', name: 'Zone A' } }
+ */
+const arrayToMapById = (arr, keyName = '_id') => {
+  if (!arr) return {};
+  return arr.reduce((acc, item) => {
+    if (item?.[keyName] != null) acc[item[keyName]] = item;
+    return acc;
+  }, {});
+};
+
 export {
   applyDefaults,
   cleanNulls,
@@ -1039,6 +1064,7 @@ export {
   UNDEFINED_VALUE,
   toTimestampMilliseconds,
   mapByIdToArray,
+  arrayToMapById,
   groupDuplicateElements,
   isIncluded,
   formatNumber

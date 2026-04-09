@@ -8,7 +8,6 @@ import SimpleSchema from 'simpl-schema';
 import { cloneDeep, keyBy } from 'lodash';
 // ORO modules
 import { COLLECTIONS } from '../shared/constants';
-import { UIPreferences } from '../lib/collections';
 import { DASHBOARDS, SECTION_SCOPES, WIDGET_TYPE_GROUP } from './uiPreferences';
 import { countDashboardSectionsWithScopes } from '../shared/dashboards';
 
@@ -151,6 +150,13 @@ const foldWidgetsAsync = async (dashboardConfig, initialValue, reducer) => {
   }
   return acc;
 };
+
+/**
+ * Stub — cleans up section config. Full implementation not yet ported.
+ * @param {Object} sectionConfig
+ * @returns {Object}
+ */
+const cleanupSectionConfig = (sectionConfig) => sectionConfig;
 
 export default Dashboards;
 export {
