@@ -65,8 +65,8 @@ jobs:
 
       # mongo-unit needs libssl1.1
       - name: Install libcrypto 
-        run: wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2_amd64.deb
-        run: sudo dpkg -i libssl1.1_1.1.1f-1ubuntu2_amd64.deb
+        run: wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2_amd64.deb && \
+             sudo dpkg -i libssl1.1_1.1.1f-1ubuntu2_amd64.deb
 
       - name: Install dependencies
         working-directory: ingest
