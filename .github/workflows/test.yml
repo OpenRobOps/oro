@@ -67,6 +67,10 @@ jobs:
         working-directory: ingest
         run: npm i
 
+      - name: Import shared code
+        working-directory: ingest
+        run: ./import.sh
+
       - name: Run tests
         working-directory: ingest
         run: npm run test:unit
