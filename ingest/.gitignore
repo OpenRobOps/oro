@@ -3,3 +3,4 @@ src/shared/**/*
 !src/shared/imports
 docker
 settings.json
+junit_ingest.xml

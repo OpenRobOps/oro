@@ -63,17 +63,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # mongo-unit needs libssl1.1
       - name: Install libssl1.1
         run: |
           wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2_amd64.deb
           sudo dpkg -i libssl1.1_1.1.1f-1ubuntu2_amd64.deb
           rm libssl1.1_1.1.1f-1ubuntu2_amd64.deb
-
-      # mongo-unit needs libssl1.1
-      # - name: Install libcrypto 
-        # run: wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2_amd64.deb && \
-        #      dpkg -i libssl1.1_1.1.1f-1ubuntu2_amd64.deb
-        # run: apt search libssl1.1
 
       - name: Install dependencies
         working-directory: ingest
@@ -86,3 +81,18 @@ jobs:
       - name: Run tests
         working-directory: ingest
         run: npm run test:unit
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: ingest/junit_ingest.xml
+
+      - name: Publish test results
+        if: always()
+        uses: dorny/test-reporter@v2
+        with:
+          name: Test Results
+          path: ingest/junit_ingest.xml
+          reporter: java-junit
