@@ -2,9 +2,11 @@
   "name": "oro-ingest",
   "version": "1.0.0",
   "description": "ORO ingest service",
+  "type": "commonjs",
   "main": "src/main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "npm run test:unit -- $@",
+    "test:unit": "NODE_PRESERVE_SYMLINKS=1 mocha -t 5000 --reporter mocha-junit-reporter --reporter-options mochaFile=junit_ingest.xml --require @babel/register --require test/it-helper --delay --exit \"test/**/*.test.js\" ",
     "dev-start": "NODE_PRESERVE_SYMLINKS=1 NODE_OPTIONS=--unhandled-rejections=warn nodemon --watch src --watch /packages --exec babel-node src/main.js"
   },
   "author": "",
@@ -30,8 +32,9 @@
     "chai": "^4.3.7",
     "chai-as-promised": "^7.1.1",
     "mocha": "^11.3.0",
+    "mocha-junit-reporter": "^2.2.1",
     "mocha-prepare": "^0.1.0",
-    "mongo-unit": "^3.3.0",
+    "mongo-unit": "^3.4.0",
     "nodemon": "^3.1.14",
     "sinon": "^21.0.0"
   }

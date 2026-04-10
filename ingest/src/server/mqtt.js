@@ -23,17 +23,6 @@ import RateLimiter from './rateLimiter';
 //   VITAL_AGENT_TIME_DIFF
 // } from '../shared/attributes';
 import MongoManager from '../mongo';
-// import metricsProxy from '../shared/server/metrics';
-// import {
-//   measureMsgsCount,
-//   measureMsgsSize,
-//   measureActiveRobotsLastMinute,
-//   measureBrokerUsagePercentage,
-//   measureActiveRobotsLastHour,
-//   tagKeySubtopic,
-//   tagKeyRobotId,
-//   tagKeyBrokerId
-// } from './metrics/mqtt';
 
 // Databags update topics. Same as in ingest/databags.js
 const MQTT_ROSBAG_UPLOAD_TOPIC = 'ros/rosbag/upload';
