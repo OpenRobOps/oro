@@ -26,11 +26,16 @@ prepare(done => mongoUnit.start().then(async testMongoUrl => {
   console.info("Initializing mongo with url", testMongoUrl);
   console.info("If this fails with a message about libcrypto, you need to install libssl1.1. See .github/workflows/test.yml for details.");
   // HACK(herchu): Dynamically importing mongoManager to reload it every time. See comment above.
-  const { default: MongoManager } = require('../src/mongo');
-  const mongoMgr = new MongoManager();
-  await mongoMgr.init({
-    url: testMongoUrl
-  });
-  done();
+  try {
+    const { default: MongoManager } = require('../src/mongo');
+    const mongoMgr = new MongoManager();
+    await mongoMgr.init({
+      url: testMongoUrl
+    });
+    done();
+  } catch (error) {
+    console.error("Error initializing mongo", error);
+    done(error);
+  }
   run();
 }))
