@@ -55,3 +55,20 @@ jobs:
           name: Test Results
           path: junit_server.xml
           reporter: java-junit
+
+
+jobs:
+  test-ingest:
+    name: Ingest Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        working-directory: ingest
+        run: npm i
+
+      - name: Run tests
+        working-directory: ingest
+        run: npm run test:unit
