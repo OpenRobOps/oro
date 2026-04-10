@@ -45,7 +45,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results
+          name: test-results-web
           path: junit_server.xml
 
       - name: Publish test results
@@ -86,7 +86,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results
+          name: test-results-ingest
           path: ingest/junit_ingest.xml
 
       - name: Publish test results
