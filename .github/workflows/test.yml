@@ -56,8 +56,6 @@ jobs:
           path: junit_server.xml
           reporter: java-junit
 
-
-jobs:
   test-ingest:
     name: Ingest Tests
     runs-on: ubuntu-latest
