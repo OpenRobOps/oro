@@ -18,7 +18,7 @@ jobs:
           - 27017:27017
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Install Meteor
         run: curl https://install.meteor.com/\?release\=3.4 | sh
@@ -61,7 +61,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       # mongo-unit needs libssl1.1
       - name: Install libssl1.1
