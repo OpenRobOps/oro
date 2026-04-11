@@ -17,8 +17,7 @@ const mongo = new MongoManager();
 
 const mockAgentVersion = '1.2.3';
 
-// const companyApiKey = companiesTestData.dummyWithApiKey.apiKey;
-// const robotApiKey = robotsTestData.dummyWithApiKey.robotKey;
+const robotApiKey = robotsTestData.dummyWithApiKey.robotKey;
 
 /**
  * Creates the dummy robot in the DB and returns its id.
@@ -50,16 +49,15 @@ describe('BasicModule module', () => {
     basicModule.load();
     const robotsCollection = mongo.getCollection(COLLECTIONS.ROBOTS);
     const robotId = await createDummyRobotInDB();
-    const apiKey = "123";
 
     // Process online state
-    await basicModule.onState(robotId, `1|${apiKey}|${mockAgentVersion}`, { retain: false });
+    await basicModule.onState(robotId, `1|${robotApiKey}|${mockAgentVersion}`, { retain: false });
     const robotStateOnline = await robotsCollection.findOne({ _id: robotId });
     assert.equal(robotStateOnline.status && robotStateOnline.status.agentOnline, true);
     assert.equal(robotStateOnline.version, mockAgentVersion);
 
     // Process offline state
-    await basicModule.onState(robotId, `0|${apiKey}|${mockAgentVersion}`, { retain: false });
+    await basicModule.onState(robotId, `0|${robotApiKey}|${mockAgentVersion}`, { retain: false });
     const robotStateOffline = await robotsCollection.findOne({ _id: robotId });
     assert.equal(robotStateOffline.status && robotStateOffline.status.agentOnline, false);
     assert.equal(robotStateOffline.version, mockAgentVersion);
@@ -78,14 +76,14 @@ describe('BasicModule module', () => {
     const apiKey = "123";
 
     // Process online state
-    await basicModule.onState(robotId, `1|${apiKey}|${mockAgentVersion}`, { retain: false });
+    await basicModule.onState(robotId, `1|${robotApiKey}|${mockAgentVersion}`, { retain: false });
     const robotStateOnline = await robotsCollection.findOne({ _id: robotId });
     console.log(robotStateOnline);
     assert.equal(robotStateOnline.status && robotStateOnline.status.agentOnline, true);
     assert.equal(robotStateOnline.version, mockAgentVersion);
 
     // Process offline state
-    await basicModule.onState(robotId, `0|${apiKey}|${mockAgentVersion}`, { retain: false });
+    await basicModule.onState(robotId, `0|${robotApiKey}|${mockAgentVersion}`, { retain: false });
     const robotStateOffline = await robotsCollection.findOne({ _id: robotId });
     assert.equal(robotStateOffline.status && robotStateOffline.status.agentOnline, false);
     assert.equal(robotStateOffline.version, mockAgentVersion);

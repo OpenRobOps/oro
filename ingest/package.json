@@ -6,7 +6,8 @@
   "main": "src/main.js",
   "scripts": {
     "test": "npm run test:unit -- $@",
-    "test:unit": "NODE_PRESERVE_SYMLINKS=1 mocha -t 5000 --reporter mocha-junit-reporter --reporter-options mochaFile=junit_ingest.xml --require @babel/register --require test/it-helper --delay --exit \"test/**/*.test.js\" ",
+    "test:unit": "NODE_PRESERVE_SYMLINKS=1 mocha -t 5000 --require @babel/register --require test/it-helper --delay --exit \"test/**/*.test.js\" ",
+    "test:unit:report": "NODE_PRESERVE_SYMLINKS=1 mocha -t 5000 --reporter mocha-junit-reporter --reporter-options mochaFile=junit_ingest.xml --require @babel/register --require test/it-helper --delay --exit \"test/**/*.test.js\" ",
     "dev-start": "NODE_PRESERVE_SYMLINKS=1 NODE_OPTIONS=--unhandled-rejections=warn nodemon --watch src --watch /packages --exec babel-node src/main.js"
   },
   "author": "",
