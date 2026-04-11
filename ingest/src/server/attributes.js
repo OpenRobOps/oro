@@ -261,7 +261,7 @@ class AttributesManager {
       const attributeValue = attributeValues[attrId];
       let parsedValue;
       try {
-        const parser = AttributeValueParser(config[attrId]?.definition);
+        const parser = AttributeValueParser(config.getAttributeDefinition(attrId));
         parsedValue = parser(attributeValue.value);
       } catch (e) {
         console.warn(`Failed to parse attributeId=[${attrId}], value=[${attributeValue.value}]`, e);

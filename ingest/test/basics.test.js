@@ -27,14 +27,6 @@ async function createDummyRobotInDB() {
   return robotsTestData.dummy._id;
 }
 
-/**
- * Creates the dummy robot in the DB and returns its id.
- */
-async function createDummyRobotWithApiKeyInDB() {
-  await mongo.getCollection(COLLECTIONS.ROBOTS).insertOne(robotsTestData.dummyWithApiKey);
-  return robotsTestData.dummyWithApiKey._id;
-}
-
 describe('BasicModule module', () => {
   beforeEach(async () => {
     await mongoUnit.drop();
