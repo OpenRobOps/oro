@@ -80,7 +80,7 @@ jobs:
 
       - name: Run tests
         working-directory: ingest
-        run: npm run test:unit
+        run: npm run test:unit:report
 
       - name: Upload test results
         if: always()
