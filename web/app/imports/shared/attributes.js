@@ -139,7 +139,7 @@ const AttributeValueParser = attrDef => (arg) => {
   }
   if (attrDef && attrDef.type == ATTRIBUTE_TYPES.YAML) {
     try {
-      return yaml.safeLoad(arg);
+      return yaml.load ? yaml.load(arg) : yaml.safeLoad(arg);
     } catch (e) {
       return undefined;
     }

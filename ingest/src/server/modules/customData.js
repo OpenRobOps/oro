@@ -47,7 +47,6 @@ export default class CustomDataModule {
    */
   onMessage = async (robotId, msg, _packet) => {
     const decodedMsg = this._customDataCollMessage.decode(msg);
-    console.log("CUSTOM DATA DECODED MSG", decodedMsg)
     await this.processDecodedMessage(robotId, decodedMsg);
   };
 

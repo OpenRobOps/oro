@@ -132,18 +132,8 @@ class AttributesManager {
 
   getRobotVitalsConfig = async (robotId) => this._vitalsConfigCache.get(robotId);
 
-  // @deprecated - migrate to new representation
   _doGetRobotVitalsConfig = async (robotId) => {
-    // TODO rewrite this function and related attributes handling; it's inefficient and based
-    // on the old data representation
-    const attrs = await this._attrDefsColl.find({}).toArray();
-    const defs = {};
-    const mappings = {};
-    attrs.forEach((attr) => {
-      defs[attr.attributeId] = attr.definition;
-      mappings[attr.attributeId] = attr.mapping;
-    });
-    return new RobotVitalsConfig(robotId, defs, mappings);
+    return new RobotVitalsConfig(robotId, await this.fetchAttributesConfig());
   };
 
   /**
@@ -165,11 +155,11 @@ class AttributesManager {
     if (!isString(robotId)) {
       throw new Error('robotId must be a string');
     }
-    if (!Array.isArray(attributeIds)) {
-      throw new Error('attributeIds must be an array');
+    if (!Array.isArray(attributeIds) || !attributeIds.length) {
+      throw new Error('attributeIds must be a non-empty array');
     }
     const values = await this._attrValuesColl.findOne(
-      robotId,
+      { _id: robotId },
       { fields: attributeIds }
     ) || {};
     delete values._id;
@@ -232,7 +222,7 @@ class AttributesManager {
     // Persist and cascade to dependents... only if some attributes were really updated
     if (hasUpdates) {
       await this.saveAttributeValues({
-        robotId, attributeValues: updated, ts, attrDefs: robotConfig.getAttrDefs(), skip
+        robotId, attributeValues: updated, ts, config: robotConfig, skip
       });
     }
   }
@@ -247,21 +237,22 @@ class AttributesManager {
    *      argument. They can also contain other fields such as `tsAgent`, `elapsedSeconds`, etc.
    * @arg ts Is the timestamp to apply to all updated attributes (unless they have their own `ts`
    *      field in the _value object_)
-   * @arg attrDefs The attrDefinitions part of this.getRobotVitalsConfig(robotId);
-   *      and it is optional. If not given, it will be retrieved.
+   * @arg config A RobotVitalsConfig object. It is optional. If not given, it will be retrieved.
    * @arg skip is an optional object for _cascadeUpdates, allowing to skip evaluation of some
    *      modules (used today to skip evaluating statuses if `skip = { status: true }`, called
    *      from mqtt.js)
    */
   saveAttributeValues = async ({
-    robotId, attributeValues, ts = Date.now(), attrDefs = null, skip = {}
+    robotId, attributeValues, ts = Date.now(), config = null, skip = {}
   }) => {
+    if (!("pose" in attributeValues)) {
+      console.log('saveAttributeValues', robotId, attributeValues , 1);
+    }
     // Store time for attributes metrics calculation.
     const t0 = Date.now();
     // It's also async and we don't wait for the results
-    if (!attrDefs) {
-      const robotConfig = await this.getRobotVitalsConfig(robotId);
-      attrDefs = robotConfig.getAttrDefs();
+    if (!config) {
+      config = await this.getRobotVitalsConfig(robotId);
     }
 
     // Parse the value according to the type declared in attr_defs
@@ -270,7 +261,7 @@ class AttributesManager {
       const attributeValue = attributeValues[attrId];
       let parsedValue;
       try {
-        const parser = AttributeValueParser(attrDefs[attrId]);
+        const parser = AttributeValueParser(config.getAttributeDefinition(attrId));
         parsedValue = parser(attributeValue.value);
       } catch (e) {
         console.warn(`Failed to parse attributeId=[${attrId}], value=[${attributeValue.value}]`, e);
@@ -286,7 +277,7 @@ class AttributesManager {
     }
 
     // Call to "cascade" all values to other modules and storage: status, data lake...
-    await this._cascadeUpdates(robotId, attributeValues, attrDefs, ts, skip);
+    await this._cascadeUpdates(robotId, attributeValues, config, ts, skip);
 
     // metricsProxy.record(
     //   measureAttrsProcessed,
@@ -392,7 +383,6 @@ class AttributesManager {
    */
   async handleEvents({ robotId, customField }, events, ts = Date.now()) {
     const robotConfig = await this.getRobotVitalsConfig(robotId);
-
     // saveAttributeValues expects a flat object with each key/value as a key and thus
     // it doesn't work with repeated keys.
     // Keep a list of update objects to call saveAttributeValues multiple times if necessary
@@ -420,7 +410,7 @@ class AttributesManager {
       // NOTE Using a for loop because there are awaits inside
       for (let i = 0; i < updates.length; i++) {
         await this.saveAttributeValues({
-          robotId, attributeValues: updates[i], ts, attrDefs: robotConfig.getAttrDefs()
+          robotId, attributeValues: updates[i], ts, config: robotConfig
         });
       }
     }
@@ -433,12 +423,12 @@ class AttributesManager {
    * anything).
    */
   async handleKeyValuePairs(robotId, customField, pairs, ts = Date.now()) {
-    const robotConfig = await this.getRobotVitalsConfig(robotId);
+    const config = await this.getRobotVitalsConfig(robotId);
     const updated = {};
     let hasUpdates = false; // cheaper than any isEmpty function
     // Identify the data source by customFieldId
     pairs.forEach((kv) => {
-      const attributeId = robotConfig.findAttributeIdMappedTo(SOURCES.KEY_VALUE.value, {
+      const attributeId = config.findAttributeIdMappedTo(SOURCES.KEY_VALUE.value, {
         key: kv.key,
         mappingKey: customField
       });
@@ -449,7 +439,7 @@ class AttributesManager {
     });
     if (hasUpdates) {
       await this.saveAttributeValues({
-        robotId, attributeValues: updated, ts, attrDefs: robotConfig.getAttrDefs()
+        robotId, attributeValues: updated, ts, config
       });
     }
   }
@@ -497,7 +487,7 @@ class AttributesManager {
     });
     if (hasUpdates) {
       await this.saveAttributeValues({
-        robotId, attributeValues: updated, ts, attrDefs: robotConfig.getAttrDefs()
+        robotId, attributeValues: updated, ts, config: robotConfig
       });
     }
   };
@@ -518,7 +508,7 @@ class AttributesManager {
     if (attributeId) {
       const updated = { [attributeId]: { value } }; // updated a single attribute
       this.saveAttributeValues({
-        robotId, attributeValues: updated, ts, attrDefs: robotConfig.getAttrDefs()
+        robotId, attributeValues: updated, ts, config: robotConfig
       });
     } // else: ignore this diagnostics data
   }
@@ -537,7 +527,7 @@ class AttributesManager {
     // additional mapping.
     const updated = { [VITAL_ROS_DIAGNOSTICS_STATUS]: { value: status } };
     this.saveAttributeValues({
-      robotId, attributeValues: updated, ts, attrDefs: robotConfig.getAttrDefs()
+      robotId, attributeValues: updated, ts, config: robotConfig
     });
   }
 
@@ -572,17 +562,16 @@ class AttributesManager {
  * This includes the listing of vital attributes, and their mapping from data sources
  */
 class RobotVitalsConfig {
-  constructor(robotId, attrDefs, attrMappings) {
+  constructor(robotId, attrsConfig) {
     this.robotId = robotId;
-    this.attrDefs = attrDefs;
-    this.mappings = attrMappings;
+    this.attrsConfig = attrsConfig;
   }
 
   /**
    * Tells if an attribute is marked as vital for this robot.
    */
   isAttribute(field) {
-    return field in this.attrDefs;
+    return Boolean(this.attrsConfig[field]?.definition);
   }
 
   /**
@@ -601,16 +590,19 @@ class RobotVitalsConfig {
     return this.isAttribute(field) && this.isBuiltin(field);
   }
 
-  getAttrDefs = () => {
-    return this.attrDefs
-  }
+  /**
+   * Unwraps this config wrapper and returns the underlyng mapping from attributeId to { definition, mapping } objects.
+   */
+  getConfig = () => (
+    this.attrsConfig
+  )
 
   /**
    * Returns the source type for an attribute: 'builtin', 'key-value', etc. (Or empty if no
    * source was defined; normally meaning 'builtin')
    */
   getSource(field) {
-    return null; // FIXME(herchu) no mappings are yet loaded
+    return this.attrsConfig[field]?.mapping?.source;
   }
 
   /**
@@ -618,8 +610,8 @@ class RobotVitalsConfig {
    * Note this is implemented by iterating a dictionary - not efficient.
    */
   findAttributeIdMappedTo(sourceType, { key, mappingKey, type }) {
-    const ret = Object.keys(this.mappings).find((k) => {
-      const m = this.mappings[k];
+    const ret = Object.keys(this.attrsConfig).find((k) => {
+      const { mapping: m } = this.attrsConfig[k] || {};
       return m && m.source == sourceType
         // NOTE Mappings configured with the default k/v field don't have a mappingKey
         // defined on its mapping. Allow matching with any mapping key.
@@ -637,7 +629,7 @@ class RobotVitalsConfig {
    * (or null is not defined for this robot)
    */
   getAttributeDefinition(attributeId) {
-    return this.attrDefs[attributeId];
+    return this.attrsConfig[attributeId]?.definition;
   }
 
   /**
@@ -645,7 +637,7 @@ class RobotVitalsConfig {
    * (or null if it's not set for this robot)
    */
   getAttributeMapping(attributeId) {
-    return this.attrDefs[attributeId];
+    return this.attrsConfig[attributeId]?.mapping;
   }
 }
 

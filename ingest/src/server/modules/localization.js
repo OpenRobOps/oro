@@ -420,8 +420,6 @@ export default class RobotLocalizationModule {
       theta: decodedMsg.yaw,
       ts
     };
-    console.log("onPoseAndLaserData: poseUpdates=", poseUpdates);
-
     if (decodedMsg.frameId) {
       poseUpdates.frameId = decodedMsg.frameId;
     }

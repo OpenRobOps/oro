@@ -6,7 +6,8 @@
   "main": "src/main.js",
   "scripts": {
     "test": "npm run test:unit -- $@",
-    "test:unit": "NODE_PRESERVE_SYMLINKS=1 mocha -t 5000 --reporter mocha-junit-reporter --reporter-options mochaFile=junit_ingest.xml --require @babel/register --require test/it-helper --delay --exit \"test/**/*.test.js\" ",
+    "test:unit": "NODE_PRESERVE_SYMLINKS=1 mocha -t 5000 --require @babel/register --require test/it-helper --delay --exit \"test/**/*.test.js\" ",
+    "test:unit:report": "NODE_PRESERVE_SYMLINKS=1 mocha -t 5000 --reporter mocha-junit-reporter --reporter-options mochaFile=junit_ingest.xml --require @babel/register --require test/it-helper --delay --exit \"test/**/*.test.js\" ",
     "dev-start": "NODE_PRESERVE_SYMLINKS=1 NODE_OPTIONS=--unhandled-rejections=warn nodemon --watch src --watch /packages --exec babel-node src/main.js"
   },
   "author": "",
@@ -21,6 +22,7 @@
     "expr-eval": "^2.0.2",
     "image-size": "^2.0.2",
     "jimp": "^0.22.12",
+    "js-yaml": "^4.1.1",
     "lodash": "^4.17.23",
     "moment": "^2.30.1",
     "mongodb": "^7.1.0",

@@ -24,7 +24,6 @@ import mongoUnit from 'mongo-unit';
 
 prepare(done => mongoUnit.start().then(async testMongoUrl => {
   console.info("Initializing mongo with url", testMongoUrl);
-  console.info("If this fails with a message about libcrypto, you need to install libssl1.1. See .github/workflows/test.yml for details.");
   // HACK(herchu): Dynamically importing mongoManager to reload it every time. See comment above.
   try {
     const { default: MongoManager } = require('../src/mongo');
@@ -34,6 +33,7 @@ prepare(done => mongoUnit.start().then(async testMongoUrl => {
     });
     done();
   } catch (error) {
+    console.error("Failed to initialize mongo-unit. If this was about libcrypto, you need to install libssl1.1. See .github/workflows/test.yml for details.");
     console.error("Error initializing mongo", error);
     done(error);
   }
