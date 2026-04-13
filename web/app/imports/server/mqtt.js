@@ -668,7 +668,7 @@ ${robotId} but robot has no broker (These messages are throttled)`);
     };
 
     // Create a unique-by-robot ID to track execution
-    const executionId = Random.id(4);
+    const executionId = Random.id(6);
     // Send the created executionId to the agent for tracking
     newScript.executionId = executionId;
     // Send the message to the robot

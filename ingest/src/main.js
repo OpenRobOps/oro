@@ -34,7 +34,7 @@ import {
 //   RosoutModule,
   CustomDataModule,
 //   RosMonitorModule,
-//   CustomCommandsModule,
+  CustomCommandsModule,
 //   RobotEventsModule,
 //   ImagesModule,
 //   GpsModule,
@@ -119,6 +119,7 @@ async function run() {
   new SystemModule(mqtt).load();
   new CustomDataModule({ mqtt, mongo }).load();
   // new DiagnosticsModule(mqtt).load(moduleSettings.diagnostics);
+  new CustomCommandsModule(mqtt).load();
 
   await new RobotLocalizationModule({
     mqtt,

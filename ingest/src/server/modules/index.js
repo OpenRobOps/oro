@@ -8,7 +8,7 @@ export { default as RobotLocalizationModule } from './localization';
 // export { default as RosoutModule } from './rosout';
 export { default as CustomDataModule } from './customData';
 // export { default as RosMonitorModule } from './rosMonitor';
-// export { default as CustomCommandsModule } from './customCommands';
+export { default as CustomCommandsModule } from './customCommands';
 export { default as BasicsModule } from './basics';
 // export { default as RobotEventsModule } from './events';
 // export { default as GpsModule } from './gps';

@@ -661,20 +661,4 @@ export default class AgentManager {
       await this._changeModule(robotId, moduleName, expectedRunlevel);
     }
   };
-
-  /**
-   * Returns a list of module state values set at any of the levels given by entitiesList
-   * (it can contain robots, tags, companies, etc.)
-   * This config response does not use ConfigManager "inheritance", it is added specifically
-   * to implement ConfigAPI requests.
-   *
-   * @returns array of module states with { entityId, entityType, moduleName, ...config }
-   */
-  findStatesAtLevels = async ({ entitiesList, moduleName, fields }) => (
-    this.moduleConfig.getEntityConfigAtLevels({
-      entitiesList,
-      fields,
-      conditions: moduleName ? { moduleName } : null
-    })
-  )
 }
