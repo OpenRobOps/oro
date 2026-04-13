@@ -57,4 +57,9 @@ export default class ThrottledLogger {
       console.warn(message);
     }
   };
+
+  /**
+   * Alias for compatibility with `console` interface.
+   */
+  warn = this.warning;
 }

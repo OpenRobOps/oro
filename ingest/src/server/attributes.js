@@ -245,9 +245,6 @@ class AttributesManager {
   saveAttributeValues = async ({
     robotId, attributeValues, ts = Date.now(), config = null, skip = {}
   }) => {
-    if (!("pose" in attributeValues)) {
-      console.log('saveAttributeValues', robotId, attributeValues , 1);
-    }
     // Store time for attributes metrics calculation.
     const t0 = Date.now();
     // It's also async and we don't wait for the results

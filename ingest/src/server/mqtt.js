@@ -23,6 +23,7 @@ import RateLimiter from './rateLimiter';
 //   VITAL_AGENT_TIME_DIFF
 // } from '../shared/attributes';
 import MongoManager from '../mongo';
+import ThrottledLogger from './throttledLogger';
 
 // Databags update topics. Same as in ingest/databags.js
 const MQTT_ROSBAG_UPLOAD_TOPIC = 'ros/rosbag/upload';
@@ -164,6 +165,7 @@ export default class OroMqtt {
     // per robot, as a performance alleviation. Saves the ts of the last
     // processed odometry entry for each robot.
     this._rateLimiterOdometry = new RateLimiter(10000); // max 0.1 Hz frequency
+    this.throttledLogger = new ThrottledLogger({ throttlingMs: 600 * 1000 });
 
     // Vitals module configuration
     // this.attrMgr = new AttributesManager();
@@ -404,7 +406,7 @@ export default class OroMqtt {
    */
   _handleMsgMetrics = async (topic, msg, packet = {}) => {
 
-    console.warn('handleMsgMetrics IGNORED', topic);
+    this.throttledLogger.warn('handleMsgMetrics', 'handleMsgMetrics IGNORED', topic);
 
     // Extract robotId from topic
     // const match = topic.match(/r\/(?<robotId>[^/]*)\//);
