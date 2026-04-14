@@ -43,8 +43,6 @@ const LAYERS_THICKNESS = {
 };
 
 /**
- * See https://inorbit.atlassian.net/browse/IO-3608
- *
  * Updates laserConfig in case it is missing angle.incr and/or
  * if min and max are reversed.
  * This happens for agents lower than 3.0.0 when the lidar is mounted

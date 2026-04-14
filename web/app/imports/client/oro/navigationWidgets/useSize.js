@@ -1,7 +1,7 @@
 /**
  * useSize (AKA WidthProvider/useWidthProvider/useSizeProvider)
  * Hook to provide width and height of the referenced element.
- * The hook is responsive to resizes by creating a resize listener.
+ * The hook is responsive to resizes by creating a ResizeObserver on the container.
  * containerRef: a react ref to the element which is to be sized.
  * Return: { width, height } of the referenced element
  */
@@ -28,25 +28,20 @@ export default function useSize(containerRef, dependencies = []) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [current, resizedCount, JSON.stringify(dependencies)]);
 
-  // useEffect will run on containerRef value assignment
   useEffect(() => {
     if (resizedCount > 0) setResizedCount(0);
   }, [current, containerSize]);
 
-  const onResize = () => {
-    // Various resizes can occur before we manage to update the containerSize
-    setResizedCount(prevC => prevC + 1);
-  };
-
-  // On Mount, start listening for resizes
+  // On Mount, observe container resizes via ResizeObserver (handles panel resizes,
+  // fullscreen transitions, and other non-window-resize events)
   useEffect(() => {
-    window.addEventListener('resize', onResize);
-
-    // on unmounting, stop listening for resizes
-    return () => {
-      window.removeEventListener('resize', onResize);
-    };
-  }, []);
+    if (!current) return undefined;
+    const observer = new ResizeObserver(() => {
+      setResizedCount(prevC => prevC + 1);
+    });
+    observer.observe(current);
+    return () => observer.disconnect();
+  }, [current]);
 
   return containerSize;
 }

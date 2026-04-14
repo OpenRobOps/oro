@@ -151,19 +151,11 @@ const foldWidgetsAsync = async (dashboardConfig, initialValue, reducer) => {
   return acc;
 };
 
-/**
- * Stub — cleans up section config. Full implementation not yet ported.
- * @param {Object} sectionConfig
- * @returns {Object}
- */
-const cleanupSectionConfig = (sectionConfig) => sectionConfig;
-
 export default Dashboards;
 export {
   Dashboards,
   DashboardsSchema,
   listAllDashboardsAsync,
-  cleanupSectionConfig,
   loadDashboards, // deprecated
   loadDashboardsAsync,
   findDashboardWithScopes,

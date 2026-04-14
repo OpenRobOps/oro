@@ -155,7 +155,7 @@ function robotLocalizationDataWithRobotId(data) {
   // the robotId as the first key from the object, and the localizationData as
   // the property associated with this key.
   const robotIds = Object.keys(data);
-  if (!robotIds.length == 1) {
+  if (robotIds.length !== 1) {
     console.warn('Unexpected data received in MqttLocalizationDataSources action builder. '
       + `keys = ${robotIds.join(',')}`);
   }

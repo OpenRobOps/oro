@@ -6,7 +6,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { bind, throttle } from 'lodash';
 import PropTypes from 'prop-types';
-import { makeStyles } from 'tss-react/mui';
 // ORO Modules
 import { Mqtt } from '../../util/DirectClient';
 import NavigationJoystick from './NavigationJoystick';
@@ -30,16 +29,12 @@ const CONTINUOUS_CALL_FREQ = 200; // ms
 // maximum amount of calls by the timer
 const CONTINUITY_SAFETY_THRESHOLD = 2000 / CONTINUOUS_CALL_FREQ; // 10sec of maximum movement time
 
-const useStyles = makeStyles()(() => ({}));
-
 function TeleopCommand(props) {
   const {
-    stepByStep, theme, disableControls,
+    stepByStep, disableControls,
     badNetwork, controlsDimensions, teleopMode, stepwiseMode,
     precisionCallbacks, isZeroData, robotId, onFeedback, getTsHint: getTsHintProp
   } = props;
-
-  const { classes } = useStyles();
 
   const [temporaryDisabled, setTemporaryDisabled] = useState(false);
 
@@ -157,6 +152,7 @@ function TeleopCommand(props) {
     timeoutRef.current = setTimeout(() => {
       temporaryDisableControlsEnd();
     }, 2500);
+    // TODO: 'robot.teleopStep' Meteor method is not yet implemented in oro server.
     // timestamp when command was sent to the server
     import('meteor/meteor').then(({ Meteor }) => {
       Meteor.call('robot.teleopStep', {
@@ -253,7 +249,6 @@ function TeleopCommand(props) {
 }
 
 TeleopCommand.propTypes = {
-  theme: PropTypes.object,
   getTsHint: PropTypes.func,
   robotId: PropTypes.string,
   onFeedback: PropTypes.func,

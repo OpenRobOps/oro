@@ -1,7 +1,7 @@
 /**
  * Dashboard Meteor dependant component
  */
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect } from 'react';
 import { Meteor } from 'meteor/meteor';
 import PropTypes from 'prop-types';
 import fp from 'lodash/fp';
@@ -304,7 +304,7 @@ const LocalizationWidgetWithContext = ({
   config
   /* eslint-enable react/prop-types */
 }) => {
-  const localizationFilter = useMemo(() => {});
+  const localizationFilter = {};
   return (
     <RobotsDataProvider dataSources={DEFAULT_DATA_SOURCES}>
       <LocalizationAdapter

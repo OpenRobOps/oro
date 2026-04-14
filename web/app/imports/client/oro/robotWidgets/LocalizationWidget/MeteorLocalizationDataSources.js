@@ -15,14 +15,7 @@ import { useTracker } from 'meteor/react-meteor-data';
 import { Meteor } from 'meteor/meteor';
 // ORO Modules
 import { Robots, RobotLocalization, RobotVitals, SpatialAnnotations } from '../../../../lib/collections';
-// Convert [{_id, ...}] → { _id: {...} }
-const arrayToMapById = (arr, keyName = '_id') => {
-  if (!arr) return {};
-  return arr.reduce((acc, item) => {
-    if (item?.[keyName] != null) acc[item[keyName]] = item;
-    return acc;
-  }, {});
-};
+import { arrayToMapById } from '../../../../lib/util';
 import {
   multipleRobotsLocalizationData, mapData, rttData, robotDetailsData
 } from './LocalizationDataTypes';
@@ -106,6 +99,7 @@ const useMeteorMapData = (
 /**
  * Hook to return RTT data for a single robot from Meteor, obtained from
  * RobotVitals by subscribing to robot.connectionQuality.
+ * TODO: 'robot.connectionQuality' publication is not yet implemented in oro server.
  */
 const useMeteorRttData = ({ robotId }, cb = null) => useTracker(() => {
   const rttHandle = Meteor.subscribe('robot.connectionQuality', { robotId });

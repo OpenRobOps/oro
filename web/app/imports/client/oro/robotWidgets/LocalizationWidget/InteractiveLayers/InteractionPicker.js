@@ -12,11 +12,8 @@ import Relocalize from './Relocalize';
 import PrecisionWaypoint from './PrecisionWaypoint';
 import { useActiveInteraction } from '../../../contexts/ActiveInteractionContext';
 import {
-  MULTI_NAVIGATE_MODE, NAVIGATE_MODE, PRECISION_MODE, RELOCALIZE_MODE, WAYPOINT_EDIT_MODE,
-  ZONE_EDIT_MODE
+  MULTI_NAVIGATE_MODE, NAVIGATE_MODE, PRECISION_MODE, RELOCALIZE_MODE
 } from '../../../navigationWidgets/interactions';
-import WaypointEdit from './WaypointEdit';
-import ZoneEdit from './ZoneEdit';
 
 /**
  * Component to interact with the Map.
@@ -25,7 +22,7 @@ import ZoneEdit from './ZoneEdit';
  *
  */
 const InteractionPicker = ({
-  robotLocalizationData, uiPreferences = {}, namedWaypoints, frameId, zones, zoneTypes
+  robotLocalizationData, uiPreferences = {}
 }) => {
   const { activeInteraction } = useActiveInteraction();
 
@@ -59,22 +56,6 @@ const InteractionPicker = ({
           uiPreferences={uiPreferences}
         />
       );
-    case WAYPOINT_EDIT_MODE:
-      return (
-        <WaypointEdit
-          namedWaypoints={namedWaypoints}
-          uiPreferences={uiPreferences}
-          frameId={frameId}
-        />
-      );
-    case ZONE_EDIT_MODE:
-      return (
-        <ZoneEdit
-          zones={zones}
-          zoneTypes={zoneTypes}
-          frameId={frameId}
-        />
-      );
     default:
       return null;
   }
@@ -83,10 +64,6 @@ const InteractionPicker = ({
 InteractionPicker.propTypes = {
   robotLocalizationData: PropTypes.object,
   uiPreferences: PropTypes.object,
-  namedWaypoints: PropTypes.array,
-  zones: PropTypes.array, // list of TrafficZones
-  zoneTypes: PropTypes.object, // config for TrafficZoneTypes: map from id to ZoneType
-  frameId: PropTypes.string // passed to WaypointEdit to know which sublocation to add waypoints to
 };
 
 export default InteractionPicker;

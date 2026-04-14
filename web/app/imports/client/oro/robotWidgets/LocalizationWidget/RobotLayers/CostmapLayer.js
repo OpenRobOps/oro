@@ -56,7 +56,7 @@ const CostmapLayer = ({ costmapMetadata, zIndex = 0 }) => {
         },
         projection: costmapProjection,
         imageExtent: costmapExtent,
-        imageSmoothing: true,
+        interpolate: true,
       }),
     });
 

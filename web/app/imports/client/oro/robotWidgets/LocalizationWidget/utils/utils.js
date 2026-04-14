@@ -261,7 +261,7 @@ const createStaticImageSource = (mapMetadata) => {
     url: mapMetadata.imageUrl,
     projection: imagePixelProjection,
     imageExtent,
-    imageSmoothing: true,
+    interpolate: true,
   });
 };
 

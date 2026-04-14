@@ -5,19 +5,12 @@
  * Converted from class component to functional component.
  * stepByStep defaults to true (safe mode).
  */
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { makeStyles } from 'tss-react/mui';
 // ORO modules
 import TeleopCommand from './TeleopCommand';
 import WrapWithTooltip from '../../util/WrapWithTooltip';
-
-// These are the control modes constants
-const CONTROL_MODES = {
-  STEPBYSTEP: 'stepbystep',
-  JOYSTICK: 'joystick',
-  GAMEPAD: 'gamepad'
-};
 
 // These are the dimensions used for the teleop controls and the joystick
 const CONTROLS_DIMENSIONS = {
@@ -44,21 +37,12 @@ function TeleopControls(props) {
   } = props;
   const { classes } = useStyles();
 
-  const [badNetwork, setBadNetwork] = useState(false);
-  const [networkStatus] = useState(0);
-  const [controlMode] = useState(CONTROL_MODES.STEPBYSTEP);
+  // TODO: derive badNetwork from offline/networkStatus once server-side connection quality is implemented
+  const [badNetwork] = useState(false);
   const [gamepadConnected, setGamepadConnected] = useState(false);
 
   // stepByStep defaults to true (safe mode — no withTracker subscription needed in oro)
   const stepByStep = true;
-
-  // networkState: 3 and 2 represent low and average latency
-  // 1 and 0 represent high latency or offline
-  useEffect(() => {
-    setBadNetwork(offline || networkStatus < 2 ? false : false);
-    // TODO: handle network status properly
-    setBadNetwork(false);
-  }, [offline, networkStatus]);
 
   const onGamepadConnect = useCallback((connected) => {
     setGamepadConnected(connected);
@@ -75,9 +59,7 @@ function TeleopControls(props) {
           disableControls={disableControls}
           gamepadConnected={gamepadConnected}
           badNetwork={badNetwork}
-          controlMode={controlMode}
           onGamepadConnect={onGamepadConnect}
-          controlModes={CONTROL_MODES}
           controlsDimensions={CONTROLS_DIMENSIONS}
           teleopMode={teleopMode}
           stepwiseMode={stepwiseMode}

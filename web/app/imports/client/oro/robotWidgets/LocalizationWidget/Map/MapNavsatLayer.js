@@ -24,7 +24,7 @@ const MapNavsatLayer = ({
   tilesetKey: key,
   bounds
 }) => {
-  const { map } = useContext(MapContext);
+  const { map, autoFitRef } = useContext(MapContext);
 
   const tileset = uiPreferences?.map?.tileset || LOCALIZATION_TILESETS.OSM_STREET;
 
@@ -53,14 +53,12 @@ const MapNavsatLayer = ({
         console.warn(`Unknown tileset found in UI preferences: ${tileset}`);
     }
 
-    // TODO: Extract the creation of this autoFit method so that it can be re-created
-    // in case that 'bounds' changes - without re-creating the entire worldLayer when only the
-    // bounds have changed
-    if (bounds && bounds.length > 3) {
+    // Register autoFit via context ref so Map.js can call it without OL map mutation
+    if (autoFitRef && bounds && bounds.length > 3) {
       if (bounds[2] - bounds[0] != 0 || bounds[3] - bounds[1] != 0) {
-        map.autoFit = () => map.getView().fit(bounds);
+        autoFitRef.current = () => map.getView().fit(bounds);
       } else {
-        map.autoFit = () => {
+        autoFitRef.current = () => {
           map.getView().setCenter([bounds[0], bounds[1]]);
           map.getView().setZoom(19);
         };
@@ -68,10 +66,8 @@ const MapNavsatLayer = ({
     }
 
     return () => {
-      if (map) {
-        map.autoFit = null;
-        map.removeLayer(worldLayer);
-      }
+      if (autoFitRef) autoFitRef.current = null;
+      if (map) map.removeLayer(worldLayer);
     };
   }, [map, tileset]);
 

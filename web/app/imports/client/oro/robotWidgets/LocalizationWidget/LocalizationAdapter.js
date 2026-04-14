@@ -21,6 +21,7 @@ import {
 } from '../../contexts/RobotsDataContext/RobotsDataContext';
 import WithNoDataMessage from '../../util/WithNoDataMessage';
 import Map from './Map';
+import { arrayToMapById } from '../../../../lib/util';
 
 // Constant arrays to avoid new objects and re-renders
 const EMPTY_ANNOTATIONS_LIST = [];
@@ -31,17 +32,6 @@ function pickKeys(object, keys) {
   return Object.fromEntries(
     keys.filter(k => Object.prototype.hasOwnProperty.call(object, k)).map(k => [k, object[k]])
   );
-}
-
-// Inline arrayToMapById helper: converts [{_id: ..., ...}] to { id: {...} }
-function arrayToMapById(array, keyName = '_id') {
-  if (!array) return {};
-  return array.reduce((acc, item) => {
-    if (item && item[keyName] != null) {
-      acc[item[keyName]] = item;
-    }
-    return acc;
-  }, {});
 }
 
 function LocalizationAdapter({

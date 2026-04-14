@@ -23,7 +23,7 @@ import {
  *                  provided map metadata
  */
 const MapImageLayer = ({ url, mapMetadata, style, zIndex = 0, autoFit = false }) => {
-  const { map } = useContext(MapContext);
+  const { map, autoFitRef } = useContext(MapContext);
 
   useEffect(() => {
     if (!map) return undefined;
@@ -47,7 +47,7 @@ const MapImageLayer = ({ url, mapMetadata, style, zIndex = 0, autoFit = false })
         url,
         projection: imageProjection,
         imageExtent,
-        imageSmoothing: true,
+        interpolate: true,
       }),
       style,
     });
@@ -55,23 +55,18 @@ const MapImageLayer = ({ url, mapMetadata, style, zIndex = 0, autoFit = false })
     map.addLayer(imageLayer);
     imageLayer.setZIndex(zIndex);
 
-    // Extend the map object with autoFit method to fit the image
+    // Register autoFit via context ref so Map.js can call it without OL map mutation
     try {
       const extent = calculateMapExtent(mapMetadata);
-      map.autoFit = () => map.getView().fit(extent);
+      if (autoFitRef) autoFitRef.current = () => map.getView().fit(extent);
+      if (autoFit) map.getView().fit(extent);
     } catch (error) {
       console.error('Failed to calculate map extent:', error);
     }
 
-    if (autoFit) {
-      map.autoFit();
-    }
-
     return () => {
-      if (map) {
-        map.autoFit = null;
-        map.removeLayer(imageLayer);
-      }
+      if (autoFitRef) autoFitRef.current = null;
+      if (map) map.removeLayer(imageLayer);
     };
   }, [map, url, mapMetadata]);
 
@@ -81,13 +76,13 @@ const MapImageLayer = ({ url, mapMetadata, style, zIndex = 0, autoFit = false })
 MapImageLayer.propTypes = {
   url: PropTypes.string,
   mapMetadata: PropTypes.shape({
-    height: PropTypes.number.isRequired,
-    width: PropTypes.number.isRequired,
-    resolution: PropTypes.number.isRequired,
-    x: PropTypes.number.isRequired,
-    y: PropTypes.number.isRequired,
+    height: PropTypes.number,
+    width: PropTypes.number,
+    resolution: PropTypes.number,
+    x: PropTypes.number,
+    y: PropTypes.number,
     formatVersion: PropTypes.number,
-  }).isRequired,
+  }),
   style: PropTypes.func,
   zIndex: PropTypes.number,
   autoFit: PropTypes.bool,

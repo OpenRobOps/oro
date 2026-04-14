@@ -95,7 +95,7 @@ function Localization({
     isLayerVisible,
     setInitialZoom,
     reset
-  } = useLocalizationWidget(mapType);
+  } = useLocalizationWidget();
 
 
   /**

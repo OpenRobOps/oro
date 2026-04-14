@@ -36,7 +36,7 @@
     "nipplejs": "^1.0.1",
     "nurbs": "^1.1.1",
     "object-hash": "^3.0.0",
-    "ol": "^6.15.1",
+    "ol": "10.8.0",
     "ol-rotate-feature": "^3.3.0",
     "proj4": "^2.20.8",
     "prop-types": "^15.8.1",

@@ -95,6 +95,9 @@ const Map = ({
 }) => {
   const mapRef = useRef();
   const [map, setMap] = useState(null);
+  // autoFitRef lets child layers (e.g. MapImageLayer) register a fit function
+  // without mutating the OL map object directly
+  const autoFitRef = useRef(null);
   const {
     setSelectedAnnotationQualifiedId, selectedAnnotationQualifiedId
   } = useLocalizationWidget();
@@ -201,10 +204,8 @@ const Map = ({
     // If no center and zoom are provided as props, we need to reset them
     // when we change the view, otherwise it doesn't know how to present itself
     if (!center && !zoom) {
-      // Use the map's autoFit feature if it's available
-      if (map.autoFit) {
-        map.autoFit();
-        // Otherwise use hardcoded defaults, at least they allow showing some map
+      if (autoFitRef.current) {
+        autoFitRef.current();
       } else {
         map.getView().setZoom(19);
         map.getView().setCenter([0, 0]);
@@ -285,7 +286,9 @@ const Map = ({
   // Create objects to pass as props from context values (simply so the props is not a new object
   // every time)
   const mapProjectionContextValue = useMemo(() => ({ mapProjection }), [mapProjection]);
-  const mapContextValue = useMemo(() => ({ map }), [map]);
+  // autoFitRef is a stable ref (never changes identity), so it is intentionally omitted from deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const mapContextValue = useMemo(() => ({ map, autoFitRef }), [map]);
   // Calculates latitude and longitude values
   const gpsFix = useMemo(() => (
     selectedRobotPose

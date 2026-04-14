@@ -82,6 +82,7 @@ export function usePathsToSublocationTransformation(spatialTransformations) {
  * @param {array} robotIds
  * @returns
  */
+// TODO: 'spatialTransformations.getForManyRobots' Meteor method is not yet implemented in oro server.
 export function useSpatialTransformations(robotIds) {
   const [spatialTransformations, setSpatialTransformations] = useState(false);
   useEffect(() => {
