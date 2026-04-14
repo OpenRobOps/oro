@@ -18,13 +18,6 @@ variable "hostname" {
   default     = "localhost"
 }
 
-variable "robot_api_key" {
-  description = "API key for robots to connect (can use multiple; use empty to disallow registration)"
-  type        = string
-  default     = ""
-  sensitive   = true
-}
-
 variable "mqtt_port" {
   description = "MQTT broker port"
   type        = number
@@ -41,24 +34,6 @@ variable "mqtt_master_username" {
   description = "MQTT master credentials username"
   type        = string
   default     = "ingest-master"
-}
-
-variable "mqtt_master_password" {
-  description = "MQTT master credentials password"
-  type        = string
-  sensitive   = true
-}
-
-variable "mqtt_credential_encryption_key" {
-  description = "Hex-encoded 256-bit key for encrypting MQTT credentials"
-  type        = string
-  sensitive   = true
-}
-
-variable "peer_key" {
-  description = "Peer API key"
-  type        = string
-  sensitive   = true
 }
 
 variable "smtp_url" {
