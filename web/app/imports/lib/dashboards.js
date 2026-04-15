@@ -24,6 +24,7 @@ import SimpleSchema from 'simpl-schema';
 import { cloneDeep, keyBy } from 'lodash';
 // ORO modules
 import { COLLECTIONS } from '../shared/constants';
+import { UIPreferences } from '../lib/collections';
 import { DASHBOARDS, SECTION_SCOPES, WIDGET_TYPE_GROUP } from './uiPreferences';
 import { countDashboardSectionsWithScopes } from '../shared/dashboards';
 
@@ -172,6 +173,7 @@ export {
   Dashboards,
   DashboardsSchema,
   listAllDashboardsAsync,
+  cleanupSectionConfig,
   loadDashboards, // deprecated
   loadDashboardsAsync,
   findDashboardWithScopes,

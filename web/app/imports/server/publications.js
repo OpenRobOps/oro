@@ -28,8 +28,12 @@ import { Robots, RobotKeyValues, RobotCustomData, RobotLocalization, SpatialAnno
  * The `lowBandwidth` flag omits laser ranges and paths to reduce data transfer.
  */
 Meteor.publish('localization', async function ({ robotIds, lowBandwidth = false }) {
-  if (!this.userId) return this.ready();
-  if (!Array.isArray(robotIds) || robotIds.length === 0) return this.ready();
+  if (!this.userId) {
+    return this.ready();
+  }
+  if (!isArray(robotIds) || robotIds.length === 0) {
+    return this.ready();
+  }
   if (!await new OroRoles().canAccessRobots(this.userId, robotIds, ACCESS_LEVEL_VIEW)) {
     return this.error(new Meteor.Error('Unauthorized'));
   }
@@ -54,8 +58,12 @@ Meteor.publish('localization', async function ({ robotIds, lowBandwidth = false 
  * Clients use `map.objectUrl` when available, otherwise `map.data` (base64 PNG) as fallback.
  */
 Meteor.publish('spatial_annotations.map', async function ({ robotId, label = 'map' }) {
-  if (!this.userId) return this.ready();
-  if (!robotId) return this.ready();
+  if (!this.userId) {
+    return this.ready();
+  }
+  if (!robotId) {
+    return this.ready();
+  }
   if (!await new OroRoles().canAccessRobot(this.userId, robotId, ACCESS_LEVEL_VIEW)) {
     return this.error(new Meteor.Error('Unauthorized'));
   }
