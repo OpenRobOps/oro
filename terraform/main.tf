@@ -14,6 +14,35 @@
 
 terraform {
   required_version = ">= 1.0"
+  required_providers {
+    local = {
+      source  = "hashicorp/local"
+      version = "~> 2.0"
+    }
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.0"
+    }
+  }
+}
+
+resource "random_password" "mqtt_master" {
+  length  = 32
+  special = false
+}
+
+resource "random_id" "mqtt_credential_encryption_key" {
+  byte_length = 32
+}
+
+resource "random_password" "peer_key" {
+  length  = 32
+  special = false
+}
+
+resource "random_password" "robot_api_key" {
+  length  = 32
+  special = false
 }
 
 locals {
@@ -21,7 +50,7 @@ locals {
   oauth_providers = concat(
     (var.smtp_url != "") ? ["email"] : [],
     (var.oauth_google_client_id != "") ? ["google"] : [],
-    (var.oauth_google_client_id != "") ? ["github"] : []
+    (var.oauth_github_client_id != "") ? ["github"] : []
   )
 }
 
@@ -33,14 +62,14 @@ resource "local_file" "web_app_settings" {
       public = {
         oauthProviders = local.oauth_providers
       }
-      robotApiKeys = var.robot_api_key != "" ? [var.robot_api_key] : [],
+      robotApiKeys = [random_password.robot_api_key.result]
       allowedOrigins = []
       allowedHeaders = []
       mqtt = {
-        credentialEncryptionKey = var.mqtt_credential_encryption_key
+        credentialEncryptionKey = random_id.mqtt_credential_encryption_key.hex
         masterCredentials = {
           username = var.mqtt_master_username
-          password = var.mqtt_master_password
+          password = random_password.mqtt_master.result
         }
         brokers = {
           local = {
@@ -50,12 +79,12 @@ resource "local_file" "web_app_settings" {
             websocket_port     = var.mqtt_websocket_port
             websocket_protocol = "ws://"
             username           = var.mqtt_master_username
-            password           = var.mqtt_master_password
+            password           = random_password.mqtt_master.result
           }
         }
         defaultBrokerId = "local"
       }
-      peerKey = var.peer_key
+      peerKey = random_password.peer_key.result
     },
 
     (var.smtp_url != "") ? {
@@ -101,7 +130,7 @@ resource "local_file" "ingest_settings" {
           websocket_port     = var.mqtt_websocket_port
           websocket_protocol = "ws://"
           username           = var.mqtt_master_username
-          password           = var.mqtt_master_password
+          password           = random_password.mqtt_master.result
         }
       }
       defaultBrokerId = "local"
@@ -119,7 +148,7 @@ resource "local_file" "ingest_settings" {
     }
     peerClient = {
       url               = var.peer_client_url
-      peerKey           = var.peer_key
+      peerKey           = random_password.peer_key.result
       connectionPooling = true
     }
   })
