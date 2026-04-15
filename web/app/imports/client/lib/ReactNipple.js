@@ -26,9 +26,9 @@ export default class ReactNipple extends Component {
             className: PropTypes.string,
             options: PropTypes.shape({
                 color: PropTypes.string,
-                size: PropTypes.integer,
-                threshold: PropTypes.float,
-                fadeTime: PropTypes.integer,
+                size: PropTypes.number,
+                threshold: PropTypes.number,
+                fadeTime: PropTypes.number,
                 multitouch: PropTypes.bool,
                 maxNumberOfNipples: PropTypes.number,
                 dataOnly: PropTypes.bool,
@@ -98,7 +98,7 @@ export default class ReactNipple extends Component {
         this._element = ref;
         if (ref) {
             this.createJoystick();
-        } else if (this._element) {
+        } else {
             this.destroyJoystick();
         }
     }
