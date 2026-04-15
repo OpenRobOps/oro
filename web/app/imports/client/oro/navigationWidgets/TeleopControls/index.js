@@ -34,7 +34,9 @@ const angularDelta = velLimitsDefaults.angular.min * 4;
 function TeleopControlsContainer({
   robotId,
   getTsHint,
-  isZeroData
+  isZeroData,
+  offline,
+  onFeedback
 }) {
   const { isFullscreen } = useFullscreenContext();
   const {
@@ -86,6 +88,8 @@ function TeleopControlsContainer({
       stepwiseMode={isActivePrecision}
       precisionCallbacks={precisionCallbacks}
       isZeroData={isZeroData}
+      offline={offline}
+      onFeedback={onFeedback}
     />
   );
 }
@@ -93,7 +97,9 @@ function TeleopControlsContainer({
 TeleopControlsContainer.propTypes = {
   robotId: PropTypes.string, // selected robot id
   getTsHint: PropTypes.func, // callback to get TsHint
-  isZeroData: PropTypes.bool
+  isZeroData: PropTypes.bool,
+  offline: PropTypes.bool,
+  onFeedback: PropTypes.func
 };
 
 export default TeleopControlsContainer;

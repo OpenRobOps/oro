@@ -139,6 +139,10 @@ const makeEventsToCallbacksObject = (callback) => ({
  */
 const setStylesOnElement = (element, elementStyles) => Object.assign(element.style, elementStyles);
 
+// Module-level counter for unique joystick DOM ids; avoids the collision risk
+// of Math.random() * 100 when multiple joystick instances are rendered simultaneously
+let _joystickIdCounter = 0;
+
 // Size of the nipple joystick background
 const JOYSTICK_BACKGROUND_SIZE = '45px';
 
@@ -194,7 +198,9 @@ const createJoystickStyle = (joystickUi, props = {}) => {
     background: 'radial-gradient(113.31% 113.31% at 59.66% 84.68%, #FFFFFF 0%, #FBFBFB 21.38%, #F0F0F0 40.82%, #DEDEDE 59.53%, #C4C4C4 77.77%, #A3A3A3 95.52%, #999999 100%)'
   });
 
-  front.appendChild(frontDecoratorChild);
+  // Only append if not already in the DOM; appendChild on an existing child
+  // would move it, which is harmless now but fragile if nipplejs adds sibling nodes
+  if (!front.childNodes[0]) front.appendChild(frontDecoratorChild);
 };
 
 function NavigationJoystick(props) {
@@ -207,8 +213,10 @@ function NavigationJoystick(props) {
   const mutationObserver = useRef(null);
   const joystickRef = useRef(null);
 
-  // We utilize a unique node id because the mutation observer has issues handling react refs
-  const uniqueNodeId = useMemo(() => ('joystick' + Math.floor(Math.random() * 100)), []);
+  // We utilize a unique node id because the mutation observer has issues handling react refs.
+  // Using a module counter instead of Math.random() * 100 to avoid id collisions when
+  // multiple joystick instances render at the same time (e.g. robot grid view)
+  const uniqueNodeId = useMemo(() => `joystick-${++_joystickIdCounter}`, []);
 
   useEffect(() => {
     // Mutation Observers detect any changes in the DOM
@@ -230,7 +238,10 @@ function NavigationJoystick(props) {
     return () => {
       mutationObserver.current?.disconnect();
     };
-  }, [joystickRef.current, uniqueNodeId]);
+  // joystickRef.current intentionally excluded; React does not track ref mutations,
+  // so including it in deps does not guarantee re-runs. The getElementById call inside
+  // already handles the case where the element may not yet exist.
+  }, [uniqueNodeId]);
 
   // nipplejs v1 uses a Collection (Map-based), not an array — use getJoystickByUid()
   const applyJoystickStyle = useCallback(() => {
@@ -308,7 +319,7 @@ function NavigationJoystick(props) {
                 ref={joystickRef}
                 options={{
                   mode: 'static',
-                  dynamicPage: 'true',
+                  dynamicPage: true,
                   position: { top: '50%', left: '50%' },
                   restOpacity: 1
                 }}

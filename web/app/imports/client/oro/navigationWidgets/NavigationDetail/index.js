@@ -121,6 +121,7 @@ function NavigationDetail({
                 isFullscreen={isFullscreen}
                 containerSize={containerSize}
                 locationId={locationId}
+                onFeedback={openDialog}
               />
             </>
           )}

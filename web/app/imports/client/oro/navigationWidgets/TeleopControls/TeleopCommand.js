@@ -4,7 +4,7 @@
  * Direct teleop via MQTT is always used (doMqttGo path only).
  */
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { bind, throttle } from 'lodash';
+import { throttle } from 'lodash';
 import PropTypes from 'prop-types';
 // ORO Modules
 import { Mqtt } from '../../util/DirectClient';
@@ -27,7 +27,7 @@ const JOYSTICK_MOVEMENT_ENDED = 'end';
 // time between continuous signals sent to the agent
 const CONTINUOUS_CALL_FREQ = 200; // ms
 // maximum amount of calls by the timer
-const CONTINUITY_SAFETY_THRESHOLD = 2000 / CONTINUOUS_CALL_FREQ; // 10sec of maximum movement time
+const CONTINUITY_SAFETY_THRESHOLD = 2000 / CONTINUOUS_CALL_FREQ; // 2sec of maximum movement time
 
 function TeleopCommand(props) {
   const {
@@ -65,6 +65,18 @@ function TeleopCommand(props) {
       continuityTimerRef.current = null;
     }
   }, []);
+
+  // Clear both timers on unmount; prevents MQTT commands or state updates
+  // from firing after the component is gone (e.g. user navigates away mid-movement)
+  useEffect(() => {
+    return () => {
+      stopTimer();
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+    };
+  }, [stopTimer]);
 
   /**
    * Teleop send message through MQTT.
@@ -117,9 +129,13 @@ function TeleopCommand(props) {
     }
   }, [doMqttGo, getTsHint, stopTimer]);
 
-  // Throttled teleop call
+  // Throttled teleop call, recreated via effect when teleopGoCall changes so it
+  // never captures a stale closure (e.g. if robotId changes mid-session)
   const throttledTeleopCallRef = useRef(null);
-  if (!throttledTeleopCallRef.current) throttledTeleopCallRef.current = bind(throttle(teleopGoCall, CONTINUOUS_CALL_FREQ), null);
+  useEffect(() => {
+    throttledTeleopCallRef.current = throttle(teleopGoCall, CONTINUOUS_CALL_FREQ);
+    return () => throttledTeleopCallRef.current?.cancel();
+  }, [teleopGoCall]);
 
   const temporaryDisableControlsStart = useCallback(() => {
     setTemporaryDisabled(true);

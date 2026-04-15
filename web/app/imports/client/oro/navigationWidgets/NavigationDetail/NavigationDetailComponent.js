@@ -92,6 +92,7 @@ const NavigationDetailComponent = (props) => {
     options,
     isFullscreen,
     locationId,
+    onFeedback,
   } = props;
 
   const layout = useLayoutContext();
@@ -195,7 +196,7 @@ const NavigationDetailComponent = (props) => {
 
           <div key={KEY_TELEOP} className={classnames(classes.containerDiv)}>
             <div className={classnames(classes.subContainerDiv, { [classes.fullscreenDiv]: isFullscreen })}>
-              <TeleopControlsWithTsHint robotId={robotId} offline={robotOffline} isZeroData={isZeroData} />
+              <TeleopControlsWithTsHint robotId={robotId} offline={robotOffline} isZeroData={isZeroData} onFeedback={onFeedback} />
             </div>
           </div>
         </ResponsiveGridLayout>
@@ -214,6 +215,7 @@ NavigationDetailComponent.propTypes = {
   options: PropTypes.object,
   isFullscreen: PropTypes.bool,
   locationId: PropTypes.string,
+  onFeedback: PropTypes.func,
 };
 
 export default NavigationDetailComponent;
