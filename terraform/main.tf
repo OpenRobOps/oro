@@ -50,7 +50,7 @@ locals {
   oauth_providers = concat(
     (var.smtp_url != "") ? ["email"] : [],
     (var.oauth_google_client_id != "") ? ["google"] : [],
-    (var.oauth_google_client_id != "") ? ["github"] : []
+    (var.oauth_github_client_id != "") ? ["github"] : []
   )
 }
 
