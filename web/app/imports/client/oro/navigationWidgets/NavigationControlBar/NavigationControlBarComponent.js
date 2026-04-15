@@ -23,43 +23,26 @@
  * Key Features:
  * - Responsive Design: Adapts to different screen sizes, including mobile devices.
  * - Control Bar Auto-Hide: Automatically hides when not in use (e.g., during fullscreen mode).
- * - Robot selector: Allows to select robots.
- * - Map Layers Selector: Allows users to choose map layers.
- * - Hi-rez toggle: Enables high-resolution camera snapshots.
- * - Map selector: Allows changing the active map topic.
+ * - Robot and Map and Actions selector: Allows to select robots, maps, and actions.
  * - Fullscreen Toggle: Enables fullscreen mode.
  * - Color Customization: Dynamically adjusts the color theme based on the active mode.
+ * - Map Layers Selector: Allows users to choose map layers (if map_layers is active).
+
  *
  * Meteor agnostic component
  */
 import React, { useState, useRef, useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
-import {
-  Chip,
-  Collapse,
-  IconButton,
-  Menu,
-  MenuItem,
-  Switch,
-  Tooltip,
-  Typography
-} from '@mui/material';
+import { Collapse, Grid } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import classNames from 'classnames';
-// MUI icons — replaces custom SVG icons from the Figma design
-import {
-  Bot,
-  ChevronDown,
-  Layers,
-  Maximize2,
-  Minimize2,
-  RefreshCw,
-  Settings,
-  X,
-} from 'lucide-react';
-// ORO modules
+// InOrbit modules
+// import ActionsDropdownComponent from '../ActionsDropdown';
 import { useFullscreenContext } from '../../contexts/FullscreenContext';
+import FullscreenButton from '../../util/FullscreenButton';
+import { useActiveInteraction } from '../../contexts/ActiveInteractionContext';
+import { ZONE_EDIT_MODE } from '../interactions';
 
 // Time in ms that the control bar will close after the user
 // loses focus on the control bar (only for fullscreen)
@@ -68,18 +51,32 @@ const AFTER_FOCUS_CLOSE_TIME = 5000;
 const useStyles = makeStyles()(theme => ({
   container: {
     display: 'flex',
-    height: '44px',
+    height: '40px',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: '0 12px',
-    backgroundColor: theme.palette.background.surface,
-    border: `1px solid ${theme.palette.divider}`,
-    borderRadius: '10px',
+    margin: '0px',
+    padding: '0px 3px'
+  },
+  searchBoxContainer: {
+    minWidth: '200px'
+  },
+  fullscreenSearchBoxContainer: {
+    marginLeft: '8px'
+  },
+  mapSettingsContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    marginLeft: 'auto'
+  },
+  baseButtonRoot: {
+    color: theme.palette.text.title
   },
   backgroundFullscreen: {
     backgroundColor: theme.palette.background.titleBar,
     padding: '5px',
     boxShadow: '10px 10px 20px 2px rgba(0, 0, 0, 0.3)'
+  },
+  colorFullscreen: {
+    color: theme.palette.text.icon
   },
   backgroundTeleop: {
     background:
@@ -89,6 +86,12 @@ const useStyles = makeStyles()(theme => ({
     background:
       'repeating-linear-gradient(-45deg, #88BF2D, #88BF2D 15px, rgb(0,107,0, 70%) 15px, rgb(0,107,0, 70%) 30px)'
   },
+  colorTeleop: {
+    color: theme.palette.text.content
+  },
+  colorWaypoint: {
+    color: theme.palette.text.content
+  },
   collapsedContainer: {
     width: '100%'
   },
@@ -96,6 +99,10 @@ const useStyles = makeStyles()(theme => ({
     position: 'absolute',
     top: 0,
     zIndex: 1
+  },
+  actionButtonsContainer: {
+    display: 'flex',
+    padding: '0 10px'
   },
   // transparent container that shows in the space where the toolbar would be if it was not hidden
   hiddenControlBarContainer: {
@@ -105,86 +112,6 @@ const useStyles = makeStyles()(theme => ({
     background: 'transparent',
     position: 'absolute'
   },
-  leftGroup: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px'
-  },
-  rightGroup: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '16px'
-  },
-  // Robot chip — shown when a robot is selected
-  robotChip: {
-    backgroundColor: theme.palette.background.paper,
-    border: `1px solid ${theme.palette.divider}`,
-    borderRadius: '4px',
-    height: '32px',
-    fontSize: '11px',
-    color: theme.palette.text.primary,
-    '& .MuiChip-icon': {
-      fontSize: '16px',
-      color: theme.palette.text.secondary,
-    },
-    '& .MuiChip-deleteIcon': {
-      fontSize: '16px',
-      color: theme.palette.text.secondary,
-      '&:hover': { color: theme.palette.text.primary }
-    }
-  },
-  // Robot search wrapper — shown when no robot is selected
-  robotSearchWrapper: {
-    minWidth: '200px'
-  },
-  // Control button: lock, layers, map selector
-  controlButton: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '4px',
-    cursor: 'pointer',
-    padding: '2px 6px',
-    borderRadius: '4px',
-    height: '24px',
-    border: 'none',
-    background: 'none',
-    color: theme.palette.text.secondary,
-    '&:hover': {
-      backgroundColor: theme.palette.action.hover,
-      color: theme.palette.text.primary,
-    }
-  },
-  controlButtonIcon: {
-    fontSize: '18px'
-  },
-  controlButtonLabel: {
-    fontSize: '12px',
-    whiteSpace: 'nowrap',
-  },
-  // Hi-rez toggle
-  hiRezContainer: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px'
-  },
-  hiRezLabel: {
-    fontSize: '14px',
-    color: theme.palette.text.primary,
-    whiteSpace: 'nowrap',
-  },
-  // Icon-only action buttons on the right
-  iconBtn: {
-    padding: '4px',
-    color: theme.palette.text.secondary,
-    '&:hover': {
-      color: theme.palette.text.primary,
-      backgroundColor: theme.palette.action.hover
-    }
-  },
-  iconBtnSm: {
-    fontSize: '22px'
-  },
-  // Mobile layout
   mobileContainer: {
     display: 'flex',
     width: '100%',
@@ -194,15 +121,29 @@ const useStyles = makeStyles()(theme => ({
 }));
 
 const NavigationControlBar = (props) => {
+  // TODO: Fix NavigationControlBar behavior, it hides after the user
+  // loses focus on the control bar or clicks on it, only on fullscreen.
   const [showControlBar, setShowControlBar] = useState(false);
-  const [disableHideBar] = useState(false);
-  const [layersMenuAnchor, setLayersMenuAnchor] = useState(null);
-  const [mapMenuAnchor, setMapMenuAnchor] = useState(null);
+  const [disableHideBar, setDisableHideBar] = useState(false);
 
-  const { classes } = useStyles();
+  const { classes, theme } = useStyles();
   const isMobile = useMediaQuery('(max-width:900px)');
+  const { activeInteraction } = useActiveInteraction();
+  const isEditZonesActive = activeInteraction == ZONE_EDIT_MODE;
+
   const { toggleFullscreen } = useFullscreenContext();
   const showBarTimer = useRef(null);
+
+  const controlBarTimer = () => {
+    if (showBarTimer && showBarTimer.current) {
+      clearTimeout(showBarTimer.current);
+    }
+    showBarTimer.current = setTimeout(() => {
+      if (!disableHideBar) {
+        setShowControlBar(false);
+      }
+    }, AFTER_FOCUS_CLOSE_TIME);
+  };
 
   const {
     robotId,
@@ -211,214 +152,52 @@ const NavigationControlBar = (props) => {
     waypointMode,
     robot,
     Lock,
-    RobotSearch,
     selectRobotCallback,
-    setSelectedRobotId,
-    // map controls
-    mapLabel,
-    mapsList = [],
-    onMapChange,
-    // layers
-    layers = [],
-    // hi-rez
-    hiRezOn = false,
-    onHiRezToggle,
-    // action callbacks
-    onSettingsClick,
-    onReplaceClick,
+    RobotSearch,
+    selectedCollectionId,
+    setCollectionId,
+    setSelectedRobotId
   } = props;
 
-  const controlBarTimer = useCallback(() => {
-    if (showBarTimer.current) clearTimeout(showBarTimer.current);
-    showBarTimer.current = setTimeout(() => {
-      if (!disableHideBar) setShowControlBar(false);
-    }, AFTER_FOCUS_CLOSE_TIME);
-  }, [disableHideBar]);
+  const onToolbarEnter = () => setShowControlBar(true);
 
-  const onToolbarEnter = useCallback(() => setShowControlBar(true), []);
-  const onToolbarLeave = useCallback(() => controlBarTimer(), [controlBarTimer]);
+  const onToolbarLeave = () => controlBarTimer();
 
+  // Adds the property color according to what prop is set to true
+  // Fullscreen can be overridden by teleopMode or waypointMode
+  const colorClassNames = useMemo(() => ({
+    [classes.colorFullscreen]: fullscreen,
+    [classes.colorTeleop]: teleopMode,
+    [classes.colorWaypoint]: waypointMode
+  }), [fullscreen, teleopMode, waypointMode]);
+
+  // Adds the property background according to what prop is set to true
+  // Fullscreen can be overridden by teleopMode or waypointMode
   const backgroundClassNames = useMemo(() => ({
     [classes.backgroundFullscreen]: fullscreen,
     [classes.backgroundTeleop]: teleopMode,
     [classes.backgroundWaypoint]: waypointMode
-  }), [fullscreen, teleopMode, waypointMode, classes]);
+  }), [fullscreen, teleopMode, waypointMode]);
 
-  const controlBarActive = !fullscreen || teleopMode || waypointMode || showControlBar;
+  /**
+   * For custom icons the color needs to be passed in the styles and classnames does not work
+   * Therefore the color of the icon needs to be passed with this function
+   */
+  const customIconsColor = useMemo(() => {
+    if (teleopMode || waypointMode) {
+      return { color: theme.palette.text.content };
+    }
+    if (fullscreen) {
+      return { color: theme.palette.text.icon };
+    }
+    return { color: theme.palette.text.title };
+  }, [teleopMode, waypointMode, fullscreen]);
 
-  const handleLayersOpen = useCallback((e) => setLayersMenuAnchor(e.currentTarget), []);
-  const handleLayersClose = useCallback(() => setLayersMenuAnchor(null), []);
-  const handleMapOpen = useCallback((e) => setMapMenuAnchor(e.currentTarget), []);
-  const handleMapClose = useCallback(() => setMapMenuAnchor(null), []);
-  const handleMapSelect = useCallback((mapId) => {
-    onMapChange?.(mapId);
-    handleMapClose();
-  }, [onMapChange, handleMapClose]);
-
-  const robotName = robot?.name || robot?.robotId || robotId;
-
-  const desktopContent = (
-    <>
-      {/* ── Left group ─────────────────────────────────────── */}
-      <div className={classes.leftGroup}>
-
-        {/* Robot selector: chip when selected, search box when not */}
-        {robotId ? (
-          <Chip
-            className={classes.robotChip}
-            icon={<Bot size={16} />}
-            label={robotName}
-            deleteIcon={<X size={14} />}
-            onDelete={setSelectedRobotId ? () => setSelectedRobotId(null) : undefined}
-            data-test="navdet-controls-robotchip"
-          />
-        ) : (
-          <div className={classes.robotSearchWrapper}>
-            <RobotSearch
-              selectedRobotId={robotId}
-              selectRobotCallback={selectRobotCallback}
-              setSelectedRobotId={setSelectedRobotId}
-              data-test="navdet-controls-robotsearch"
-            />
-          </div>
-        )}
-
-        {/* Lock */}
-        {robot && Lock && (
-          <Lock
-            robotId={robotId}
-            lock={robot.lock}
-            fullscreen={fullscreen}
-          />
-        )}
-
-        {/* Layers dropdown */}
-        <>
-          <button
-            type="button"
-            className={classes.controlButton}
-            onClick={handleLayersOpen}
-            data-test="navdet-controls-layers"
-          >
-            <Layers size={16} />
-            <Typography className={classes.controlButtonLabel}>Layers</Typography>
-            <ChevronDown size={16} />
-          </button>
-          <Menu
-            anchorEl={layersMenuAnchor}
-            open={Boolean(layersMenuAnchor)}
-            onClose={handleLayersClose}
-          >
-            {layers.length === 0 ? (
-              <MenuItem disabled>No layers available</MenuItem>
-            ) : (
-              layers.map(layer => (
-                <MenuItem key={layer.id} onClick={handleLayersClose}>{layer.label}</MenuItem>
-              ))
-            )}
-          </Menu>
-        </>
-      </div>
-
-      {/* ── Right group ────────────────────────────────────── */}
-      <div className={classes.rightGroup}>
-
-        {/* Hi-rez toggle */}
-        <div className={classes.hiRezContainer}>
-          <Switch
-            size="small"
-            checked={hiRezOn}
-            onChange={onHiRezToggle}
-            color="primary"
-            disabled={!robotId}
-            data-test="navdet-controls-highrez"
-          />
-          <Typography className={classes.hiRezLabel}>
-            {`Hi-rez ${hiRezOn ? 'On' : 'Off'}`}
-          </Typography>
-        </div>
-
-        {/* Map selector */}
-        {(mapsList.length > 0 || mapLabel) && (
-          <>
-            <button
-              type="button"
-              className={classes.controlButton}
-              onClick={handleMapOpen}
-              data-test="navdet-controls-map"
-            >
-              <Typography className={classes.controlButtonLabel}>
-                {mapLabel || 'Select map'}
-              </Typography>
-              <ChevronDown size={16} />
-            </button>
-            <Menu
-              anchorEl={mapMenuAnchor}
-              open={Boolean(mapMenuAnchor)}
-              onClose={handleMapClose}
-            >
-              {mapsList.map(map => (
-                <MenuItem key={map.mapId} onClick={() => handleMapSelect(map.mapId)}>
-                  {map.label}
-                </MenuItem>
-              ))}
-            </Menu>
-          </>
-        )}
-
-        {/* Swap / replace view */}
-        {onReplaceClick && (
-          <Tooltip title="Swap view">
-            <IconButton className={classes.iconBtn} onClick={onReplaceClick} size="small">
-              <RefreshCw size={20} />
-            </IconButton>
-          </Tooltip>
-        )}
-
-        {/* Settings */}
-        {onSettingsClick && (
-          <Tooltip title="Settings">
-            <IconButton className={classes.iconBtn} onClick={onSettingsClick} size="small">
-              <Settings size={20} />
-            </IconButton>
-          </Tooltip>
-        )}
-
-        {/* Fullscreen */}
-        <Tooltip title={fullscreen ? 'Exit fullscreen' : 'Fullscreen'}>
-          <IconButton
-            className={classes.iconBtn}
-            onClick={toggleFullscreen}
-            size="small"
-            data-test="navdet-controls-fullscreen-"
-          >
-            {fullscreen ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
-          </IconButton>
-        </Tooltip>
-      </div>
-    </>
-  );
-
-  const mobileContent = (
-    <div className={classes.mobileContainer}>
-      <RobotSearch
-        selectedRobotId={robotId}
-        selectRobotCallback={selectRobotCallback}
-        setSelectedRobotId={setSelectedRobotId}
-        data-test="navdet-controls-robotsearch"
-      />
-      <Tooltip title={fullscreen ? 'Exit fullscreen' : 'Fullscreen'}>
-        <IconButton
-          className={classes.iconBtn}
-          onClick={toggleFullscreen}
-          size="small"
-          data-test="navdet-controls-fullscreen-"
-        >
-          {fullscreen ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
-        </IconButton>
-      </Tooltip>
-    </div>
-  );
+  // Variable to decide where to show or hide the control bar
+  // The control bar will be displayed in normal mode (not fullscreen) and when there is some action
+  // (teleopMode, waypointMode) running
+  // or the user hovers over the toolbar space (showControlBar)
+  const controlBarActive = true || !fullscreen || teleopMode || waypointMode || showControlBar;
 
   return (
     <>
@@ -437,7 +216,63 @@ const NavigationControlBar = (props) => {
           className={classNames(classes.container, backgroundClassNames)}
           onMouseLeave={onToolbarLeave}
         >
-          {isMobile ? mobileContent : desktopContent}
+          <div
+            className={classNames(classes.searchBoxContainer, {
+              [classes.fullscreenSearchBoxContainer]: fullscreen
+            })}
+          >
+            <RobotSearch
+              selectedRobotId={robotId}
+              setCollectionId={setCollectionId}
+              selectRobotCallback={selectRobotCallback}
+              setSelectedRobotId={setSelectedRobotId}
+              data-test="navdet-controls-robotsearch"
+              selectedCollectionId={selectedCollectionId}
+            />
+          </div>
+          {isMobile ? (
+            <Grid className={isMobile && classes.mobileContainer}>
+              {robot && (
+                <Lock
+                  robotId={robotId}
+                  lock={robot.lock}
+                  colorClassNames={colorClassNames}
+                  fullscreen={fullscreen}
+                />
+              )}
+              <FullscreenButton
+                fullscreen={fullscreen}
+                onClick={toggleFullscreen}
+                dataTest="navdet-controls-fullscreen-"
+                style={customIconsColor}
+              />
+            </Grid>
+          ) : (
+            <>
+              <div className={classNames(classes.actionButtonsContainer, colorClassNames)}>
+                {robot && (
+                  <Lock
+                    robotId={robotId}
+                    lock={robot.lock}
+                    colorClassNames={colorClassNames}
+                    fullscreen={fullscreen}
+                  />
+                )}
+                {/* TODO - re-add when implementd <ActionsDropdownComponent
+                  robotId={robotId}
+                  textClasses={{ root: classNames(classes.baseButtonRoot, colorClassNames) }}
+                /> */}
+              </div>
+              <div className={classes.mapSettingsContainer}>
+                <FullscreenButton
+                  fullscreen={fullscreen}
+                  onClick={toggleFullscreen}
+                  dataTest="navdet-controls-fullscreen-"
+                  style={customIconsColor}
+                />
+              </div>
+            </>
+          )}
         </div>
       </Collapse>
     </>
@@ -450,29 +285,13 @@ NavigationControlBar.propTypes = {
   fullscreen: PropTypes.bool,
   teleopMode: PropTypes.bool,
   waypointMode: PropTypes.bool,
-  // map controls
-  mapLabel: PropTypes.string,
-  mapsList: PropTypes.arrayOf(PropTypes.shape({
-    mapId: PropTypes.string,
-    label: PropTypes.string
-  })),
-  onMapChange: PropTypes.func,
-  // layers
-  layers: PropTypes.arrayOf(PropTypes.shape({
-    id: PropTypes.string,
-    label: PropTypes.string
-  })),
-  // hi-rez
-  hiRezOn: PropTypes.bool,
-  onHiRezToggle: PropTypes.func,
-  // icon actions
-  onSettingsClick: PropTypes.func,
-  onReplaceClick: PropTypes.func,
+  camerasEnabled: PropTypes.bool,
   // callbacks
   selectRobotCallback: PropTypes.func,
+  setCollectionId: PropTypes.func,
   setSelectedRobotId: PropTypes.func,
-  // injected components
-  Lock: PropTypes.elementType,
+  // components
+  Lock: PropTypes.object,
   RobotSearch: PropTypes.func
 };
 
