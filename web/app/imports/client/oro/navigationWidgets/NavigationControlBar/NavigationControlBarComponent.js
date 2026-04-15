@@ -32,7 +32,7 @@
  *
  * Meteor agnostic component
  */
-import React, { useState, useRef, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useRef, useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import {
   Chip,
@@ -237,14 +237,6 @@ const NavigationControlBar = (props) => {
 
   const onToolbarEnter = useCallback(() => setShowControlBar(true), []);
   const onToolbarLeave = useCallback(() => controlBarTimer(), [controlBarTimer]);
-
-  // Clear the auto-hide timer on unmount; prevents a state update on an
-  // unmounted component if the user leaves while the bar is fading out
-  useEffect(() => {
-    return () => {
-      if (showBarTimer.current) clearTimeout(showBarTimer.current);
-    };
-  }, []);
 
   const backgroundClassNames = useMemo(() => ({
     [classes.backgroundFullscreen]: fullscreen,
