@@ -12,7 +12,6 @@ const KEY_LOCALIZATION = 'localization';
 const KEY_INTERACTION = 'interactive';
 const KEY_GAUGES = 'gauges';
 const KEY_TELEOP = 'teleop';
-const KEY_ZONES_LIST = 'zones_list';
 
 const COLUMNS = 100;
 const ROWS = 100;
@@ -99,7 +98,6 @@ export {
   KEY_INTERACTION,
   KEY_GAUGES,
   KEY_TELEOP,
-  KEY_ZONES_LIST,
   LAYOUT_BREAKPOINTS,
   LAYOUT_COLUMNS,
 };
