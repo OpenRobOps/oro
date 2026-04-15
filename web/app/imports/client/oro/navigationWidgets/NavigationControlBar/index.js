@@ -53,7 +53,9 @@ const NavigationControlBarContainer = withTracker(({ robotId }) => {
     const subHandles = [];
 
     subHandles.push(Meteor.subscribe('preferences', { keys: ['lock'] }));
-    if (robotId) subHandles.push(Meteor.subscribe('robot.details', { robotId }));
+    if (robotId) {
+      subHandles.push(robotId && Meteor.subscribe('robot.details', { robotId }));
+    }
 
     const isLoading = subHandles.some(s => !s.ready());
 
@@ -63,7 +65,7 @@ const NavigationControlBarContainer = withTracker(({ robotId }) => {
       };
     }
 
-    const robot = Robots.findOne({ _id: robotId });
+    const robot = robotId && Robots.findOne({ _id: robotId });
     return {
       robotId,
       robot,
