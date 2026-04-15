@@ -1,47 +1,32 @@
 #!/usr/bin/env bash
+# Copyright 2026 InOrbit, Inc.
 #
-# Generate settings.json files with randomized passwords.
-# Uses Terraform to render templates from terraform/ directory.
+#    Licensed under the Apache License, Version 2.0 (the "License");
+#    you may not use this file except in compliance with the License.
+#    You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS,
+#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#    See the License for the specific language governing permissions and
+#    limitations under the License.
+#
+# Generate settings.json files using Terraform.
+# Secrets are managed by Terraform random resources and persist in state.
 #
 # Usage:
-#   ./scripts/generate-settings.sh [--apply]
+#   ./scripts/generate-settings.sh [--plan|--clean]
 #
-# Without --apply, runs "terraform plan" to preview changes.
-# With --apply, runs "terraform apply" to write the settings files.
+# Without flags, runs "terraform apply" preserving existing secrets.
+# With --plan, runs "terraform plan" to preview changes.
+# With --clean, regenerates all secrets from scratch.
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${0}")" && pwd)"
 TERRAFORM_DIR="${SCRIPT_DIR}/../terraform"
-
-# Generate random values
-generate_password() {
-  openssl rand -base64 24 | tr -d '/+=' | head -c 32
-}
-
-generate_hex_key() {
-  openssl rand -hex 32
-}
-
-# Randomize secrets
-export TF_VAR_mqtt_master_password
-TF_VAR_mqtt_master_password="$(generate_password)"
-
-export TF_VAR_mqtt_credential_encryption_key
-TF_VAR_mqtt_credential_encryption_key="$(generate_hex_key)"
-
-export TF_VAR_peer_key
-TF_VAR_peer_key="$(generate_password)"
-
-export TF_VAR_robot_api_key
-TF_VAR_robot_api_key="$(generate_password)"
-
-echo "Generated random secrets for:"
-echo "  - mqtt_master_password"
-echo "  - mqtt_credential_encryption_key"
-echo "  - peer_key"
-echo "  - robot_api_key"
-echo ""
 
 # Initialize Terraform if needed
 if [ ! -d "${TERRAFORM_DIR}/.terraform" ]; then
@@ -56,12 +41,29 @@ if [ -f "${TERRAFORM_DIR}/local.tfvars" ]; then
   LOCAL_VARS_ARG="-var-file=local.tfvars"
 fi
 
-if [ "${1:-}" = "--apply" ]; then
-  echo "Applying Terraform configuration..."
-  terraform -chdir="${TERRAFORM_DIR}" apply -auto-approve -input=false $LOCAL_VARS_ARG
-  echo ""
-  echo "Settings files generated successfully."
-else
-  echo "Planning Terraform changes (use --apply to write files)..."
-  terraform -chdir="${TERRAFORM_DIR}" plan -input=false $LOCAL_VARS_ARG
-fi
+case "${1:-}" in
+  --plan)
+    echo "Planning Terraform changes..."
+    terraform -chdir="${TERRAFORM_DIR}" plan -input=false $LOCAL_VARS_ARG
+    ;;
+  --clean)
+    echo "Regenerating all secrets and applying..."
+    terraform -chdir="${TERRAFORM_DIR}" apply -auto-approve -input=false $LOCAL_VARS_ARG \
+      -replace=random_password.mqtt_master \
+      -replace=random_id.mqtt_credential_encryption_key \
+      -replace=random_password.peer_key \
+      -replace=random_password.robot_api_key
+    echo ""
+    echo "Settings files regenerated with new secrets."
+    ;;
+  "")
+    echo "Applying Terraform configuration (preserving existing secrets)..."
+    terraform -chdir="${TERRAFORM_DIR}" apply -auto-approve -input=false $LOCAL_VARS_ARG
+    echo ""
+    echo "Settings files generated successfully."
+    ;;
+  *)
+    echo "Usage: $0 [--plan|--clean]" >&2
+    exit 1
+    ;;
+esac

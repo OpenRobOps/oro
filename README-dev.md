@@ -31,9 +31,11 @@ To configure OAuth mechanisms, create a file `terraform/local.tfvars` with some 
 # smtp_url = "smtp://USER:PASS@SOME_SMTP_SERVER:PORT"
 ```
 
-In `/scripts`, use `generate-settings.sh` to randomize passwords and create settings files (for ingest and appserver).
+In `/scripts`, use `generate-settings.sh` to generate settings files (for ingest and appserver). Secrets are managed by Terraform `random` resources and persist in state across runs, so it is safe to re-run.
 
-Preview with `generate-settings.sh`, then run `generate-settings --apply`.
+ * `generate-settings.sh` — apply the Terraform configuration, preserving existing secrets (default).
+ * `generate-settings.sh --plan` — preview changes without writing files.
+ * `generate-settings.sh --clean` — regenerate all secrets from scratch.
 
 You can check created files `web/app/settings.json` and `ingest/settings.json`; as well as further customize them.
 

@@ -1,3 +1,19 @@
+/**
+ * Copyright 2026 InOrbit, Inc.
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
 // NOTE (elvio.aruta98): disabled max-classes-per-file to avoid lot of linting errors
 // in this legacy file. Don't replicate this in new files.
 /* eslint-disable max-classes-per-file */
@@ -23,17 +39,7 @@ import RateLimiter from './rateLimiter';
 //   VITAL_AGENT_TIME_DIFF
 // } from '../shared/attributes';
 import MongoManager from '../mongo';
-// import metricsProxy from '../shared/server/metrics';
-// import {
-//   measureMsgsCount,
-//   measureMsgsSize,
-//   measureActiveRobotsLastMinute,
-//   measureBrokerUsagePercentage,
-//   measureActiveRobotsLastHour,
-//   tagKeySubtopic,
-//   tagKeyRobotId,
-//   tagKeyBrokerId
-// } from './metrics/mqtt';
+import ThrottledLogger from './throttledLogger';
 
 // Databags update topics. Same as in ingest/databags.js
 const MQTT_ROSBAG_UPLOAD_TOPIC = 'ros/rosbag/upload';
@@ -175,6 +181,7 @@ export default class OroMqtt {
     // per robot, as a performance alleviation. Saves the ts of the last
     // processed odometry entry for each robot.
     this._rateLimiterOdometry = new RateLimiter(10000); // max 0.1 Hz frequency
+    this.throttledLogger = new ThrottledLogger({ throttlingMs: 600 * 1000 });
 
     // Vitals module configuration
     // this.attrMgr = new AttributesManager();
@@ -415,7 +422,7 @@ export default class OroMqtt {
    */
   _handleMsgMetrics = async (topic, msg, packet = {}) => {
 
-    console.warn('handleMsgMetrics IGNORED', topic);
+    this.throttledLogger.warn('handleMsgMetrics', 'handleMsgMetrics IGNORED: ' + topic);
 
     // Extract robotId from topic
     // const match = topic.match(/r\/(?<robotId>[^/]*)\//);

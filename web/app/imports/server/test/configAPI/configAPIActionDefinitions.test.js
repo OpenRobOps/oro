@@ -1,4 +1,20 @@
 /**
+ * Copyright 2026 InOrbit, Inc.
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
+/**
  * Configuration as code tests for Actions
  *
  */
@@ -7,22 +23,19 @@ import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import * as sinon from 'sinon';
 import { cloneDeep } from 'lodash';
-// InOrbit modules
+// ORO modules
 import { resetDatabase } from '../setup';
 import ConfigAPI from '../../configAPI/configAPI';
 // import UIPreferencesManager from '../../uiPreferences';
 import InOrbitMqtt from '../../mqtt';
 import MqttMock from '../../test/mocks/mqtt';
 import Nav2DMock from '../../test/mocks/nav2d';
-import { createUser, createRobot, createCollections, HOOLI_TAG } from '../configAPI';
+import { createUser, createRobot,  } from '../configAPI';
 import OroRoles from '../../roles';
 import { ROLE_ADMIN, ROLE_VIEWER } from '../../../shared/roles';
 import { KIND_ACTION_DEFINITION, LIST_FORMAT_FULL } from '../../../shared/configAPI';
-import { ID_INORBIT, ID_TYPE_SYSTEM_WIDE,
-  ID_TYPE_ROBOT } from '../../../shared/constants';
 import { ACTION_TYPES, ActionDefinitions } from '../../../lib/actions';
 import ActionsEngine from '../../actions';
-import { GROUP_LABEL_NONE } from '../../../shared/uiPreferences';
 import { createDummyArgName } from '../../../shared/actions';
 
 // Just make sure this is not getting loaded in dev/prod
@@ -424,7 +437,6 @@ describe('configAPI:ActionDefinition', function () {
   });
 
   it.skip('Uses the latest group defined for an action', async () => {
-    await createCollections();
     const configObject = {
       kind: KIND_ACTION_DEFINITION,
       metadata: {
