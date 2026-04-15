@@ -19,7 +19,6 @@ import LaserRangeLayer from './LaserRangeLayer';
 import PathLayer from './PathLayer';
 import { PALETTE } from '../utils/utils';
 import CostmapLayer from './CostmapLayer';
-import RobotName from './RobotName';
 
 // Robot layers. They are rendered in the order DEFAULT_ROBOT_LAYERS_ORDER (top to bottom),
 // unless a uiPreference `map.topmostLayers` pushes any of them to the top (first in list).
@@ -133,7 +132,6 @@ function RobotLayer({
   showLaserPoints = true,
   showPaths = true,
   showBufferFootprint = false,
-  showRobotNames = false,
   robotId,
   robotDetails,
   selected
@@ -184,13 +182,6 @@ function RobotLayer({
         robotId={robotId}
         selected={selected}
       />
-      {showRobotNames && (
-        <RobotName
-          robotPose={robotPose}
-          robotDetails={robotDetails}
-          selected={selected}
-        />
-      )}
       {Object.keys(laserConfig).filter(laserId => laserId in laserRanges).map((laserId) => {
         const patchedLaserConfig = patchLaserConfig(laserConfig[laserId]);
         return [
@@ -246,7 +237,6 @@ RobotLayer.propTypes = {
   showLaserPoints: PropTypes.bool,
   showPaths: PropTypes.bool,
   showBufferFootprint: PropTypes.bool,
-  showRobotNames: PropTypes.bool,
   // Data Props
   localizationData: PropTypes.object, // contains data to be rendered for the robot
   robotDetails: PropTypes.object,

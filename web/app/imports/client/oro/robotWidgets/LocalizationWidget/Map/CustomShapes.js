@@ -31,24 +31,6 @@ const ANGLE_INCREMENT = FULL_CIRCLE / CIRCLE_POLYGON_SIDES;
 // Baseline for the avatar size using the radius
 const AVATAR_BORDER_RADIUS = 0.45;
 
-// Height of the waypoint indicator
-const WAYPOINT_HEIGHT = 0.5;
-
-// Radius of the waypoint cone
-const WAYPOINT_RADIUS = 0.2;
-
-// Radius of the inner circle of the waypoint cone marker
-const WAYPOINT_INNER_RADIUS = 0.1;
-
-// Radius of the theta-aware waypoint marker circle
-const THETA_MARKER_RADIUS = 0.15;
-
-// How far the arrow tip extends beyond the circle edge
-const THETA_ARROW_LENGTH = 0.12;
-
-// Half of the angular gap on the circle where the arrow emerges (radians)
-const THETA_ARROW_HALF_GAP = Math.PI / 6;
-
 /**
  * Creates a circle used to decorate the border ring of the robot pose avatar
  */
@@ -168,84 +150,10 @@ const createSquarePolygon = halfSize => new Polygon([[
   [-halfSize, -halfSize]]
 ]);
 
-/**
- * Creates the waypoint indicator cone as a Polygon with a circle in the middle
- */
-const waypointPolygon = () => {
-  // Draws the first line from the origin (0,0) to the the top left beginning of the cone
-  const points = [[0, 0], [-WAYPOINT_RADIUS, WAYPOINT_HEIGHT]];
-
-  // Draws the cone arc as a half a circle
-  for (let i = 1; i <= CIRCLE_POLYGON_SIDES / 2; i++) {
-    points.push([
-      Math.cos(ANGLE_INCREMENT * i) * -WAYPOINT_RADIUS,
-      WAYPOINT_HEIGHT + (Math.sin(ANGLE_INCREMENT * i) * WAYPOINT_RADIUS)
-    ]);
-  }
-
-  // Draws the inner circle of the waypoint marker
-  let i = 0;
-  for (; i <= CIRCLE_POLYGON_SIDES; i++) {
-    points.push([
-      Math.cos(ANGLE_INCREMENT * i) * WAYPOINT_INNER_RADIUS,
-      WAYPOINT_HEIGHT + (Math.sin(ANGLE_INCREMENT * i) * WAYPOINT_INNER_RADIUS)
-    ]);
-  }
-  i--;
-  points.push([
-    Math.cos(ANGLE_INCREMENT * i) * WAYPOINT_RADIUS,
-    WAYPOINT_HEIGHT + (Math.sin(ANGLE_INCREMENT * i) * WAYPOINT_RADIUS)
-  ]);
-
-  return new Polygon([points]);
-};
-
-/**
- * Creates a circle-with-arrow marker for waypoints that have theta.
- * The arrow points along the positive X axis (theta = 0); callers rotate by theta.
- * Shape: a filled circle with a triangular pointer emerging from the right side.
- */
-const waypointThetaPolygon = () => {
-  const r = THETA_MARKER_RADIUS;
-  const innerR = r * 0.5;
-  const tipX = r + THETA_ARROW_LENGTH;
-  const gap = THETA_ARROW_HALF_GAP;
-  const points = [];
-
-  // Trace the outer circle from the top edge of the arrow gap, counter-clockwise
-  // all the way around to the bottom edge of the gap (≈300° of arc)
-  const startAngle = gap;
-  const endAngle = FULL_CIRCLE - gap;
-  for (let a = startAngle; a <= endAngle; a += ANGLE_INCREMENT) {
-    points.push([r * Math.cos(a), r * Math.sin(a)]);
-  }
-  // Ensure we land exactly at the bottom edge of the gap
-  points.push([r * Math.cos(endAngle), r * Math.sin(endAngle)]);
-
-  // Arrow tip extending to the right
-  points.push([tipX, 0]);
-
-  // Close back to start of outer circle
-  points.push([r * Math.cos(startAngle), r * Math.sin(startAngle)]);
-
-  // Inner circle as a separate ring — wound clockwise to create a transparent hole
-  const innerRing = [];
-  for (let a = CIRCLE_POLYGON_SIDES; a >= 0; a--) {
-    innerRing.push([
-      Math.cos(ANGLE_INCREMENT * a) * innerR,
-      Math.sin(ANGLE_INCREMENT * a) * innerR
-    ]);
-  }
-
-  return new Polygon([points, innerRing]);
-};
-
 export {
   avatarArrowPolygon,
   createAvatarArrowPolygon,
   createRotationIndicatorPolygons,
-  waypointPolygon,
-  waypointThetaPolygon,
   createAvatarBorderRing,
   avatarBorderRing,
   createSquarePolygon,

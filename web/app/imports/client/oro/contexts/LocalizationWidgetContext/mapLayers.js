@@ -7,12 +7,6 @@ const NAVIGATION_MAP_LAYER_COSTMAP = 'costmap';
 const NAVIGATION_MAP_LAYER_POSE_OUTLINE = 'poseOutline';
 const NAVIGATION_MAP_LAYER_LIDARS = 'lidars';
 const NAVIGATION_MAP_LAYER_PATHS = 'paths';
-const NAVIGATION_MAP_LAYER_ROBOT_NAMES = 'robotNames';
-const NAVIGATION_MAP_LAYER_NAMED_WAYPOINTS = 'namedWaypoints';
-const NAVIGATION_MAP_LAYER_NAMED_ZONES = 'namedZones';
-const NAVIGATION_MAP_LAYER_EDGES = 'edges';
-const NAVIGATION_MAP_FILTER_LAYER_ZONE_NAMES = 'zoneNamesFilter';
-const NAVIGATION_MAP_FILTER_LAYER_ZONE_TYPES = 'zoneTypesFilter';
 
 /**
  * List with all the necessary information to display the layers on the map
@@ -50,41 +44,6 @@ const MAP_LAYERS = [
       isVisible: true
     }
   },
-  {
-    id: NAVIGATION_MAP_LAYER_ROBOT_NAMES,
-    label: 'Name',
-    defaultState: {
-      isVisible: false
-    }
-  },
-  {
-    id: NAVIGATION_MAP_LAYER_NAMED_WAYPOINTS,
-    label: 'Waypoint',
-    defaultState: {
-      isVisible: false,
-      isEditable: true
-    }
-  },
-  {
-    id: NAVIGATION_MAP_LAYER_NAMED_ZONES,
-    label: 'Zone',
-    defaultState: {
-      isVisible: false,
-      isEditable: true
-    },
-    subMenu: [
-      {
-        id: NAVIGATION_MAP_FILTER_LAYER_ZONE_TYPES
-      }
-    ]
-  },
-  {
-    id: NAVIGATION_MAP_LAYER_EDGES,
-    label: 'Edge',
-    defaultState: {
-      isVisible: false
-    }
-  }
 ];
 
 export {
@@ -93,10 +52,4 @@ export {
   NAVIGATION_MAP_LAYER_LIDARS,
   NAVIGATION_MAP_LAYER_POSE_OUTLINE,
   NAVIGATION_MAP_LAYER_PATHS,
-  NAVIGATION_MAP_LAYER_ROBOT_NAMES,
-  NAVIGATION_MAP_LAYER_NAMED_WAYPOINTS,
-  NAVIGATION_MAP_LAYER_NAMED_ZONES,
-  NAVIGATION_MAP_LAYER_EDGES,
-  NAVIGATION_MAP_FILTER_LAYER_ZONE_NAMES,
-  NAVIGATION_MAP_FILTER_LAYER_ZONE_TYPES
 };

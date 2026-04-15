@@ -23,7 +23,6 @@ import {
   NAVIGATION_MAP_LAYER_LIDARS,
   NAVIGATION_MAP_LAYER_POSE_OUTLINE,
   NAVIGATION_MAP_LAYER_PATHS,
-  NAVIGATION_MAP_LAYER_ROBOT_NAMES,
 } from '../../contexts/LocalizationWidgetContext/mapLayers';
 
 // Variants the Localization widget allows
@@ -208,7 +207,6 @@ function Localization({
               && isLayerVisible(NAVIGATION_MAP_LAYER_PATHS)}
             showLaserPoints={selectedRobotId === rId
               && isLayerVisible(NAVIGATION_MAP_LAYER_LIDARS)}
-            showRobotNames={isLayerVisible(NAVIGATION_MAP_LAYER_ROBOT_NAMES)}
             selected={selectedRobotId == rId}
           />
         ))}
