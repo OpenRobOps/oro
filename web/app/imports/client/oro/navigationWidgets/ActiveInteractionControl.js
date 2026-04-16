@@ -1,4 +1,20 @@
 /**
+ * Copyright 2026 InOrbit, Inc.
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
+/**
  * ActiveInteractionControl
  *
  * Vertical toolbar with buttons for robot interaction in NavigationDetail:
@@ -107,7 +123,7 @@ const useStyles = makeStyles()(theme => ({
 /**
  * Small icon button for the nav sidebar. Highlights when `active`.
  */
-const NavButton = ({ tooltip, onClick, disabled, active, activeVariant = 'primary', dataTest, children }) => {
+const NavButton = ({ tooltip, onClick, disabled, active, activeVariant = 'primary', children }) => {
   const { classes } = useStyles();
   const btn = (
     <IconButton
@@ -117,7 +133,6 @@ const NavButton = ({ tooltip, onClick, disabled, active, activeVariant = 'primar
         active: active && activeVariant === 'primary',
         'active-secondary': active && activeVariant === 'secondary'
       })}
-      data-test={dataTest}
       size="medium"
     >
       {children}
@@ -137,7 +152,6 @@ NavButton.propTypes = {
   disabled: PropTypes.bool,
   active: PropTypes.bool,
   activeVariant: PropTypes.oneOf(['primary', 'secondary']),
-  dataTest: PropTypes.string,
   children: PropTypes.node,
 };
 
@@ -174,13 +188,13 @@ const ActiveInteractionControl = ({
 
       {/* Group 1: zoom controls */}
       <Grid item xs={12} className={classes.firstIconContainer}>
-        <NavButton tooltip="Reset zoom" onClick={handleResetZoom} disabled={isZeroData} dataTest="localization-zoom-reset">
+        <NavButton tooltip="Reset zoom" onClick={handleResetZoom} disabled={isZeroData}>
           <CompassIcon />
         </NavButton>
-        <NavButton tooltip="Zoom in" onClick={handleIncreaseZoom} disabled={isZeroData} dataTest="localization-zoom-in">
+        <NavButton tooltip="Zoom in" onClick={handleIncreaseZoom} disabled={isZeroData}>
           <ZoomInIcon />
         </NavButton>
-        <NavButton tooltip="Zoom out" onClick={handleDecreaseZoom} disabled={isZeroData} dataTest="localization-zoom-out">
+        <NavButton tooltip="Zoom out" onClick={handleDecreaseZoom} disabled={isZeroData}>
           <ZoomOutIcon />
         </NavButton>
       </Grid>
@@ -188,17 +202,17 @@ const ActiveInteractionControl = ({
       {/* Group 2: interaction controls */}
       <Grid item xs={12} className={classes.secondIconContainer}>
         {isPanelVisibleFn(KEY_TELEOP) && (
-          <NavButton tooltip={offlineMsg || 'Relocalize'} onClick={handleRelocalize} disabled={robotOffline && isZeroData} active={isRelocalizeActive} dataTest="localization-robot-relocalize">
+          <NavButton tooltip={offlineMsg || 'Relocalize'} onClick={handleRelocalize} disabled={robotOffline && isZeroData} active={isRelocalizeActive}>
             <LocalizeIcon />
           </NavButton>
         )}
         {isPanelVisibleFn(KEY_TELEOP) && (
-          <NavButton tooltip={offlineMsg || 'Precision Teleop'} onClick={handlePrecision} disabled={robotOffline && isZeroData} active={isPrecisionActive} dataTest="localization-robot-precision">
+          <NavButton tooltip={offlineMsg || 'Precision Teleop'} onClick={handlePrecision} disabled={robotOffline && isZeroData} active={isPrecisionActive}>
             <MyLocationIcon />
           </NavButton>
         )}
         {isPanelVisibleFn(KEY_TELEOP) && (
-          <NavButton tooltip={offlineMsg || 'Open Teleop'} onClick={handleTeleop} disabled={robotOffline && isZeroData} active={isTeleopActive} activeVariant="secondary" dataTest="localization-robot-teleop">
+          <NavButton tooltip={offlineMsg || 'Open Teleop'} onClick={handleTeleop} disabled={robotOffline && isZeroData} active={isTeleopActive} activeVariant="secondary">
             <RetroPadIcon />
           </NavButton>
         )}
@@ -220,7 +234,6 @@ const ActiveInteractionControl = ({
               <IconButton
                 disabled={robotOffline && isZeroData}
                 onClick={handleConfirm}
-                data-test="navdet-controls-confirm"
                 className={classnames(classes.confirmButton, { [classes.confirmDarkMode]: isDarkMode })}
                 size="large"
               >

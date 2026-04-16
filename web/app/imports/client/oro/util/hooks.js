@@ -81,19 +81,9 @@ const useActionsConfig = (robotId) => {
   }, [robotId, queryArgs]);
 };
 
-/**
- * Stub: fetches global UI preferences for a widget.
- * TODO: Implement with a real UIPreferences Meteor collection.
- * @returns {{ data: null, isLoading: false }}
- */
-const useUIPreferences = (_widget) => {
-  return { data: null, isLoading: false };
-};
-
 export {
   useRobotData,
   useIsRobotMoving,
   useRobotLocation,
   useActionsConfig,
-  useUIPreferences,
 };

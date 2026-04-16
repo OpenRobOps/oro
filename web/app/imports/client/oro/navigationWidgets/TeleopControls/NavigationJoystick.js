@@ -1,4 +1,20 @@
 /**
+ * Copyright 2026 InOrbit, Inc.
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
+/**
  * Navigation joystick
  * Simple, controlled component that displays 4 directions control arrows and a nipple control.
  *
@@ -11,7 +27,7 @@ import { IconButton, useTheme } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
 import { ArrowUp, ArrowRight, ArrowDown, ArrowLeft } from 'lucide-react';
 // ORO Modules
-import ReactNipple from '../../../lib/ReactNipple';
+import NippleJoystick from '../../../lib/NippleJoystick';
 
 const ROW_HEIGHT = '55px';
 
@@ -286,7 +302,6 @@ function NavigationJoystick(props) {
             {...forward}
             classes={{ root: classes.iconButton }}
             disabled={disabled}
-            data-test="navdet-controls-teleop-forward"
             size="large">
             <ArrowUp
               className={classNames(classes.iconButtonRoot, {
@@ -302,7 +317,6 @@ function NavigationJoystick(props) {
             {...left}
             classes={{ root: classes.iconButton }}
             disabled={disabled}
-            data-test="navdet-controls-teleop-left"
             size="large">
             <ArrowLeft
               className={classNames(classes.iconButtonRoot, {
@@ -313,8 +327,8 @@ function NavigationJoystick(props) {
             />
           </IconButton>
           <div className={classes.nippleContainer}>
-            { !stepwiseMode && (
-              <ReactNipple
+            {!stepwiseMode && (
+              <NippleJoystick
                 id={uniqueNodeId}
                 ref={joystickRef}
                 options={{
@@ -332,7 +346,6 @@ function NavigationJoystick(props) {
                 onCreated={applyJoystickStyle}
                 onMove={onJoystickMove}
                 onEnd={onJoystickMove}
-                data-test="navdet-controls-joystick"
               />
             )}
           </div>
@@ -340,7 +353,6 @@ function NavigationJoystick(props) {
             {...right}
             classes={{ root: classes.iconButton }}
             disabled={disabled}
-            data-test="navdet-controls-teleop-right"
             size="large">
             <ArrowRight
               className={classNames(classes.iconButtonRoot, {
@@ -356,7 +368,6 @@ function NavigationJoystick(props) {
             {...back}
             classes={{ root: classes.iconButton }}
             disabled={disabled}
-            data-test="navdet-controls-teleop-back"
             size="large">
             <ArrowDown
               className={classNames(classes.iconButtonRoot, {
