@@ -1,3 +1,5 @@
+/* CSS overrides for OpenLayers map and overlay elements */
+
 .ol-map {
   min-width: 60px;
   min-height: 50px;
