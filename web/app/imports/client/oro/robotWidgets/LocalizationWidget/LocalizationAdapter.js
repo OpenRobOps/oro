@@ -64,7 +64,6 @@ function LocalizationAdapter({
   robotIds,
   robotsLoading,
   missionWaypointSteps,
-  locationId
 }) {
   // If no robot IDs are passed, choose the default one
   const robotIdsToQuery = useMemo(() => {
@@ -117,7 +116,7 @@ function LocalizationAdapter({
     state,
     dispatch,
     LOCALIZATION_DATA_TYPE.MAP,
-    { entityId: mainRobotId, label: mapLabel, locationId }
+    { entityId: mainRobotId, label: mapLabel }
   );
 
   // Fetch robot online/offline data
@@ -197,7 +196,6 @@ LocalizationAdapter.propTypes = {
   isZeroData: PropTypes.bool, // indicates if the widget should show the zero data placeholder
   missionWaypointSteps: PropTypes.array, // list of mission steps of type waypoint
   lowBandwidth: PropTypes.bool, // whether in high data freq or low
-  locationId: PropTypes.string
 };
 
 // We are passing the same component as ZeroDataComponent

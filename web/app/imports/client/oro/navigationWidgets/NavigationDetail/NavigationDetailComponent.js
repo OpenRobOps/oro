@@ -107,7 +107,6 @@ const NavigationDetailComponent = (props) => {
     isZeroData,
     options,
     isFullscreen,
-    locationId,
     onFeedback,
   } = props;
 
@@ -164,7 +163,6 @@ const NavigationDetailComponent = (props) => {
               variant={LOCALIZATION_VARIANTS.NAVIGATION_DETAIL}
               mapLabel={mapLabel}
               isZeroData={isZeroData}
-              locationId={locationId}
             />
           </div>
         </ResponsiveGridLayout>

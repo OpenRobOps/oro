@@ -14,7 +14,6 @@
  *    limitations under the License.
  */
 
-import { useMemo } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
 // ORO modules
@@ -22,7 +21,6 @@ import { Robots } from '../../../lib/collections';
 import { ActionDefinitions } from '../../../lib/actions';
 import { fetchRobotAttributeValues } from '../../../lib/attributes';
 import { VITAL_SPEED_LINEAR, VITAL_SPEED_ANGULAR } from '../../../shared/attributes';
-import { ID_TYPE_ROBOT } from '../../../shared/constants';
 
 /**
  * Receives a robotId and returns the robot.
@@ -48,31 +46,24 @@ const useIsRobotMoving = robotId => useTracker(() => {
 }, [robotId]);
 
 /**
- * Returns the actions config for a robot — a map from actionId to action definition.
- * @param {string} robotId
+ * Returns all actions config — a map from actionId to action definition.
+ * Actions in oro are global (not per-entity), so no entityId/entityType needed.
  * @returns {{ data: Object, isLoading: boolean }}
  */
-const useActionsConfig = (robotId) => {
-  const queryArgs = useMemo(
-    () => ({ entityId: robotId, entityType: ID_TYPE_ROBOT }),
-    [robotId]
-  );
-  return useTracker(() => {
-    if (!robotId) return { data: {}, isLoading: false };
-    const handle = Meteor.subscribe('actions.config', queryArgs);
-    const docs = ActionDefinitions.find(queryArgs).fetch();
-    // Build a map from actionId to action definition
-    const data = docs.reduce((acc, doc) => {
-      if (doc.actionId) acc[doc.actionId] = doc;
-      return acc;
-    }, {});
-    return { data, isLoading: !handle.ready() };
-  }, [robotId, queryArgs]);
-};
+const useActionsConfig = () => useTracker(() => {
+  const handle = Meteor.subscribe('actions.config');
+  const docs = ActionDefinitions.find({}).fetch();
+  // Build a map from actionId to action definition
+  const data = docs.reduce((acc, doc) => {
+    const key = doc.actionId || doc._id;
+    if (key) acc[key] = doc;
+    return acc;
+  }, {});
+  return { data, isLoading: !handle.ready() };
+}, []);
 
 export {
   useRobotData,
   useIsRobotMoving,
-  useRobotLocation,
   useActionsConfig,
 };

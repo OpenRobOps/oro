@@ -33,7 +33,6 @@ const LocalizationWithMapInteraction = (props) => {
     robotIds: locationRobotIds = [],
     options,
     selectedRobotId,
-    locationId,
     defaultMap
   } = props;
 
@@ -68,7 +67,6 @@ const LocalizationWithMapInteraction = (props) => {
       onMapPanEnd={onMapPanEnd}
       dimmed={dimmed}
       robotIds={robotIds}
-      locationId={locationId}
       mapLabel={defaultMap}
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...props}
@@ -82,7 +80,6 @@ LocalizationWithMapInteraction.propTypes = {
   robotIds: PropTypes.array,
   options: PropTypes.object,
   selectedRobotId: PropTypes.string,
-  locationId: PropTypes.string,
   defaultMap: PropTypes.string
 };
 

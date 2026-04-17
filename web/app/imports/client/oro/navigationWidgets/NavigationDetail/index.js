@@ -36,7 +36,7 @@ import { useDarkModeContext } from '../../contexts/DarkModeContext';
 import WithActionsContext from '../../util/WithActionsContext';
 import LoadingCircle from '../../util/LoadingCircle';
 import ActiveInteractionExecutors from './ActiveInteractionExecutors';
-import { useRobotData, useRobotLocation } from '../../util/hooks';
+import { useRobotData } from '../../util/hooks';
 import NavigationDetailComponent from './NavigationDetailComponent';
 import useConfirmationSnackbar from '../../util/useConfirmationSnackbar';
 
@@ -86,7 +86,6 @@ function NavigationDetail({
   const containerRef = useRef(null);
   const { data: robot } = useRobotData(robotId) || EMPTY_ROBOT_DATA;
   const robotOffline = !(robot?.status?.agentOnline);
-  const { locationId } = useRobotLocation({ robot });
   const { setIsDarkMode } = useDarkModeContext();
   const { openDialog, ConfirmationDialog } = useConfirmationSnackbar();
   const containerSize = useSize(containerRef);
@@ -135,7 +134,6 @@ function NavigationDetail({
                 robotOffline={robotOffline}
                 isFullscreen={isFullscreen}
                 containerSize={containerSize}
-                locationId={locationId}
                 onFeedback={openDialog}
               />
             </>
