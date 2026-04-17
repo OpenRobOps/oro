@@ -25,10 +25,9 @@ import PropTypes from 'prop-types';
 // ORO Modules
 import WaypointNav from './WaypointNav';
 import Relocalize from './Relocalize';
-import PrecisionWaypoint from './PrecisionWaypoint';
 import { useActiveInteraction } from '../../../contexts/ActiveInteractionContext';
 import {
-  MULTI_NAVIGATE_MODE, NAVIGATE_MODE, PRECISION_MODE, RELOCALIZE_MODE
+  MULTI_NAVIGATE_MODE, NAVIGATE_MODE, RELOCALIZE_MODE
 } from '../../../navigationWidgets/interactions';
 
 /**
@@ -61,13 +60,6 @@ const InteractionPicker = ({
     case RELOCALIZE_MODE:
       return (
         <Relocalize
-          robotLocalizationData={robotLocalizationData}
-          uiPreferences={uiPreferences}
-        />
-      );
-    case PRECISION_MODE:
-      return (
-        <PrecisionWaypoint
           robotLocalizationData={robotLocalizationData}
           uiPreferences={uiPreferences}
         />

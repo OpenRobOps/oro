@@ -20,7 +20,6 @@
 const TELEOP_MODE = 'teleop';
 const NAVIGATE_MODE = 'navigation';
 const MULTI_NAVIGATE_MODE = 'multi-waypoint';
-const PRECISION_MODE = 'precision';
 const RELOCALIZE_MODE = 'relocalize';
 const WAYPOINT_EDIT_MODE = 'waypointEdit';
 
@@ -31,7 +30,6 @@ const INTERACTION_MODES = {
   NAVIGATE_MODE,
   MULTI_NAVIGATE_MODE,
   RELOCALIZE_MODE,
-  PRECISION_MODE,
   WAYPOINT_EDIT_MODE,
 };
 
@@ -39,7 +37,6 @@ export {
   TELEOP_MODE,
   NAVIGATE_MODE,
   MULTI_NAVIGATE_MODE,
-  PRECISION_MODE,
   RELOCALIZE_MODE,
   WAYPOINT_EDIT_MODE,
   INTERACTION_MODES,

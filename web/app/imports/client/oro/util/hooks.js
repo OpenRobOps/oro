@@ -48,17 +48,6 @@ const useIsRobotMoving = robotId => useTracker(() => {
 }, [robotId]);
 
 /**
- * Returns the locationId for the given robot object.
- * In oro, locationId is stored directly on the robot document.
- * @param {{ robot: object }} params
- * @returns {{ locationId: string|undefined, isLoading: boolean }}
- */
-const useRobotLocation = ({ robot } = {}) => {
-  const locationId = robot?.locationId;
-  return { locationId, isLoading: false };
-};
-
-/**
  * Returns the actions config for a robot — a map from actionId to action definition.
  * @param {string} robotId
  * @returns {{ data: Object, isLoading: boolean }}

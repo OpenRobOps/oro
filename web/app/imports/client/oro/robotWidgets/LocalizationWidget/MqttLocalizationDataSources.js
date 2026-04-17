@@ -40,9 +40,6 @@ import {
   singleRobotLocalizationData
 } from './LocalizationDataTypes';
 import { wrapHookAsDataSource } from '../../contexts/RobotsDataContext/RobotsDataContext';
-import { useSpatialTransformations,
-  useLocalizationDataToSublocationTransformation,
-  usePathsToSublocationTransformation } from './SpatialTransformations';
 import { deltaIntDecodePoints } from '../../../../shared/arrayUtil';
 
 // eslint-disable-next-line no-unused-vars
@@ -132,16 +129,6 @@ function useDirectClientLocalizationData({ robotIds }, cb = null) {
     decodeFunc: decodePaths
   });
 
-  const spatialTransformations = useSpatialTransformations(robotIds);
-
-  const localizationDataRobotTSublocation = useLocalizationDataToSublocationTransformation(
-    spatialTransformations
-  );
-
-  const pathsRobotTSublocation = usePathsToSublocationTransformation(
-    spatialTransformations
-  );
-
   // Important NOTE: DO NOT invoke cb(directLocalizationData) here, as this
   // code runs during a render: Instead, do it only when directLocalizationData or
   // directPathsData change, wrapping the callback call in a useEffect().
@@ -151,12 +138,12 @@ function useDirectClientLocalizationData({ robotIds }, cb = null) {
 
   // This effect gets executed for every localization update
   useEffect(() => {
-    cb && cb(localizationDataRobotTSublocation(directLocalizationData));
+    cb && cb(directLocalizationData);
   }, [directLocalizationData]);
 
   // This effect gets executed for every path update
   useEffect(() => {
-    cb && cb(pathsRobotTSublocation(directPathsData));
+    cb && cb(directPathsData);
   }, [directPathsData]);
 }
 

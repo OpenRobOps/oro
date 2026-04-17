@@ -117,7 +117,6 @@ const NavigationDetailComponent = (props) => {
   const waypointNavMode = (
     activeInteraction === INTERACTION_MODES.NAVIGATE_MODE
     || activeInteraction === INTERACTION_MODES.RELOCALIZE_MODE
-    || activeInteraction === INTERACTION_MODES.PRECISION_MODE
   );
 
   const activeInteractionBorder = {
