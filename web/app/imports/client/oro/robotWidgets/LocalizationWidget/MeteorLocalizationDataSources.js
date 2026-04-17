@@ -31,7 +31,7 @@ import { useTracker } from 'meteor/react-meteor-data';
 import { Meteor } from 'meteor/meteor';
 // ORO Modules
 import { Robots, RobotLocalization, RobotVitals, SpatialAnnotations } from '../../../../lib/collections';
-import { arrayToMapById } from '../../../../lib/util';
+import { keyBy } from 'lodash';
 import {
   multipleRobotsLocalizationData, mapData, rttData, robotDetailsData
 } from './LocalizationDataTypes';
@@ -57,7 +57,7 @@ function useMeteorLocalizationData({ robotIds, lowBandwidth }, cb = null) {
     const p = RobotLocalization.find({ _id: { $in: robotIds } }).fetch()
       .map((l) => { l.src = 'meteor'; return l; });
     // Convert from array to object indexed by robotId
-    const localizationData = arrayToMapById(p);
+    const localizationData = keyBy(p, '_id');
     const data = {
       isLoading: !sub.ready(),
       localizationData

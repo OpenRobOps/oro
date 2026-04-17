@@ -29,7 +29,7 @@
 import { Meteor } from 'meteor/meteor';
 import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
-import { isEmpty } from 'lodash';
+import { isEmpty, keyBy } from 'lodash';
 import Localization from './Localization';
 import { LOCALIZATION_DATA_TYPE } from './LocalizationDataTypes';
 import {
@@ -37,7 +37,6 @@ import {
 } from '../../contexts/RobotsDataContext/RobotsDataContext';
 import WithNoDataMessage from '../../util/WithNoDataMessage';
 import Map from './Map';
-import { arrayToMapById } from '../../../../lib/util';
 
 // Constant arrays to avoid new objects and re-renders
 const EMPTY_ANNOTATIONS_LIST = [];
@@ -124,7 +123,7 @@ function LocalizationAdapter({
   // Fetch robot online/offline data
   useDataSource(state, dispatch, LOCALIZATION_DATA_TYPE.DETAILS, { robotIds: robotIdsToQuery });
   const robotDetails = useMemo(
-    () => arrayToMapById(state.robotDetails || [], '_id'),
+    () => keyBy(state.robotDetails || [], '_id'),
     [state.robotDetails]
   );
 
