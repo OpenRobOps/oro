@@ -363,12 +363,12 @@ export default class AgentManager {
     // Make GPSAgentlet loaded by default (new method)
     // TODO Move to AgentManager when migrating from old AgentModuleRequests
     // based method
-    await RobotModuleState.insertAsync({
-      entityId,
-      entityType,
-      moduleName: 'GPSAgentlet',
-      minRunlevel: 5
-    });
+    // await RobotModuleState.insertAsync({
+    //   entityId,
+    //   entityType,
+    //   moduleName: 'GPSAgentlet',
+    //   minRunlevel: 5
+    // });
     // Make RosTeleopAgentlet publish zero vel at the end of teleop by default
     // This prevents the last command being a vel value which can cause infinite movement
     await RobotModuleState.insertAsync({
