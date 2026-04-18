@@ -162,6 +162,14 @@ message MapMessage {
   string label = 9;
   // Python hash over the map's occupancy grid data tuple
   int64 data_hash = 10;
+  // Either ROS frame_id or inorbit frame_id
+  string frame_id = 11;
+  // map unique identifier, deprecates label(9)
+  string map_id = 12;
+  // Flag to inform if the message is due to a map_id or frame_id update
+  bool is_update = 13;
+  // Format Version to indicate map format
+  int32 formatVersion = 14;
 }
 
 // Used by ingest to request a map to be loaded from the robot to the cloud

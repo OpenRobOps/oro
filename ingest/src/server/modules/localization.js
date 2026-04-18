@@ -647,7 +647,7 @@ export default class RobotLocalizationModule {
     console.log('onPath: robotId=', robotId, 'msg=', msg);
     const decodedMsg = this.PathDataMessage.decode(msg);
     // Get cached config per robot
-    const { storePath, rateLimitMsPerPath = {} } = await this._agentModuleCache.get(robotId);
+    const { storePath, rateLimitMsPerPath = {} } = {} // TODO re-enable await this._agentModuleCache.get(robotId);
 
     // Filter empty and rate limited paths
     const paths = ((decodedMsg && decodedMsg.paths) || []).filter(({ pathId, ts }) => {
@@ -672,19 +672,6 @@ export default class RobotLocalizationModule {
       }
     }
 
-    // Transform each path to the sublocation world frame if spatial transformations are configured
-    for (const path of paths) {
-      // eslint-disable-next-line no-await-in-loop
-      const robotTsublocation = await this._getToSublocationWorldFrameTransformation(
-        robotId,
-        path.frameId
-      );
-      if (robotTsublocation) {
-        path.points = path.points.map((p) => transformPose(p, robotTsublocation));
-        path.frameId = robotTsublocation.frameId;
-      }
-    }
-
     // Build the updates for localization db object
     // Collect points, from each protobuf PathPoint object
     const updates = {};
@@ -703,6 +690,7 @@ export default class RobotLocalizationModule {
     const msgTs = decodedMsg.ts && Number.parseInt(decodedMsg.ts, 10);
     // NOTE: Request per-key updates to avoid overwriting paths that weren't
     // provided in this call
+    console.log("onPath: updates=", updates);
     await this._doUpdate(robotId, updates, LOCALIZATION_SUBOBJECTS.PATH, msgTs, true);
 
     // Store the paths, if enabled for the robot
