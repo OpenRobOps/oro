@@ -1054,7 +1054,6 @@ export {
   validateUrl,
   UNDEFINED_VALUE,
   toTimestampMilliseconds,
-  mapByIdToArray,
   groupDuplicateElements,
   isIncluded,
   formatNumber

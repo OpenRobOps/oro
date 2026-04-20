@@ -803,6 +803,8 @@ Schemas.preferences = new SimpleSchema({
   dataSources: { type: Object, blackbox: true, optional: true },
 }, { requiredByDefault: false });
 
+const SpatialAnnotations = new Mongo.Collection(COLLECTIONS.SPATIAL_ANNOTATIONS);
+
 const SpatialTransformations = new Mongo.Collection(COLLECTIONS.SPATIAL_TRANSFORMATIONS);
 /**
  *  entityId,
@@ -841,6 +843,7 @@ export {
   RobotLocalization,
   RobotLogs,
   RobotModuleState,
+  SpatialAnnotations,
   SpatialTransformations,
   UIPreferences,
   VDA5050LayoutsDefinition,

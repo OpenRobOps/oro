@@ -41,8 +41,6 @@ import classNames from 'classnames';
 // import ActionsDropdownComponent from '../ActionsDropdown';
 import { useFullscreenContext } from '../../contexts/FullscreenContext';
 import FullscreenButton from '../../util/FullscreenButton';
-import { useActiveInteraction } from '../../contexts/ActiveInteractionContext';
-import { ZONE_EDIT_MODE } from '../interactions';
 
 // Time in ms that the control bar will close after the user
 // loses focus on the control bar (only for fullscreen)
@@ -128,9 +126,6 @@ const NavigationControlBar = (props) => {
 
   const { classes, theme } = useStyles();
   const isMobile = useMediaQuery('(max-width:900px)');
-  const { activeInteraction } = useActiveInteraction();
-  const isEditZonesActive = activeInteraction == ZONE_EDIT_MODE;
-
   const { toggleFullscreen } = useFullscreenContext();
   const showBarTimer = useRef(null);
 

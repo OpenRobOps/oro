@@ -17,7 +17,7 @@
 /**
  * Dashboard Meteor dependant component
  */
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect } from 'react';
 import { Meteor } from 'meteor/meteor';
 import PropTypes from 'prop-types';
 import fp from 'lodash/fp';
@@ -34,11 +34,11 @@ import ListData from '../robotWidgets/ListDataWidget';
 // import DataBagsToolbar from './widgetToolbars/DataBagsToolbar';
 import LiveButtonToolbar from './widgetToolbars/LiveButtonToolbar';
 import IncidentsFilter from './widgetToolbars/ToolbarFilters/IncidentsFilter';
-// import LocalizationAdapter from '../robotWidgets/LocalizationWidget/LocalizationAdapter';
+import LocalizationAdapter from '../robotWidgets/LocalizationWidget/LocalizationAdapter';
 import CustomDataWidget from '../robotWidgets/CustomDataWidget';
 // import ImageWidget from '../robotWidgets/ImageWidget';
 import { WIDGET_TYPES, WIDGET_TYPES_IDS } from '../../../lib/uiPreferences';
-// import NavigationDetail from '../navigationWidgets/NavigationDetail';
+import NavigationDetail from '../navigationWidgets/NavigationDetail';
 // import TimelineWidget from '../robotWidgets/TimelineWidget';
 import VitalsWidget from '../robotWidgets/VitalsWidget';
 // import DiagnosticsWidget from '../robotWidgets/DiagnosticsWidget';
@@ -91,9 +91,9 @@ import NavigationControlBar from '../navigationWidgets/NavigationControlBar';
 // import { DATA_BAG_VARIANT } from '../robotWidgets/DataBagWidget/constants';
 // import TimelineFilter from './widgetToolbars/ToolbarFilters/TimelineFilter';
 import IncidentTimelineFilter from './widgetToolbars/ToolbarFilters/IncidentTimelineFilter';
-// import { DEFAULT_DATA_SOURCES } from '../robotWidgets/LocalizationWidget/LocalizationDataSources';
-// import { RobotsDataProvider } from '../contexts/RobotsDataContext/RobotsDataContext';
-// import { LOCALIZATION_VARIANTS } from '../robotWidgets/LocalizationWidget/Localization';
+import { DEFAULT_DATA_SOURCES } from '../robotWidgets/LocalizationWidget/LocalizationDataSources';
+import { RobotsDataProvider } from '../contexts/RobotsDataContext/RobotsDataContext';
+import { LOCALIZATION_VARIANTS } from '../robotWidgets/LocalizationWidget/Localization';
 // import { useZeroData } from '../util/hooks';
 // import { MissionControlBarComponentWithMissionCtx } from '../missionWidgets/MissionControlBar';
 
@@ -320,7 +320,7 @@ const LocalizationWidgetWithContext = ({
   config
   /* eslint-enable react/prop-types */
 }) => {
-  const localizationFilter = useMemo(() => {});
+  const localizationFilter = {};
   return (
     <RobotsDataProvider dataSources={DEFAULT_DATA_SOURCES}>
       <LocalizationAdapter
@@ -584,14 +584,14 @@ const WIDGET_FACTORY = {
     </NowTimeContext.Consumer>
   ),
 
-  // [WIDGET_TYPES_IDS.NAVIGATION]: ({ context, scope, setContext, isZeroData }) => (
-  //   <NavigationDetailWithContext
-  //     context={context}
-  //     scope={scope}
-  //     setContext={setContext}
-  //     isZeroData={isZeroData}
-  //   />
-  // ),
+  [WIDGET_TYPES_IDS.NAVIGATION]: ({ context, scope, setContext, isZeroData }) => (
+    <NavigationDetailWithContext
+      context={context}
+      scope={scope}
+      setContext={setContext}
+      isZeroData={isZeroData}
+    />
+  ),
 
   [WIDGET_TYPES_IDS.FLEET_STATUS]: ({
     config, context, setContext, scope
@@ -829,6 +829,7 @@ const WIDGET_FACTORY = {
     <NavigationControlBar
       robotId={getRobotId(context, scope)}
       selectRobotCallback={setRobotId(setContext, scope)}
+      setSelectedRobotId={setRobotId(setContext, scope)}
     />
   ),
 

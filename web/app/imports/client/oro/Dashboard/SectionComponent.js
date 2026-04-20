@@ -37,7 +37,8 @@ import classnames from 'classnames';
 import DashboardWidgetWrapper from './DashboardWidgetWrapper';
 import { SECTION_SCOPES, WIDGET_CONFIG, WIDGET_TYPE_GROUP, WIDGET_TYPES_IDS } from '../../../lib/uiPreferences';
 import { ActiveInteractionProvider } from '../contexts/ActiveInteractionContext';
-// import { LayoutProvider } from '../../navigationWidgets/LayoutManager';
+import { LayoutProvider } from '../navigationWidgets/LayoutManager';
+import { LocalizationWidgetProvider } from '../contexts/LocalizationWidgetContext/LocalizationWidgetContext';
 
 const styles = theme => ({
   // TODO(herchu) these classes were copied unmodified from GroundControl;
@@ -255,8 +256,8 @@ const Section = (props) => {
   // its control bar. So we include the provider in the render at section level
   return (
     <ActiveInteractionProvider>
-    {/* // <LayoutProvider>
-    // </LayoutProvider> */}
+    <LayoutProvider>
+    <LocalizationWidgetProvider sectionScope={scope}>
       <Grid container className={classes.section} key={id}>
         {label && (
           <Grid className={classes.labelContainer} size={12}>
@@ -283,6 +284,8 @@ const Section = (props) => {
           {render(widgets)}
         </Grid>
       </Grid>
+    </LocalizationWidgetProvider>
+    </LayoutProvider>
     </ActiveInteractionProvider>
   );
 };
