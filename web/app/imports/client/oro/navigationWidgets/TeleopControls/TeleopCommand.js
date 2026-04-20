@@ -184,7 +184,7 @@ function TeleopCommand(props) {
     timeoutRef.current = setTimeout(() => {
       temporaryDisableControlsEnd();
     }, 2500);
-    // TODO: 'robot.teleopStep' Meteor method is not yet implemented in oro server.
+    // TODO: 'robot.teleopStep' Meteor method is not yet implemented in ORO server.
     // timestamp when command was sent to the server
     import('meteor/meteor').then(({ Meteor }) => {
       Meteor.call('robot.teleopStep', {

@@ -27,7 +27,7 @@ import { RobotModuleState } from '../../../lib/collections';
  * consider using the async version in lib/states.js (getCalculatedStateAsync).
  *
  * @param {Object} params
- * @param {string} params.robotId - The robot ID to query (replaces entityId/entityType)
+ * @param {string} params.robotId - The robot ID to query
  * @param {string} [params.moduleName] - Optional: filter to a single module by name
  * @param {Array} [params.keys] - Optional: specific keys to retrieve
  * @returns {Object|null} Module state map keyed by moduleName, or a single module state

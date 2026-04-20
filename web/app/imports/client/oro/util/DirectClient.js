@@ -21,7 +21,7 @@
  * Uses reference counting: grab an instance via `Mqtt.grabInstance(robotId)`,
  * and call `.release()` when done so the connection can be cleaned up.
  *
- * TODO: Implement full MQTT connection using the broker credentials from the oro server.
+ * TODO: Implement full MQTT connection using the broker credentials from the ORO server.
  */
 import React from 'react';
 

@@ -91,15 +91,15 @@ function LocalizationAdapter({
   const { robotsLocalizationData, map = {} } = state;
 
   // TODO: Implement MongoDB data fetch for robot annotations (waypoints, edges)
-  // useAnnotationsList is not available in oro. Pass empty list for now.
+  // useAnnotationsList is not available in ORO. Pass empty list for now.
   const annotationsList = EMPTY_ANNOTATIONS_LIST;
 
   // TODO: Implement MongoDB data fetch for zone types config
-  // useTrafficZoneTypesConfig is not available in oro.
+  // useTrafficZoneTypesConfig is not available in ORO.
   const zoneTypesConfig = null;
 
   // TODO: Implement MongoDB data fetch for traffic zones
-  // useTrafficZones is not available in oro.
+  // useTrafficZones is not available in ORO.
   const zonesData = null;
 
   // Get localization data for all the robots
@@ -126,7 +126,7 @@ function LocalizationAdapter({
     [state.robotDetails]
   );
 
-  // TODO: Implement useRobotsUiPreferences for oro (not available yet)
+  // TODO: Implement useRobotsUiPreferences for ORO (not available yet)
   // UI preferences control robot avatar and map visualization per robot.
   const robotsUiPreferences = {};
 

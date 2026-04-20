@@ -17,7 +17,7 @@
 /**
  * Table components for widget tables.
  *
- * Thin wrappers over plain MUI Table components with oro theme colors.
+ * Thin wrappers over plain MUI Table components with ORO theme colors.
  * Keeps the same export names so consumers don't need changes.
  *
  *!Important: The Table Component that's imported of MUI should have as

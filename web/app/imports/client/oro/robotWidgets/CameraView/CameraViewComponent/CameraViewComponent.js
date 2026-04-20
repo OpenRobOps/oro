@@ -32,9 +32,6 @@ import { FullscreenContext } from '../../../contexts/FullscreenContext';
 import { REAL_TIME_STALE_DATA_SECONDS } from '../../../../../shared/uiPreferences';
 import { CONTAINER_LARGE, CONTAINER_MEDIUM, CONTAINER_SMALL } from '../../../../lib/constants';
 
-// TODO: Migrate RobotOfflineIcon to oro graphics if needed
-// import RobotOfflineIcon from '../../../graphics/op/RobotOfflineIcon';
-
 const PREFS_DEFAULT = { recentTs: 5000, cropped: false };
 
 // Tooltip messages constants

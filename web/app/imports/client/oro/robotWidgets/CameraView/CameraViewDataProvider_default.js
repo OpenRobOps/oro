@@ -77,7 +77,7 @@ const CameraViewContainer = withTracker(({ robotId, config }) => {
     const { status } = robot || {};
     const offline = !(status && status.agentOnline);
 
-    // TODO: Review entity mapping for oro context
+    // TODO: Review entity mapping for ORO context
     const states = getCalculatedState({ robotId, entityType: ID_TYPE_ROBOT }) || {};
 
     const agentImageState = RobotModuleState.findOne({
