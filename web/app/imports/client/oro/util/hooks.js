@@ -46,8 +46,7 @@ const useIsRobotMoving = robotId => useTracker(() => {
 }, [robotId]);
 
 /**
- * Returns all actions config — a map from actionId to action definition.
- * Actions in oro are global (not per-entity), so no entityId/entityType needed.
+ * Returns all actions config, a map from actionId to action definition.
  * @returns {{ data: Object, isLoading: boolean }}
  */
 const useActionsConfig = () => useTracker(() => {
