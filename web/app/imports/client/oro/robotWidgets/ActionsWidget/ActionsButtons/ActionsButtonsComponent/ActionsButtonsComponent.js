@@ -86,6 +86,11 @@ const styles = theme => ({
     [theme.breakpoints.down('1240')]: {
       justifyContent: 'space-around'
     },
+  },
+  groupCount: {
+    fontSize: '0.9rem',
+    color: theme.palette.text.inactive,
+    marginLeft: '10px'
   }
 });
 
@@ -227,11 +232,6 @@ const ActionsButtons = ({
         onClick={() => executeAction({ action })}
         disabled={actionInFlightId || disabledAction}
         variant={buttonVariant}
-        startIcon={isDismiss ? (
-          <DismissIcon />
-        ) : (
-          <ActionIcon />
-        )}
         classes={isBannerVariant ? isDismissBanner : {
           label: bigButtons && classes.bigButtonLabel
         }}
@@ -293,8 +293,7 @@ const ActionsButtons = ({
       : (
         <CustomExpansionPanel
           expanded={Boolean(expanded[panelId])
-            || (expandedByDefault
-              && expanded[panelId] === undefined)}
+            || (expandedByDefault && expanded[panelId] === undefined)}
           square
           onChange={(event, isExpanded) => handleExpand(panelId, isExpanded)}
           elevation={0}
@@ -311,7 +310,7 @@ const ActionsButtons = ({
                 </Typography>
               </Grid>
               <Grid item xs={3}>
-                <Typography classes={{ root: classes.typography }}>
+                <Typography classes={{ root: classes.groupCount }}>
                   {groupActions.length}
                 </Typography>
               </Grid>
