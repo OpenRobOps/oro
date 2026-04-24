@@ -145,7 +145,9 @@ const CustomExpansionPanelDetails = withStyles(AccordionDetails, panelDetailsSty
 CustomExpansionPanelDetails.muiName = 'AccordionDetails';
 
 const ActionsButtons = ({
-  classes, className, variant, hideLocalActions, 
+  classes, className, 
+  variant = VARIANTS.GROUPED, 
+  hideLocalActions, 
   // objects and parsed actions passed from WithActionsContext
   actionInFlightId, actions,
   // functions pased from from WithActionsContext
@@ -268,7 +270,7 @@ const ActionsButtons = ({
    * @param {Array.<Object>} actions - The actions object definitions array
    */
   const getBannerActionButtons = ({ actions = [] }) => (
-    <Grid container className={classes.actionBannerComponent} xs={12}>
+    <Grid container className={classes.actionBannerComponent} size={{ xs: 12 }}>
       {actions && actions.map((action, ix) => passesLocalActionFilter(action) && (
         <Grid item key={action._id || ix}>
           {renderActionButton(action, action._id || ix)}
@@ -304,12 +306,12 @@ const ActionsButtons = ({
             expandIcon={<ExpandMoreIcon />}
           >
             <Grid container className={className}>
-              <Grid item xs={9}>
+              <Grid item size={{ xs: 9 }}>
                 <Typography classes={{ root: classes.typography }}>
                   {groupName}
                 </Typography>
               </Grid>
-              <Grid item xs={3}>
+              <Grid item size={{ xs: 3 }}>
                 <Typography classes={{ root: classes.groupCount }}>
                   {groupActions.length}
                 </Typography>
@@ -343,10 +345,6 @@ const ActionsButtons = ({
       return renderActionButtonsGroup(GROUP_LABEL_NONE, actions, true, 0, isVariantWidget);
     }
   }
-};
-
-ActionsButtons.defaultProps = {
-  variant: VARIANTS.GROUPED
 };
 
 ActionsButtons.propTypes = {

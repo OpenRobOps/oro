@@ -442,10 +442,6 @@ const CameraView = (props) => {
   );
 };
 
-CameraView.defaultProps = {
-  cameraPrefs: PREFS_DEFAULT
-};
-
 CameraView.propTypes = {
   robotId: PropTypes.string,
   cameraNumber: PropTypes.string,

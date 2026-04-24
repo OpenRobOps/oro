@@ -644,7 +644,6 @@ export default class RobotLocalizationModule {
   };
 
   onPath = async (robotId, msg) => {
-    console.log('onPath: robotId=', robotId, 'msg=', msg);
     const decodedMsg = this.PathDataMessage.decode(msg);
     // Get cached config per robot
     const { storePath, rateLimitMsPerPath = {} } = {} // TODO re-enable await this._agentModuleCache.get(robotId);

@@ -183,7 +183,7 @@ const ActiveInteractionControl = ({
     <Grid container className={classes.boxContainer}>
 
       {/* Group 1: zoom controls */}
-      <Grid item xs={12} className={classes.firstIconContainer}>
+      <Grid item size={{ xs: 12 }} className={classes.firstIconContainer}>
         <NavButton tooltip="Reset zoom" onClick={handleResetZoom} disabled={isZeroData}>
           <CompassIcon />
         </NavButton>
@@ -196,7 +196,7 @@ const ActiveInteractionControl = ({
       </Grid>
 
       {/* Group 2: interaction controls */}
-      <Grid item xs={12} className={classes.secondIconContainer}>
+      <Grid item size={{ xs: 12 }} className={classes.secondIconContainer}>
         {isPanelVisibleFn(KEY_TELEOP) && (
           <NavButton tooltip={offlineMsg || 'Relocalize'} onClick={handleRelocalize} disabled={robotOffline && isZeroData} active={isRelocalizeActive}>
             <LocalizeIcon />
@@ -211,14 +211,14 @@ const ActiveInteractionControl = ({
 
       {/* Group 3: cancel + confirm */}
       {isPanelVisibleFn(KEY_TELEOP) && (
-        <Grid item xs={12} className={classes.thirdIconContainer}>
+        <Grid item size={{ xs: 12 }} className={classes.thirdIconContainer}>
           <CancelNavToGoalButton
             robotId={robotId}
             buttonVariant={isAnyActionActive ? 'contained' : 'outlined'}
           />
         </Grid>
       )}
-      <Grid item xs={12} className={classes.thirdIconContainer}>
+      <Grid item size={{ xs: 12 }} className={classes.thirdIconContainer}>
         {isAnyActionActive && data && (
           <Tooltip title={offlineMsg || ''} placement="left">
             <span>

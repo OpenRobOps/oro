@@ -95,8 +95,8 @@ const TextComponent = ({ customData, config }) => {
 
   return (
     <Grid container className={classes.container}>
-      <Grid xs={12} className={classes.customList} ref={scrollableRef}>
-        <Grid xs={12} className={classes.fileIsTooLargeContainer}>
+      <Grid size={{ xs: 12 }} className={classes.customList} ref={scrollableRef}>
+        <Grid size={{ xs: 12 }} className={classes.fileIsTooLargeContainer}>
           {isBOFCropped && (
             <Typography
               align="center"
@@ -110,7 +110,7 @@ const TextComponent = ({ customData, config }) => {
           )}
         </Grid>
         <Divider />
-        <Grid xs={12} className={classes.textContainer}>
+        <Grid size={{ xs: 12 }} className={classes.textContainer}>
           <Typography
             className={classNames(
               [classes.textArea],
@@ -120,7 +120,7 @@ const TextComponent = ({ customData, config }) => {
             {customData?.text}
           </Typography>
         </Grid>
-        <Grid xs={12} className={classes.fileIsTooLargeContainer}>
+        <Grid size={{ xs: 12 }} className={classes.fileIsTooLargeContainer}>
           {isEOFCropped && (
             <Typography
               align="center"
