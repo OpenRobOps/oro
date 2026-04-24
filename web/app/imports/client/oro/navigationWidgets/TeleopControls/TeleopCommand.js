@@ -23,7 +23,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { throttle } from 'lodash';
 import PropTypes from 'prop-types';
 // ORO Modules
-import { Mqtt } from '../../util/DirectClient';
+import { MqttWrapper } from '../../util/DirectClient';
 import NavigationJoystick from './NavigationJoystick';
 
 // minimal distance joystick must move to trigger robot movement
@@ -65,7 +65,7 @@ function TeleopCommand(props) {
 
   // Grab MQTT instance on mount and release on unmount / robotId change
   useEffect(() => {
-    mqttRef.current = Mqtt.grabInstance(robotId);
+    mqttRef.current = MqttWrapper.GrabInstance(robotId);
     return () => {
       if (mqttRef.current) {
         mqttRef.current.release();

@@ -27,6 +27,9 @@ const MqttLogins = new Mongo.Collection(COLLECTIONS.MQTT_CREDENTIALS);
 if (Meteor.isDevelopment) {
   MqttLogins.schema = new SimpleSchema({
     robotId: { type: String, required: false },
+    robotIds: { type: Array, required: false }, // for multi-robot credentials (normally provisioned for UI)
+    'robotIds.$': { type: String, required: true },
+    meteorUserId: { type: String, required: false }, // This is for debugging purposes mostly: the user in the browser that requested the credentials
     username: String,
     password: String,
     encryptedPassword: { type: String, required: false },
@@ -54,7 +57,8 @@ if (Meteor.isDevelopment) {
     // If brokerCredentialsPending == true, then the credentials weren't created
     // in the broker, for example due to an API error.
     brokerCredentialsPending: { type: Boolean, required: false },
-    status: { type: String, required: false }
+    status: { type: String, required: false },
+    expiresAt: { type: Date, required: false } // for multi-robot credentials that auto-expire
   }, { requiredByDefault: true });
   MqttLogins.attachSchema(MqttLogins.schema);
 }
@@ -63,6 +67,7 @@ MqttLogins.rawCollection().createIndex({ username: 1 }, { unique: true, partialF
 // Makes robotId unique only if it is present
 MqttLogins.rawCollection().createIndex({ robotId: 1 },
   { unique: true, partialFilterExpression: { robotId: { $exists: true } } });
+MqttLogins.rawCollection().createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 
 export {

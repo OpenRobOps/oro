@@ -62,8 +62,8 @@ function decodeLaserAndPose(msg) {
   return {
     robotPose: {
       frameId: msg.frameId,
-      x: msg.posX + msg.offsetX,
-      y: msg.posY + msg.offsetY,
+      x: msg.posX + (msg.offsetX || 0),
+      y: msg.posY + (msg.offsetY || 0),
       theta: msg.yaw,
       ts: msg.ts
     },
@@ -135,7 +135,6 @@ function useDirectClientLocalizationData({ robotIds }, cb = null) {
   // The reason is that if during render() we invoke this callback
   // (which in our framework hides some setState) this generates
   // an infinite loop of setState+render.
-
   // This effect gets executed for every localization update
   useEffect(() => {
     cb && cb(directLocalizationData);

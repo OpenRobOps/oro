@@ -248,10 +248,6 @@ const RobotPoseLayer = ({
   );
 };
 
-RobotPoseLayer.defaultProps = {
-  showPoseOutline: true,
-};
-
 RobotPoseLayer.propTypes = {
   // Controlling layers to be shown for this robot
   showPoseOutline: PropTypes.bool,
