@@ -286,7 +286,7 @@ NavigationControlBar.propTypes = {
   setCollectionId: PropTypes.func,
   setSelectedRobotId: PropTypes.func,
   // components
-  Lock: PropTypes.object,
+  Lock: PropTypes.func,
   RobotSearch: PropTypes.func
 };
 
