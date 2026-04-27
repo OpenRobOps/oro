@@ -43,6 +43,8 @@ Meteor.publish('localization', async function ({ robotIds, lowBandwidth = false 
     map: 1,
     mapUpdatedTs: 1,
     defaultMap: 1,
+    laserConfig: 1,
+    costmap: 1,
   };
   if (!lowBandwidth) {
     fields.laserRanges = 1;

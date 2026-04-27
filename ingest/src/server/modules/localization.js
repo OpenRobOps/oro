@@ -518,7 +518,7 @@ export default class RobotLocalizationModule {
         gradientEndColor = GRADIENT_COLOR_DEFAULT,
         alphaValue = 1,
         isAlphaGradient = true
-      } = costmapPreference;
+      } = costmapPreference || {};
 
       // TODO Confirm that each color is exactly an array with three numbers
 
@@ -526,7 +526,7 @@ export default class RobotLocalizationModule {
       // all data points end up being a uniform color.
       // NOTE(adamantivm) This is done on a separate destructuring call in order to use another
       // property as a default value for this one.
-      const { gradientStartColor = gradientEndColor } = costmapPreference;
+      const { gradientStartColor = gradientEndColor } = costmapPreference || {};
 
       // Do some postprocessing on the costmap image. Costmaps get sent in grayscale (with
       // very low bpp, to save bandwidth): transform this to color, add some color
@@ -751,6 +751,9 @@ export default class RobotLocalizationModule {
       });
     } else {
       subobjectUpdates[subobject] = updates;
+    }
+    if (!["laserRanges", "robotPose", "laserConfig"].includes(subobject)) { // FIXME remove debugging
+        console.log("_doUpdate", robotId, subobject, subobjectUpdates)
     }
     await this._localizationColl.updateOne(
       { _id: robotId },
