@@ -1,0 +1,114 @@
+name: Build oro-app image
+
+# - Push to main / version tags  → build, smoke-test, push to ghcr.io
+# - Pull request                 → build, smoke-test (no push)
+# - workflow_dispatch            → same as push to main
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+    paths:
+      - "web/app/**"
+      - "scripts/build-app-image.sh"
+      - "scripts/smoke-test-app-image.sh"
+      - ".github/workflows/build-app-image.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: build-app-image-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build:
+    name: Build oro-app image
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compute image tags
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/oro-app
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix=,format=short
+
+      # Build into the local daemon so the smoke test can run against it before
+      # we publish anything. The layer cache is shared with the push step below.
+      - name: Build (load to local daemon)
+        uses: docker/build-push-action@v6
+        with:
+          context: web/app
+          file: web/app/Dockerfile
+          load: true
+          push: false
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Smoke test
+        run: |
+          IMAGE_TAG="$(printf '%s\n' "${{ steps.meta.outputs.tags }}" | head -n 1)"
+          export IMAGE_TAG
+          echo "Smoke-testing $IMAGE_TAG"
+          scripts/smoke-test-app-image.sh
+
+      # The cache from the previous build step makes this a no-op build; only
+      # the registry push actually happens here.
+      - name: Push to GHCR
+        if: github.event_name != 'pull_request'
+        uses: docker/build-push-action@v6
+        with:
+          context: web/app
+          file: web/app/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "## oro-app image build"
+            echo ""
+            echo "- Event: \`${{ github.event_name }}\`"
+            echo "- Ref:   \`${{ github.ref }}\`"
+            echo ""
+            echo "### Tags"
+            echo '```'
+            printf '%s\n' "${{ steps.meta.outputs.tags }}"
+            echo '```'
+            if [ "${{ github.event_name }}" != "pull_request" ]; then
+              echo ""
+              echo "Pushed to \`ghcr.io/${{ github.repository_owner }}/oro-app\`."
+            else
+              echo ""
+              echo "PR build — image was smoke-tested but not pushed."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
