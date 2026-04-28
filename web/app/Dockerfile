@@ -73,10 +73,12 @@ RUN apt-get update \
 
 WORKDIR /app
 
-COPY --from=builder --chown=node:node /home/node/build/bundle ./
+COPY --from=builder --chown=1000:1000 /home/node/build/bundle ./
 COPY --chown=root:root --chmod=0755 docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
-USER node
+# Numeric UID so Kubernetes' runAsNonRoot can verify it without launching the
+# container. 1000:1000 is the `node` user/group from the base image.
+USER 1000:1000
 
 ENV NODE_ENV=production \
     PORT=3000 \

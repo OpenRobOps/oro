@@ -1,0 +1,18 @@
+# ClusterIP service in front of the oro-app pods. The Ingress in
+# ingress.yaml routes external traffic to this service.
+apiVersion: v1
+kind: Service
+metadata:
+  name: oro-app
+  namespace: oro
+  labels:
+    app.kubernetes.io/name: oro-app
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: oro-app
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP

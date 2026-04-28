@@ -1,0 +1,82 @@
+# oro-app Deployment.
+#
+# Defaults to a single replica because Meteor's DDP sessions are sticky and
+# its migration runner expects a single writer at startup. Increase replicas
+# only after wiring sticky sessions at the ingress and validating migration
+# locking.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oro-app
+  namespace: oro
+  labels:
+    app.kubernetes.io/name: oro-app
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: oro-app
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: oro-app
+    spec:
+      # Uncomment if you publish images to a private GHCR repo. Create the
+      # secret with:
+      #   kubectl create secret docker-registry ghcr-pull-secret \
+      #     --docker-server=ghcr.io \
+      #     --docker-username=<github-user> \
+      #     --docker-password=<PAT-with-read:packages> \
+      #     --namespace=oro
+      # imagePullSecrets:
+      #   - name: ghcr-pull-secret
+
+      # Recommended: pin to an immutable tag (a sha or version) in production.
+      # `:main` is fine for dev/staging but moves on every push.
+      containers:
+        - name: app
+          image: ghcr.io/openrobops/oro-app:main
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: oro-app-config
+            - secretRef:
+                name: oro-app-secrets
+
+          # Probes match the image's HEALTHCHECK contract — Meteor serves the
+          # HTML shell at / once the server has booted and migrations have run.
+          startupProbe:
+            httpGet: { path: /, port: http }
+            periodSeconds: 5
+            failureThreshold: 36   # ~3 minutes for first-run migrations
+          readinessProbe:
+            httpGet: { path: /, port: http }
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            httpGet: { path: /, port: http }
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false  # Meteor writes to /tmp at runtime
+            runAsNonRoot: true
+            capabilities:
+              drop: ["ALL"]

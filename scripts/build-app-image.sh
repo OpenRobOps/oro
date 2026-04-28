@@ -12,7 +12,7 @@
 # Usage:
 #   scripts/build-app-image.sh           # tags as oro-app:<short-sha>[-dirty]
 #   IMAGE_TAG=oro-app:v1.2.3 scripts/build-app-image.sh
-#   IMAGE_TAG=ghcr.io/inorbit-ai/oro-app:main scripts/build-app-image.sh
+#   IMAGE_TAG=ghcr.io/openrobops/oro-app:main scripts/build-app-image.sh
 #
 # Prints the resulting image tag on the final stdout line so callers can
 # capture it: TAG="$(scripts/build-app-image.sh | tail -1)".
