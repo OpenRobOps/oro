@@ -2,7 +2,7 @@
 
 ## Problem
 
-`generate-settings.sh` creates 2 settings files (`web/app/settings.json` and
+`generate-settings.sh` creates 2 settings files (`app/settings.json` and
 `ingest/settings.json`) via Terraform. Each run generates fresh random secrets
 (passwords, API keys), so re-running the script overwrites existing values.
 This makes it impossible to run Terraform again to pick up template changes

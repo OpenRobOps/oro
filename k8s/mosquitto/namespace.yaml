@@ -1,5 +1,5 @@
 # The mosquitto manifests live in the same `oro` namespace as the app.
-# This file is idempotent with web/app/k8s/namespace.yaml — applying both is
+# This file is idempotent with app/k8s/namespace.yaml — applying both is
 # harmless. Skip it if you already created the namespace via the app
 # manifests.
 #

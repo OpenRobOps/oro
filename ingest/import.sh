@@ -10,9 +10,9 @@ mkdir -p src/shared
 # are the same.
 # NOTE Don't add more files here. We should stop this practice
 # and use proper package management instead.
-cp -u ../web/app/private/oro.proto \
-  ../web/app/imports/shared/constants.js \
-  ../web/app/imports/shared/attributes.js \
-  ../web/app/imports/shared/geometry.js \
-  ../web/app/imports/shared/arrayUtil.js \
+cp -u ../app/private/oro.proto \
+  ../app/imports/shared/constants.js \
+  ../app/imports/shared/attributes.js \
+  ../app/imports/shared/geometry.js \
+  ../app/imports/shared/arrayUtil.js \
   src/shared

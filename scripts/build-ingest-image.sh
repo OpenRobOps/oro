@@ -28,8 +28,8 @@ if ! git diff --quiet || ! git diff --cached --quiet; then
 fi
 TAG="${IMAGE_TAG:-oro-ingest:${SHA}${DIRTY}}"
 
-# Populate ingest/src/shared/ from web/app/ before the build context is sent
-# to Docker. These files are gitignored inside ingest/ and live in web/app/
+# Populate ingest/src/shared/ from app/ before the build context is sent
+# to Docker. These files are gitignored inside ingest/ and live in app/
 # as the source of truth — see ingest/import.sh.
 ( cd ingest && ./import.sh )
 

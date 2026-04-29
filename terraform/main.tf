@@ -55,7 +55,7 @@ locals {
 }
 
 resource "local_file" "web_app_settings" {
-  filename        = "${path.module}/../web/app/settings.json"
+  filename        = "${path.module}/../app/settings.json"
   file_permission = "0644"
   content = jsonencode(merge(
     {

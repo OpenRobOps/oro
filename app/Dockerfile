@@ -6,8 +6,8 @@
 # Stage 2 (runtime) carries only the bundle plus a Node 22 runtime, ca-certs,
 # tini, and curl (used by HEALTHCHECK).
 #
-# Build context: web/app/
-# Build:    docker build -f web/app/Dockerfile -t oro-app:<tag> web/app
+# Build context: app/
+# Build:    docker build -f app/Dockerfile -t oro-app:<tag> app
 # Wrapper:  scripts/build-app-image.sh
 
 # -----------------------------------------------------------------------------
@@ -15,7 +15,7 @@
 # -----------------------------------------------------------------------------
 FROM node:22-bookworm AS builder
 
-# Pin the Meteor release to match web/app/.meteor/release.
+# Pin the Meteor release to match app/.meteor/release.
 ARG METEOR_RELEASE=3.4
 # Architecture for `meteor build`. Override to os.linux.aarch64 for arm64.
 ARG METEOR_ARCH=os.linux.x86_64
