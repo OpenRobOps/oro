@@ -24,7 +24,7 @@ jobs:
         run: curl https://install.meteor.com/\?release\=3.4 | sh
 
       - name: Install dependencies
-        working-directory: web/app
+        working-directory: app
         run: meteor npm install
         # TODO Fix this. We should be able to cache Meteor install and NPM packages steps
         # uses: actions/cache@v4
@@ -33,7 +33,7 @@ jobs:
         #   key: ${{ hashFiles('**/package-lock.json') }}
 
       - name: Run tests
-        working-directory: web/app
+        working-directory: app
         env:
           MONGO_URL: mongodb://localhost:27017/test
           TEST_CLIENT: "0"

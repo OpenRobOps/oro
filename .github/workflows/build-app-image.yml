@@ -10,7 +10,7 @@ on:
     tags: ["v*"]
   pull_request:
     paths:
-      - "web/app/**"
+      - "app/**"
       - "scripts/build-app-image.sh"
       - "scripts/smoke-test-app-image.sh"
       - ".github/workflows/build-app-image.yml"
@@ -61,8 +61,8 @@ jobs:
       - name: Build (load to local daemon)
         uses: docker/build-push-action@v6
         with:
-          context: web/app
-          file: web/app/Dockerfile
+          context: app
+          file: app/Dockerfile
           load: true
           push: false
           tags: ${{ steps.meta.outputs.tags }}
@@ -83,8 +83,8 @@ jobs:
         if: github.event_name != 'pull_request'
         uses: docker/build-push-action@v6
         with:
-          context: web/app
-          file: web/app/Dockerfile
+          context: app
+          file: app/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

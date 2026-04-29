@@ -29,8 +29,8 @@ fi
 TAG="${IMAGE_TAG:-oro-app:${SHA}${DIRTY}}"
 
 docker build \
-  -f web/app/Dockerfile \
+  -f app/Dockerfile \
   -t "$TAG" \
-  web/app
+  app
 
 echo "$TAG"

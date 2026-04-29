@@ -13,7 +13,7 @@
 # dev workflow (see package.json `dev-start`).
 #
 # Build context: ingest/
-# The shared files under src/shared/ are copied from web/app/ by
+# The shared files under src/shared/ are copied from app/ by
 # ingest/import.sh BEFORE the build context is sent to Docker (see
 # scripts/build-ingest-image.sh).
 #

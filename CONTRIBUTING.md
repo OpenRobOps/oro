@@ -36,7 +36,7 @@ Run tests before submitting a pull request:
 
 ```bash
 # Web app tests
-cd web/app && npm test
+cd app && npm test
 
 # Ingest service tests
 cd ingest && npm test
