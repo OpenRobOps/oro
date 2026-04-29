@@ -149,7 +149,7 @@ class ActionsEngine {
           createInternalActionId(actionType._id),
           { ...actionType.template }
         );
-        if (result.errors) {
+        if (result?.errors) {
           console.error('Error creating action definitions', actionType._id, result.errors);
         }
       }
