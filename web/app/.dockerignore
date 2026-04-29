@@ -1,0 +1,26 @@
+# Build artefacts and dev caches — never enter the build context
+**/node_modules
+**/.meteor/local
+**/_build
+**/.rsdoctor
+**/build-assets
+**/build-chunks
+
+# Secrets — must never enter the image
+**/settings.json
+**/settings-*.json
+!**/settings-example.json
+
+# VCS / IDE / OS noise
+.git
+.gitignore
+.github
+.vscode
+.idea
+*.log
+.DS_Store
+unit_server.xml
+
+# Dockerfile itself never needs to be inside the image; entrypoint and
+# .dockerignore are referenced at build time so they must stay in context.
+Dockerfile

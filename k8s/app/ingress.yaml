@@ -1,0 +1,34 @@
+# Sample Ingress. Adapt to whatever ingress controller and TLS strategy your
+# cluster uses (nginx, traefik, GKE GCLB, AWS ALB, etc.). The annotations
+# below assume nginx + cert-manager — remove/replace as needed.
+#
+# If you're not using Ingress (e.g. you front the cluster with something
+# else), delete this file and expose the Service directly via LoadBalancer.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: oro-app
+  namespace: oro
+  labels:
+    app.kubernetes.io/name: oro-app
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - oro.example.com
+      secretName: oro-app-tls
+  rules:
+    - host: oro.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: oro-app
+                port:
+                  name: http

@@ -1,0 +1,112 @@
+# Mosquitto broker with the mosquitto-go-auth plugin. Reads its config from
+# the mosquitto-config Secret (the conf embeds MongoDB credentials, so it
+# all lives in a Secret rather than a ConfigMap). Single replica because
+# Mosquitto's retained messages and persistent sessions don't shard across
+# pods.
+#
+# Persistence is intentionally OFF (matches mqtt/mosquitto/mosquitto.conf);
+# all auth state lives in MongoDB, and live message state is in-process.
+# Add a PersistentVolumeClaim + `persistence true` in the config if you need
+# retained messages to survive pod restarts.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mosquitto
+  namespace: oro
+  labels:
+    app.kubernetes.io/name: mosquitto
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mosquitto
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: mosquitto
+    spec:
+      containers:
+        - name: mosquitto
+          image: ghcr.io/openrobops/mosquitto-go-auth:3.0.0-mosquitto_2.0.18
+          imagePullPolicy: IfNotPresent
+          args:
+            - mosquitto
+            - -c
+            - /etc/mosquitto/mosquitto.conf
+          ports:
+            - name: mqtt
+              containerPort: 1883
+              protocol: TCP
+            - name: mqtts
+              containerPort: 8883
+              protocol: TCP
+            - name: ws
+              containerPort: 9001
+              protocol: TCP
+            - name: wss
+              containerPort: 9443
+              protocol: TCP
+          volumeMounts:
+            # Single-file mount of the Secret's mosquitto.conf key. subPath
+            # means the Secret is mounted as one file at this path; the
+            # rest of /etc/mosquitto/ is untouched (so files baked into the
+            # image, e.g. the plugin binary at /mosquitto/go-auth.so, stay
+            # available).
+            - name: config
+              mountPath: /etc/mosquitto/mosquitto.conf
+              subPath: mosquitto.conf
+              readOnly: true
+            # cert-manager-issued TLS cert for mqtt.oro.example.com. The
+            # Secret has tls.crt + tls.key keys; mosquitto.conf references
+            # them as /etc/mosquitto/certs/tls.{crt,key}.
+            - name: tls
+              mountPath: /etc/mosquitto/certs
+              readOnly: true
+          readinessProbe:
+            tcpSocket:
+              port: mqtt
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          livenessProbe:
+            tcpSocket:
+              port: mqtt
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+              # mosquitto starts as root in the iegomez image and drops to
+              # its own `mosquitto` user; setgroups()/setgid()/setuid()
+              # need these two capabilities to succeed.
+              add: ["SETUID", "SETGID"]
+      volumes:
+        - name: config
+          secret:
+            secretName: mosquitto-config
+            defaultMode: 0440
+            items:
+              - key: mosquitto.conf
+                path: mosquitto.conf
+        - name: tls
+          secret:
+            secretName: mqtt-oro-example-com-ai-tls
+            # 0444 (not 0440): mosquitto in the iegomez image runs as the
+            # `mosquitto` user, which is not in group root. Secret volumes
+            # are owned root:root by default so 0440 yields EACCES on the
+            # certfile. Only mosquitto runs in this container, so a
+            # world-readable mount is acceptable here.
+            defaultMode: 0444

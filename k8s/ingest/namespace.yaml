@@ -1,0 +1,36 @@
+# Sample manifests for deploying the oro-ingest worker on a Kubernetes
+# cluster.
+#
+# This is a starting point — adapt every value marked <...> to match your
+# environment. Manifests are intentionally plain YAML (no kustomize/helm) so
+# they can be cherry-picked into whatever tooling you use.
+#
+# Suggested apply order:
+#
+#   kubectl apply -f namespace.yaml
+#   cp secret.example.yaml secret.yaml   # then edit; secret.yaml is gitignored
+#   kubectl apply -f secret.yaml
+#   kubectl apply -f deployment.yaml
+#
+# The ingest service has no inbound listener — it subscribes to MQTT topics
+# and writes to MongoDB / calls the oro-app peer API — so there is no
+# Service or Ingress in this directory.
+#
+# External dependencies the manifests do NOT provision (point to existing
+# services in your environment):
+#   - MongoDB         → mongo.url in the secret
+#   - MQTT broker     → mqtt.brokers.* in the secret (typically the
+#                       in-cluster mosquitto Service)
+#   - oro-app peer    → peerClient.url in the secret (typically the
+#                       in-cluster oro-app Service)
+#
+# This file is idempotent with k8s/app/namespace.yaml and
+# k8s/mosquitto/namespace.yaml — applying any of them is harmless. Skip it
+# if you already created the namespace via the other manifests.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: oro
+  labels:
+    app.kubernetes.io/name: oro-ingest
+    app.kubernetes.io/part-of: oro

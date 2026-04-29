@@ -1,0 +1,26 @@
+# Build artefacts and dev caches — never enter the build context
+**/node_modules
+docker
+
+# Secrets — must never enter the image. settings.json is mounted from a
+# Kubernetes Secret at runtime.
+settings.json
+settings-*.json
+!settings-example.json
+
+# Tests are not needed in the runtime image
+test
+junit_ingest.xml
+
+# VCS / IDE / OS noise
+.git
+.gitignore
+.github
+.vscode
+.idea
+*.log
+.DS_Store
+
+# Dockerfile itself never needs to be inside the image; .dockerignore is
+# referenced at build time so it must stay in context.
+Dockerfile

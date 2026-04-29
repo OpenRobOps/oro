@@ -1,6 +1,6 @@
 services:
   mosquitto:
-    image: iegomez/mosquitto-go-auth:latest
+    image: ghcr.io/openrobops/mosquitto-go-auth:3.0.0-mosquitto_2.0.18
     # Use host network so Mosquitto can reach Meteor's MongoDB on localhost:3001
     network_mode: host
     volumes:
