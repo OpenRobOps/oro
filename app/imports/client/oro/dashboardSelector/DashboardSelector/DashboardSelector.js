@@ -177,9 +177,6 @@ const selectDashboardTab = (dashboardSpecs, dashboardId, initialDashboardId) => 
   if (selectedTabIndex == -1 && initialDashboardId) {
     selectedTabIndex = dashboardSpecs.findIndex(({ _id }) => _id == initialDashboardId);
   }
-  if (selectedTabIndex == -1) {
-    selectedTabIndex = dashboardSpecs.findIndex(d => d.label == 'Fleet');
-  }
   return Math.max(selectedTabIndex, 0);
 };
 

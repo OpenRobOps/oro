@@ -61,9 +61,9 @@ const DashboardSelectorContainer = withTracker(({ urlDashboardId }) => {
   // Get dashboardId from url
   // const { dashboardId } = urlPathParams || {};
 
-  // if (!userId) { // TODO(herchu) re-enable when log in is implemented
-  //   return { isLoading: true };
-  // }
+  if (!userId) { // TODO(herchu) re-enable when log in is implemented
+    return { isLoading: true };
+  }
 
   const dashboardCfg = {};
   // Compute list of dashboard Ids for the current user by grabbing
