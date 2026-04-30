@@ -89,6 +89,8 @@ const F_CONFIG_CHART_MAX = 'max';
 const F_CONFIG_CHART_CHARTTYPE = 'chartType';
 // Map
 const F_CONFIG_MAP_ID = 'mapId';
+// Text
+const F_CONFIG_TEXT_TEXT = 'text';
 // Fastest-Validator instance for all schemas in this file (including each widget's config below)
 const SchemaValidator = new Validator({ useNewCustomCheckerFunction: true });
 
@@ -590,6 +592,19 @@ class FleetStatusWidgetConfigConverter extends WidgetConfigConverter {
   });
 }
 
+class TextWidgetConfigConverter extends WidgetConfigConverter {
+  configToSpec = config => ({
+    [F_CONFIG_TEXT_TEXT]: config[F_CONFIG_TEXT_TEXT]
+  })
+
+  specToConfig = config => config;
+
+  getConfigSchema = () => ({
+    $$strict: true,
+    [F_CONFIG_TEXT_TEXT]: { type: 'string', empty: false }
+  });
+}
+
 WidgetConfigConvertersByType = {
   // Widgets without configs
   [WIDGET_TYPES_IDS.DATA_BAGS]: WidgetConfigConverter,
@@ -613,6 +628,7 @@ WidgetConfigConvertersByType = {
   [WIDGET_TYPES_IDS.ACTIONS]: ActionsWidgetConfigConverter,
   [WIDGET_TYPES_IDS.CAMERA]: CameraWidgetConfigConverter,
   [WIDGET_TYPES_IDS.FLEET_STATUS]: FleetStatusWidgetConfigConverter,
+  [WIDGET_TYPES_IDS.TEXT]: TextWidgetConfigConverter,
 };
 
 const dashboardWidgetToWidgetSpec = (widget) => {

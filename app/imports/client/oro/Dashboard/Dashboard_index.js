@@ -50,6 +50,7 @@ import IncidentList from '../fleetWidgets/IncidentList';
 import ActionsWidget from '../robotWidgets/ActionsWidget';
 // import RobotMissionsTracker from '../robotWidgets/RobotMissionsTracker';
 // import RobotSearch from '../util/RobotSearch';
+import TextWidget from '../fleetWidgets/TextWidget';
 import {
   CTX_PROPS,
   CONTEXT_SLOTS,
@@ -895,6 +896,10 @@ const WIDGET_FACTORY = {
   //     )}
   //   </NowTimeContext.Consumer>
   // ),
+
+  [WIDGET_TYPES.TEXT]: ({ config, context, scope }) => (
+    <TextWidget config={config} />
+  ),
 };
 /* eslint-enable react/prop-types */
 /* eslint-enable no-unused-vars */
