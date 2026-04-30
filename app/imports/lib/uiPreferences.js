@@ -80,7 +80,8 @@ const WIDGET_TYPES = {
   ACTIONS: 'actionsWidget',
   // CAMERA: 'cameraWidget',
   // AUDIT_LOG: 'auditLog',
-  LIST_DATA: 'listData'
+  LIST_DATA: 'listData',
+  TEXT: 'text'
 };
 
 // Definitive Object listing all IDs for all of our widgets
@@ -112,10 +113,11 @@ const WIDGET_TYPES_IDS = {
   HISTORY: 'history',
   // Navigation widgets
   NAVIGATION_CONTROL_BAR: 'navigationControlBar',
-  // Mission & Orders widgets
+  // Mission widgets
   MISSION_TRACKER: 'missionTracker',
   FLEET_MISSION_TRACKER: 'fleetMissionTracker',
   MISSION_CONTROL_BAR: 'missionControlBar',
+  TEXT: 'text',
 };
 
 // A group is not a widget by itself, but it allows grouping several widgets in a box

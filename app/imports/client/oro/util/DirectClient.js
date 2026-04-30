@@ -74,6 +74,9 @@ class MqttWrapper {
    * call to release().
    */
   static GrabInstance = (robotIds) => {
+    if (!robotIds) {
+      return null;
+    }
     if (isString(robotIds)) { // accept a string for a single robot
       robotIds = [robotIds];
     }
