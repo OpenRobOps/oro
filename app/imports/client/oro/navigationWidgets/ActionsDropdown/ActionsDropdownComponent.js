@@ -30,7 +30,7 @@ const ActionsDropdownComponent = (props) => {
 
 ActionsDropdownComponent.propTypes = {
   textClasses: PropTypes.object,
-  actions: PropTypes.object,
+  actions: PropTypes.array,
   robot: PropTypes.object,
 };
 

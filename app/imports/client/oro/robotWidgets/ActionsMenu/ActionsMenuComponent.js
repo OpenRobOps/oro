@@ -238,7 +238,7 @@ ActionsMenu.propTypes = {
   // Action execution function
   executeAction: PropTypes.func,
   // Embedded actions, if any
-  actions: PropTypes.object,
+  actions: PropTypes.array,
   // Classes with the style used fot texts in the component
   textClasses: PropTypes.object
 };
