@@ -18,7 +18,7 @@
  * Configuration API implementation for Actions Definitions
  */
 import Validator from 'fastest-validator';
-import { pick, isEqual } from 'lodash';
+import { pick } from 'lodash';
 // ORO modules
 import {
   RESOURCE_SINGLETONS, ACCESS_LEVEL_VIEW, ACCESS_LEVEL_CONFIGURE, parseResourceId,
@@ -32,20 +32,11 @@ import {
 } from '../../shared/configAPI';
 import { zipKeyValueList } from '../../lib/util';
 import ActionsEngine from '../actions';
-import { GROUP_LABEL_NONE } from '../../shared/uiPreferences';
-// import UIPreferencesManager from '../uiPreferences'; TODO refactor
 import OroRoles from '../roles';
-import { NAVIGATION_DETAIL_WIDGET } from '../../lib/uiPreferences';
 
-// Mapping from widget "names" (API, external) to paths in UIPreferences.
-// This object also defines the accepted values for ActionDefinition schema.
-// For now, only NavigationDetail is supported.
-const WidgetNamesToUIPrefsPath = {
-  navigation: {
-    screenKey: NAVIGATION_DETAIL_WIDGET,
-    widgetId: undefined
-  }
-};
+// Embedded widgets -- for now, only NavigationDetail is supported.
+const EMBEDDED_WIDGET_NAVIGATION = 'navigation';
+const EMBEDDED_WIDGET_NAMES = [EMBEDDED_WIDGET_NAVIGATION];
 
 // ActionDefinition spec used for Config as Code Apply
 const ActionDefinitionSpecApplySchema = {
@@ -82,8 +73,7 @@ const ActionDefinitionSpecApplySchema = {
     optional: true,
     items: {
       type: 'string',
-      // For now, limit the list of possible widgets to those declared in WidgetNamesToUIPrefsPath
-      enum: Object.keys(WidgetNamesToUIPrefsPath),
+      enum: EMBEDDED_WIDGET_NAMES,
       empty: false,
       max: 255
     }
@@ -180,20 +170,13 @@ const actionDefinitionToConfigObject = ({ _id: id, widgets, ...definition }) => 
   }
   const spec = {};
   configObject.spec = spec;
-  console.log('actionDefinitionToConfigObject', definition);
   const {
     type, label, description, lock, confirmation, conditions, group, elementList, elementValues
   } = definition;
   spec.type = type;
   spec.label = label;
   if (widgets && widgets.length) {
-    spec.widgets = widgets.map((path) => {
-      const [screenKey, widgetId] = path.split('.');
-      const widgetMapping = Object.entries(WidgetNamesToUIPrefsPath).find(
-        ([, v]) => v.screenKey == screenKey && v.widgetId == widgetId
-      );
-      return widgetMapping ? widgetMapping[0] : null;
-    }).filter(x => x);
+    spec.widgets = widgets;
   }
   // Note: Always exposing the Lock value, It is validated during apply()
   spec.lock = Boolean(lock);
@@ -230,7 +213,8 @@ const configObjectToActionDefinition = (configObject) => {
     confirmation,
     condition,
     arguments: args,
-    group
+    group,
+    widgets
   } = spec;
 
   // Parse args
@@ -259,7 +243,8 @@ const configObjectToActionDefinition = (configObject) => {
     confirmation,
     elementList,
     elementValues,
-    group
+    group,
+    widgets
   };
   if (condition && condition.rules) {
     definition.conditions = condition.rules;
@@ -303,18 +288,7 @@ export default class ActionDefinitionConfigAPI {
 
     // Retrieve configs filtering by id
     let actionDefinitions = Object.values(await this.actionsEngine.getActionDefinitions(id ? [id] : undefined));
-    
-    // TODO re-enable this code
-    // const actionToWidgetMapping = await new UIPreferencesManager().getActionToWidgetsMapping({
-    // });
-    // Complete the group for each definition
-    actionDefinitions.forEach((i) => {
-      // i.group = actionToGroupMapping[i.id] || { label: GROUP_LABEL_NONE };
-      // i.widgets = actionToWidgetMapping[i.id];
-    });
-
     // Transform the output to the right format used for Config as Code lists.
-    // TODO(franguerini): Handle other formats like: LIST_FORMAT_FULL
     if (format === LIST_FORMAT_SHORT) {
       return actionDefinitions.map(actionDefinitionToListItem);
     } else if (format === LIST_FORMAT_FULL) {
@@ -362,15 +336,11 @@ export default class ActionDefinitionConfigAPI {
         definition,
         user
       );
-      await this._updateActionEmbeds({ actionId, user, widgets: spec.widgets });
     } else {
-      console.log('suppressing action', actionId);
       result = await this.actionsEngine.suppressActionDefinition(
         actionId,
         user
       );
-      console.log("suppressed")
-      await this._updateActionEmbeds({ actionId, user, widgets: null });
     }
     if (!result.success) {
       // TODO make sense of the error
@@ -409,53 +379,9 @@ export default class ActionDefinitionConfigAPI {
       return;
     }
     const result = await this.actionsEngine.removeActionDefinition(actionId, user);
-    await this._updateActionEmbeds({ actionId, user, widgets: null });
 
     if (!result) {
       throw new Error('ActionsManager did not return a result');
     }
   };
-
-  /**
-   * Updates the widgets an action is embedded on. This operation is delegated to the
-   * UIPreferencesManager.
-   */
-  // eslint-disable-next-line class-methods-use-this
-  _updateActionEmbeds = async ({ actionId, widgets, user }) => {
-    // Get the list of widgets the action is already embedded on; default to empty array
-    console.log('_updateActionEmbeds: TODO get existing widgets');
-    // const existingWidgets = await new UIPreferencesManager().getActionToWidgetsMapping({
-    // })[actionId] || [];
-    const existingWidgets = [];
-    // Normalize the desired list of widgets to emtpy array (ignore both null or undefined)
-    widgets = widgets || [];
-    // If the two lists differ, embed this action in the desired widgets by resetting it (clearing
-    // it from all widgets) and re-add them
-    if (!isEqual(existingWidgets, widgets)) {
-      // If the two arrays are not equal, delete it from everywhere and re-add it (it's easier
-      // than going through the diff one by one, and there is no operation in UIPrefsMgr to remove
-      // actions from an individual widget)
-      if (existingWidgets.length) {
-        await new UIPreferencesManager().removeActionFromWidgetsEmbeddedActions({
-          actionId
-        });
-      }
-      if (widgets.length) {
-        for (const widget of widgets) {
-          const { screenKey, widgetId } = WidgetNamesToUIPrefsPath[widget];
-          if (screenKey) {
-            // eslint-disable-next-line no-await-in-loop
-            await new UIPreferencesManager().addEmbeddedAction({
-              screenKey,
-              widgetId,
-              actionId,
-              user
-            });
-          } else {
-            console.error(`Invalid widget path accepted for embedded action; ignored: ${widget}`);
-          }
-        }
-      }
-    }
-  }
 }

@@ -35,15 +35,13 @@ import {
   AccordionSummary,
   AccordionDetails
 } from '@mui/material';
-import { isArray } from 'lodash';
 import { withStyles } from 'tss-react/mui';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 // ORO modules
 import { GROUP_LABEL_NONE } from '../../../../../../shared/uiPreferences';
 import WrapWithTooltip from '../../../../util/WrapWithTooltip';
 import createTooltipMessage from './messages';
-import ActionIcon from '../../../../graphics/op/ActionIcon';
-import DismissIcon from '../../../../graphics/op/DismissIcon';
+import { createActionGroups } from '../../util';
 
 const VARIANTS = {
   WIDGET: 'widget',
@@ -157,23 +155,7 @@ const ActionsButtons = ({
 }) => {
   // Compute action groups as a dictionary from group 'id' (lowercased name) to { actions, label }
   // Actions without a group are included under the key 'Other'
-  const actionGroups = useMemo(() => {
-    if (!isArray(actions)) {
-      return [];
-    }
-    return actions.reduce((acc, action) => {
-      const groupName = action.group || GROUP_LABEL_NONE;
-      const groupKey = groupName.toLowerCase();
-      if (!acc[groupKey]) {
-        // Note that the label is the group name of the first action found in this group.
-        // If different casing is found in group names, the first one found will be used 
-        // (but at least actions remain in the same group)
-        acc[groupKey] = { actions: [], label: groupName };
-      }
-      acc[groupKey].actions.push(action);
-      return acc;
-    }, {});
-  }, [actions]);
+  const actionGroups = useMemo(() => createActionGroups(actions), [actions]);
 
   // If there are no action groups, create a fake one for the code below to render properly
   // (see iteration calling renderActionGroup)

@@ -18,7 +18,7 @@ import { Meteor } from 'meteor/meteor';
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import fs from 'fs';
-// InOrbit modules
+// ORO modules
 import { resetDatabase } from '../setup';
 import ConfigAPI from '../../configAPI/configAPI';
 import {

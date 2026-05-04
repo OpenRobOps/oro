@@ -38,7 +38,7 @@ import { Mongo } from 'meteor/mongo';
 import { CronJob } from 'cron';
 import moment from 'moment';
 import { isEmpty } from 'lodash';
-// InOrbit modules
+// ORO modules
 import { RobotModuleState } from '../lib/collections';
 import { getCalculatedStateAsync } from '../lib/states';
 import ConfigManager, { assertUniqueIdFields } from '../lib/configManagerAsync';

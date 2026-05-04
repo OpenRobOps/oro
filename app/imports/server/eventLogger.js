@@ -27,7 +27,7 @@
  * implementation, without changing this module's interface.
  */
 import axios from 'axios';
-// InOrbit Modules
+// ORO modules
 import {
   EventSchemas,
   EVENTS_API_PATH,

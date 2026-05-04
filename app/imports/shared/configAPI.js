@@ -21,7 +21,7 @@
  * @see https://docs.google.com/document/d/1lJwxtz8RAJ8qlpX6YivmlUwuPGH6usRALGM1dWuj1o0/edit#heading=h.jls5u3m7r4k5
  */
 import { lowerFirst, isObject, pick } from 'lodash';
-// InOrbit Modules
+// ORO modules
 import { RESOURCE_TYPES, serializeResourceId, parseResourceId } from './roles';
 import { unzipKeyValueList, zipKeyValueList } from '../lib/util';
 

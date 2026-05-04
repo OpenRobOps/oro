@@ -31,7 +31,7 @@ import { ACCESS_LEVEL_VIEW } from '../shared/roles';
 import { matchesStatusFilter } from '../shared/status';
 import { Robots } from '../lib/collections';
 import OroRoles from '../server/roles';
-// InOrbit modules
+// ORO modules
 import { AsyncCache } from './simpleCache';
 
 import {

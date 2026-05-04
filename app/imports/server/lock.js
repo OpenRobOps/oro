@@ -22,7 +22,7 @@
  */
 import { Meteor } from 'meteor/meteor';
 import { isNumber, isObject, isString } from 'lodash';
-// InOrbit modules
+// ORO modules
 import PreferencesManager from './preferences';
 import Robot from './model/robot';
 import OroRoles from './roles';

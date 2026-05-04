@@ -218,7 +218,7 @@ describe('configAPI:ActionDefinition', function () {
       }]);
   });
 
-  it.skip('lists actions using full format (all action fields)', async () => {
+  it('lists actions using full format (all action fields)', async () => {
     const actionCreated = await createAction({
       actionDefinition: {
         label: 'test action',
@@ -245,16 +245,11 @@ describe('configAPI:ActionDefinition', function () {
             }
           }
         },
-        conditions: [{ not: { collections: ['lab'] } }]
+        conditions: [{ not: { collections: ['lab'] } }],
+        widgets: ['navigation']
       }
     });
     expect(actionCreated.success).to.be.true;
-    // add this action to a widget
-    await new UIPreferencesManager().addEmbeddedAction({
-      screenKey: 'navigationDetail',
-      widgetId: null,
-      actionId: actionCreated.id,
-    });
     const user = await createUser({ role: ROLE_ADMIN });
     
     // List actions
@@ -269,6 +264,7 @@ describe('configAPI:ActionDefinition', function () {
         kind: KIND_ACTION_DEFINITION,
         metadata: {
           id: actionCreated.id,
+          scope: ''
         },
         spec: {
           label: 'test action',

@@ -20,7 +20,7 @@
  */
 import React from 'react';
 import { withTracker } from 'meteor/react-meteor-data';
-// InOrbit modules
+// ORO modules
 import ActionsButtons from './ActionsButtons';
 import ActionsWidgetComponent from './ActionsWidgetComponent';
 import WithNoDataMessage from '../../util/WithNoDataMessage';

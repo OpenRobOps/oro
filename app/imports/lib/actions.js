@@ -49,7 +49,6 @@ const ActionTemplateSchema = new SimpleSchema({
   internal: { type: Boolean, required: false, defaultValue: false },
   client: { type: Boolean, required: false, defaultValue: false },
   disableAddingArgs: { type: Boolean, required: false, defaultValue: false },
-  featureFlag: { type: String, required: false },
   context: { type: Object, blackbox: true, required: false, defaultValue: {} },
   elementList: { type: Array, blackbox: true, required: false, defaultValue: [] },
   'elementList.$': { type: String, required: true },
@@ -81,6 +80,7 @@ const ActionDefinitions = new Mongo.Collection(COLLECTIONS.ACTION_DEFINITIONS);
  *   message: string,
  *   buttonLabel: string
  * }
+ * widgets: [array of widget names to embed the action in],
  * elementList: [array of argument names]
  * elementValues: { // values (constants) or placeholders
  *   // for each argument required by this action

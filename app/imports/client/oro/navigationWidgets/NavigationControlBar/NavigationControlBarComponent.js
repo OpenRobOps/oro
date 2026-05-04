@@ -37,8 +37,8 @@ import { Collapse, Grid } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import classNames from 'classnames';
-// InOrbit modules
-// import ActionsDropdownComponent from '../ActionsDropdown';
+// ORO modules
+import ActionsDropdownComponent from '../ActionsDropdown';
 import { useFullscreenContext } from '../../contexts/FullscreenContext';
 import FullscreenButton from '../../util/FullscreenButton';
 
@@ -253,10 +253,10 @@ const NavigationControlBar = (props) => {
                     fullscreen={fullscreen}
                   />
                 )}
-                {/* TODO - re-add when implementd <ActionsDropdownComponent
+                <ActionsDropdownComponent
                   robotId={robotId}
                   textClasses={{ root: classNames(classes.baseButtonRoot, colorClassNames) }}
-                /> */}
+                />
               </div>
               <div className={classes.mapSettingsContainer}>
                 <FullscreenButton
