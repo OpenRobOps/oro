@@ -113,9 +113,7 @@ const queryRobotAttributeValues = ({ robotId, attributes = null, pollingInterval
  */
 const fetchRobotAttributeValues = ({ robotId, attributes = null }) => {
   const results = queryRobotAttributeValues({ robotId, attributes }).fetch();
-  const data = results && results[0] && results[0]._id == robotId
-    ? results[0]
-    : {};
+  const data = results.length ? results[0] : {};
   // remove the robot to turn into a pure attrId-to-value dictionary
   delete data._id;
   return data;
