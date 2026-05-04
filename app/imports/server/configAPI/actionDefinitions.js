@@ -175,7 +175,9 @@ const actionDefinitionToConfigObject = ({ _id: id, widgets, ...definition }) => 
   } = definition;
   spec.type = type;
   spec.label = label;
-  spec.widgets = widgets;
+  if (widgets && widgets.length) {
+    spec.widgets = widgets;
+  }
   // Note: Always exposing the Lock value, It is validated during apply()
   spec.lock = Boolean(lock);
   spec.description = description;
