@@ -218,7 +218,7 @@ describe('configAPI:ActionDefinition', function () {
       }]);
   });
 
-  it.only('lists actions using full format (all action fields)', async () => {
+  it('lists actions using full format (all action fields)', async () => {
     const actionCreated = await createAction({
       actionDefinition: {
         label: 'test action',
