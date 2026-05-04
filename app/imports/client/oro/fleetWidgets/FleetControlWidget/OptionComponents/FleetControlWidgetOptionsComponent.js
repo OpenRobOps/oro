@@ -25,6 +25,7 @@ import { Typography } from '@mui/material';
 import { Cancel, FiberManualRecordRounded } from '@mui/icons-material';
 import SortByComponent from './SortByComponent';
 import FilterByComponentSelector from './FilterByComponentSelector';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import {
   FLAG_ERROR, FLAG_WARNING, FLAG_OK, FLAG_OFFLINE,
   DEFAULT_FLAGS_STRING, isInRobotStatusString, makeAttributeStatusUrlParam,
@@ -32,10 +33,10 @@ import {
 import { STATUS, getStatusColor } from '../../../../../lib/status';
 
 const STATUS_PILLS = [
-  { flag: FLAG_ERROR, label: 'Error' },
-  { flag: FLAG_WARNING, label: 'Warning' },
-  { flag: FLAG_OK, label: 'OK' },
-  { flag: FLAG_OFFLINE, label: 'Offline' },
+  { flag: FLAG_ERROR, label: 'Error', shortLabel: 'Err' },
+  { flag: FLAG_WARNING, label: 'Warning', shortLabel: 'Wrn' },
+  { flag: FLAG_OK, label: 'OK', shortLabel: 'OK' },
+  { flag: FLAG_OFFLINE, label: 'Offline', shortLabel: 'Off' },
 ];
 
 const noFilterItem = { label: 'No Filter', value: null };
@@ -174,9 +175,9 @@ const FleetControlWidgetOptionsComponent = ({
   config,
 }) => {
   const { classes, cx, theme } = useStyles();
-
   const statusList = config?.elementList || [];
   const statusValues = config?.elementValues || {};
+  const isMobile = useMediaQuery('(max-width:1200px)');
 
   const dotColors = useMemo(() => ({
     [FLAG_ERROR]: theme.palette.incidents.error,
@@ -242,11 +243,11 @@ const FleetControlWidgetOptionsComponent = ({
       <div className={classes.section}>
         <Typography className={classes.sectionLabel}>Filter by status</Typography>
         <div className={classes.pillsRow}>
-          {STATUS_PILLS.map(({ flag, label }) => (
+          {STATUS_PILLS.map(({ flag, label, shortLabel }) => (
             <StatusPill
               key={flag}
               flag={flag}
-              label={label}
+              label={isMobile ? shortLabel : label}
               dotColor={dotColors[flag]}
               isSelected={isInRobotStatusString(flag, robotStatus)}
               onToggle={toggleStatus}

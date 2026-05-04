@@ -19,7 +19,7 @@
  *  - Renders a table widget that allows to display text and number attributeValues
  *  - attributeValues are received as props
  */
-import React from 'react';
+import React, { useMemo } from 'react';
 import { isEmpty } from 'lodash';
 import { Table, TableHead } from '@mui/material';
 import PropTypes from 'prop-types';
@@ -28,14 +28,19 @@ import TableCellAttributeValue from './TableCellAttributeValue';
 import { StyledTableBody, StyledTableCell, StyledTableContainer, StyledTableRow } from '../../util/DefaultTable';
 import NoDataIcon from '../../graphics/op/NoDataIcon';
 
+const EMPTY_OBJECT = {};
+
 const ListDataComponent = ({
-  attributeValues = {},
-  config = {},
+  attributeValues = EMPTY_OBJECT,
+  config = EMPTY_OBJECT,
   nowTs,
   isLoading
 }) => {
-  const { dataSources = [] } = config;
-
+  const { elementList = [], elementValues = EMPTY_OBJECT } = config;
+  const dataSources = useMemo(() => (
+    elementList.map(attrId => ({ id: attrId, ...elementValues[attrId] })).filter(Boolean)
+  ), [elementList, elementValues]);
+  
   return (
     <StyledTableContainer>
       <Table stickyHeader aria-label="sticky table" size="small">
@@ -61,7 +66,7 @@ const ListDataComponent = ({
                   </StyledTableCell>
                  <TableCellAttributeValue
                     attributeId={attributeDefinition.id}
-                    attributeValues={attributeValues}
+                    attributeValue={attributeValues?.[attributeDefinition.id]}
                     attributeDefinition={attributeDefinition}
                     nowTs={nowTs}
                   />

@@ -66,13 +66,11 @@ const RECENT_TIME = moment.duration(1, 'minutes').valueOf();
 
 /**
  * @param {string} attributeId - attribute key id to render information
- * @param {object} attributeValues - attribute values object
- * @param {object} elementValues - element values from config
+ * @param {object} attributeValue - attribute value object
  * @param {number} nowTs - current timestamp
  */
-const TableCellAttributeValue = ({ attributeId, attributeValues, attributeDefinition, nowTs }) => {
+const TableCellAttributeValue = ({ attributeId, attributeValue, attributeDefinition, nowTs }) => {
   const { classes } = useStyles();
-  const attributeValue = attributeValues[attributeId];
 
   const formatter = useMemo(() => AttributeValueFormatter(attributeDefinition), [attributeDefinition]);
   const cellContent = formatter(attributeValue?.value) || '';
@@ -131,8 +129,8 @@ const TableCellAttributeValue = ({ attributeId, attributeValues, attributeDefini
 
 TableCellAttributeValue.propTypes = {
   attributeId: PropTypes.string.isRequired,
-  attributeValues: PropTypes.object.isRequired,
-  elementValues: PropTypes.object.isRequired,
+  attributeValue: PropTypes.object.isRequired, // { value, ts}
+  attributeDefinition: PropTypes.object.isRequired, // { label, unit, type, precision, scale }
   nowTs: PropTypes.number
 };
 
