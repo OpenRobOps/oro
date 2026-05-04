@@ -36,7 +36,7 @@
 import { isString, keyBy } from 'lodash';
 import { AsyncCache } from './simpleCache';
 import moment from 'moment';
-// InOrbit modules
+// ORO modules
 import RobotStatusManager from './status';
 import MongoManager from '../mongo';
 // import StorageManager from '../storage';

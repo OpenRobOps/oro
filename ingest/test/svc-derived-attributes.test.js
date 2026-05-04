@@ -20,7 +20,7 @@
 import { assert } from 'chai';
 import mongoUnit from 'mongo-unit';
 import * as sinon from 'sinon';
-// InOrbit modules
+// ORO modules
 import MongoManager from '../src/mongo';
 import * as robotsTestData from './testData/robots.json';
 import {

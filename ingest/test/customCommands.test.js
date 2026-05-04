@@ -19,7 +19,7 @@
  */
 import mongoUnit from "mongo-unit";
 import { expect } from "chai";
-// InOrbit modules
+// ORO modules
 import MqttMock from "./mocks/mqtt";
 import CustomCommandsModule from "../src/server/modules/customCommands";
 import { COLLECTIONS } from "../src/shared/constants";

@@ -95,7 +95,7 @@ const ACTION_UPDATE_USER_FIELDS = [
   // flags and options
   'lock', 'confirmation', 'conditions', 
   // other experimental features and UI fields
-  'tooltip', 'order', 'group'
+  'tooltip', 'order', 'group', 'widgets'
 ];
 
 /**
