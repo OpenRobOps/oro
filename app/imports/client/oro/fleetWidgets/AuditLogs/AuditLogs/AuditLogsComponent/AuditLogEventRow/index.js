@@ -40,7 +40,6 @@ const AuditLogEventRow = ((props) => {
 
   // Function to handle the state of the expandable row
   const handleToggleExpanded = useCallback(() => {
-    console.log("xx handleToggle", )
     // If state is going from closed to expanded get
     // custom action script details
     if (!isExpanded) {
