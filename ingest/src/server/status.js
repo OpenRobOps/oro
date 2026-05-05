@@ -21,7 +21,7 @@
 import { _ } from 'lodash';
 import moment from 'moment';
 // ORO modules
-import { AsyncCache } from './simpleCache';
+import { AsyncCache } from '../shared/simpleCache';
 import { COLLECTIONS } from '../shared/constants';
 import { STATUS } from '../lib/status';
 import AttributesManager from './attributes';

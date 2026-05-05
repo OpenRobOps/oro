@@ -86,8 +86,8 @@ import NavigationControlBar from '../navigationWidgets/NavigationControlBar';
 // import VerbosityLevelFilter from './widgetToolbars/ToolbarFilters/VerbosityLevelFilter';
 // import RobotLogFilter from './widgetToolbars/ToolbarFilters/RobotLogFilter';
 // import FleetLogFilter from './widgetToolbars/ToolbarFilters/FleetLogFilter';
-// import AuditLogsFleet from '../fleetWidgets/AuditLogs/AuditLogsFleet';
-// import AuditLogsRobot from '../fleetWidgets/AuditLogs/AuditLogsRobot';
+import AuditLogsFleet from '../fleetWidgets/AuditLogs/AuditLogsFleet';
+import AuditLogsRobot from '../fleetWidgets/AuditLogs/AuditLogsRobot';
 // // Time Capsule widgets
 // import { DATA_BAG_VARIANT } from '../robotWidgets/DataBagWidget/constants';
 // import TimelineFilter from './widgetToolbars/ToolbarFilters/TimelineFilter';
@@ -763,42 +763,42 @@ const WIDGET_FACTORY = {
     />
   ),
 
-  // [WIDGET_TYPES_IDS.AUDIT_LOG]: ({ setContext, context, scope, isZeroData }) => (
-  //   <NowTimeContext.Consumer>
-  //     {nowTs => (
-  //       <AuditLogsRobot
-  //         robotId={getRobotId(context, scope)}
-  //         startTs={getStartTime(context, scope)}
-  //         timeRangeMs={getTimeRangeMs(context, scope)}
-  //         nowTs={nowTs}
-  //         isZeroData={isZeroData}
-  //       />
-  //     )}
-  //   </NowTimeContext.Consumer>
-  // ),
+  [WIDGET_TYPES_IDS.AUDIT_LOG]: ({ setContext, context, scope, isZeroData }) => (
+    <NowTimeContext.Consumer>
+      {nowTs => (
+        <AuditLogsRobot
+          robotId={getRobotId(context, scope)}
+          startTs={getStartTime(context, scope)}
+          timeRangeMs={getTimeRangeMs(context, scope)}
+          nowTs={nowTs}
+          isZeroData={isZeroData}
+        />
+      )}
+    </NowTimeContext.Consumer>
+  ),
 
-  // [WIDGET_TYPES_IDS.AUDIT_LOG_FLEET]: ({ setContext, context, scope, isZeroData }) => (
-  //   <NowTimeContext.Consumer>
-  //     {nowTs => (
-  //       <AuditLogsFleet
-  //         robotId={getRobotId(context, scope)}
-  //         setRobotId={setRobotId(setContext, scope)}
-  //         startTs={getStartTime(context, scope)}
-  //         timeRangeMs={getTimeRangeMs(context, scope)}
-  //         nowTs={nowTs}
-  //         eventType={getEventType(context, scope)}
-  //         setNewEventType={setEventType(setContext, scope)}
-  //         eventModule={getEventModule(context, scope)}
-  //         setEventModule={setEventModule(setContext, scope)}
-  //         actionId={getActionId(context, scope)}
-  //         setActionId={setActionId(setContext, scope)}
-  //         setUserId={setUserId(setContext, scope)}
-  //         userId={getUserId(context, scope)}
-  //         isZeroData={isZeroData}
-  //       />
-  //     )}
-  //   </NowTimeContext.Consumer>
-  // ),
+  [WIDGET_TYPES_IDS.AUDIT_LOG_FLEET]: ({ setContext, context, scope, isZeroData }) => (
+    <NowTimeContext.Consumer>
+      {nowTs => (
+        <AuditLogsFleet
+          robotId={getRobotId(context, scope)}
+          setRobotId={setRobotId(setContext, scope)}
+          startTs={getStartTime(context, scope)}
+          timeRangeMs={getTimeRangeMs(context, scope)}
+          nowTs={nowTs}
+          eventType={getEventType(context, scope)}
+          setNewEventType={setEventType(setContext, scope)}
+          eventModule={getEventModule(context, scope)}
+          setEventModule={setEventModule(setContext, scope)}
+          actionId={getActionId(context, scope)}
+          setActionId={setActionId(setContext, scope)}
+          setUserId={setUserId(setContext, scope)}
+          userId={getUserId(context, scope)}
+          isZeroData={isZeroData}
+        />
+      )}
+    </NowTimeContext.Consumer>
+  ),
 
   [WIDGET_TYPES_IDS.CUSTOM_DATA_TEXT]: ({ config, context, scope }) => (
     <NowTimeContext.Consumer>

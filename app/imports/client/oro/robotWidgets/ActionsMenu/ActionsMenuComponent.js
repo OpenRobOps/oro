@@ -95,10 +95,11 @@ const styles = theme => ({
 });
 
 const EMPTY_ARRAY = [];
+const DUMMY_FUNCTION = () => {};
 
 const ActionsMenu = (props) => {
   const {
-    executeAction,
+    executeAction = DUMMY_FUNCTION,
     actions = EMPTY_ARRAY,
     textClasses,
     classes
@@ -228,10 +229,6 @@ const ActionsMenu = (props) => {
     </div>
   );
 };
-
-ActionsMenu.defaultProps = {
-  executeAction: () => { }
-}
 
 ActionsMenu.propTypes = {
   classes: PropTypes.object,

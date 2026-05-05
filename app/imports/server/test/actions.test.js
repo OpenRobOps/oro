@@ -29,7 +29,7 @@ import {
 import { Robots, RobotCustomScript, RobotLocalization } from '../../lib/collections';
 import { AttrValues } from '../../lib/attributes';
 import ActionsEngine from '../actions';
-// import EventLog from '../eventLogger';
+// import EventLog from '../eventLog/eventLogger';
 import LockManager from '../lock';
 import { LOCK_TYPES } from '../../lib/lock';
 import { createUser } from './common';

@@ -95,6 +95,9 @@ const COLLECTIONS = {
 
   // Notification Channels
   NOTIFICATION_CHANNELS: 'notification_channels',
+
+  // Event Log - when implemented over mongodb
+  EVENT_LOG: 'event_log'
 };
 
 /**

@@ -15,4 +15,6 @@ cp -u ../app/private/oro.proto \
   ../app/imports/shared/attributes.js \
   ../app/imports/shared/geometry.js \
   ../app/imports/shared/arrayUtil.js \
+  ../app/imports/shared/simpleCache.js \
+  ../app/imports/shared/throttledLogger.js \
   src/shared

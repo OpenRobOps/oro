@@ -75,7 +75,6 @@ const LocalizationWithMapInteraction = (props) => {
 };
 
 LocalizationWithMapInteraction.propTypes = {
-  // robotIds is provided directly (replaces inorbit's companyId-based useRobotsInLocation)
   // TODO: Review entity mapping for ORO context
   robotIds: PropTypes.array,
   options: PropTypes.object,

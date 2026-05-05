@@ -42,12 +42,15 @@ import { addApiRoute } from '../imports/server/rest_api';
 import OroMqtt from '../imports/server/mqtt';
 import ActionsEngine from '../imports/server/actions';
 import LockManager from '../imports/server/lock';
+import AuditLogManager from '../imports/server/eventLog/auditLogManager';
 import {
   // RobotLocalizationModule,
   // ImagesModule,
   Navigation2DModule,
 } from '../imports/server/modules';
 import { bootstrapConfigData } from './bootstrapConfig';
+import EventLog from '../imports/server/eventLog/eventLogger';
+import DbEventStore from '../imports/server/eventLog/meteorDbEventStore';
 
 // Register accounts hooks at module level — before any login attempt
 registerAccountsHooks();
@@ -96,6 +99,12 @@ const oroAppMain = async () => {
   if (Meteor.settings.smtp?.url) {
     process.env.MAIL_URL = Meteor.settings.smtp.url;
   }
+
+  // Start event logger
+  // TODO make this configurable
+  const eventStore = new DbEventStore({});
+  await new EventLog().init({ eventStore });
+  await new AuditLogManager().init({ eventStore });
 
   // Start MQTT client
   const mqtt = new OroMqtt();

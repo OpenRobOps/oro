@@ -85,10 +85,10 @@ describe('AttributesManager: Test handleEvents', () => {
       receivedUpdates.push(attributeValues);
     });
     // Get input from fixtures
-    const { robotId, companyId, customDataInput2 } = fixtures;
+    const { robotId, customDataInput2 } = fixtures;
     const { pairs, customField } = customDataInput2;
     // Process them
-    await mgr.handleEvents({ robotId, companyId, customField }, pairs);
+    await mgr.handleEvents({ robotId, customField }, pairs);
     // There should be two updates, one with two messages and one with one
     assert.equal(receivedUpdates.length, 2);
     assert.equal(Object.keys(receivedUpdates[0]).length, 2);

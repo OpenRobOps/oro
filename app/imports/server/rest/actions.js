@@ -27,7 +27,7 @@ import { ActionDefinitions, ACTION_TYPES } from '../../lib/actions';
 import { notFoundApiError } from '../rest_api_common';
 import { RobotCustomScript } from '../../lib/collections';
 import ActionsEngine from '../actions';
-import EventLog, { EVENT_MODULES, EVENT_TYPES, buildEvent } from '../eventLogger';
+import EventLog, { EVENT_MODULES, EVENT_TYPES, buildEvent } from '../eventLog/eventLogger';
 import { getUserLoggingAttributes } from '../../lib/events';
 
 /**
