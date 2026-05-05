@@ -22,7 +22,6 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      # Cache Meteor Installation
       - name: Cache Meteor
         id: cache-meteor
         uses: [actions/cache@v4](https://github.com/actions/cache)
@@ -32,12 +31,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-meteor-
 
-      # Install Meteor
       - name: Install Meteor if not cached
         if: steps.cache-meteor.outputs.cache-hit != 'true'
         run: curl https://install.meteor.com/\?release\=${{ env.METEOR_RELEASE }} | sh
 
-      # Add Meteor to Path if it was cached
       - name: Add Meteor to Path
         if: steps.cache-meteor.outputs.cache-hit == 'true'
         run: echo "$HOME/.meteor" >> $GITHUB_PATH
