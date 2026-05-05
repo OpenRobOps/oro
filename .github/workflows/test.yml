@@ -24,7 +24,7 @@ jobs:
 
       - name: Cache Meteor
         id: cache-meteor
-        uses: [actions/cache@v4](https://github.com/actions/cache)
+        uses: actions/cache@v4
         with:
           path: ~/.meteor
           key: ${{ runner.os }}-meteor-${{ env.METEOR_RELEASE }}
