@@ -11,6 +11,10 @@ jobs:
     name: Web App Tests
     runs-on: ubuntu-latest
 
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
+
     services:
       mongodb:
         image: mongo:7
