@@ -2,7 +2,9 @@ name: Tests
 
 on:
   push:
-  pull_request:
+    paths: 'app/**'
+
+  # pull_request:
     # types:
     # - synchronize
 
@@ -90,45 +92,4 @@ jobs:
         with:
           name: Test Results
           path: junit_server.xml
-          reporter: java-junit
-
-  test-ingest:
-    name: Ingest Tests
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v6
-
-      # mongo-unit needs libssl1.1
-      - name: Install libssl1.1
-        run: |
-          wget https://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2_amd64.deb
-          sudo dpkg -i libssl1.1_1.1.1f-1ubuntu2_amd64.deb
-          rm libssl1.1_1.1.1f-1ubuntu2_amd64.deb
-
-      - name: Install dependencies
-        working-directory: ingest
-        run: npm i
-
-      - name: Import shared code
-        working-directory: ingest
-        run: ./import.sh
-
-      - name: Run tests
-        working-directory: ingest
-        run: npm run test:unit:report
-
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: test-results-ingest
-          path: ingest/junit_ingest.xml
-
-      - name: Publish test results
-        if: always()
-        uses: dorny/test-reporter@v3
-        with:
-          name: Test Results
-          path: ingest/junit_ingest.xml
           reporter: java-junit
