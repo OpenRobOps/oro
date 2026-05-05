@@ -43,14 +43,14 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-results-web
           path: junit_server.xml
 
       - name: Publish test results
         if: always()
-        uses: dorny/test-reporter@v2
+        uses: dorny/test-reporter@v3
         with:
           name: Test Results
           path: junit_server.xml
@@ -84,14 +84,14 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-results-ingest
           path: ingest/junit_ingest.xml
 
       - name: Publish test results
         if: always()
-        uses: dorny/test-reporter@v2
+        uses: dorny/test-reporter@v3
         with:
           name: Test Results
           path: ingest/junit_ingest.xml
