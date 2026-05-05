@@ -16,12 +16,36 @@ jobs:
         image: mongo:7
         ports:
           - 27017:27017
+    env:
+      METEOR_RELEASE: '3.4'
 
     steps:
       - uses: actions/checkout@v6
 
-      - name: Install Meteor
-        run: curl https://install.meteor.com/\?release\=3.4 | sh
+      # Cache Meteor Installation
+      - name: Cache Meteor
+        id: cache-meteor
+        uses: [actions/cache@v4](https://github.com/actions/cache)
+        with:
+          path: ~/.meteor
+          key: ${{ runner.os }}-meteor-${{ env.METEOR_RELEASE }}
+          restore-keys: |
+            ${{ runner.os }}-meteor-
+
+      # Install Meteor
+      - name: Install Meteor if not cached
+        if: steps.cache-meteor.outputs.cache-hit != 'true'
+        run: curl https://install.meteor.com/\?release\=${{ env.METEOR_RELEASE }} | sh
+
+      # Add Meteor to Path if it was cached
+      - name: Add Meteor to Path
+        if: steps.cache-meteor.outputs.cache-hit == 'true'
+        run: echo "$HOME/.meteor" >> $GITHUB_PATH
+
+      - name: Get npm cache directory
+        id: npm-cache-dir
+        shell: bash
+        run: echo "dir=$(npm config get cache)" >> ${GITHUB_OUTPUT}
 
       - name: Install dependencies
         working-directory: app
@@ -35,7 +59,7 @@ jobs:
       - name: Run tests
         working-directory: app
         env:
-          #MONGO_URL: mongodb://localhost:27017/test
+          MONGO_URL: mongodb://localhost:27017/test
           TEST_CLIENT: "0"
           MOCHA_REPORTER: "xunit"
           SERVER_MOCHA_OUTPUT: "${{ github.workspace }}/junit_server.xml"
