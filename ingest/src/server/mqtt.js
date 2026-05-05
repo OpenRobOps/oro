@@ -39,7 +39,7 @@ import RateLimiter from './rateLimiter';
 //   VITAL_AGENT_TIME_DIFF
 // } from '../shared/attributes';
 import MongoManager from '../mongo';
-import ThrottledLogger from './throttledLogger';
+import ThrottledLogger from '../shared/throttledLogger';
 
 // Databags update topics. Same as in ingest/databags.js
 const MQTT_ROSBAG_UPLOAD_TOPIC = 'ros/rosbag/upload';

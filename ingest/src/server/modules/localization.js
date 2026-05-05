@@ -22,7 +22,7 @@ import moment from 'moment';
 import { _ } from 'lodash';
 import Long from 'long';
 // ORO imports
-import { AsyncCache } from '../simpleCache';
+import { AsyncCache } from '../../shared/simpleCache';
 import RateLimiter from '../rateLimiter';
 import MongoManager from '../../mongo';
 import AnnotationsManager from '../annotations';

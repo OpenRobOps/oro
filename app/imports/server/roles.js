@@ -34,7 +34,7 @@ import {
   SCOPE_SEPARATOR, RESOURCE_TYPES, RESOURCE_SINGLETONS, RESOURCE_WILDCARD,
   ACCESS_LEVEL_VIEW, ACCESS_LEVEL_OPERATE, ACCESS_LEVEL_CONFIGURE,
 } from '../shared/roles';
-// import EventLog from './eventLogger';
+// import EventLog from './eventLog/eventLogger';
 // import { EVENT_TYPES, EVENT_SETTINGS_SECTION_NAMES, getUserName } from '../lib/events';
 
 // field in Users collection containing roles. Not calling it 'roles' to avoid confusion

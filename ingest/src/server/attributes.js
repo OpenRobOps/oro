@@ -34,8 +34,7 @@
 /* eslint max-classes-per-file: 0 */
 
 import { isString, keyBy } from 'lodash';
-import { AsyncCache } from './simpleCache';
-import moment from 'moment';
+import { AsyncCache } from '../shared/simpleCache';
 // ORO modules
 import RobotStatusManager from './status';
 import MongoManager from '../mongo';

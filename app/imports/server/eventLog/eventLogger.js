@@ -15,33 +15,28 @@
  */
 
 /**
- * API wrapper for Event (Audit) Log. It is an thin wrapper over our events ingest log component.
+ * Common interface for Event (Audit) Log. This module receives and records log events.
+ * Actual storage of events is delegates to an "event store" instance: 
+ * 
+ * - dbEventStore stores on the the local database
+ * - httpEventStore sends events to a separate service (for larger or specialized deployments)
  *
  * ** THIS MODULE IS SHARED WITH INGEST, DO NOT IMPORT METEOR-ONLY CODE HERE!
  *
  * Events can be any object. Also from this module some constants are exported to annotate
  * events always the same way, including { module, eventType }
- *
- * Current implementation is API-based, so this module simply collects batches of events and
- * performs the HTTP REST API calls. In the future this can be replaced by a queue-based
- * implementation, without changing this module's interface.
  */
-import axios from 'axios';
 // ORO modules
+import ThrottledLogger from '../../shared/throttledLogger';
 import {
   EventSchemas,
-  EVENTS_API_PATH,
   EVENT_MODULES,
   EVENT_TYPES,
   EVENT_FIELD_MODULE,
   EVENT_FIELD_TYPE,
   getUserLoggingAttributes
-} from '../lib/events';
+} from '../../lib/events';
 
-// Maximum number of events to send in a single API call batch
-const MAX_EVENTS_PER_BATCH = 20;
-// Period to wait until sending queued to the API, in milliseconds
-const API_REQUEST_WAIT_MS = 100;
 
 // Validators for all event types - used only in buildEvent
 const EVENT_VALIDATORS = {
@@ -86,13 +81,6 @@ export default class EventLog {
     if (instance === undefined) {
       instance = this;
     }
-    this.enabled = false;
-    this.url = undefined; // set by init()
-    this.peerKey = undefined; // set by init()
-    // the events queue is a simple array, with a timer to send them with a short delay
-    this.eventsQueue = [];
-    this.requestTimer = null;
-    this.loggedErrors = new Set();
     // eslint-disable-next-line no-constructor-return
     return instance;
   }
@@ -101,115 +89,20 @@ export default class EventLog {
    * Starts the event log queue..
    */
   init = ({
-    enabled, peerKey, service, url
+    eventStore
   }) => {
-    if (!enabled) {
-      this.enabled = false;
-      return;
+    if (!eventStore) {
+      console.error('EventLogger constructed without an event store!');
     }
-    // Find and configure the peer api server. Give preference to `service` field
-    // for k8s autodiscovery. If found, it uses the virtual IP of that service
-    // from environment variables.
-    // When not given, use (if available) the URL from configuration, which likely
-    // includes a real domain name and goes through external network interfaces.
-    if (service) {
-      const hostVar = service + '_SERVICE_HOST';
-      const host = process.env[hostVar];
-      console.log('Configuing event log API against service: ' + service
-        + ', using variable ' + hostVar + '=' + host);
-      if (!host) {
-        throw new Error('Env var ' + hostVar + ' not found or without value');
-      }
-      this.url = `http://${host}:80`;
-    } else if (url) {
-      console.log('Configuring event log API from url: ' + url);
-      this.url = url;
-    } else {
-      throw new Error('Unable to configure peer API; unknown config');
-    }
-    if (this.url.substr(this.url.length - 1) == '/') {
-      this.url = this.url.substr(0, this.url.length - 1);
-    }
-    this.peerKey = peerKey;
-    if (!this.peerKey) {
-      throw new Error('peerKey not provided to eventLog');
-    }
-    // Enable the service just now
-    this.enabled = true;
+    this._store = eventStore;
+    this._logger = new ThrottledLogger({});
   };
 
   /**
    * Shutdown for the module. Sends any pending events and stop accepting further calls.
    */
   shutdown = async () => {
-    this._doSendEvents(); // send any event pendign in the queue
-    this.enabled = false;
-  };
-
-  /**
-   * Sends an individual event. The API is written to work with multiple events, so
-   * it ends up calling sendEvents()
-   */
-  sendEvent = data => this.sendEvents([data]);
-
-  /**
-   * Sends a batch of events.
-   * The method is not async; but it does not need to. Events are simply queued to be sent
-   * later.
-   */
-  sendEvents = (dataArray) => {
-    if (!dataArray.length) {
-      return;
-    }
-    if (!this.enabled) { // ignore
-      for (const evt of dataArray) {
-        if (!this.loggedErrors.has(evt.eventType)) {
-          this.loggedErrors.add(evt.eventType);
-          console.error('Event log: Not enabled! Missed recording event of type', evt.eventType);
-        }
-      }
-      return;
-    }
-    const queue = this.eventsQueue;
-    const now = Date.now(); // default ts for any event without it
-    dataArray.forEach((evt) => {
-      if (evt) {
-        queue.push({ ts: now, ...evt });
-      }
-    });
-    // If there are too many events already queued, send them now.
-    // Otherwise set a timeout callback (or wait for it if already set)
-    if (queue.length >= MAX_EVENTS_PER_BATCH) {
-      this._doSendEvents();
-    } else if (!this.requestTimer) {
-      this.requestTimer = setTimeout(this._doSendEvents, API_REQUEST_WAIT_MS);
-    }
-  };
-
-  /**
-   * Sends all queued events. Called from a timeout or when the events queue grows too much
-   */
-  _doSendEvents = async () => {
-    if (this.requestTimer) {
-      clearTimeout(this._requestTimer);
-      this.requestTimer = null;
-    }
-    if (!this.eventsQueue.length) {
-      return false; // nothing to do. Don't do an API call
-    }
-    const events = this.eventsQueue;
-    this.eventsQueue = [];
-
-    try {
-      const res = await axios.post(this.url + EVENTS_API_PATH, {
-        events,
-        peerKey: this.peerKey
-      });
-      return res && res.status % 100 == 2;
-    } catch (error) {
-      console.error(`Event log: Failed sending event (code: ${error.code}):`, error.message);
-      return false;
-    }
+    await this._store.shutdown();
   };
 
   /**
@@ -226,7 +119,7 @@ export default class EventLog {
       const loggedAction = {};
       Object.assign(loggedAction, action);
       Object.assign(loggedAction, extraParams);
-      this.sendEvent(buildEvent(EVENT_MODULES.ACTION, EVENT_TYPES.ACTION_EXECUTED, {
+      this._store.storeEvent(buildEvent(EVENT_MODULES.ACTION, EVENT_TYPES.ACTION_EXECUTED, {
         ...getUserLoggingAttributes(user),
         robotId: robot._id,
         robotName: await robot.getNameAsync(),
@@ -238,8 +131,7 @@ export default class EventLog {
         action: loggedAction
       }));
     } catch (e) {
-      // We don't want to stop the action execution if for some reason
-      // the logging fails.
+      this._logger.error('logExecutedAction', `Error logging action: ${e}`)
     }
   };
 
@@ -253,7 +145,7 @@ export default class EventLog {
     robot, triggerId, event, ts = Date.now()
   }) => {
     try {
-      this.sendEvent(buildEvent(EVENT_MODULES.INCIDENT, EVENT_TYPES.INCIDENT_TRIGGER, {
+      this._store.storeEvent(buildEvent(EVENT_MODULES.INCIDENT, EVENT_TYPES.INCIDENT_TRIGGER, {
         robotId: robot._id,
         robotName: await robot.getNameAsync(),
         ts,
@@ -262,7 +154,7 @@ export default class EventLog {
         event
       }));
     } catch (e) {
-      // We don't want to stop the action execution if for some reason
+      // We don't want to stop the incident if for some reason
       // the logging fails.
     }
   };
@@ -276,10 +168,8 @@ export default class EventLog {
   logAlert = async ({
     robot, triggerId, event
   }) => {
-    // TODOto be re enabled
-    return;
     try {
-      this.sendEvent(buildEvent(EVENT_MODULES.ALERT, EVENT_TYPES.ALERT_TRIGGER, {
+      this._store.storeEvent(buildEvent(EVENT_MODULES.ALERT, EVENT_TYPES.ALERT_TRIGGER, {
         robotId: robot._id,
         robotName: await robot.getNameAsync(),
         ts: Date.now(),
@@ -314,7 +204,7 @@ export default class EventLog {
   }) => {
     // TODO(herchu) Log this event change in data lake
     const ts = Date.now();
-    this.sendEvent(buildEvent(EVENT_MODULES.SETTING, eventType, {
+    this._store.storeEvent(buildEvent(EVENT_MODULES.SETTING, eventType, {
       settingGroupName,
       settingName,
       robotId,
@@ -348,7 +238,7 @@ export default class EventLog {
     missionLabel
   }) => {
     const ts = Date.now();
-    this.sendEvent(buildEvent(EVENT_MODULES.MISSION, eventType, {
+    this._store.storeEvent(buildEvent(EVENT_MODULES.MISSION, eventType, {
       robotId,
       robotName,
       missionId,
@@ -383,7 +273,7 @@ export default class EventLog {
     locationLabel,
     ts = Date.now(),
   }) => {
-    this.sendEvent(buildEvent(EVENT_MODULES.TRAFFIC_MANAGEMENT, eventType, {
+    this._store.storeEvent(buildEvent(EVENT_MODULES.TRAFFIC_MANAGEMENT, eventType, {
       zoneId,
       zoneLabel,
       zoneState,

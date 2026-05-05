@@ -24,7 +24,7 @@ import mqtt from 'mqtt';
 import { loadSync } from 'protobufjs';
 import moment from 'moment';
 // ORO Imports
-import { AsyncCache } from './simpleCache';
+import { AsyncCache } from '../shared/simpleCache';
 import { cleanNulls } from '../lib/util';
 import { MqttLogins } from './collections';
 import { Robots, RobotVitals } from '../lib/collections';

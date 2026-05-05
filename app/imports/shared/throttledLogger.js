@@ -17,7 +17,7 @@
 /**
  * Logger that suppresses messages repeated in less than a configurable threshold
  */
-import Cache from './simpleCache';
+import Cache from '../shared/simpleCache';
 
 /**
  * Logger that suppresses messages repeated in less than a configurable threshold

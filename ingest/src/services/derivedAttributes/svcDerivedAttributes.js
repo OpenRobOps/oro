@@ -18,7 +18,7 @@ import { isObject, isString } from 'lodash';
 import { loadSync } from 'protobufjs';
 import path from 'path';
 // ORO modules
-import ThrottledLogger from '../../server/throttledLogger';
+import ThrottledLogger from '../../shared/throttledLogger';
 import RobotDerivedAttributesDataProvider from './dataProvider';
 import Cache from '../../server/simpleCache';
 import RobotDerivedAttributesProcessor from './processor';

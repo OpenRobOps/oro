@@ -61,7 +61,7 @@ import Robot from './model/robot';
 import { RobotCustomScript, RobotLocalization } from '../lib/collections';
 // import { GROUP_LABEL_NONE, GROUP_ID_NONE } from '../lib/uiPreferences';
 // import UIPreferencesManager from './uiPreferences';
-import EventLog, { EVENT_TYPES, EVENT_MODULES, buildEvent } from './eventLogger';
+import EventLog, { EVENT_TYPES, EVENT_MODULES, buildEvent } from './eventLog/eventLogger';
 import OroRoles from './roles';
 // import RttManager from './rttManager';
 import Mqtt from './mqtt';

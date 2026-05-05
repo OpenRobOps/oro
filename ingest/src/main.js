@@ -34,7 +34,7 @@ import PeerClient from './server/peer';
 // import WorkerQueue from './server/messageQueue';
 import { anonymizeUri } from './lib/util';
 // import ObjectsManager from './server/objectsManager';
-// import EventLog from './shared/server/eventLogger';
+// import EventLog from './shared/server/eventLog/eventLogger';
 import AttributesManager from './server/attributes';
 import InMemoryWorkerQueues from './server/queues/memoryWorkerQueue';
 import DerivedAttributesService from './services/derivedAttributes/svcDerivedAttributes';

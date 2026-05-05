@@ -18,7 +18,7 @@
  * Cache builder from a settings object. It exports a single builder function that returns
  * a new Cache object given a settings object. See buildCache()
  */
-import { AsyncCache } from './simpleCache';
+import { AsyncCache } from '../shared/simpleCache';
 import { isEmpty } from 'lodash';
 
 // Settings fields

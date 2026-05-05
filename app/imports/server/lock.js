@@ -31,7 +31,7 @@ import { ActionDefinitions } from '../lib/actions';
 import { LOCK_TYPES } from '../lib/lock';
 // import NotificationsManager from './notifications';
 import { getUserId, getUserName, getUserLoggingAttributes } from '../lib/events';
-import EventLog, { EVENT_TYPES, EVENT_MODULES, buildEvent } from './eventLogger';
+import EventLog, { EVENT_TYPES, EVENT_MODULES, buildEvent } from './eventLog/eventLogger';
 import {
   RESOURCE_SINGLETONS, RESOURCE_TYPES, glueId,
   ACCESS_LEVEL_VIEW, ACCESS_LEVEL_OPERATE, ACCESS_LEVEL_CONFIGURE, isSystemUser
