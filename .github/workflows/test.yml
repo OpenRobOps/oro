@@ -36,11 +36,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-meteor-
 
-      - name: Install Meteor if not cached
+      - name: Install Meteor [if not cached]
         if: steps.cache-meteor.outputs.cache-hit != 'true'
         run: curl https://install.meteor.com/\?release\=${{ env.METEOR_RELEASE }} | sh
 
-      - name: Add Meteor to Path
+      - name: Add Meteor to Path [if cached]
         if: steps.cache-meteor.outputs.cache-hit == 'true'
         run: echo "$HOME/.meteor" >> $GITHUB_PATH
 
@@ -49,13 +49,23 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-node-${{ hashFiles('app/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
 
-      - name: Install dependencies
+      - name: Cache node_modules
+        id: cache-node-modules
+        uses: actions/cache@v4
+        with:
+          path: app/node_modules
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('app/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-modules-
+
+      - name: Install dependencies [if not cached]
         working-directory: app
         run: meteor npm install
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
 
       # Tests --------------------------------------------------------------
       - name: Run tests
