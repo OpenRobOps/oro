@@ -25,7 +25,7 @@ import { COLLECTIONS } from '../../shared/constants';
 import OroRoles from '../roles';
 import { ACCESS_LEVEL_VIEW, RESOURCE_TYPES, RESOURCE_SINGLETONS, glueId } from '../../shared/roles';
 
-// Collection (serverside only)
+// Collection (serverside only; we don't publish data but use a meteor method for easier switching to http)
 // TODO Consider adding an expiration index
 const EventLog = new Mongo.Collection(COLLECTIONS.EVENT_LOG);
 const COMMON_FIELDS = ['module', 'eventType', 'userId', 'userName', 'userEmail', 'robotId', 'robotName', 'ts']

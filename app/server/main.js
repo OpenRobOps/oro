@@ -110,7 +110,6 @@ const oroAppMain = async () => {
   const mqtt = new OroMqtt();
   mqtt.run(Meteor.settings.mqtt);
 
-
   // Pre-create SOME modules - the ones required to initialize any manager
   moduleInstances.Navigation2DModule = new Navigation2DModule();
   // TODO add and initialize modules
@@ -196,3 +195,4 @@ if (!Meteor.isTest) {
 }
 
 export { moduleInstances };
+
