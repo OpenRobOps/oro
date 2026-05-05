@@ -149,7 +149,7 @@ const AuditLogEventRowComponent = ({
           )}
         </StyledTableCell>
         <StyledTableCell className={cx({ [classes.withoutBorder]: isExpanded })} width="10%">
-          {actionExecutionId||true ? ( // only rows corresponding to executing scripts can be expanded
+          {actionExecutionId ? ( // only rows corresponding to executing scripts can be expanded
             <IconButton aria-label="expand row" size="small" onClick={onExpandRowClicked} sx={{ p: 0 }}>
               {isExpanded ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
             </IconButton>
@@ -158,7 +158,7 @@ const AuditLogEventRowComponent = ({
           )}
         </StyledTableCell>
       </StyledTableRow>
-      { isExpanded && (
+      {isExpanded && (
         <AuditLogActionFeedbackRow
           isExpanded={isExpanded}
           actionDetails={actionDetails}
