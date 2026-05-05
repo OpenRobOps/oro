@@ -2,7 +2,9 @@ name: Tests
 
 on:
   push:
-    paths: 'app/**'
+    paths: 
+    - .github/workflows/test-app.yaml
+    - 'app/**'
 
   # pull_request:
     # types:

@@ -2,7 +2,13 @@ name: Tests
 
 on:
   push:
-    paths: 'ingest/**'
+    paths: 
+    - .github/workflows/test-ingest.yaml
+    - 'ingest/**'
+    # Include all files copied by import.sh
+    - 'app/imports/shared/**'
+    - 'app/private/oro.proto'
+
 #   pull_request:
     # types:
     # - synchronize
