@@ -119,7 +119,7 @@ export default class EventLog {
       const loggedAction = {};
       Object.assign(loggedAction, action);
       Object.assign(loggedAction, extraParams);
-      this._store.storeEvent(buildEvent(EVENT_MODULES.ACTION, EVENT_TYPES.ACTION_EXECUTED, {
+      this._store?.storeEvent(buildEvent(EVENT_MODULES.ACTION, EVENT_TYPES.ACTION_EXECUTED, {
         ...getUserLoggingAttributes(user),
         robotId: robot._id,
         robotName: await robot.getNameAsync(),
@@ -145,7 +145,7 @@ export default class EventLog {
     robot, triggerId, event, ts = Date.now()
   }) => {
     try {
-      this._store.storeEvent(buildEvent(EVENT_MODULES.INCIDENT, EVENT_TYPES.INCIDENT_TRIGGER, {
+      this._store?.storeEvent(buildEvent(EVENT_MODULES.INCIDENT, EVENT_TYPES.INCIDENT_TRIGGER, {
         robotId: robot._id,
         robotName: await robot.getNameAsync(),
         ts,
@@ -169,7 +169,7 @@ export default class EventLog {
     robot, triggerId, event
   }) => {
     try {
-      this._store.storeEvent(buildEvent(EVENT_MODULES.ALERT, EVENT_TYPES.ALERT_TRIGGER, {
+      this._store?.storeEvent(buildEvent(EVENT_MODULES.ALERT, EVENT_TYPES.ALERT_TRIGGER, {
         robotId: robot._id,
         robotName: await robot.getNameAsync(),
         ts: Date.now(),
@@ -204,7 +204,7 @@ export default class EventLog {
   }) => {
     // TODO(herchu) Log this event change in data lake
     const ts = Date.now();
-    this._store.storeEvent(buildEvent(EVENT_MODULES.SETTING, eventType, {
+    this._store?.storeEvent(buildEvent(EVENT_MODULES.SETTING, eventType, {
       settingGroupName,
       settingName,
       robotId,
@@ -238,7 +238,7 @@ export default class EventLog {
     missionLabel
   }) => {
     const ts = Date.now();
-    this._store.storeEvent(buildEvent(EVENT_MODULES.MISSION, eventType, {
+    this._store?.storeEvent(buildEvent(EVENT_MODULES.MISSION, eventType, {
       robotId,
       robotName,
       missionId,
@@ -273,7 +273,7 @@ export default class EventLog {
     locationLabel,
     ts = Date.now(),
   }) => {
-    this._store.storeEvent(buildEvent(EVENT_MODULES.TRAFFIC_MANAGEMENT, eventType, {
+    this._store?.storeEvent(buildEvent(EVENT_MODULES.TRAFFIC_MANAGEMENT, eventType, {
       zoneId,
       zoneLabel,
       zoneState,

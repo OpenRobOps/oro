@@ -112,7 +112,6 @@ const useMethod = (methodName, { transform } = {}) => {
       return result;
     } catch (err) {
       dispatch({ type: 'failure', payload: err });
-      throw err;
     }
   }, [methodName, transform]);
 

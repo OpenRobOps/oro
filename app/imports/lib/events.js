@@ -23,11 +23,11 @@
  */
 import SimpleSchema from 'simpl-schema';
 import { capitalizeString } from './util';
+import { ACTION_TYPES } from '../shared/actions';
 
 // Api endpoint to receive events queries
 const EVENTS_API_PATH = '/api/v1/events';
 
-// TODO(herchu) This constant MAY be configured via settings now. Support getting the right
 const EVENT_FIELD_MODULE = 'module';
 const EVENT_FIELD_TYPE = 'eventType';
 
@@ -222,7 +222,6 @@ const TAGS_AND_FIELDS_WHITELIST = {
     },
     includedFields: {
       robotName: true,
-      locationLabel: true,
       zoneLabel: true,
       zoneId: true,
       zoneState: true,
@@ -331,7 +330,6 @@ EventSchemas.TrafficManagementZoneEvent = new SimpleSchema({
   'robotInZoneIds.$': String,
   robotInZoneNames: { type: Array, optional: true },
   'robotInZoneNames.$': String,
-  locationLabel: { type: String, optional: true },
 });
 EventSchemas.TrafficManagementZoneEvent.extend(EventSchemas.Event);
 
@@ -383,6 +381,264 @@ const getUserLoggingAttributes = user => ({
   userEmail: getUserEmail(user)
 });
   
+// Helper functions to get text from event
+const getEventUserText = (event) => {
+  const { userName, userEmail, userId } = event;
+  return userName || userEmail || userId;
+};
+
+const getEventRobotText = (event) => {
+  const { robotName, robotId } = event;
+  return robotName || robotId;
+};
+
+const incidentIsResolved = (event) => {
+  const { level } = event.eventData || event;
+  return level === STATUS.OK.text;
+};
+
+const getEventIncidentText = (event, isResolved) => {
+  const eventData = event.eventData || event;
+  const { name, level } = eventData.event || eventData;
+  return name + ': ' + (isResolved ? ' is now ok' : level);
+};
+
+const getEventIncidentVerb = isResolved => (isResolved ? ' resolved. ' : ' triggered. ');
+
+const getSettingVerb = (typeVal) => {
+  if (typeVal == EVENT_TYPES.SETTING_ADDED) {
+    return ' added ';
+  } else if (typeVal == EVENT_TYPES.SETTING_REMOVED) {
+    return ' removed ';
+  } else if (typeVal == EVENT_TYPES.SETTING_UPDATED) {
+    return ' updated ';
+  }
+  return undefined;
+};
+
+const getMissionVerb = (typeVal) => {
+  if (typeVal == EVENT_TYPES.MISSION_EXECUTED) {
+    return ' executed mission ';
+  } else if (typeVal == EVENT_TYPES.MISSION_CANCELED) {
+    return ' canceled mission ';
+  } else if (typeVal == EVENT_TYPES.MISSION_DEFINITION_UPDATED) {
+    return ' updated mission definition ';
+  } else if (typeVal == EVENT_TYPES.MISSION_PAUSED) {
+    return ' paused mission ';
+  } else if (typeVal == EVENT_TYPES.MISSION_RESUMED) {
+    return ' resumed mission ';
+  }
+  return undefined;
+};
+
+// Unlike all other get** functions, this one returns { text, tooltip }
+// with an optional tooltip message to display when the row is hovered
+const getEventActionText = (event) => {
+  let tooltip = null;
+  let text = null;
+  const eventData = event.eventData || event;
+  const actionType = eventData.type;
+  const actionName = eventData.label || eventData.actionId;
+  switch (actionType) {
+    case ACTION_TYPES.CAMERA_TOGGLE: {
+      // For now only Hi-Res snapshot is implemented, use cameraLabel arg
+      const { cameraLabel } = eventData;
+      const { cameraAction } = eventData;
+      // NOTE(herchu) Before Sept'22, the only CAMERA_TOGGLE action was high-res override ("focus"),
+      // without the cameraAction field. Later, other actions (enable/disable) were added.
+      // Default to 'focus' verb if the cameraAction field is not present in the log
+      text = 'Camera toggle: ' + (cameraAction || 'focus');
+      if (cameraLabel) { // a string: non-empty means to take action on a specific camera
+        text += ` ${cameraLabel} camera`;
+      }
+      break;
+    }
+    case ACTION_TYPES.RUN_SCRIPT: {
+      const { args } = eventData;
+      const { fileName } = eventData;
+      const { label } = eventData;
+      tooltip = `Run script: ${fileName || ''} ${args || ''}`.trim();
+      // Shows the action label if it exists, otherwise shows the file name
+      text = label || `Run script: ${fileName}`;
+      break;
+    }
+    case ACTION_TYPES.PUBLISH_TO_TOPIC: {
+      // When expanded, print the script arguments
+      const { message } = eventData;
+      tooltip = `Published: '${message}'`;
+      break;
+    }
+    default:
+    // ignore.
+  }
+  // Default case
+  if (!text) {
+    text = actionName;
+  }
+  return { text, tooltip };
+};
+
+const getSettingText = (event) => {
+  const eventData = event.eventData || event;
+  return eventData.settingGroupName
+    + ' settings: "'
+    + eventData.settingName
+    + '"';
+};
+
+/**
+ * Formats an event object into a structured format for display in the UI.
+ * Takes raw event data and transforms it into a standardized structure with subject, verb,
+ * object, etc.
+ * This makes it easier to generate consistent, readable event descriptions across different
+ * event types.
+ * Used in app-server UI and audit logs API.
+ *
+ * @param {Object} event - The event object to format. It has an eventData field that contains
+ * multiple fields depending on the event type.
+ * @returns {Object|null} Formatted event with the following properties:
+ *   - subject: The actor/entity that performed the action (e.g., user name, system)
+ *   - actionVerb: The action that was performed (e.g., "locked", "executed")
+ *   - object: The direct object of the action (e.g., robot name, action name)
+ *   - prepObject: The object in the preposition (e.g., "on <robot>")
+ *   - withPreposition: Boolean indicating whether to show preposition phrase
+ *   - tooltip: Optional tooltip text for additional context (Only used in the UI)
+ *   Returns null if the event type is not recognized or cannot be formatted
+ */
+const formatEvent = (event) => {
+  const { module, eventType, robotId, robotName } = event;
+  const moduleVal = module;
+  const typeVal = eventType;
+  let subject;
+  let actionVerb;
+  let object;
+  let prepObject; // object in the preposition (".... on <robot>")
+  let tooltip;
+  let withPreposition = true; // shows 'on ....' (true, by deault). False to omit it
+
+  switch (moduleVal) {
+    case EVENT_MODULES.LOCK: {
+      if (typeVal == EVENT_TYPES.LOCK_LOCKED) {
+        subject = getEventUserText(event);
+        actionVerb = ' locked ';
+        object = getEventRobotText(event);
+      } else if (typeVal == EVENT_TYPES.LOCK_UNLOCKED) {
+        subject = getEventUserText(event);
+        actionVerb = ' unlocked ';
+        object = getEventRobotText(event);
+      } else if (typeVal == EVENT_TYPES.LOCK_EXPIRED) {
+        subject = robotName || robotId;
+        actionVerb = ' lock expired ';
+      } else {
+        subject = getEventUserText(event);
+        actionVerb = eventType;
+        object = getEventRobotText(event);
+      }
+      break;
+    }
+    case EVENT_MODULES.ACTION: {
+      if (typeVal == EVENT_TYPES.ACTION_EXECUTED) {
+        subject = getEventUserText(event);
+        actionVerb = ' executed ';
+        prepObject = getEventRobotText(event);
+        ({ text: object, tooltip } = getEventActionText(event));
+      } else if (typeVal == EVENT_TYPES.ACTION_FAILED) {
+        subject = getEventUserText(event);
+        actionVerb = ' failed to execute ';
+        prepObject = getEventRobotText(event);
+        ({ text: object, tooltip } = getEventActionText(event));
+        // Add failure reason to the tooltip if available
+        if (event.eventData?.failureReason && tooltip) {
+          tooltip += ` (${event.eventData.failureReason})`;
+        } else if (event.eventData?.failureReason) {
+          tooltip = event.eventData.failureReason;
+        }
+      } else {
+        return null;
+      }
+      break;
+    }
+    case EVENT_MODULES.INCIDENT: {
+      if (typeVal == EVENT_TYPES.INCIDENT_TRIGGER) {
+        const isResolved = incidentIsResolved(event);
+        subject = 'Incident';
+        actionVerb = getEventIncidentVerb(isResolved);
+        prepObject = getEventRobotText(event);
+        object = getEventIncidentText(event, isResolved);
+      } else {
+        return null;
+      }
+      break;
+    }
+    case EVENT_MODULES.SETTING: {
+      subject = getEventUserText(event);
+      actionVerb = getSettingVerb(typeVal);
+      prepObject = getSettingText(event);
+      withPreposition = false;
+      break;
+    }
+    case EVENT_MODULES.MISSION: {
+      subject = getEventUserText(event);
+      actionVerb = getMissionVerb(typeVal);
+      object = event.eventData?.missionLabel || event.missionLabel
+        ? '"' + (event.eventData?.missionLabel || event.missionLabel) + '"'
+        : '(No name)';
+      prepObject = getEventRobotText(event);
+      withPreposition = true;
+      break;
+    }
+    case EVENT_MODULES.TRAFFIC_MANAGEMENT: {
+      if (typeVal == EVENT_TYPES.TRAFFIC_MANAGEMENT_ZONE_ENTERED) {
+        subject = getEventRobotText(event);
+        actionVerb = ' entered zone ';
+        object = event.eventData?.zoneLabel || event.eventData?.zoneId;
+      } else if (typeVal == EVENT_TYPES.TRAFFIC_MANAGEMENT_ZONE_EXITED) {
+        subject = getEventRobotText(event);
+        actionVerb = ' exited zone ';
+        object = event.eventData?.zoneLabel || event.eventData?.zoneId;
+      } else if (typeVal == EVENT_TYPES.TRAFFIC_MANAGEMENT_ZONE_STATE_CHANGED) {
+        subject = `zone ${event.eventData?.zoneLabel || event.eventData?.zoneId} in ${event.eventData?.locationLabel || event.eventData?.locationId}`;
+        actionVerb = ' state changed to ';
+        object = event.eventData?.zoneState;
+        if (Array.isArray(event.eventData?.robotInZoneNames)
+          && event.eventData?.robotInZoneNames.length > 0) {
+          object += ` (robots: ${event.eventData?.robotInZoneNames.join(', ')})`;
+        }
+      }
+      break;
+    }
+    default:
+      return null;
+  }
+  return {
+    subject,
+    actionVerb,
+    object,
+    prepObject,
+    withPreposition,
+    tooltip
+  };
+};
+
+/**
+ * Formats an event to an object with the event timestamp and the
+ * event message formatted as a string
+ * Returns { ts: <Event timestamp>, message: <Event message> }
+ * @param {Object} event
+ */
+const renderLogEntry = (event) => {
+  const f = formatEvent(event);
+  if (!f) {
+    // If the event couldn't be formatted return an empty string
+    return '';
+  }
+  const { subject, actionVerb, object, prepObject, withPreposition } = f;
+  return {
+    ts: new Date(event.ts).toISOString(),
+    message: `${subject || ''}${actionVerb || ''}${object || ''} ${(prepObject && (((withPreposition && 'on ') || '') + prepObject)) || ''}`
+  };
+};
+
 export {
   EventSchemas,
   EVENT_MODULES,
@@ -402,5 +658,7 @@ export {
   getUserId,
   getUserName,
   getUserEmail,
-  getUserLoggingAttributes
+  getUserLoggingAttributes,
+  formatEvent,
+  renderLogEntry
 };

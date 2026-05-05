@@ -28,21 +28,19 @@ const randomId = () => (
 /**
  * Creates the dummy robot in the DB and returns its id.
  */
-const createDummyRobotInDB = async (companyId) => {
+const createDummyRobotInDB = async () => {
   const robotDoc = {
     ...robotsTestData.dummy,
-    _id: randomId(),
-    companyId
+    _id: randomId()
   };
   await new MongoManager().getCollection(COLLECTIONS.ROBOTS).insertOne(robotDoc);
   return robotDoc._id;
 };
 
-const createDummyRobotOfflineInDB = async (companyId) => {
+const createDummyRobotOfflineInDB = async () => {
   const robotDoc = {
     ...robotsTestData.dummyOffline,
-    _id: randomId(),
-    companyId
+    _id: randomId()
   };
   await new MongoManager().getCollection(COLLECTIONS.ROBOTS).insertOne(robotDoc);
   return robotDoc._id;

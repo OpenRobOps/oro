@@ -42,6 +42,7 @@ import { addApiRoute } from '../imports/server/rest_api';
 import OroMqtt from '../imports/server/mqtt';
 import ActionsEngine from '../imports/server/actions';
 import LockManager from '../imports/server/lock';
+import AuditLogManager from '../imports/server/eventLog/auditLogManager';
 import {
   // RobotLocalizationModule,
   // ImagesModule,
@@ -103,6 +104,7 @@ const oroAppMain = async () => {
   // TODO make this configurable
   const eventStore = new DbEventStore({});
   await new EventLog().init({ eventStore });
+  await new AuditLogManager().init({ eventStore });
 
   // Start MQTT client
   const mqtt = new OroMqtt();
