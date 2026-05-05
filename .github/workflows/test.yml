@@ -64,7 +64,7 @@ jobs:
 
       - name: Install dependencies [if not cached]
         working-directory: app
-        run: meteor npm install
+        run: meteor npm ci
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
 
       # Tests --------------------------------------------------------------
