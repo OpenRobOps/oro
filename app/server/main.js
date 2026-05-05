@@ -195,3 +195,4 @@ if (!Meteor.isTest) {
 }
 
 export { moduleInstances };
+
