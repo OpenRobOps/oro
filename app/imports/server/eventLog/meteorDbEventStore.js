@@ -51,4 +51,40 @@ export default class DbEventStore extends EventStore {
       await EventLog.rawCollection().insertMany(docs);
     }
   };
+
+  findEvents = async ({ startTs, endTs, limit, robotId, eventType, moduleName }) => {
+    if (startTs && !isFinite(startTs)) {
+      throw new Error(`startTs must be a number`);
+    }
+    if (endTs && !isFinite(endTs)) {
+      throw new Error(`endTs must be a number`);
+    }
+    if (robotId && !isString(robotId)) {
+      throw new Error(`robotId must be a string`);
+    }
+    if (eventType && !isString(eventType)) {
+      throw new Error(`eventType must be a string`);
+    }
+    if (limit && !isFinite(limit)) {
+      throw new Error(`limit must be a number`);
+    }
+    const query = {};
+    if (startTs || endTs) {
+      query.ts = {};
+      if (startTs) {
+        query.ts.$gte = startTs;
+      }
+      if (endTs) {
+        query.ts.$lte = endTs;
+      }
+    }
+    if (robotId) {
+      query.robotId = robotId;
+    }
+    if (eventType) {
+      query.eventType = String(eventType)
+    }
+    const logs = await EventLog.find(query, { projection: { _id: 0 }, limit }).fetchAsync();
+    return logs;
+  }
 }

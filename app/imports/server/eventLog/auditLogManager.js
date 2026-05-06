@@ -52,33 +52,32 @@ if (Meteor.isServer) {
   EventLog.rawCollection().createIndex({ module: 1, ts: 1 });
 }
 
+
+let instance;
+
 class AuditLogManager {
+  _store = null;
+
   constructor() {
+    // Only construct an instance if it hasn't been done yet
+    if (instance === undefined) {
+      instance = this;
+    }
+    // eslint-disable-next-line no-constructor-return
+    return instance;
   }
 
-  init = async () => {
+  init = async ({ eventStore }) => {
+    if (!eventStore) {
+      throw new Error('eventStore is required');
+    }
+    this._store = eventStore;
     Meteor.methods({
       'auditLogs.get': this._meteorGetAuditLog
     });
   }
 
   _meteorGetAuditLog = async function ({ startTs, endTs, robotId, eventType, limit = 100 }) {
-    // Validate arguments
-    if (startTs && !isFinite(startTs)) {
-      throw new Meteor.Error(`startTs must be a number`);
-    }
-    if (endTs && !isFinite(endTs)) {
-      throw new Meteor.Error(`endTs must be a number`);
-    }
-    if (robotId && !isString(robotId)) {
-      throw new Meteor.Error(`robotId must be a string`);
-    }
-    if (eventType && !isString(eventType)) {
-      throw new Meteor.Error(`eventType must be a string`);
-    }
-    if (limit && !isFinite(limit)) {
-      throw new Meteor.Error(`limit must be a number`);
-    }
     if (robotId) {
       if (!await new OroRoles().canAccessRobot(this.userId, robotId, ACCESS_LEVEL_VIEW)) {
         throw new Meteor.Error(`User not authorized to read audit logs from robot ${robotId}`);
@@ -92,27 +91,7 @@ class AuditLogManager {
         throw new Meteor.Error(`User not authorized to read fleet audit logs`);
       }
     }
-
-    const query = {};
-    if (startTs || endTs) {
-      query.ts = {};
-      if (startTs) {
-        query.ts.$gte = startTs;
-      }
-      if (endTs) {
-        query.ts.$lte = endTs;
-      }
-    }
-    if (robotId) {
-      query.robotId = robotId;
-    }
-    if (eventType) {
-      query.eventType = String(eventType)
-    }
-    const logs = await EventLog.find(query, { _id: 0, limit }).fetchAsync();
-    // Cleanup db docs
-    logs.forEach((log) => delete log._id);
-    return logs;
+    return new AuditLogManager()._store.findEvents({ startTs, endTs, robotId, eventType, limit });
   }
 }
 
