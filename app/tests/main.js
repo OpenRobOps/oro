@@ -23,6 +23,8 @@ import '../imports/server/test/locks.test.js'
 import '../imports/server/test/configAPI/configAPIStatusDefinition.test.js'
 import '../imports/server/test/configAPI/configAPIDashboards.test.js'
 import '../imports/server/test/configAPI/configAPIActionDefinitions.test.js'
+import '../imports/server/test/timeseries/timeseriesStore.test.js'
+import '../imports/server/test/timeseries/timeseriesManager.test.js'
 
 describe("app", function () {
   it("package.json has correct name", async function () {

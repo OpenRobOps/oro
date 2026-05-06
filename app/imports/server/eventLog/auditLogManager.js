@@ -17,7 +17,6 @@
 /**
  * Class to wrap access to logs
  */
-import { isFinite, isString } from 'lodash';
 import { Mongo } from 'meteor/mongo';
 import SimpleSchema from 'simpl-schema';
 // ORO modules

@@ -97,7 +97,10 @@ const COLLECTIONS = {
   NOTIFICATION_CHANNELS: 'notification_channels',
 
   // Event Log - when implemented over mongodb
-  EVENT_LOG: 'event_log'
+  EVENT_LOG: 'event_log',
+
+  // Time series store for numeric data points
+  TIMESERIES: 'timeseries'
 };
 
 /**

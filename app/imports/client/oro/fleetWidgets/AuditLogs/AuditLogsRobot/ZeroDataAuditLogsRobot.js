@@ -25,7 +25,6 @@ import { Table, TableHead } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
 // ORO modules
 import LabelZeroData from '../../../graphics/op/zeroDataIcons/LabelZeroData';
-// import { cloneRows } from '../../../../../lib/zeroData';
 import { StyledTableBody, StyledTableCell, StyledTableRow } from '../../../util/DefaultTable';
 
 const useStyles = makeStyles()(theme => ({
@@ -54,7 +53,7 @@ const ZeroDataAuditLogs = ({ rowNumber = 5 }) => {
         </div>
       </StyledTableCell>
       <StyledTableCell data-test="zero-data-auditLog-robot-cell-message" className={classes.tableCellMessage}>
-          <LabelZeroData height="13px" width="90%" />
+        <LabelZeroData height="13px" width="90%" />
       </StyledTableCell>
     </>
   );
