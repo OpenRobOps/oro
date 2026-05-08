@@ -138,28 +138,28 @@ describe('TimeSeriesStore', () => {
 
     it('throws when aggregations is not an array', async () => {
       await expect(store.aggregateQuery({
-        aggregations: { field: 'x', op: 'avg' },
+        aggregations: { field: 'x', op: 'average' },
         granularitySecs: 60,
       })).to.be.rejectedWith(/aggregations must be a non-empty array/);
     });
 
     it('throws when granularitySecs is zero', async () => {
       await expect(store.aggregateQuery({
-        aggregations: [{ field: 'x', op: 'avg' }],
+        aggregations: [{ field: 'x', op: 'average' }],
         granularitySecs: 0,
       })).to.be.rejectedWith(/granularitySecs must be a positive number/);
     });
 
     it('throws when granularitySecs is negative', async () => {
       await expect(store.aggregateQuery({
-        aggregations: [{ field: 'x', op: 'avg' }],
+        aggregations: [{ field: 'x', op: 'average' }],
         granularitySecs: -10,
       })).to.be.rejectedWith(/granularitySecs must be a positive number/);
     });
 
     it('throws when granularitySecs is missing', async () => {
       await expect(store.aggregateQuery({
-        aggregations: [{ field: 'x', op: 'avg' }],
+        aggregations: [{ field: 'x', op: 'average' }],
       })).to.be.rejectedWith(/granularitySecs must be a positive number/);
     });
 
@@ -198,7 +198,7 @@ describe('TimeSeriesStore', () => {
     it('returns [] when the collection is empty', async () => {
       const rows = await store.aggregateQuery({
         meta: { robotId: 'r1' },
-        aggregations: [{ field: 'temperature', op: 'avg' }],
+        aggregations: [{ field: 'temperature', op: 'average' }],
         granularitySecs: 600,
       });
       expect(rows).to.deep.equal([]);
@@ -209,7 +209,7 @@ describe('TimeSeriesStore', () => {
       const rows = await store.aggregateQuery({
         meta: { robotId: 'r1' },
         aggregations: [
-          { field: 'temperature', op: 'avg' },
+          { field: 'temperature', op: 'average' },
           { field: 'humidity', op: 'max' },
         ],
         granularitySecs: 600,
@@ -260,7 +260,7 @@ describe('TimeSeriesStore', () => {
       await seedPoints();
       const r2 = await store.aggregateQuery({
         meta: { robotId: 'r2' },
-        aggregations: [{ field: 'temperature', op: 'avg' }],
+        aggregations: [{ field: 'temperature', op: 'average' }],
         granularitySecs: 600,
       });
       expect(r2).to.have.length(1);
@@ -270,7 +270,7 @@ describe('TimeSeriesStore', () => {
     it('without meta, aggregates across all series', async () => {
       await seedPoints();
       const rows = await store.aggregateQuery({
-        aggregations: [{ field: 'temperature', op: 'avg' }],
+        aggregations: [{ field: 'temperature', op: 'average' }],
         granularitySecs: 600,
       });
       // window A contains r1's 3 points (20,22,24) and r2's one point (100).
@@ -285,7 +285,7 @@ describe('TimeSeriesStore', () => {
       // Range covering only window A (B starts at T0+10min, exclusive bound).
       const rows = await store.aggregateQuery({
         meta: { robotId: 'r1' },
-        aggregations: [{ field: 'temperature', op: 'avg' }],
+        aggregations: [{ field: 'temperature', op: 'average' }],
         granularitySecs: 600,
         startTs: T0,
         endTs: T0 + min(10),
@@ -331,7 +331,7 @@ describe('TimeSeriesStore', () => {
       await store.write({ ts: T0 + min(2) + 5_000, meta: { robotId: 'g' }, fields: { x: 30 } });
       const rows = await store.aggregateQuery({
         meta: { robotId: 'g' },
-        aggregations: [{ field: 'x', op: 'avg' }],
+        aggregations: [{ field: 'x', op: 'average' }],
         granularitySecs: 60,
       });
       expect(rows.map((r) => r.fields.x)).to.deep.equal([10, 20, 30]);
@@ -343,7 +343,7 @@ describe('TimeSeriesStore', () => {
       const rows = await store.aggregateQuery({
         meta: { robotId: 'r1' },
         aggregations: [
-          { field: 'temperature', op: 'avg' }, // first — overwritten
+          { field: 'temperature', op: 'average' }, // first — overwritten
           { field: 'temperature', op: 'max' }, // last — wins
         ],
         granularitySecs: 600,

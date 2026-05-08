@@ -362,6 +362,7 @@ export {
   isLive,
   getAbsoluteStartTs,
   getPeriod,
+  getPeriodPropsCopy,
   getDefaultStartTs,
   getDefaultTimeRangeMs,
   getDefaultTimeRangeMsForTC,
