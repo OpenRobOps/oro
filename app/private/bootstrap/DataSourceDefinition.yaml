@@ -6,6 +6,7 @@ spec:
   label: CPU usage
   precision: 1
   unit: '%'
+  timeline: {}
 ---
 apiVersion: v0.1
 kind: DataSourceDefinition
@@ -15,6 +16,7 @@ spec:
   label: RAM usage
   precision: 1
   unit: '%'
+  timeline: {}
 ---
 apiVersion: v0.1
 kind: DataSourceDefinition
@@ -51,6 +53,7 @@ spec:
   label: Network rate
   precision: 0
   unit: kB/s
+  timeline: {}
 ---
 apiVersion: v0.1
 kind: DataSourceDefinition

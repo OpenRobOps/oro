@@ -34,7 +34,6 @@ import PeerClient from './server/peer';
 // import WorkerQueue from './server/messageQueue';
 import { anonymizeUri } from './lib/util';
 // import ObjectsManager from './server/objectsManager';
-// import EventLog from './shared/server/eventLog/eventLogger';
 import AttributesManager from './server/attributes';
 import InMemoryWorkerQueues from './server/queues/memoryWorkerQueue';
 import DerivedAttributesService from './services/derivedAttributes/svcDerivedAttributes';
@@ -94,7 +93,7 @@ async function run() {
   await mongo.init(settings.mongo);
   // Create queues
   queue = new InMemoryWorkerQueues();
-  await queue.init({ 
+  await queue.init({
     // logging: true 
   });
   await new AttributesManager().init({ workerQueue: queue });
@@ -111,10 +110,6 @@ async function run() {
   // await new EventTracker().init(settings.pendo);
   // objectsManager = new ObjectsManager();
   // await objectsManager.init(settings.objectsManager);
-
-  // // TODO: When modes are migrated fully to dynamic collections, EventLog won't be needed here
-  // // anymore
-  // new EventLog().init(settings.eventLog);
 
   // TODO Separate init from run and make sure the service
   // is considered ready (including readiness probe) when connection

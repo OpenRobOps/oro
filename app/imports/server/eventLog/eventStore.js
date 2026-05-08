@@ -39,6 +39,13 @@ export default class EventStore {
    * events even more (ie. add those events to a queue)
    */
   storeEvents = async (dataArray) => {
-    throw new Error('Not implemented');
+    throw new Error('Implemented by subclass');
   };
+
+  /**
+   * Query the event log
+   */
+  findEvents = async ({ startTs, endTs, limit, robotId, eventType, moduleName }) => {
+    throw new Error('Implemented by subclass');
+  }
 }

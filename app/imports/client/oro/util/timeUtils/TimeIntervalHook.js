@@ -322,4 +322,5 @@ TimeIntervalHook.propTypes = {
   render: PropTypes.func.isRequired
 };
 
+export { changePeriodOnRangeUpdate };
 export default TimeIntervalHook;

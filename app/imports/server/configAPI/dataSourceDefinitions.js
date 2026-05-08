@@ -35,6 +35,7 @@ import { API_RESPONSE_FIELD_MESSAGES } from './utils';
 import {
   ATTRIBUTE_TYPES, SOURCES, SOURCE_DERIVED_ID
 } from '../../shared/attributes';
+import { TIMESERIES_FIELD_TYPES } from '../../shared/timeseries';
 
 // These constants match all supported types from SOURCES (shared/attributes.js), specifying the
 // field name to use in the api -- which does not always match the constant in our code: in APIs,
@@ -58,6 +59,23 @@ const DataSourceDefinitionSpecSchema = {
   unit: { type: 'string', empty: false, max: 10, optional: true },
   scale: { type: 'number', empty: false, optional: true },
   precision: { type: 'number', empty: false, optional: true },
+  timeline: {
+    type: 'object',
+    strict: true,
+    optional: true,
+    props: {
+      disabled: { type: 'boolean', optional: true },
+      // Our DB supports `fieldType` to define timeseries column typing. This is
+      // available for users to configure (e.g. to store historical string values).
+      fieldType: { type: 'string', optional: true, enum: Object.values(TIMESERIES_FIELD_TYPES) }
+      // NOTE(herchu) We also support configuring (in the DB) a `fieldName` to force changing the
+      // internal DB field name only as a HACK for backwards compatibility (with existing
+      // values that were stored using a different name than the one chosen normally for a field
+      // with fieldType='string').
+      // *** The `fieldName` field is an unsafe setting and must NOT surface through ***
+      // *** this API.  Do not add it! ***
+    },
+  },
   /*
   NOTE: timeline is still not implemented (Time Series DB)
   timeline: {

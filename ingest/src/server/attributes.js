@@ -46,6 +46,7 @@ import {
   VITAL_POSE
 } from '../shared/attributes';
 import { COLLECTIONS } from '../shared/constants';
+import TimeSeriesStore from '../shared/timeseriesStore';
 import { QUEUES } from './queues/messageQueue';
 // import PeerClient from '../peer';
 // import WorkerQueue, { QUEUES } from './messageQueue';
@@ -71,6 +72,10 @@ class AttributesManager {
       // this.storageManager = new StorageManager();
       this._attrDefsColl = this.mongoManager.getCollection(COLLECTIONS.ATTRIBUTE_DEFINITIONS);
       this._attrValuesColl = this.mongoManager.getCollection(COLLECTIONS.ATTRIBUTE_VALUES);
+      this._timeSeriesStore = new TimeSeriesStore({
+        db: this.mongoManager.db,
+        collectionName: COLLECTIONS.TIMESERIES,
+      });
       // TODO We should invalidate caches when the config is updated and make cache times longer.
       this._vitalsConfigCache = new AsyncCache({
         maxAge: 1 * 60 * 1000, // 1 minute
@@ -92,6 +97,8 @@ class AttributesManager {
     } else {
       console.warn('AttributesManager: No worker queue provided');
     }
+    // Ensure the time series collection exists (no-op if already created).
+    await this._timeSeriesStore.init();
   }
 
   /**
@@ -381,6 +388,23 @@ class AttributesManager {
           console.error(`Error queuing pose updates to processing queues; robotId=${robotId}: ${e.message}`);
         });
       }
+    }
+
+    // Forward to the time series store: only attributes whose definition
+    // opts in via a `timeline` config and whose value is a finite number.
+    const fields = {};
+    for (const [attrId, valObj] of Object.entries(attrValues)) {
+      const def = attrDefs.getAttributeDefinition?.(attrId);
+      if (!def?.timeline || def.timeline.disabled) continue;
+      if (typeof valObj?.value !== 'number' || !Number.isFinite(valObj.value)) continue;
+      fields[attrId] = valObj.value;
+    }
+    if (Object.keys(fields).length > 0) {
+      await this._timeSeriesStore
+        .write({ ts, meta: { robotId }, fields })
+        .catch((e) => {
+          console.error(`Error writing timeseries; robotId=${robotId}: ${e.message}`);
+        });
     }
   }
 

@@ -43,6 +43,7 @@ import OroMqtt from '../imports/server/mqtt';
 import ActionsEngine from '../imports/server/actions';
 import LockManager from '../imports/server/lock';
 import AuditLogManager from '../imports/server/eventLog/auditLogManager';
+import TimeSeriesManager from '../imports/server/timeseries';
 import {
   // RobotLocalizationModule,
   // ImagesModule,
@@ -105,6 +106,7 @@ const oroAppMain = async () => {
   const eventStore = new DbEventStore({});
   await new EventLog().init({ eventStore });
   await new AuditLogManager().init({ eventStore });
+  await new TimeSeriesManager().init();
 
   // Start MQTT client
   const mqtt = new OroMqtt();
