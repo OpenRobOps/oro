@@ -395,7 +395,7 @@ class AttributesManager {
     const fields = {};
     for (const [attrId, valObj] of Object.entries(attrValues)) {
       const def = attrDefs.getAttributeDefinition?.(attrId);
-      if (!def?.timeline) continue;
+      if (!def?.timeline || def.timeline.disabled) continue;
       if (typeof valObj?.value !== 'number' || !Number.isFinite(valObj.value)) continue;
       fields[attrId] = valObj.value;
     }

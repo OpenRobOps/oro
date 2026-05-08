@@ -84,7 +84,7 @@ describe('TimeSeriesStore', () => {
       expect(info).to.exist;
       expect(info.type).to.equal('timeseries');
       expect(info.options.timeseries).to.deep.include({
-        timeField: 'ts',
+        timeField: 'time',
         metaField: 'meta',
         granularity: 'seconds',
       });
@@ -101,7 +101,7 @@ describe('TimeSeriesStore', () => {
   });
 
   describe('write()', () => {
-    it('stores ts as a Date, meta as a sub-doc, and fields top-level', async () => {
+    it('stores time as a Date, meta as a sub-doc, and fields top-level', async () => {
       const ts = Date.UTC(2024, 0, 1, 0, 0, 0);
       await store.write({
         ts,
@@ -111,8 +111,8 @@ describe('TimeSeriesStore', () => {
       const docs = await db.collection(TEST_COLLECTION).find({}).toArray();
       expect(docs).to.have.length(1);
       const doc = docs[0];
-      expect(doc.ts).to.be.instanceOf(Date);
-      expect(doc.ts.getTime()).to.equal(ts);
+      expect(doc.time).to.be.instanceOf(Date);
+      expect(doc.time.getTime()).to.equal(ts);
       expect(doc.meta).to.deep.equal({ robotId: 'r1', source: 'test' });
       expect(doc.temperature).to.equal(21.5);
       expect(doc.humidity).to.equal(40);
@@ -128,50 +128,50 @@ describe('TimeSeriesStore', () => {
     });
   });
 
-  describe('query() input validation', () => {
+  describe('aggregateQuery() input validation', () => {
     it('throws when aggregations is empty', async () => {
-      await expect(store.query({
+      await expect(store.aggregateQuery({
         aggregations: [],
         granularitySecs: 60,
       })).to.be.rejectedWith(/aggregations must be a non-empty array/);
     });
 
     it('throws when aggregations is not an array', async () => {
-      await expect(store.query({
+      await expect(store.aggregateQuery({
         aggregations: { field: 'x', op: 'avg' },
         granularitySecs: 60,
       })).to.be.rejectedWith(/aggregations must be a non-empty array/);
     });
 
     it('throws when granularitySecs is zero', async () => {
-      await expect(store.query({
+      await expect(store.aggregateQuery({
         aggregations: [{ field: 'x', op: 'avg' }],
         granularitySecs: 0,
       })).to.be.rejectedWith(/granularitySecs must be a positive number/);
     });
 
     it('throws when granularitySecs is negative', async () => {
-      await expect(store.query({
+      await expect(store.aggregateQuery({
         aggregations: [{ field: 'x', op: 'avg' }],
         granularitySecs: -10,
       })).to.be.rejectedWith(/granularitySecs must be a positive number/);
     });
 
     it('throws when granularitySecs is missing', async () => {
-      await expect(store.query({
+      await expect(store.aggregateQuery({
         aggregations: [{ field: 'x', op: 'avg' }],
       })).to.be.rejectedWith(/granularitySecs must be a positive number/);
     });
 
     it('throws when op is unknown', async () => {
-      await expect(store.query({
+      await expect(store.aggregateQuery({
         aggregations: [{ field: 'x', op: 'median' }],
         granularitySecs: 60,
       })).to.be.rejectedWith(/Unsupported aggregation op: median/);
     });
   });
 
-  describe('query() aggregation', () => {
+  describe('aggregateQuery() aggregation', () => {
     // Reference time chosen so all timestamps below land on clean bucket boundaries.
     const T0 = Date.UTC(2024, 0, 1, 0, 0, 0); // 2024-01-01T00:00:00Z
     const min = (n) => n * 60 * 1000;
@@ -196,7 +196,7 @@ describe('TimeSeriesStore', () => {
     };
 
     it('returns [] when the collection is empty', async () => {
-      const rows = await store.query({
+      const rows = await store.aggregateQuery({
         meta: { robotId: 'r1' },
         aggregations: [{ field: 'temperature', op: 'avg' }],
         granularitySecs: 600,
@@ -206,7 +206,7 @@ describe('TimeSeriesStore', () => {
 
     it('aggregates avg + max across two 10-minute windows', async () => {
       await seedPoints();
-      const rows = await store.query({
+      const rows = await store.aggregateQuery({
         meta: { robotId: 'r1' },
         aggregations: [
           { field: 'temperature', op: 'avg' },
@@ -226,7 +226,7 @@ describe('TimeSeriesStore', () => {
 
     it('supports min, sum, first, last', async () => {
       await seedPoints();
-      const rows = await store.query({
+      const rows = await store.aggregateQuery({
         meta: { robotId: 'r1' },
         aggregations: [
           { field: 'temperature', op: 'min' },
@@ -240,7 +240,7 @@ describe('TimeSeriesStore', () => {
       expect(rows[0].fields.temperature).to.equal(20);
       expect(rows[0].fields.humidity).to.equal(40 + 50 + 60);
 
-      const firstLast = await store.query({
+      const firstLast = await store.aggregateQuery({
         meta: { robotId: 'r1' },
         aggregations: [
           { field: 'temperature', op: 'first' },
@@ -258,7 +258,7 @@ describe('TimeSeriesStore', () => {
 
     it('filters by meta (only matching series are aggregated)', async () => {
       await seedPoints();
-      const r2 = await store.query({
+      const r2 = await store.aggregateQuery({
         meta: { robotId: 'r2' },
         aggregations: [{ field: 'temperature', op: 'avg' }],
         granularitySecs: 600,
@@ -269,7 +269,7 @@ describe('TimeSeriesStore', () => {
 
     it('without meta, aggregates across all series', async () => {
       await seedPoints();
-      const rows = await store.query({
+      const rows = await store.aggregateQuery({
         aggregations: [{ field: 'temperature', op: 'avg' }],
         granularitySecs: 600,
       });
@@ -283,7 +283,7 @@ describe('TimeSeriesStore', () => {
     it('respects startTs (inclusive) and endTs (exclusive)', async () => {
       await seedPoints();
       // Range covering only window A (B starts at T0+10min, exclusive bound).
-      const rows = await store.query({
+      const rows = await store.aggregateQuery({
         meta: { robotId: 'r1' },
         aggregations: [{ field: 'temperature', op: 'avg' }],
         granularitySecs: 600,
@@ -311,7 +311,7 @@ describe('TimeSeriesStore', () => {
         meta: { robotId: 'rc' },
         fields: { humidity: 7 }, // no temperature
       });
-      const rows = await store.query({
+      const rows = await store.aggregateQuery({
         meta: { robotId: 'rc' },
         aggregations: [
           { field: 'temperature', op: 'count' },
@@ -329,7 +329,7 @@ describe('TimeSeriesStore', () => {
       await store.write({ ts: T0 + min(0) + 5_000, meta: { robotId: 'g' }, fields: { x: 10 } });
       await store.write({ ts: T0 + min(1) + 5_000, meta: { robotId: 'g' }, fields: { x: 20 } });
       await store.write({ ts: T0 + min(2) + 5_000, meta: { robotId: 'g' }, fields: { x: 30 } });
-      const rows = await store.query({
+      const rows = await store.aggregateQuery({
         meta: { robotId: 'g' },
         aggregations: [{ field: 'x', op: 'avg' }],
         granularitySecs: 60,
@@ -340,7 +340,7 @@ describe('TimeSeriesStore', () => {
 
     it('same field with multiple ops: last in list wins in output', async () => {
       await seedPoints();
-      const rows = await store.query({
+      const rows = await store.aggregateQuery({
         meta: { robotId: 'r1' },
         aggregations: [
           { field: 'temperature', op: 'avg' }, // first — overwritten

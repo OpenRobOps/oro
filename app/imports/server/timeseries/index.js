@@ -55,8 +55,15 @@ class TimeSeriesManager {
     await this._store.init();
   };
 
-  write = async (args) => this._store.write(args);
+  /**
+   * Writes a batch of points
+   */
+  write = async (data) => this._store.write(data);
 
+  /**
+   * Performs a query. This is simply delegated to the store
+   * (Note that we should abstract the implementation here)
+   */
   aggregateQuery = async (args) => this._store.aggregateQuery(args);
 
   async _meteorQueryTimeseries({ attributeIds, aggregations, robotId, startTs, endTs, intervalMinutes }) {
@@ -99,17 +106,28 @@ class TimeSeriesManager {
     // by timeline components (and compatible with other timeseries APIs in original implementation)
     const columns = ['time', ...attributeIds];
     const rows = [];
+    const expectedGapMs = intervalMinutes * 60000;
+    let lastTs = null;
     points.forEach(({ ts, fields }) => {
       const values = new Array(attributeIds.length + 1);
       values[0] = ts;
+      if (lastTs && ts - lastTs > expectedGapMs) {
+        // There is a larger gap between last and this point than intervalMinutes.
+        // As a hack, we insert an empty row so that timelines know how to render disconnected portions
+        // of the time series.
+        // Note that some stores (notably TigerData and InfluxDB) used to return points with null values;
+        // and we mimic that behavior here (with just 1 empty point, which is enough)
+        rows.push([ lastTs + expectedGapMs, ...new Array(attributeIds.length)]);
+      }
       attributeIds.forEach((attributeId, ix) => {
         values[ix + 1] = fields[attributeId];
       })
       rows.push(values);
+      lastTs = ts;
     });
     return { columns, values: rows };
   }
 }
 
 export default TimeSeriesManager;
-export { TimeSeries, TimeSeriesStore };
+export { TimeSeries };

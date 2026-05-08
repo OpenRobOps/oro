@@ -26,11 +26,11 @@
  */
 
 // Time series collection options.
-const TIME_FIELD = 'time';
+const TIME_FIELD = 'time'; // avoid 'ts' field name since this Date type (and use 'time' as in TSDB, InfluxDB)
 const META_FIELD = 'meta';
 const GRANULARITY = 'seconds'; // 'seconds' | 'minutes' | 'hours'
 // Positive number enables TTL on the collection (seconds); null disables TTL.
-const EXPIRE_AFTER_SECONDS = null;
+const EXPIRE_AFTER_SECONDS = 86400 * 14; // expire after 2 weeks
 
 // Mapping from public op names to MongoDB accumulator operators.
 // `count` is a sentinel; handled specially in query() to count non-null

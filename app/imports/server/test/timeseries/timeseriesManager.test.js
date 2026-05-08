@@ -28,7 +28,8 @@ import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import * as sinon from 'sinon';
 // ORO modules
-import TimeSeriesManager, { TimeSeries, TimeSeriesStore } from '../../timeseries';
+import TimeSeriesManager, { TimeSeries } from '../../timeseries';
+import TimeSeriesStore from '../../../shared/timeseriesStore';
 
 if (!Meteor.isTest) {
   throw new Error('This is TEST code only');
@@ -41,6 +42,9 @@ describe('TimeSeriesManager', () => {
 
   beforeEach(() => {
     sandbox = sinon.createSandbox();
+    // init() registers a Meteor method, which can only be defined once
+    // globally; stub it so repeated init() calls across tests don't throw.
+    sandbox.stub(Meteor, 'methods');
   });
 
   afterEach(() => {
@@ -59,10 +63,6 @@ describe('TimeSeriesManager', () => {
     it('exports TimeSeries as a Meteor Mongo.Collection backed by COLLECTIONS.TIMESERIES', () => {
       expect(TimeSeries).to.exist;
       expect(TimeSeries.rawCollection().collectionName).to.equal('timeseries');
-    });
-
-    it('re-exports TimeSeriesStore for direct use', () => {
-      expect(TimeSeriesStore).to.be.a('function');
     });
   });
 
@@ -95,7 +95,7 @@ describe('TimeSeriesManager', () => {
       const [name, options] = fakeDb.createCollection.firstCall.args;
       expect(name).to.equal('timeseries');
       expect(options.timeseries).to.deep.include({
-        timeField: 'ts',
+        timeField: 'time',
         metaField: 'meta',
         granularity: 'seconds',
       });
@@ -113,15 +113,16 @@ describe('TimeSeriesManager', () => {
     });
   });
 
-  describe('write() / query()', () => {
+  describe('write() / aggregateQuery()', () => {
     let manager;
     let stubStore;
 
-    beforeEach(() => {
+    beforeEach(async () => {
       manager = new TimeSeriesManager();
+      await manager.init();
       stubStore = {
         write: sandbox.stub().resolves(),
-        query: sandbox.stub().resolves([{ ts: 123, fields: { x: 1 } }]),
+        aggregateQuery: sandbox.stub().resolves([{ ts: 123, fields: { x: 1 } }]),
       };
       manager._store = stubStore;
     });
@@ -136,7 +137,7 @@ describe('TimeSeriesManager', () => {
       sinon.assert.calledOnceWithExactly(stubStore.write, args);
     });
 
-    it('query() forwards args to the store and returns its result', async () => {
+    it('aggregateQuery() forwards args to the store and returns its result', async () => {
       const args = {
         meta: { robotId: 'r1' },
         aggregations: [{ field: 'temperature', op: 'avg' }],
@@ -144,8 +145,8 @@ describe('TimeSeriesManager', () => {
         startTs: 1700000000000,
         endTs: 1700000600000,
       };
-      const result = await manager.query(args);
-      sinon.assert.calledOnceWithExactly(stubStore.query, args);
+      const result = await manager.aggregateQuery(args);
+      sinon.assert.calledOnceWithExactly(stubStore.aggregateQuery, args);
       expect(result).to.deep.equal([{ ts: 123, fields: { x: 1 } }]);
     });
 
@@ -155,9 +156,9 @@ describe('TimeSeriesManager', () => {
         .to.be.rejectedWith('store down');
     });
 
-    it('query() rejects when the store rejects', async () => {
-      stubStore.query.rejects(new Error('bad pipeline'));
-      await expect(manager.query({
+    it('aggregateQuery() rejects when the store rejects', async () => {
+      stubStore.aggregateQuery.rejects(new Error('bad pipeline'));
+      await expect(manager.aggregateQuery({
         aggregations: [{ field: 'x', op: 'avg' }],
         granularitySecs: 60,
       })).to.be.rejectedWith('bad pipeline');

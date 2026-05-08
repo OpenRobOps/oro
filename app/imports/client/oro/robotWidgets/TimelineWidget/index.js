@@ -78,10 +78,10 @@ const TimelineContainer = (props) => {
   }, [elementList, elementValues, robotId,]);
 
   useEffect(() => {
-    console.log("useEffect", query)
+    // TODO run query again every time query changes (in live mode only)
     call(query)
   }, [query])
-  console.log("xx widget index got data?", data, query)
+  
   return (
     // eslint-disable-next-line react/jsx-props-no-spreading
     <TimelineComponent 
