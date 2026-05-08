@@ -5,6 +5,7 @@
  * implementation may exist for ingest and its nodejs mongodb driver).
  */
 import { Meteor } from 'meteor/meteor';
+import { isFinite, isString } from 'lodash';
 // ORO modules
 import EventStore from './eventStore';
 import { EventLog } from './auditLogManager';
@@ -14,7 +15,7 @@ export default class DbEventStore extends EventStore {
     super();
     this.events = [];
   }
-  
+
   /**
    * Stores a batch of events. Since we do some schema validation from the DB itself, 
    * common fields are separated from the rest of the fields (which are module-dependent) and stored
@@ -22,14 +23,14 @@ export default class DbEventStore extends EventStore {
    */
   storeEvents = async (dataArray) => {
     const docs = dataArray.map(({
-      module, eventType, 
+      module, eventType,
       userId, userName, userEmail,
       robotId, robotName,
       ts,
       ...eventData
     }) => (
       {
-        module, eventType, 
+        module, eventType,
         userId, userName, userEmail,
         robotId, robotName,
         ts,

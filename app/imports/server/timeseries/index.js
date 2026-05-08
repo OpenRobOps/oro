@@ -24,9 +24,10 @@
  */
 
 import { Mongo } from 'meteor/mongo';
+import { isArray, isNumber, zipWith } from 'lodash';
 // ORO modules
 import { COLLECTIONS } from '../../shared/constants';
-import TimeSeriesStore from './store';
+import TimeSeriesStore from '../../shared/timeseriesStore';
 
 const TimeSeries = new Mongo.Collection(COLLECTIONS.TIMESERIES);
 
@@ -44,6 +45,9 @@ class TimeSeriesManager {
   }
 
   init = async () => {
+    Meteor.methods({
+      'timeseries.query': this._meteorQueryTimeseries
+    });
     this._store = new TimeSeriesStore({
       db: TimeSeries.rawDatabase(),
       collectionName: COLLECTIONS.TIMESERIES,
@@ -53,7 +57,58 @@ class TimeSeriesManager {
 
   write = async (args) => this._store.write(args);
 
-  query = async (args) => this._store.query(args);
+  aggregateQuery = async (args) => this._store.aggregateQuery(args);
+
+  async _meteorQueryTimeseries({ attributeIds, aggregations, robotId, startTs, endTs, intervalMinutes }) {
+    console.log("Timeseries query args: ", { attributeIds, aggregations, robotId, startTs, endTs, intervalMinutes })
+    if (!robotId) {
+      throw new Meteor.Error('robotId is required');
+    }
+    if (!isArray(attributeIds) || attributeIds.length == 0) {
+      throw new Meteor.Error('attributeIds is required');
+    }
+    if (!isArray(aggregations) || aggregations.length == 0) {
+      throw new Meteor.Error('aggregations is required');
+    }
+    if (attributeIds.length != aggregations.length) {
+      throw new Meteor.Error('attributeIds and aggregations must have the same length');
+    }
+    if (!isNumber(startTs)) {
+      throw new Meteor.Error('startTs is required');
+    }
+    if (!isNumber(endTs)) {
+      throw new Meteor.Error('endTs is required');
+    }
+    if (!isNumber(intervalMinutes)) {
+      throw new Meteor.Error('intervalMinutes is required');
+    }
+
+    const points = await new TimeSeriesManager().aggregateQuery({
+      startTs,
+      endTs,
+      granularitySecs: intervalMinutes * 60,
+      meta: { robotId },
+      aggregations: zipWith(attributeIds, aggregations, (attributeId, aggregation) => ({
+        field: attributeId,
+        op: aggregation
+      }))
+    });
+    // For efficient data transfer and processing in the browser we turn the result into 
+    // { columns: [...attributeIds], values: [[...], [...]] }
+    // where each value always contains the 'time' property first. That's the format expected
+    // by timeline components (and compatible with other timeseries APIs in original implementation)
+    const columns = ['time', ...attributeIds];
+    const rows = [];
+    points.forEach(({ ts, fields }) => {
+      const values = new Array(attributeIds.length + 1);
+      values[0] = ts;
+      attributeIds.forEach((attributeId, ix) => {
+        values[ix + 1] = fields[attributeId];
+      })
+      rows.push(values);
+    });
+    return { columns, values: rows };
+  }
 }
 
 export default TimeSeriesManager;

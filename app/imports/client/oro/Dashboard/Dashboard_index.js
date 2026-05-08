@@ -39,7 +39,7 @@ import CustomDataWidget from '../robotWidgets/CustomDataWidget';
 // import ImageWidget from '../robotWidgets/ImageWidget';
 import { WIDGET_TYPES, WIDGET_TYPES_IDS } from '../../../lib/uiPreferences';
 import NavigationDetail from '../navigationWidgets/NavigationDetail';
-// import TimelineWidget from '../robotWidgets/TimelineWidget';
+import TimelineWidget from '../robotWidgets/TimelineWidget';
 import VitalsWidget from '../robotWidgets/VitalsWidget';
 // import DiagnosticsWidget from '../robotWidgets/DiagnosticsWidget';
 // import DataBagWidget from '../robotWidgets/DataBagWidget';
@@ -645,37 +645,35 @@ const WIDGET_FACTORY = {
   //   />
   // ),
 
-   [WIDGET_TYPES.LIST_DATA]: ({ config, context, scope }) => (
-     <NowTimeContext.Consumer>
-       {nowTs => (
-         <ListData
-           robotId={getRobotId(context, scope)}
-           config={config}
-           nowTs={nowTs}
-         />
-       )}
-     </NowTimeContext.Consumer>
-   ),
+  [WIDGET_TYPES.LIST_DATA]: ({ config, context, scope }) => (
+    <NowTimeContext.Consumer>
+      {nowTs => (
+        <ListData
+          robotId={getRobotId(context, scope)}
+          config={config}
+          nowTs={nowTs}
+        />
+      )}
+    </NowTimeContext.Consumer>
+  ),
 
-  // [WIDGET_TYPES_IDS.CHART]: ({ setContext, config, context, scope, isZeroData }) => (
-  //   <NowTimeContext.Consumer>
-  //     {nowTs => (
-  //       <TimelineWidget
-  //         robotId={getRobotId(context, scope)}
-  //         config={config}
-  //         startTs={getStartTime(context, scope)}
-  //         setStartTime={setStartTime(setContext, scope)}
-  //         timeRangeMs={getTimeRangeMs(context, scope)}
-  //         setTimeRangeMs={setTimeRangeMs(setContext, scope)}
-  //         nowTs={nowTs}
-  //         timeFocus={getTimeFocus(context, scope)}
-  //         onTimeFocusChange={setTimeFocus(setContext, scope)}
-  //         isZeroData={isZeroData}
-  //         isPlaying={getIsPlaying(context, scope)}
-  //       />
-  //     )}
-  //   </NowTimeContext.Consumer>
-  // ),
+  [WIDGET_TYPES_IDS.CHART]: ({ setContext, config, context, scope, isZeroData }) => (
+    <NowTimeContext.Consumer>
+      {nowTs => (
+        <TimelineWidget
+          robotId={getRobotId(context, scope)}
+          config={config}
+          startTs={getStartTime(context, scope)}
+          setStartTime={setStartTime(setContext, scope)}
+          timeRangeMs={getTimeRangeMs(context, scope)}
+          setTimeRangeMs={setTimeRangeMs(setContext, scope)}
+          nowTs={nowTs}
+          timeFocus={getTimeFocus(context, scope)}
+          onTimeFocusChange={setTimeFocus(setContext, scope)}
+        />
+      )}
+    </NowTimeContext.Consumer>
+  ),
 
   [WIDGET_TYPES.VITALS]: ({ config, context, scope, isZeroData }) => (
     <VitalsWidget
@@ -726,7 +724,7 @@ const WIDGET_FACTORY = {
   // ),
 
   [WIDGET_TYPES.KEY_VALUES]: ({ context, scope }) => (
-      <NowTimeContext.Consumer>
+    <NowTimeContext.Consumer>
       {nowTs => (
         <CustomDataWidget
           robotId={getRobotId(context, scope)}
