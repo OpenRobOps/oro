@@ -13,25 +13,60 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useCallback } from 'react';
 // ORO Modules
 import TimelineComponent from './TimelineComponent';
 import { useMethod } from '../../util/meteorUtils';
 import { prepareTimeVarsForQuery } from '../../util/timeUtils';
+import { changePeriodOnRangeUpdate } from '../../util/timeUtils/TimeIntervalHook'
 
 const TimelineContainer = (props) => {
-  const { config, robotId, startTs: propStartTs, timeRangeMs, nowTs, dataQuery: dataQueryProp } = props;
+  const { 
+    config, 
+    robotId, 
+    startTs: propStartTs, 
+    setStartTime,
+    timeRangeMs, 
+    setTimeRangeMs,
+    onTimeFocusChange,
+    nowTs,
+  } = props;
   const { elementList, elementValues } = config || {};
   console.log("xx Container", props)
 
   const { data, call, error } = useMethod('timeseries.query');
 
+
+    /**
+   * Wrapper to change different time context props.
+   * Requires being passed a value and callback to change the value
+   * Can set startTime, endTime, and timeRangeMs
+   */
+  const setTimeWrapper = useCallback(({
+    dateStart, 
+    timeRangeMs: newTimeRangeMs
+  }) => {
+    if (dateStart && setStartTime) {
+      setStartTime(dateStart.valueOf());
+    }
+    if (newTimeRangeMs && setTimeRangeMs) {
+      setTimeRangeMs(newTimeRangeMs);
+    }
+    // Clear time focus to prevent timeline from rendering outside
+    // of the bounds of its data, which happens when timefocus is out of range
+    // from [startTs, endTs]
+    if (onTimeFocusChange) {
+      onTimeFocusChange(undefined);
+    }
+  }, [setStartTime, setTimeRangeMs, onTimeFocusChange]);
+  const onChangeLayout = useCallback(changePeriodOnRangeUpdate(setTimeWrapper), [setTimeWrapper]);
+
   const query = useMemo(() => {
     const attributeIds = elementList;
     const aggregations = attributeIds.map(attrId => elementValues?.[attrId].op || 'avg'); // TODO "op"?
-    // const { startTs, endTs } = prepareTimeVarsForQuery(propStartTs, timeRangeMs, nowTs);
-    const startTs = new Date("2026-05-06 10:00").getTime();
-    const endTs = new Date("2026-05-06 18:00").getTime();
+    const { startTs, endTs } = prepareTimeVarsForQuery(propStartTs, timeRangeMs, nowTs);
+    // const startTs = new Date("2026-05-06 10:00").getTime();
+    // const endTs = new Date("2026-05-06 18:00").getTime();
     const intervalMinutes = 1;
     return {
       robotId,
@@ -49,10 +84,16 @@ const TimelineContainer = (props) => {
     console.log("useEffect", query)
     call(query)
   }, [query])
-  console.log("xx widget index got data?", data, query, dataQueryProp)
+  console.log("xx widget index got data?", data, query)
   return (
     // eslint-disable-next-line react/jsx-props-no-spreading
-    <TimelineComponent {...props} dataQuery={query} data={data} />
+    <TimelineComponent 
+      {...props} 
+      dataQuery={query} 
+      data={data} 
+      error={error} 
+      onChangeLayout={onChangeLayout}
+    />
   );
 };
 

@@ -13,7 +13,7 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import Plotly from 'plotly.js-basic-dist';
 import { makeStyles } from 'tss-react/mui';
 import classNames from 'classnames';
@@ -76,9 +76,15 @@ const applyLineFormat = (lineType) => {
 const Plot = createPlotlyComponent(Plotly);
 
 const TimelineComponent = ({ 
+  // Wrapper widget props
   dataQuery, 
   data, 
+  error,
+  isLoading,
+  onChangeLayout,
+  // Dashboard props
   timeFocus,
+  onTimeFocusChange,
   config: widgetConfig
 }) => {
   const { classes, theme } = useStyles();
@@ -102,13 +108,64 @@ const TimelineComponent = ({
 
   console.log("xx data/dataQuery prop", data, dataQuery, theme)
 
-  // TODO migrate:
-  const error = null;
-  const isLoading = false;
-  const onHover = () => {};
-  const onRelayout = () => {};
-  const params = {};
-  // END TODO
+  /**
+   * Executes after the user changes time range by zooming in, zooming out or panning
+   * @param {object} event - react-plotly.js object
+   *  event: {
+   *    'xaxis.range[0]': string with x axis start date
+   *    'xaxis.range[1]': string with x axis end date
+   *    'yaxis.range[0]': number with y axis min value
+   *    'yaxis.range[1]': number with y axis max value
+   * }
+   */
+  const onRelayout = useCallback((event) => {
+    let newRange = { ...range };
+    if ('xaxis.autorange' in event) {
+      newRange.xRangeStart = undefined;
+      newRange.xRangeEnd = undefined;
+    }
+    if ('xaxis.range[0]' in event) {
+      newRange.xRangeStart = event['xaxis.range[0]'];
+    }
+    if ('xaxis.range[1]' in event) {
+      newRange.xRangeEnd = event['xaxis.range[1]'];
+    }
+
+    if ('yaxis.autorange' in event) {
+      newRange.yRangeStart = undefined;
+      newRange.yRangeEnd = undefined;
+    }
+    if ('yaxis.range[0]' in event) {
+      newRange.yRangeStart = event['yaxis.range[0]'];
+    }
+    if ('yaxis.range[1]' in event) {
+      newRange.yRangeEnd = event['yaxis.range[1]'];
+    }
+    setRange(newRange);
+    // Call onChangleLayout callback only when theres been a change in the plot ranges
+    // the change must exist in the xaxis or the yaxis
+    if (event && onChangeLayout
+      && ((event['xaxis.range[0]'] && event['xaxis.range[1]'])
+        || (event['yaxis.range[0]'] && event['yaxis.range[1]']))
+    ) {
+      onChangeLayout({
+        newXStart: event['xaxis.range[0]'],
+        newXEnd: event['xaxis.range[1]'],
+        newYMin: event['yaxis.range[0]'],
+        newYMax: event['yaxis.range[1]']
+      });
+    }
+  }, [range, onChangeLayout]);
+
+
+  const onHover = useCallback((event) => {
+    const point = event.points[0]?.data.x[event.points[0].pointIndex];
+    const time = point.getTime && point.getTime();
+    if (time && onTimeFocusChange) {
+      onTimeFocusChange(time);
+    }
+  }, [onTimeFocusChange]);
+
 
 
   const layout = useMemo(() => {
@@ -120,7 +177,7 @@ const TimelineComponent = ({
     const rangeEndRaw = xRangeEnd || dataQuery?.endTs;
 
 
-    console.log("xx getParsedLayout", { rangeStartRaw, params, dataQuery })
+    console.log("xx getParsedLayout", { rangeStartRaw, dataQuery, widgetConfig })
     let rangeStartDate = null;
     if (rangeStartRaw !== undefined && rangeStartRaw !== null) {
       const parsedStart = new Date(rangeStartRaw);
@@ -143,17 +200,17 @@ const TimelineComponent = ({
 
     if (yRangeStart && yRangeEnd) {
       yaxis.range = [yRangeStart, yRangeEnd];
-    } else if ('min' in params && 'max' in params && params.min < params.max) {
+    } else if ('min' in widgetConfig && 'max' in widgetConfig && widgetConfig.min < widgetConfig.max) {
       // if there is a fixed range (say, [0..100]) and values lie on one limit (e.g.
       // a constant ==100 line), the lines render too thin. To avoid that common
       // situation, add 'just a bit' of extra range (1%) above and below the specified range.
-      const delta = params.max - params.min;
-      yaxis.range = [params.min - (delta / 100), params.max + (delta / 100)];
+      const delta = widgetConfig.max - widgetConfig.min;
+      yaxis.range = [widgetConfig.min - (delta / 100), widgetConfig.max + (delta / 100)];
     }
 
     const layout = {
       autosize: true,
-      title: params.title || null,
+      title: widgetConfig.title || null,
       margin: {
         l: 30,
         r: 0,
@@ -474,28 +531,31 @@ const TimelineComponent = ({
 TimelineComponent.propTypes = {
   isLoading: PropTypes.bool,
   error: PropTypes.object,
-  data: PropTypes.shape({
-    columns: PropTypes.array,
-    values: PropTypes.arrayOf(PropTypes.array)
-  }),
+  // the dashboard widget config. Used for labels, min/max, etc. Some fields will be redundant (e.g. parsed into dataQuery)
+  config: PropTypes.object, 
+  // the query prepared to get data. It contains the actual attributeIds we are displaying
   dataQuery: PropTypes.shape({
     // attributes, xMin, xMax ...
     attributeIds: PropTypes.array,
     aggregations: PropTypes.array,
   }),
-  config: PropTypes.object, // the dashboard widget config. Some fields will be redundant (e.g. parsed into dataQuery)
+  // the data retrieved
+  data: PropTypes.shape({
+    columns: PropTypes.array,
+    values: PropTypes.arrayOf(PropTypes.array)
+  }),
+  // FIXME/re-add this. segments (each with startDate, endDate) to draw under the timeline chart
+  // segments: PropTypes.array,
+  // Draw a vertical line at timeFocus
+  timeFocus: PropTypes.number,
 
 
 
   // Callback executes when Plot has a change in the X axis (time)
   onChangeLayout: PropTypes.func,
-  // Draw a vertical line at timeFocus
-  timeFocus: PropTypes.number,
   // Callback to execute when the user hovers a data point. The callback will
   // receive the point's time
   onTimeFocusChange: PropTypes.func,
-  // segments (each with startDate, endDate) to draw under the timeline chart
-  segments: PropTypes.array,
   // Palette used for segments to be drawn as time intervals under the chart (normally: modes)
   segmentsPalette: PropTypes.object
 };
