@@ -67,7 +67,6 @@ class TimeSeriesManager {
   aggregateQuery = async (args) => this._store.aggregateQuery(args);
 
   async _meteorQueryTimeseries({ attributeIds, aggregations, robotId, startTs, endTs, intervalMinutes }) {
-    console.log("Timeseries query args: ", { attributeIds, aggregations, robotId, startTs, endTs, intervalMinutes })
     if (!robotId) {
       throw new Meteor.Error('robotId is required');
     }

@@ -210,7 +210,7 @@ describe('TimeSeriesStore', () => {
         meta: { robotId: 'r1' },
         aggregations: [
           { field: 'temperature', op: 'average' },
-          { field: 'humidity', op: 'max' },
+          { field: 'humidity', op: 'maximum' },
         ],
         granularitySecs: 600,
       });
@@ -229,7 +229,7 @@ describe('TimeSeriesStore', () => {
       const rows = await store.aggregateQuery({
         meta: { robotId: 'r1' },
         aggregations: [
-          { field: 'temperature', op: 'min' },
+          { field: 'temperature', op: 'minimum' },
           { field: 'humidity', op: 'sum' },
         ],
         granularitySecs: 600,
@@ -344,7 +344,7 @@ describe('TimeSeriesStore', () => {
         meta: { robotId: 'r1' },
         aggregations: [
           { field: 'temperature', op: 'average' }, // first — overwritten
-          { field: 'temperature', op: 'max' }, // last — wins
+          { field: 'temperature', op: 'maximum' }, // last — wins
         ],
         granularitySecs: 600,
         startTs: T0,
