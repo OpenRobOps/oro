@@ -32,12 +32,9 @@ const TimelineContainer = (props) => {
     nowTs,
   } = props;
   const { elementList, elementValues } = config || {};
-  console.log("xx Container", props)
-
   const { data, call, error } = useMethod('timeseries.query');
 
-
-    /**
+  /**
    * Wrapper to change different time context props.
    * Requires being passed a value and callback to change the value
    * Can set startTime, endTime, and timeRangeMs

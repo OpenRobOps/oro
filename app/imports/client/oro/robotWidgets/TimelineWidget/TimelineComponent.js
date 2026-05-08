@@ -47,28 +47,27 @@ const plotlyConfig = {
   displayModeBar: false 
 };
 
+const PLOTLY_LINE_FORMATS = {
+  linechart: {
+    type: 'scatter',
+    fill: 'none'
+  },
+  areachart:  {
+    type: 'scatter',
+    fill: 'tonexty',
+  }
+};
+const DEFAULT_LINE_FORMAT = {
+  type: 'scatter', 
+  fill: 'none'
+};
+
 /**
- * This static method parses the format required for chart types.
+ * Parses the format required for chart types.
  * The chart type is given by widgetConfig.type.
  */
-const applyLineFormat = (lineType) => {
-  const types = [
-    {
-      typeProp: 'linechart',
-      type: 'scatter',
-      fill: 'none'
-    },
-    {
-      typeProp: 'areachart',
-      type: 'scatter',
-      fill: 'tonexty'
-    }
-  ];
-  let format = types.filter(e => e.typeProp === lineType)[0];
-  if (isEmpty(format)) {
-    format = { type: 'scatter', fill: 'none' };
-  }
-  return format;
+const getLineFormat = (lineType) => {
+  return PLOTLY_LINE_FORMATS[lineType] || DEFAULT_LINE_FORMAT;
 };
 
 
@@ -106,8 +105,6 @@ const TimelineComponent = ({
     });
   }, [dataQuery]);
 
-  console.log("xx data/dataQuery prop", data, dataQuery, theme)
-
   /**
    * Executes after the user changes time range by zooming in, zooming out or panning
    * @param {object} event - react-plotly.js object
@@ -118,7 +115,7 @@ const TimelineComponent = ({
    *    'yaxis.range[1]': number with y axis max value
    * }
    */
-  const onRelayout = useCallback((event) => {
+  const handleRelayout = useCallback((event) => {
     let newRange = { ...range };
     if ('xaxis.autorange' in event) {
       newRange.xRangeStart = undefined;
@@ -158,7 +155,7 @@ const TimelineComponent = ({
   }, [range, onChangeLayout]);
 
 
-  const onHover = useCallback((event) => {
+  const handleHover = useCallback((event) => {
     const point = event.points[0]?.data.x[event.points[0].pointIndex];
     const time = point.getTime && point.getTime();
     if (time && onTimeFocusChange) {
@@ -176,8 +173,6 @@ const TimelineComponent = ({
     const rangeStartRaw = xRangeStart || dataQuery?.startTs;
     const rangeEndRaw = xRangeEnd || dataQuery?.endTs;
 
-
-    console.log("xx getParsedLayout", { rangeStartRaw, dataQuery, widgetConfig })
     let rangeStartDate = null;
     if (rangeStartRaw !== undefined && rangeStartRaw !== null) {
       const parsedStart = new Date(rangeStartRaw);
@@ -217,6 +212,11 @@ const TimelineComponent = ({
         b: 50,
         t: 20,
       },
+      font: {
+        color: theme.palette.text.secondary // applies to most fonts: axes, legends
+      },
+      plot_bgcolor: theme.palette.background.paper,
+      paper_bgcolor: theme.palette.background.paper,
       xaxis: {
         showgrid: true,
         gridcolor: theme.palette.background.gray,
@@ -234,12 +234,12 @@ const TimelineComponent = ({
       },
       modebar: {
         orientation: 'v',
-        bgcolor: '#FFFFFF'
+        bgcolor: theme.palette.background.paper, 
       },
       hoverlabel: {
         bordercolor: 'transparent',
         font: {
-          color: '#FFFFFF'
+          color: theme.palette.text.primary
         }
       },
       shapes: [], // vertical "timeFocus" bar or mode segments are added here
@@ -392,7 +392,7 @@ const TimelineComponent = ({
       return null;
     }
 
-    const lineFormat = applyLineFormat(widgetConfig?.chartType);
+    const lineFormat = getLineFormat(widgetConfig?.chartType);
     const series = dataQuery?.attributeIds.map((field, index) => {
       const fieldConfig = widgetConfig.elementValues[field];
       // Default hover labels with 2 decimal places, unless 'precision'
@@ -451,13 +451,6 @@ const TimelineComponent = ({
     setParsedData(series);
   }, [data, dataQuery, widgetConfig]);
 
-
-  console.log("xx layout/data", layout, parsedData, )
-
-
-  // const parsedData = this.getMemoParsedData();
-  // const layout = this.getParsedLayout();
-  // console.log("render", parsedData, "parsedLayout", layout)
   const showError = error?.name && error?.message;
   if (timelineErrorMessage) {
     return (
@@ -521,8 +514,8 @@ const TimelineComponent = ({
         }
         config={plotlyConfig}
         useResizeHandler
-        onRelayout={event => onRelayout(event)}
-        onHover={event => onHover(event)}
+        onRelayout={handleRelayout}
+        onHover={handleHover}
       />
     </>
   );
@@ -544,20 +537,17 @@ TimelineComponent.propTypes = {
     columns: PropTypes.array,
     values: PropTypes.arrayOf(PropTypes.array)
   }),
-  // FIXME/re-add this. segments (each with startDate, endDate) to draw under the timeline chart
-  // segments: PropTypes.array,
   // Draw a vertical line at timeFocus
   timeFocus: PropTypes.number,
-
-
-
   // Callback executes when Plot has a change in the X axis (time)
   onChangeLayout: PropTypes.func,
   // Callback to execute when the user hovers a data point. The callback will
   // receive the point's time
   onTimeFocusChange: PropTypes.func,
-  // Palette used for segments to be drawn as time intervals under the chart (normally: modes)
-  segmentsPalette: PropTypes.object
+  // FIXME/re-add this. segments (each with startDate, endDate) to draw under the timeline chart
+  // segments: PropTypes.array,
+  // FIXME/re-add this. Palette used for segments to be drawn as time intervals under the chart (normally: modes)
+  // segmentsPalette: PropTypes.object
 };
 
 
