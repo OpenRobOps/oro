@@ -13,11 +13,12 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-import { useEffect, useMemo, useCallback } from 'react';
+import { useEffect, useCallback, useState } from 'react';
+import { isEqual } from 'lodash';
 // ORO Modules
 import TimelineComponent from './TimelineComponent';
 import { useMethod } from '../../util/meteorUtils';
-import { prepareTimeVarsForQuery } from '../../util/timeUtils';
+import { getPeriodPropsCopy, prepareTimeVarsForQuery } from '../../util/timeUtils';
 import { changePeriodOnRangeUpdate } from '../../util/timeUtils/TimeIntervalHook'
 
 const TimelineContainer = (props) => {
@@ -29,11 +30,14 @@ const TimelineContainer = (props) => {
     timeRangeMs, 
     setTimeRangeMs,
     onTimeFocusChange,
-    nowTs,
+    nowTs
   } = props;
   const { elementList, elementValues } = config || {};
-  const { data, call, error } = useMethod('timeseries.query');
-
+  const { data, call, error, isLoading } = useMethod('timeseries.query');
+  // The query is used as state instead of a simpler useMemo so we decide when to change the actual object
+  // for useEffect below to trigger.
+  const [query, setQuery] = useState();
+``
   /**
    * Wrapper to change different time context props.
    * Requires being passed a value and callback to change the value
@@ -58,30 +62,33 @@ const TimelineContainer = (props) => {
   }, [setStartTime, setTimeRangeMs, onTimeFocusChange]);
   const onChangeLayout = useCallback(changePeriodOnRangeUpdate(setTimeWrapper), [setTimeWrapper]);
 
-  const query = useMemo(() => {
+  useEffect(() => {
     const attributeIds = elementList;
-    const aggregations = attributeIds.map(attrId => elementValues?.[attrId].op || 'avg'); // TODO "op"?
+    const aggregations = attributeIds.map(attrId => elementValues?.[attrId].op || 'average');
     const { startTs, endTs } = prepareTimeVarsForQuery(propStartTs, timeRangeMs, nowTs);
-    // const startTs = new Date("2026-05-06 10:00").getTime();
-    // const endTs = new Date("2026-05-06 18:00").getTime();
-    const intervalMinutes = 1;
-    return {
+    const timeframeMs = endTs - startTs;
+    // Find the closest 'period' as defined in our toolbars, which is also helpful to select a reasonable granularity
+    const period = getPeriodPropsCopy(timeframeMs);
+    const newQuery = {
       robotId,
       attributeIds,
       aggregations,
       startTs,
       endTs,
-      intervalMinutes
+      intervalMinutes: (period?.intervalSeconds || 300) / 60
       // timeframeHours: 24,
       // intervalMins: 1,
     }
-  }, [elementList, elementValues, robotId,]);
+    if (!isEqual(query, newQuery)) {
+      // This useEffect changes every time nowTs change (every minute) but the unless the query is live, 
+      // query arguments won't change so we compare with isEqual before changing state
+      setQuery(newQuery);
+    }
+  }, [elementList, elementValues, robotId, propStartTs, timeRangeMs, nowTs]);
 
-  useEffect(() => {
-    // TODO run query again every time query changes (in live mode only)
-    call(query)
-  }, [query])
-  
+  // Trigger a data load every time the query changes
+  useEffect(() => { query && call(query) }, [query]);
+
   return (
     // eslint-disable-next-line react/jsx-props-no-spreading
     <TimelineComponent 
@@ -90,6 +97,7 @@ const TimelineContainer = (props) => {
       data={data} 
       error={error} 
       onChangeLayout={onChangeLayout}
+      isLoading={isLoading}
     />
   );
 };

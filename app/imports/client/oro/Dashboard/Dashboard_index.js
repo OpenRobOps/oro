@@ -90,7 +90,7 @@ import AuditLogsFleet from '../fleetWidgets/AuditLogs/AuditLogsFleet';
 import AuditLogsRobot from '../fleetWidgets/AuditLogs/AuditLogsRobot';
 // // Time Capsule widgets
 // import { DATA_BAG_VARIANT } from '../robotWidgets/DataBagWidget/constants';
-// import TimelineFilter from './widgetToolbars/ToolbarFilters/TimelineFilter';
+import TimelineFilter from './widgetToolbars/ToolbarFilters/TimelineFilter';
 import IncidentTimelineFilter from './widgetToolbars/ToolbarFilters/IncidentTimelineFilter';
 import { DEFAULT_DATA_SOURCES } from '../robotWidgets/LocalizationWidget/LocalizationDataSources';
 import { RobotsDataProvider } from '../contexts/RobotsDataContext/RobotsDataContext';
@@ -374,23 +374,23 @@ const TOOLBAR_FACTORY = {
   //     navigationDetailCallback={() => switchTo({ scope: CONTEXT_SLOTS.NAVIGATION })}
   //   />
   // ),
-  // [WIDGET_TYPES_IDS.CHART]: ({ config, widgetId, setContext, context, scope }) => (
-  //   <NowTimeContext.Consumer>
-  //     {nowTs => (
-  //       <TimelineFilter
-  //         startTs={getStartTime(context, scope)}
-  //         setStartTime={setStartTime(setContext, scope)}
-  //         timeRangeMs={getTimeRangeMs(context, scope)}
-  //         setTimeRangeMs={setTimeRangeMs(setContext, scope)}
-  //         robotId={getRobotId(context, scope)}
-  //         onTimeFocusChange={setTimeFocus(setContext, scope)}
-  //         widgetId={widgetId}
-  //         config={config}
-  //         nowTs={nowTs}
-  //       />
-  //     )}
-  //   </NowTimeContext.Consumer>
-  // ),
+  [WIDGET_TYPES_IDS.CHART]: ({ config, widgetId, setContext, context, scope }) => (
+    <NowTimeContext.Consumer>
+      {nowTs => (
+        <TimelineFilter
+          startTs={getStartTime(context, scope)}
+          setStartTime={setStartTime(setContext, scope)}
+          timeRangeMs={getTimeRangeMs(context, scope)}
+          setTimeRangeMs={setTimeRangeMs(setContext, scope)}
+          robotId={getRobotId(context, scope)}
+          onTimeFocusChange={setTimeFocus(setContext, scope)}
+          widgetId={widgetId}
+          config={config}
+          nowTs={nowTs}
+        />
+      )}
+    </NowTimeContext.Consumer>
+  ),
   [WIDGET_TYPES_IDS.INCIDENT_LIST]: ({ context, setContext, scope, isZeroData }) => (
     <NowTimeContext.Consumer>
       {nowTs => (

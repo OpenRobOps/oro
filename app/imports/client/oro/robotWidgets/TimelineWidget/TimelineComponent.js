@@ -14,6 +14,7 @@
  *    limitations under the License.
  */
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
+import { Grid, Typography, CircularProgress } from '@mui/material';
 import Plotly from 'plotly.js-basic-dist';
 import { makeStyles } from 'tss-react/mui';
 import classNames from 'classnames';
@@ -23,13 +24,24 @@ import { isEmpty } from 'lodash';
 import createPlotlyComponent from 'react-plotly.js/factory';
 
 const useStyles = makeStyles()((theme) => ({
+  container: {
+    position: 'relative',
+    height: '100%',
+    width: '100%'
+  },
   plot: {
     height: '100%',
     width: '100%'
   },
   loading: {
     position: 'absolute',
-    zIndex: 1
+    right: '20px',
+    bottom: '20px',
+    zIndex: 1,
+    '& svg': { // hack to colorize CircularProgress
+      color: theme.palette.text.secondary,
+      opacity: 0.7,
+    }
   },
   fadeOut: {
     opacity: 0.3
@@ -79,12 +91,12 @@ const TimelineComponent = ({
   dataQuery, 
   data, 
   error,
-  isLoading,
   onChangeLayout,
   // Dashboard props
   timeFocus,
   onTimeFocusChange,
-  config: widgetConfig
+  config: widgetConfig,
+  isLoading
 }) => {
   const { classes, theme } = useStyles();
   const [range, setRange] = React.useState({
@@ -460,7 +472,7 @@ const TimelineComponent = ({
         xs
         justifyContent="center"
         alignItems="center"
-        className={loading ? classes.fadeOut : classes.error}
+        className={isLoading ? classes.fadeOut : classes.error}
       >
         <Typography variant="h5">
           {timelineErrorMessage}
@@ -469,55 +481,44 @@ const TimelineComponent = ({
     );
   }
 
-  if (showError) {
-    return (
-      <>
-        {isLoading && (
-          <Grid item xs className={classes.loading}>
-            <CircularProgress />
-            <Typography variant="body1">
-              Loading ...
-            </Typography>
-          </Grid>
-        )}
+  return (
+    <div className={classes.container}>
+      {isLoading && (
+        <Grid item xs className={classes.loading}>
+          <CircularProgress size="20px" />
+        </Grid>
+      )}
+      { showError && (
         <Grid
           container
           item
           xs
           justifyContent="center"
           alignItems="center"
-          className={loading ? classes.fadeOut : classes.error}
+          className={isLoading ? classes.fadeOut : classes.error}
         >
           <Typography variant="h5">
             {error.message}
           </Typography>
         </Grid>
-      </>
-    );
-  }
-  return (
-    <>
-      {isLoading && (
-        <Grid item xs className={classes.loading}>
-          <CircularProgress />
-          <Typography variant="body1">Loading ...</Typography>
-        </Grid>
       )}
-      <Plot
-        data={parsedData}
-        layout={layout}
-        className={
-          classNames(
-            classes.plot,
-            isLoading && classes.fadeOut,
-          )
-        }
-        config={plotlyConfig}
-        useResizeHandler
-        onRelayout={handleRelayout}
-        onHover={handleHover}
-      />
-    </>
+      { !showError && (
+        <Plot
+          data={parsedData}
+          layout={layout}
+          className={
+            classNames(
+              classes.plot,
+              isLoading && classes.fadeOut,
+            )
+          }
+          config={plotlyConfig}
+          useResizeHandler
+          onRelayout={handleRelayout}
+          onHover={handleHover}
+        />
+      )}
+    </div>
   );
 };
 

@@ -35,13 +35,15 @@ const EXPIRE_AFTER_SECONDS = 86400 * 14; // expire after 2 weeks
 // Mapping from public op names to MongoDB accumulator operators.
 // `count` is a sentinel; handled specially in query() to count non-null
 // values for the field rather than per-bucket document count.
+// NOTE: These constants should match uiPreferences/TIMELINE_CHART_OPS_LIST keys
 const AGG_OPS = {
-  avg: '$avg',
-  min: '$min',
-  max: '$max',
+  average: '$avg',
+  minimum: '$min',
+  maximum: '$max',
   sum: '$sum',
-  first: '$first',
   last: '$last',
+  // first and last are not implemented in TIMELINE_CHART_OPS_LIST, but we support them anyway here
+  first: '$first',
   count: '$count',
 };
 
@@ -102,7 +104,7 @@ class TimeSeriesStore {
    *                                          Omit / pass {} to query across all series.
    * @param {Array<{field: string, op: string}>} args.aggregations
    *                                          Per-field aggregation. `op` is one of
-   *                                          'avg' | 'min' | 'max' | 'sum' | 'first' | 'last' | 'count'.
+   *                                          'average' | 'minimum' | 'maximum' | 'sum' | 'first' | 'last' | 'count'.
    *                                          When the same `field` appears with multiple
    *                                          ops, the last one in the list wins in the
    *                                          output `fields` object.

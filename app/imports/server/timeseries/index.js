@@ -67,7 +67,6 @@ class TimeSeriesManager {
   aggregateQuery = async (args) => this._store.aggregateQuery(args);
 
   async _meteorQueryTimeseries({ attributeIds, aggregations, robotId, startTs, endTs, intervalMinutes }) {
-    console.log("Timeseries query args: ", { attributeIds, aggregations, robotId, startTs, endTs, intervalMinutes })
     if (!robotId) {
       throw new Meteor.Error('robotId is required');
     }
@@ -89,17 +88,24 @@ class TimeSeriesManager {
     if (!isNumber(intervalMinutes)) {
       throw new Meteor.Error('intervalMinutes is required');
     }
-
-    const points = await new TimeSeriesManager().aggregateQuery({
-      startTs,
-      endTs,
-      granularitySecs: intervalMinutes * 60,
-      meta: { robotId },
-      aggregations: zipWith(attributeIds, aggregations, (attributeId, aggregation) => ({
-        field: attributeId,
-        op: aggregation
-      }))
-    });
+    let points = null;
+    try {
+      points = await new TimeSeriesManager().aggregateQuery({
+        startTs,
+        endTs,
+        granularitySecs: intervalMinutes * 60,
+        meta: { robotId },
+        aggregations: zipWith(attributeIds, aggregations, (attributeId, aggregation) => ({
+          field: attributeId,
+          op: aggregation
+        }))
+      });
+    } catch (e) {
+      // aggregateQuery() performs validations (e.g. on the aggregation operators). If it
+      // throws, pop up the error.
+      // FIXME: We should not re-throw EVERY error; this can surface internal details: only certain 'bad argument' errors
+      throw new Meteor.Error(e.message);
+    }
     // For efficient data transfer and processing in the browser we turn the result into 
     // { columns: [...attributeIds], values: [[...], [...]] }
     // where each value always contains the 'time' property first. That's the format expected
