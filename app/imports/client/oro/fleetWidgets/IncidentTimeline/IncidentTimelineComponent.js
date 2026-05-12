@@ -280,17 +280,17 @@ const IncidentTimelineWidget = ({
   const getVerticalLineClassNames = useCallback(() => [classes.vertical], []);
 
   const itemRenderer = useCallback(({ item, itemContext, getItemProps }) => {
-    // Destructure `key` out of getItemProps result to pass it directly to JSX.
-    // react-calendar-timeline includes `key` in the returned props object, which
-    // triggers a React warning when spread into a JSX element.
-    const { key, ...parsedItemProps } = getItemProps(item.itemProps);
+    // Pull `key` and `ref` out: React 18+ requires `key` as a direct prop and
+    // ignores `ref` when spread, but react-calendar-timeline relies on the ref
+    // for positioning/measurement, so it must be attached explicitly.
+    const { key, ref, ...parsedItemProps } = getItemProps(item.itemProps);
     const styleMerged = { ...parsedItemProps.style, ...item.itemProps.style };
     if (itemContext.selected) {
       styleMerged.border = `2px solid ${theme.palette.incidents.selectedBorder}`;
     }
     return (
       /* eslint-disable-next-line react/jsx-props-no-spreading */
-      <div key={key} {...parsedItemProps} style={styleMerged}>
+      <div key={key} ref={ref} {...parsedItemProps} style={styleMerged}>
         <div
           className="rct-item-content"
           style={{ maxHeight: `${itemContext.dimensions.height}` }}
@@ -331,8 +331,8 @@ const IncidentTimelineWidget = ({
     return {
       timeStart: vars.startTs,
       timeEnd: vars.endTs,
-      defaultStart: moment(vars.startTs),
-      defaultEnd: moment(vars.endTs)
+      defaultStart: vars.startTs,
+      defaultEnd: vars.endTs
     };
   }, [startTs, timeRangeMs, nowTs]);
 

@@ -27,7 +27,7 @@ import PropTypes from 'prop-types';
 import { prepareTimeVarsForQuery, StartTsPropType } from '../../util/timeUtils';
 import WithNoDataMessage from '../../util/WithNoDataMessage';
 import IncidentTimelineComponent from './IncidentTimelineComponent';
-import 'react-calendar-timeline/lib/Timeline.css';
+import 'react-calendar-timeline/style.css';
 import '../../../lib/IncidentTimeline.css';
 import useRobots from '../../hooks/useRobots';
 import useIncidents from '../../hooks/useIncidents';
