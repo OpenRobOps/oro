@@ -258,7 +258,10 @@ const wrapHookAsDataSource = (useHook, actionBuilder) => (function (dispatch, ar
   useHook(args, (data) => {
     const action = actionBuilder(data, args);
     // if the actionBuilder decides the data is invalid and returns null, do not dispatch it
-    action && dispatch(action);
+    // Defer dispatch off the current render to avoid React's
+    // "Cannot update a component while rendering a different component" warning,
+    // since useDataSource hooks are invoked synchronously during the consumer's render.
+    if (action) queueMicrotask(() => dispatch(action));
   });
 });
 

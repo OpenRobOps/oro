@@ -43,8 +43,9 @@ const appContentStyle = {
 };
 
 const FUTURE_FLAG = {
-  // This flag ensures a future-compatibility and removes an annoying console warning
-  v7_relativeSplatPath: true
+  // These flags ensure future-compatibility and remove annoying console warnings
+  v7_relativeSplatPath: true,
+  v7_startTransition: true
 };
 
 const App = () => (

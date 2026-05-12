@@ -25,7 +25,7 @@
  */
 import React from 'react';
 import { Meteor } from 'meteor/meteor';
-import { withTracker } from 'meteor/react-meteor-data';
+import { useTracker } from 'meteor/react-meteor-data';
 import sortBy from 'lodash/sortBy';
 import PropTypes from 'prop-types';
 // ORO modules
@@ -54,41 +54,42 @@ const DashboardContainer = props => (
  * Dashboard selector container, fetching dashboards for the current user
  * (if any), and passing down them to a DashboardSelector widget.
  */
-const DashboardSelectorContainer = withTracker(({ urlDashboardId }) => {
+const DashboardSelectorContainer = (props) => {
+  const { urlDashboardId } = props;
+  const trackerData = useTracker(() => {
+    const dashboardId = urlDashboardId || null;
+    const userId = Meteor.userId();
 
-  const dashboardId = urlDashboardId || null;
-  const userId = Meteor.userId();
-  // Get dashboardId from url
-  // const { dashboardId } = urlPathParams || {};
+    if (!userId) { // TODO(herchu) re-enable when log in is implemented
+      return { isLoading: true };
+    }
 
-  if (!userId) { // TODO(herchu) re-enable when log in is implemented
-    return { isLoading: true };
-  }
+    const dashboardCfg = {};
+    // Compute list of dashboard Ids for the current user by grabbing
+    // all available dashboards in the Company -> Role -> User hierarchy,
+    // and filtering out those not visible for the user's role.
+    const dashboardIds = Object.entries(dashboardCfg.dashboards || {})
+      .reduce((acc, [id, visible]) => (visible ? [...acc, id] : acc), []);
 
-  const dashboardCfg = {};
-  // Compute list of dashboard Ids for the current user by grabbing
-  // all available dashboards in the Company -> Role -> User hierarchy,
-  // and filtering out those not visible for the user's role.
-  const dashboardIds = Object.entries(dashboardCfg.dashboards || {})
-    .reduce((acc, [id, visible]) => (visible ? [...acc, id] : acc), []);
+    const dashboardsHandle = Meteor.subscribe('user.dashboards', { dashboardIds });
+    if (!dashboardsHandle.ready()) {
+      return { isLoading: true };
+    }
 
-  const dashboardsHandle = Meteor.subscribe('user.dashboards', { dashboardIds });
-  if (!dashboardsHandle.ready()) {
-    return { isLoading: true };
-  }
+    const userDashboardSpecs = Dashboards.find({}).fetch();
 
-  const userDashboardSpecs = Dashboards.find({}).fetch();
+    // Dashboard sorting:
+    // Attempt to use an integer "order" property for sorting. If
+    // property isn't present, fallback to the "label" property.
+    const dashboardSpecs = sortBy(userDashboardSpecs, ['order', 'label']);
 
-  // Dashboard sorting:
-  // Attempt to use an integer "order" property for sorting. If
-  // property isn't present, fallback to the "label" property.
-  const dashboardSpecs = sortBy(userDashboardSpecs, ['order', 'label']);
+    // Get the initially selected dashboard configuration if it is present
+    const { initialDashboardId } = dashboardCfg.dashboards || {};
 
-  // Get the initially selected dashboard configuration if it is present
-  const { initialDashboardId } = dashboardCfg.dashboards || {};
-
-  return { isLoading: false, dashboardSpecs, dashboardId, initialDashboardId };
-})(DashboardContainer);
+    return { isLoading: false, dashboardSpecs, dashboardId, initialDashboardId };
+  }, [urlDashboardId]);
+  return <DashboardContainer {...props} {...trackerData} />;
+};
 
 DashboardSelectorContainer.propTypes = {
   urlDashboardId: PropTypes.string, // dashboardId obtained from the URL (initial dashboard)

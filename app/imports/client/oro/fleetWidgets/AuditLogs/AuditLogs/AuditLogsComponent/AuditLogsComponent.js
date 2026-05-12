@@ -154,9 +154,11 @@ const AuditLogs = ({
         >
           {tableHeader}
           <StyledTableBody>
-            <div className={classes.noDataIconContainer}>
-              <NoDataIcon />
-            </div>
+            <StyledTableRow>
+              <StyledTableCell colSpan="3" className={classes.noDataIconContainer}>
+                <NoDataIcon />
+              </StyledTableCell>
+            </StyledTableRow>
           </StyledTableBody>
         </Table>
       </StyledTableContainer>
@@ -194,10 +196,7 @@ const AuditLogs = ({
 AuditLogs.propTypes = {
   error: PropTypes.object,
   isLoading: PropTypes.bool,
-  auditLogs: PropTypes.shape({
-    logs: PropTypes.array,
-    limitMessage: PropTypes.string
-  }),
+  auditLogs: PropTypes.array,
   onLogHover: PropTypes.func,
   focusedIndex: PropTypes.number,
   // Component class that renders the event rows of the table. The component normally depends on

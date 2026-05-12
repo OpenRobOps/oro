@@ -29,8 +29,9 @@
  *  - presentation of the actions buttons: ActionsListComponent. This one is in the
  *    ui-gallery for easier testing.
  */
+import React from 'react';
 import { Meteor } from 'meteor/meteor';
-import { withTracker } from 'meteor/react-meteor-data';
+import { useTracker } from 'meteor/react-meteor-data';
 import PropTypes from 'prop-types';
 import { keyBy } from 'lodash';
 // ORO modules
@@ -41,34 +42,38 @@ import { Robots, Preferences } from '../../../../../lib/collections';
 
 const ActionsButtonsWithHOC = baseProps => WithActionsContext(baseProps, ActionsButtonsComponent);
 
-const ActionsButtonsContainer = withTracker(({ robotId, preparedActions, actionIds }) => {
-  // We can only get robot details if we have a specific robotId provided for these actions
-  if (robotId) {
-    const actionsHandle = Meteor.subscribe('actions.config');
-    const robotHandle = Meteor.subscribe('robot.details', { robotId });
-    const preferencesHandle = Meteor.subscribe('preferences', { keys: ['lock'] });
-    const isLoading = !robotHandle.ready()
-      || !preferencesHandle.ready()
-      || !actionsHandle.ready();
-    if (isLoading) {
-      return { isLoading: true };
+const ActionsButtonsContainer = (props) => {
+  const { robotId, preparedActions, actionIds } = props;
+  const actionIdsKey = Array.isArray(actionIds) ? actionIds.join(',') : '';
+  const trackerData = useTracker(() => {
+    // We can only get robot details if we have a specific robotId provided for these actions
+    if (robotId) {
+      const actionsHandle = Meteor.subscribe('actions.config');
+      const robotHandle = Meteor.subscribe('robot.details', { robotId });
+      const preferencesHandle = Meteor.subscribe('preferences', { keys: ['lock'] });
+      const isLoading = !robotHandle.ready()
+        || !preferencesHandle.ready()
+        || !actionsHandle.ready();
+      if (isLoading) {
+        return { isLoading: true };
+      }
+      // For the Actions widget (with sections), allow filtering out which actions we want to show
+      const actionsQuery = Array.isArray(actionIds) ? { _id: { $in: actionIds } } : {};
+      const actionsFromConfig = ActionDefinitions.find(actionsQuery).fetch();
+      const robot = Robots.findOne({ _id: robotId });
+      const lockConfig = Preferences.findOne({ _id: 'lock' }) || {};
+      return {
+        robot,
+        actions: actionsFromConfig,
+        lockConfig,
+      };
     }
-    // For the Actions widget (with sections), allow fitlering out which actions we want to show
-    const actionsQuery = Array.isArray(actionIds) ? { _id: { $in: actionIds } } : {};
-    const actionsFromConfig = ActionDefinitions.find(actionsQuery).fetch();
-    const robot = Robots.findOne({ _id: robotId });
-    const lockConfig = Preferences.findOne({ _id: 'lock' }) || {};
-    return {
-      robot,
-      actions: actionsFromConfig,
-      lockConfig,
-    };
-  } else {
     // If this component is not showing actions for a robot, still pass actionList to the HOC
     // so it can render them if they are already prepared actions (as used in Banner)
     return { actions: preparedActions };
-  }
-})(ActionsButtonsWithHOC);
+  }, [robotId, actionIdsKey, preparedActions]);
+  return <ActionsButtonsWithHOC {...props} {...trackerData} />;
+};
 
 ActionsButtonsContainer.propTypes = {
   // The current robot if this actions are running on a robot.

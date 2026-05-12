@@ -61,7 +61,7 @@ const ActionsWidget = ({
 ActionsWidget.propTypes = {
   classes: PropTypes.object,
   robotId: PropTypes.string,
-  ActionsButtons: PropTypes.object,
+  ActionsButtons: PropTypes.elementType,
   expanded: PropTypes.bool,
   bigButtons: PropTypes.bool,
   actionIds: PropTypes.array,

@@ -90,7 +90,9 @@ function NavigationDetail({
   const { openDialog, ConfirmationDialog } = useConfirmationSnackbar();
   const containerSize = useSize(containerRef);
 
-  setFullscreenContainerRef(containerRef);
+  useEffect(() => {
+    setFullscreenContainerRef(containerRef);
+  }, [setFullscreenContainerRef]);
 
   useEffect(() => {
     setIsDarkMode(isFullscreen);

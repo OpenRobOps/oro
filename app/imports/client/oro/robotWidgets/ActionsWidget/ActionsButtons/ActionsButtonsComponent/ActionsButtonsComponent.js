@@ -99,7 +99,7 @@ const panelStyles = theme => ({
     '&.Mui-expanded': {
       margin: 0
     },
-    '&:first-child': {
+    '&:first-of-type': {
       borderTop: `1px solid ${theme.palette.background.gray}`
     },
   },
@@ -234,10 +234,11 @@ const ActionsButtons = ({
     <Grid container className={style}>
       {actions && actions.map((action, ix) => passesLocalActionFilter(action) && (
         <Grid
-          item
-          xs={bigButtons ? 12 : undefined}
-          sm={bigButtons ? 12 : undefined}
-          md={bigButtons ? 6 : undefined}
+          size={{
+            xs: bigButtons ? 12 : undefined,
+            sm: bigButtons ? 12 : undefined,
+            md: bigButtons ? 6 : undefined
+          }}
           classes={{ root: classes.actionButton }}
           key={action._id || ix}
         >
@@ -254,7 +255,7 @@ const ActionsButtons = ({
   const getBannerActionButtons = ({ actions = [] }) => (
     <Grid container className={classes.actionBannerComponent} size={{ xs: 12 }}>
       {actions && actions.map((action, ix) => passesLocalActionFilter(action) && (
-        <Grid item key={action._id || ix}>
+        <Grid key={action._id || ix}>
           {renderActionButton(action, action._id || ix)}
         </Grid>
       ))}
@@ -288,12 +289,12 @@ const ActionsButtons = ({
             expandIcon={<ExpandMoreIcon />}
           >
             <Grid container className={className}>
-              <Grid item size={{ xs: 9 }}>
+              <Grid size={{ xs: 9 }}>
                 <Typography classes={{ root: classes.typography }}>
                   {groupName}
                 </Typography>
               </Grid>
-              <Grid item size={{ xs: 3 }}>
+              <Grid size={{ xs: 3 }}>
                 <Typography classes={{ root: classes.groupCount }}>
                   {groupActions.length}
                 </Typography>

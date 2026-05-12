@@ -21,7 +21,7 @@
  * Recreates the joystick when options change; uses a callback ref to avoid
  * stale closures on event handlers.
  */
-import { useRef, useEffect } from 'react';
+import { forwardRef, useRef, useEffect } from 'react';
 import nipplejs from 'nipplejs';
 import PropTypes from 'prop-types';
 
@@ -36,7 +36,12 @@ const EVENT_MAP = [
   ['pressure', 'onPressure']
 ];
 
-const NippleJoystick = ({
+const assignRef = (ref, value) => {
+  if (typeof ref === 'function') ref(value);
+  else if (ref) ref.current = value;
+};
+
+const NippleJoystick = forwardRef(({
   className,
   options,
   static: isStatic,
@@ -51,7 +56,7 @@ const NippleJoystick = ({
   onHidden,
   onPressure,
   ...divProps
-}) => {
+}, ref) => {
   const containerRef = useRef(null);
   const callbacksRef = useRef({});
 
@@ -76,6 +81,7 @@ const NippleJoystick = ({
     }
 
     const joystick = nipplejs.create(joystickOptions);
+    assignRef(ref, { joystick });
 
     EVENT_MAP.forEach(([event, prop]) => {
       joystick.on(event, (evt, data) => {
@@ -87,13 +93,15 @@ const NippleJoystick = ({
 
     return () => {
       joystick.destroy();
+      assignRef(ref, null);
       callbacksRef.current.onDestroy?.();
     };
   }, [optionsKey, isStatic]);
 
   const classes = ['NippleJoystick', className].filter(Boolean).join(' ');
   return <div {...divProps} ref={containerRef} className={classes} />;
-}
+});
+NippleJoystick.displayName = 'NippleJoystick';
 
 NippleJoystick.propTypes = {
   className: PropTypes.string,
