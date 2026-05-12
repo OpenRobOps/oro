@@ -31,7 +31,7 @@ const useIncidents = ({ robotIds, startTs, endTs, selectedComponentFilter, selec
       severities: selectedSeverityFilter
     });
     const incidentsFilterFn = filterFunctionForIncidents({ selectedComponentFilter, selectedSeverityFilter });
-    const incidents = Incidents.find({ entityId: { $in: robotIds }, entityType: 'robot' }).fetch().filter(incidentsFilterFn);
+    const incidents = Incidents.find({ robotId: { $in: robotIds } }).fetch().filter(incidentsFilterFn);
     return { isLoading: !handle.ready(), incidents };
 }, [robotIds, startTs, endTs, selectedComponentFilter, selectedSeverityFilter]);
 

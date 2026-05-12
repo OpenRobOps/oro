@@ -19,6 +19,73 @@
  * https://www.npmjs.com/package/react-calendar-timeline
  */
 
+/*
+ * Structural layout rules copied from react-calendar-timeline's style.css.
+ * The 0.30 package declares `"sideEffects": false`, which causes bundlers to
+ * drop `import 'react-calendar-timeline/style.css'`; without these rules the
+ * sidebar and scroll panels render as block elements and stack vertically
+ * instead of side-by-side, throwing all item coordinates out of alignment.
+ */
+.react-calendar-timeline * { box-sizing: border-box; }
+.react-calendar-timeline .rct-outer {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.react-calendar-timeline .rct-scroll {
+  display: inline-block;
+  white-space: normal;
+  vertical-align: top;
+  overflow: hidden;
+  touch-action: none;
+}
+.react-calendar-timeline .rct-sidebar {
+  overflow: hidden;
+  white-space: normal;
+  display: inline-block;
+  vertical-align: top;
+  position: relative;
+  box-sizing: border-box;
+}
+.react-calendar-timeline .rct-sidebar .rct-sidebar-row {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  box-sizing: border-box;
+  margin: 0;
+}
+.react-calendar-timeline .rct-vertical-lines .rct-vl {
+  position: absolute;
+  z-index: 30;
+}
+.react-calendar-timeline .rct-horizontal-lines {
+  user-select: none;
+}
+.react-calendar-timeline .rct-horizontal-lines .rct-hl-even,
+.react-calendar-timeline .rct-horizontal-lines .rct-hl-odd {
+  box-sizing: border-box;
+  z-index: 40;
+}
+.react-calendar-timeline .rct-item:hover { z-index: 88; }
+.react-calendar-timeline .rct-item .rct-item-content {
+  position: sticky;
+  left: 0;
+  overflow: hidden;
+  display: inline-block;
+  border-radius: 2px;
+  padding: 0 6px;
+  height: 100%;
+}
+.react-calendar-timeline .rct-dateHeader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  cursor: pointer;
+  font-size: 14px;
+}
+.react-calendar-timeline .rct-dateHeader-primary { background-color: initial; }
+
 /* Sidebar rows — raised background for robot names */
 #react-target .react-calendar-timeline .rct-sidebar .rct-sidebar-row {
   padding: 0;

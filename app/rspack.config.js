@@ -36,6 +36,13 @@ module.exports = defineConfig((Meteor) => {
           issuer: /\.[jt]sx?$/,
           use: ["@svgr/webpack"],
         },
+        // react-calendar-timeline 0.30 declares `sideEffects: false` in its
+        // package.json, which causes the bundler to tree-shake CSS imports.
+        // Force its stylesheets to be retained.
+        {
+          test: /[\\/]react-calendar-timeline[\\/].*\.css$/,
+          sideEffects: true,
+        },
       ],
     },
   };
