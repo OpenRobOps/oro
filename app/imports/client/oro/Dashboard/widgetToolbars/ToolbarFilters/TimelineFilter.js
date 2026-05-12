@@ -57,7 +57,7 @@ const TimeIntervalFilter = (props) => {
           setStartTime={setStartTime}
         />
       ) : (/* When LiveButton is skipped, fill its space */
-        <Grid item style={{ flex: 1 }} />
+        <Grid style={{ flex: 1 }} />
       )}
       <TimeIntervalToolbarWithHook width={width} {...props} />
     </Grid>

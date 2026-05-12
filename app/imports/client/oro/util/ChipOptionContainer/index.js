@@ -101,7 +101,7 @@ const ChipOptionContainer = ({ handleFilterDelete, toggleShowingOptions, activeF
         onClick={toggleShowingOptions}
         className={classes.controlChipContainer}
       >
-        <Grid item className={classes.chipSubContainer}>
+        <Grid className={classes.chipSubContainer}>
           {activeFilters && activeFilters.map(filter => (
             WrapWithTooltip(filter.tooltip, (
               <Chip
@@ -128,7 +128,7 @@ const ChipOptionContainer = ({ handleFilterDelete, toggleShowingOptions, activeF
           { [classes.controlOptionButtonTop]: containerWidth }
         )}
       >
-        <Grid item>
+        <Grid>
           <Button
             title="Toggle options"
             data-test="control-options-toggle"

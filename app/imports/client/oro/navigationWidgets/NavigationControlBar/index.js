@@ -23,7 +23,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Meteor } from 'meteor/meteor';
-import { withTracker } from 'meteor/react-meteor-data';
+import { useTracker } from 'meteor/react-meteor-data';
 // ORO modules
 import Lock from '../../robotWidgets/Lock';
 import RobotSearch from '../../util/RobotSearch';
@@ -48,30 +48,30 @@ NavigationControlBar.propTypes = {
 /**
  * Get module configuration for customizations
  */
-const NavigationControlBarContainer = withTracker(({ robotId }) => {
-  if (robotId) {
-    const subHandles = [];
-
-    subHandles.push(Meteor.subscribe('preferences', { keys: ['lock'] }));
+const NavigationControlBarContainer = (props) => {
+  const { robotId } = props;
+  const trackerData = useTracker(() => {
     if (robotId) {
-      subHandles.push(robotId && Meteor.subscribe('robot.details', { robotId }));
-    }
+      const subHandles = [];
 
-    const isLoading = subHandles.some(s => !s.ready());
+      subHandles.push(Meteor.subscribe('preferences', { keys: ['lock'] }));
+      subHandles.push(Meteor.subscribe('robot.details', { robotId }));
 
-    if (isLoading) {
+      const isLoading = subHandles.some(s => !s.ready());
+
+      if (isLoading) {
+        return { isLoading };
+      }
+
+      const robot = Robots.findOne({ _id: robotId });
       return {
-        isLoading
+        robotId,
+        robot,
       };
     }
-
-    const robot = robotId && Robots.findOne({ _id: robotId });
-    return {
-      robotId,
-      robot,
-    };
-  }
-  return {};
-})(NavigationControlBar);
+    return {};
+  }, [robotId]);
+  return <NavigationControlBar {...props} {...trackerData} />;
+};
 
 export default NavigationControlBarContainer;

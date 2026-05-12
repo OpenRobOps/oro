@@ -22,7 +22,7 @@
  */
 import React from 'react';
 import { Meteor } from 'meteor/meteor';
-import { withTracker } from 'meteor/react-meteor-data';
+import { useTracker } from 'meteor/react-meteor-data';
 // ORO modules
 import { Preferences, Robots } from '../../../../lib/collections';
 import { ACTION_TYPES, ActionDefinitions, createInternalActionId } from '../../../../lib/actions';
@@ -54,32 +54,33 @@ const RobotControlBar = props => (
 /**
  * Get module configuration for customizations
  */
-const RobotControlBarContainer = withTracker(({ robotId }) => {
-  const robotHandle = robotId && Meteor.subscribe('robot.details', { robotId });
-  Meteor.subscribe('actions.config');
-  const isLoading = robotId && !robotHandle.ready();
+const RobotControlBarContainer = (props) => {
+  const { robotId } = props;
+  const trackerData = useTracker(() => {
+    const robotHandle = robotId && Meteor.subscribe('robot.details', { robotId });
+    Meteor.subscribe('actions.config');
+    const isLoading = robotId && !robotHandle.ready();
 
-  const actionsConfig = {}// new ConfigManager(ActionDefinitions).getEntityConfig(companyEntity);
-  const restartAndUpdateActionsConfig = actionsConfig && {
-    [RESTART_AGENT_ACTION_ID]: actionsConfig[RESTART_AGENT_ACTION_ID],
-    [UPDATE_AGENT_ACTION_ID]: actionsConfig[UPDATE_AGENT_ACTION_ID]
-  };
+    const actionsConfig = {}; // new ConfigManager(ActionDefinitions).getEntityConfig(companyEntity);
+    const restartAndUpdateActionsConfig = actionsConfig && {
+      [RESTART_AGENT_ACTION_ID]: actionsConfig[RESTART_AGENT_ACTION_ID],
+      [UPDATE_AGENT_ACTION_ID]: actionsConfig[UPDATE_AGENT_ACTION_ID]
+    };
 
-  // Determine if Lock is enabled for this company
-  const prefs = { lock: {} } ; //new ConfigManager(Preferences).getEntityConfig({
-    // ...companyEntity,
-  //   fields: ['lock']
-  // });
-  const lockConfig = prefs?.lock;
-  const robot = robotId && Robots.findOne({ _id: robotId });
+    // Determine if Lock is enabled for this company
+    const prefs = { lock: {} }; // new ConfigManager(Preferences).getEntityConfig({...});
+    const lockConfig = prefs?.lock;
+    const robot = robotId && Robots.findOne({ _id: robotId });
 
-  return {
-    isLoading,
-    robotId,
-    lockConfig,
-    restartAndUpdateActionsConfig,
-    robot
-  };
-})(RobotControlBar);
+    return {
+      isLoading,
+      robotId,
+      lockConfig,
+      restartAndUpdateActionsConfig,
+      robot
+    };
+  }, [robotId]);
+  return <RobotControlBar {...props} {...trackerData} />;
+};
 
 export default RobotControlBarContainer;

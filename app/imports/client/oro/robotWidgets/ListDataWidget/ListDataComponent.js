@@ -56,7 +56,13 @@ const ListDataComponent = ({
         </TableHead>
         <StyledTableBody>
           {isEmpty(dataSources) || isLoading
-            ? <NoDataIcon />
+            ? (
+              <StyledTableRow>
+                <StyledTableCell colSpan="2" style={{ border: 'none' }}>
+                  <NoDataIcon />
+                </StyledTableCell>
+              </StyledTableRow>
+            )
             : dataSources.map((attributeDefinition) => {
               const { label = '' } = attributeDefinition || {};
               return (

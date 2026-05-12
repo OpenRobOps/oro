@@ -30,7 +30,7 @@
  * visually to the user.
  */
 import { Meteor } from 'meteor/meteor';
-import { withTracker } from 'meteor/react-meteor-data';
+import { useTracker } from 'meteor/react-meteor-data';
 import React from 'react';
 import PropTypes from 'prop-types';
 // ORO imports
@@ -68,17 +68,20 @@ ActionsFeedback.propTypes = {
   updateCallback: PropTypes.func
 };
 
-const ActionsFeedbackContainer = withTracker(({ robotId, executionId, executionTs }) => {
-  Meteor.subscribe('actions.feedback', { robotId, executionId, executionTs });
-  const update = RobotCustomScript.findOne({
-    robotId,
-    // TODO rename 'fileName' collection field to 'executionId'
-    fileName: executionId,
-    // NOTE serverTime is a Date field but executionTs is a number (epoch)
-    serverTime: { $gte: new Date(executionTs) }
-  });
-  return { update };
-})(ActionsFeedback);
+const ActionsFeedbackContainer = (props) => {
+  const { robotId, executionId, executionTs } = props;
+  const update = useTracker(() => {
+    Meteor.subscribe('actions.feedback', { robotId, executionId, executionTs });
+    return RobotCustomScript.findOne({
+      robotId,
+      // TODO rename 'fileName' collection field to 'executionId'
+      fileName: executionId,
+      // NOTE serverTime is a Date field but executionTs is a number (epoch)
+      serverTime: { $gte: new Date(executionTs) }
+    });
+  }, [robotId, executionId, executionTs]);
+  return <ActionsFeedback {...props} update={update} />;
+};
 
 ActionsFeedbackContainer.propTypes = {
   robotId: PropTypes.string,

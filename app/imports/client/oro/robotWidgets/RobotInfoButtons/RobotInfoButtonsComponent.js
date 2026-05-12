@@ -29,7 +29,7 @@ import {
   Cancel, Refresh, Update
 } from '@mui/icons-material';
 import { Navigation, Settings } from 'lucide-react';
-import { withTracker } from 'meteor/react-meteor-data';
+import { useTracker } from 'meteor/react-meteor-data';
 import moment from 'moment';
 // ORO modules
 import { ID_TYPE_ROBOT } from '../../../../shared/constants';
@@ -433,19 +433,23 @@ RobotInfoButtons.propTypes = {
   isRobotLoading: PropTypes.bool
 };
 
-const RobotInfoButtonsContainer = withTracker(({ robotId }) => {
-  if (robotId) {
-    const robotHandle = Meteor.subscribe('robot.details', { robotId });
-    const robot = Robots.findOne({ _id: robotId });
-    const offline = robot && robot.status && !robot.status.agentOnline;
-    return {
-      isRobotLoading: !robotHandle.ready(),
-      offline,
-      updateStamp: robot && robot.updateStamp
-    };
-  }
-  // TODO Clara: Replace isZeroData to noRobotSelected (related to withZeroDataCheck)
-  return { isZeroData: true };
-})(RobotInfoButtons);
+const RobotInfoButtonsContainer = (props) => {
+  const { robotId } = props;
+  const trackerData = useTracker(() => {
+    if (robotId) {
+      const robotHandle = Meteor.subscribe('robot.details', { robotId });
+      const robot = Robots.findOne({ _id: robotId });
+      const offline = robot && robot.status && !robot.status.agentOnline;
+      return {
+        isRobotLoading: !robotHandle.ready(),
+        offline,
+        updateStamp: robot && robot.updateStamp
+      };
+    }
+    // TODO Clara: Replace isZeroData to noRobotSelected (related to withZeroDataCheck)
+    return { isZeroData: true };
+  }, [robotId]);
+  return <RobotInfoButtons {...props} {...trackerData} />;
+};
 
 export default legacyWithNavigate(legacyWithStyles(RobotInfoButtonsContainer, styles, { withTheme: true }));

@@ -199,7 +199,7 @@ const FleetControlWidgetComponent = ({
     <Grid container className={classes.fleetControlContainer}>
       <Grid container className={classes.fleetControl}>
         {/* Left group: active filter chips + Options + New Robot */}
-        <Grid item className={classes.leftGroup}>
+        <Grid className={classes.leftGroup}>
           {/* Sort by chip: always shown */}
           <div
             className={classes.filterChip}
@@ -241,7 +241,7 @@ const FleetControlWidgetComponent = ({
           </Button>
         </Grid>
         {/* Right group: settings icon */}
-        <Grid item>
+        <Grid>
           <Settings className={classes.settingsIcon} onClick={toggleShowingOptions} />
         </Grid>
       </Grid>

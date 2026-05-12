@@ -468,7 +468,6 @@ const TimelineComponent = ({
     return (
       <Grid
         container
-        item
         xs
         justifyContent="center"
         alignItems="center"
@@ -484,15 +483,13 @@ const TimelineComponent = ({
   return (
     <div className={classes.container}>
       {isLoading && (
-        <Grid item xs className={classes.loading}>
+        <Grid className={classes.loading}>
           <CircularProgress size="20px" />
         </Grid>
       )}
       { showError && (
         <Grid
           container
-          item
-          xs
           justifyContent="center"
           alignItems="center"
           className={isLoading ? classes.fadeOut : classes.error}

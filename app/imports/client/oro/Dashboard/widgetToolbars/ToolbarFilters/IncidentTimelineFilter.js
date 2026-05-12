@@ -51,15 +51,15 @@ const IncidentTimelineFilter = (props) => {
         timeRangeMs={timeRangeMs}
         setStartTime={setStartTime}
       />
-      <Grid item className={classes.itemContainer}>
+      <Grid className={classes.itemContainer}>
         {/* eslint-disable-next-line react/jsx-props-no-spreading */}
         <SeverityFilter {...props} />
       </Grid>
-      <Grid item className={classes.itemContainer}>
+      <Grid className={classes.itemContainer}>
         {/* eslint-disable-next-line react/jsx-props-no-spreading */}
         <IncidentComponentFilter {...props} />
       </Grid>
-      <Grid item className={classes.itemContainer}>
+      <Grid className={classes.itemContainer}>
         {/* eslint-disable-next-line react/jsx-props-no-spreading */}
         <TimeIntervalToolbar {...props} />
       </Grid>

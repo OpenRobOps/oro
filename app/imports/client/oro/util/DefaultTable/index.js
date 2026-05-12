@@ -25,6 +25,7 @@
  *            (not scrolling), and size: 'small' to have the same padding on all the cells
  */
 
+import React from 'react';
 import {
   TableRow,
   TableBody,
@@ -32,8 +33,9 @@ import {
   TableContainer,
 } from '@mui/material';
 
-const StyledTableContainer = (props) => (
+const StyledTableContainer = React.forwardRef(({ sx, ...props }, ref) => (
   <TableContainer
+    ref={ref}
     {...props}
     sx={{
       maxHeight: '100%',
@@ -42,15 +44,17 @@ const StyledTableContainer = (props) => (
         tableLayout: 'fixed',
         width: '100%',
       },
-      ...props.sx,
+      ...sx,
     }}
   />
-);
+));
+StyledTableContainer.displayName = 'StyledTableContainer';
 
 const StyledTableBody = TableBody;
 
-const StyledTableCell = ({ width, sx, ...props }) => (
+const StyledTableCell = React.forwardRef(({ width, sx, ...props }, ref) => (
   <TableCell
+    ref={ref}
     {...props}
     sx={(theme) => ({
       width: width || '20%',
@@ -67,7 +71,8 @@ const StyledTableCell = ({ width, sx, ...props }) => (
       ...(typeof sx === 'function' ? sx(theme) : sx),
     })}
   />
-);
+));
+StyledTableCell.displayName = 'StyledTableCell';
 
 const StyledTableRow = TableRow;
 
