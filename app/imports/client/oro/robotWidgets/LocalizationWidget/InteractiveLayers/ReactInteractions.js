@@ -139,8 +139,10 @@ const TranslateRotateComponent = ({
     // Add layer and interactions to the map
     map.addLayer(layer);
     layer.setZIndex(1000);
-    // The order of the interactions is important: the last one will be triggered first
-    map.getInteractions().extend([rotate, translate]);
+    // The order of the interactions is important: the last one will be triggered first.
+    // Rotate must fire before translate so that clicking on rotate handles (arrow, arcs)
+    // is not stolen by translate when pin pixels overlap below the rotate handle.
+    map.getInteractions().extend([translate, rotate]);
 
     // clean up the component once unmounted
     return () => {

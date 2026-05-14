@@ -27,11 +27,11 @@
 import React, { useMemo, useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { makeStyles } from 'tss-react/mui';
-import { get } from 'lodash';
 import Layers from './Map/Layers';
 import MapImageLayer from './Map/MapImageLayer';
 import MapNavsatLayer from './Map/MapNavsatLayer';
 import RobotLayer from './RobotLayers/RobotLayer';
+import InteractionPicker from './InteractiveLayers/InteractionPicker';
 import { useLocalizationWidget } from '../../contexts/LocalizationWidgetContext/LocalizationWidgetContext';
 import { LOCALIZATION_MAP_TYPES } from '../../../../shared/constants';
 import {
@@ -226,7 +226,12 @@ function Localization({
             selected={selectedRobotId == rId}
           />
         ))}
-
+        {variant !== LOCALIZATION_VARIANTS.MAP_WIDGET && (
+          <InteractionPicker
+            robotLocalizationData={selectedRobotLocalizationData}
+            uiPreferences={robotsUiPreferences[selectedRobotId]}
+          />
+        )}
       </Layers>
     </MapComponent>
   );

@@ -118,15 +118,16 @@ const NavigationDetailComponent = (props) => {
     || activeInteraction === INTERACTION_MODES.RELOCALIZE_MODE
   );
 
-  const activeInteractionBorder = {
-    [classes.teleopActiveBorder]: teleopMode,
-    [classes.waypointNavActiveBorder]: waypointNavMode,
-  };
-
-  const activeInteractionBackground = {
-    [classes.teleopActiveBackground]: teleopMode && !isFullscreen,
-    [classes.waypointNavActiveBackground]: waypointNavMode && !isFullscreen,
-  };
+  const { activeInteractionBorder, activeInteractionBackground } = useMemo(() => ({
+    activeInteractionBorder: {
+      [classes.teleopActiveBorder]: teleopMode,
+      [classes.waypointNavActiveBorder]: waypointNavMode,
+    },
+    activeInteractionBackground: {
+      [classes.teleopActiveBackground]: teleopMode && !isFullscreen,
+      [classes.waypointNavActiveBackground]: waypointNavMode && !isFullscreen,
+    },
+  }), [teleopMode, waypointNavMode, isFullscreen]);
 
   const rowHeight = useMemo(() => getRowHeight(containerSize), [containerSize]);
 

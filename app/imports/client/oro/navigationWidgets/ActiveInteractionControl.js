@@ -32,6 +32,7 @@ import ZoomInIcon from '../graphics/op/ZoomInIcon/ZoomInIcon';
 import ZoomOutIcon from '../graphics/op/ZoomOutIcon/ZoomOutIcon';
 import LocalizeIcon from '../graphics/op/LocalizeIcon/LocalizeIcon';
 import RetroPadIcon from '../graphics/op/RetroPadIcon/RetroPadIcon';
+import LocPinIcon from '../graphics/op/LocPinIcon/LocPinIcon';
 import ConfirmIcon from '../graphics/op/ConfirmIcon';
 // ORO imports
 import { useActiveInteraction } from '../contexts/ActiveInteractionContext';
@@ -39,6 +40,7 @@ import { useDarkModeContext } from '../contexts/DarkModeContext';
 import { useLocalizationWidget } from '../contexts/LocalizationWidgetContext';
 import CancelNavToGoalButton from './CancelNavToGoalButton';
 import {
+  NAVIGATE_MODE,
   RELOCALIZE_MODE,
   TELEOP_MODE,
 } from './interactions';
@@ -168,6 +170,7 @@ const ActiveInteractionControl = ({
 
   const isRelocalizeActive = activeInteraction === RELOCALIZE_MODE;
   const isTeleopActive = activeInteraction === TELEOP_MODE;
+  const isNavigationActive = activeInteraction === NAVIGATE_MODE;
   const isAnyActionActive = Boolean(activeInteraction);
 
   const handleResetZoom = useCallback(() => reset?.(), [reset]);
@@ -175,6 +178,7 @@ const ActiveInteractionControl = ({
   const handleDecreaseZoom = useCallback(() => decreaseZoom?.(), [decreaseZoom]);
   const handleTeleop = useCallback(() => setActiveInteraction(isTeleopActive ? null : TELEOP_MODE), [isTeleopActive, setActiveInteraction]);
   const handleRelocalize = useCallback(() => setActiveInteraction(isRelocalizeActive ? null : RELOCALIZE_MODE), [isRelocalizeActive, setActiveInteraction]);
+  const handleNavigation = useCallback(() => setActiveInteraction(isNavigationActive ? null : NAVIGATE_MODE), [isNavigationActive, setActiveInteraction]);
   const handleConfirm = useCallback(() => executeInteraction(), [executeInteraction]);
 
   const offlineMsg = !isZeroData && robotOffline ? 'Robot offline' : undefined;
@@ -200,6 +204,11 @@ const ActiveInteractionControl = ({
         {isPanelVisibleFn(KEY_TELEOP) && (
           <NavButton tooltip={offlineMsg || 'Relocalize'} onClick={handleRelocalize} disabled={robotOffline && isZeroData} active={isRelocalizeActive}>
             <LocalizeIcon />
+          </NavButton>
+        )}
+        {isPanelVisibleFn(KEY_TELEOP) && (
+          <NavButton tooltip={offlineMsg || 'Waypoint Teleop'} onClick={handleNavigation} disabled={robotOffline && isZeroData} active={isNavigationActive}>
+            <LocPinIcon />
           </NavButton>
         )}
         {isPanelVisibleFn(KEY_TELEOP) && (

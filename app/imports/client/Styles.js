@@ -43,7 +43,7 @@ const theme = createTheme({
             // is going to make 6px the total width of the scrollbar:
             // 12px - 3px right border - 3px left border
             // also it's going to create a space of 3px in the top and the bottom of the scrollbar
-            border: '3px solid rgba(0, 0, 0, 0)',
+            border: '3px solid #00000000',
             backgroundClip: 'padding-box'
           }
         }
@@ -298,7 +298,8 @@ const theme = createTheme({
       wayPoint: '#006B00',
       completedPath: '#2A3C98',
       openTeleop: '#F05523',
-      waypointAvatar: 'transparent'
+      waypointAvatar: 'transparent',
+      waypointAvatarFill: '#2A3C9859'
     },
     severityColor: {
       'SEV 0': '#700893',
@@ -316,9 +317,9 @@ const theme = createTheme({
       lightBeige: '#E5C494'
     },
     shadowColor: {
-      gray: 'rgba(0, 0, 0, 0.5)',
-      white: 'rgba(250, 240, 240, 0.1)',
-      darkGrayWithOpacity: 'rgba(14, 9, 24, 0.3)'
+      gray: '#00000080',
+      white: '#FAF0F01A',
+      darkGrayWithOpacity: '#0E09184D'
     },
     teleopArrows: {
       darkBackground: '#2B2B2B',
