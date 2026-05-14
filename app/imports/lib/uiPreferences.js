@@ -70,16 +70,16 @@ const NAVIGATION_DETAIL_LAYOUT_DEFAULTS = {
 const WIDGET_TYPES = {
   CHART: 'chart',
   // CUSTOM_COMMANDS: 'customCommands',
-  // ROS_DIAGNOSTICS: 'diagnostics',
+  ROS_DIAGNOSTICS: 'diagnostics',
   VITALS: 'vitals',
   // DATA_BAGS: 'dataBags',
-  // LOCALIZATION: 'localization',
+  LOCALIZATION: 'localization',
   KEY_VALUES: 'keyValues',
-  // CUSTOM_DATA: 'customData',
-  // LOGS: 'logsWidget',
+  CUSTOM_DATA: 'customData',
+  LOGS: 'logsWidget',
   ACTIONS: 'actionsWidget',
   // CAMERA: 'cameraWidget',
-  // AUDIT_LOG: 'auditLog',
+  AUDIT_LOG: 'auditLog',
   LIST_DATA: 'listData',
   TEXT: 'text'
 };

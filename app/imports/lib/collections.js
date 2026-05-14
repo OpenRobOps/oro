@@ -67,12 +67,11 @@ if (Meteor.isServer) {
 }
 
 const RobotDiagnostics = new Mongo.Collection(COLLECTIONS.DIAGNOSTICS);
-// TODO (Pisti2010): Review and finish robotDiagnostics schema (below),
+// TODO: Review and finish robotDiagnostics schema (below),
 // Schemas.robotDiagnostics = new SimpleSchema({
-//   _id: String,
-//   robotId: String,
-//   stamp: String,
-//   statusList: String, // TODO (Pisti2010): change into nested schema
+//   _id: String, // robotId
+//   ts: Number,
+//   statusList:  ...
 // });
 
 // A collection to hold the latest vitals information for a

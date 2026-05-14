@@ -87,10 +87,10 @@ export default class CustomCommandsModule {
       existingExecutionDoc?.reportResultToId || robotId;
 
     // Update/Create the custom script document
-    // TODO(FlorGrosso): Check if ts of the message received is higher than the last update stored
+    // TODO: Check if ts of the message received is higher than the last update stored
     // in the database. If it's not, do not override the current document.
     // Overwriting behaviour was observed while testing
-    // TODO(adamantivm): Rename fileName to executionId. https://inorbit.atlassian.net/browse/IO-582
+    // TODO: Rename fileName to executionId. https://inorbit.atlassian.net/browse/IO-582
     await this.customScript.updateOne(
       { fileName: executionId, robotId: feedbackRecipientRobotId },
       {

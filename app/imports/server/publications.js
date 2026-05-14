@@ -22,6 +22,8 @@ import OroRoles from '../server/roles';
 import { ACCESS_LEVEL_VIEW } from '../shared/roles';
 import { queryIncidentsForRobots } from '../lib/alerts';
 import { Robots, RobotKeyValues, RobotCustomData, RobotLocalization, SpatialAnnotations } from '../lib/collections';
+import { RobotDiagnostics } from '../lib/collections';
+import AgentManager from './agentManager';
 
 /**
  * Publish localization data (pose, map metadata + URL) for one or more robots.
@@ -218,4 +220,21 @@ Meteor.publish('robot.details', async function ({ robotId, robotIds }) {
   } else {
     return Robots.find({ _id: { $in: robotIds } });
   }
+});
+
+
+// Publish the latest diagnostics entry
+Meteor.publish('diagnostics', async function ({ robotId }) {
+  // Verify the logged-in user has access to this robot
+  if (!await new OroRoles().canAccessRobot(this.userId, robotId, ACCESS_LEVEL_VIEW)) {
+    console.warn(`Unauthorized (diagnostics): userId: ${this.userId}, robotId: ${robotId}`);
+    return this.error(new Meteor.Error('Unauthorized'));
+  }
+  // Inform we need diagnostics for this robot
+  const runLevel = 5;
+  await new AgentManager().requestMore(robotId, 'RosDiagnosticsAgentlet', runLevel);
+  this.onStop(async () => {
+    await new AgentManager().requestLess(robotId, 'RosDiagnosticsAgentlet', runLevel);
+  });
+  return RobotDiagnostics.find({ _id: robotId });
 });
