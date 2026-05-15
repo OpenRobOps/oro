@@ -17,9 +17,7 @@
 /**
  * Util functions
  */
-import { isObject, isArray, isString, isBoolean, isNumber, isEqual, isEmpty } from 'lodash';
-import moment from 'moment';
-import convert from 'convert-units';
+import { isObject, isArray, isString, isBoolean, isNumber } from 'lodash';
 
 /**
  * Replaces the password part of an URI by '...' for safer printing.

@@ -21,9 +21,7 @@
  *
  * NOTE On the agent side, this is implemented inside the localization agentlet
  */
-import { Meteor } from 'meteor/meteor';
 import { loadSync } from 'protobufjs';
-// TODO(adamantivm) Figure out how to import Meteor Assets
 // ORO modules
 // import RttManager from '../rttManager';
 import InOrbitMqtt from '../mqtt';
@@ -49,7 +47,7 @@ export default class Navigation2DModule {
    *            [{ x, y, theta }, { x, y, theta }, ...]
    */
   sendGoalPath = ({ robotId, frame, tsHint, waypoints }) => {
-    // TODO(adamantivm) Validate the message is appropriate before sending
+    // TODO Validate the message is appropriate before sending
 
     // Compose message
     const msg = {

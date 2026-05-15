@@ -41,7 +41,7 @@ import { WIDGET_TYPES, WIDGET_TYPES_IDS } from '../../../lib/uiPreferences';
 import NavigationDetail from '../navigationWidgets/NavigationDetail';
 import TimelineWidget from '../robotWidgets/TimelineWidget';
 import VitalsWidget from '../robotWidgets/VitalsWidget';
-// import DiagnosticsWidget from '../robotWidgets/DiagnosticsWidget';
+import DiagnosticsWidget from '../robotWidgets/DiagnosticsWidget';
 // import DataBagWidget from '../robotWidgets/DataBagWidget';
 // import LogsWidget from '../robotWidgets/LogsWidget';
 // import CameraView from '../robotWidgets/CameraView';
@@ -75,7 +75,7 @@ import {
 import FleetControlWidget from '../fleetWidgets/FleetControlWidget';
 import FleetStatusWidget from '../fleetWidgets/FleetStatusWidget';
 import RobotControlBar from '../robotWidgets/RobotControlBar';
-// import ROSDiagnosticsFilter from './widgetToolbars/ToolbarFilters/ROSDiagnosticsFilter';
+import ROSDiagnosticsFilter from './widgetToolbars/ToolbarFilters/ROSDiagnosticsFilter';
 // import MissionToolbar from './widgetToolbars/MissionToolbar';
 import NavigationControlBar from '../navigationWidgets/NavigationControlBar';
 // import AISummaryToolbar from './widgetToolbars/AISummaryToolbar';
@@ -426,15 +426,14 @@ const TOOLBAR_FACTORY = {
       )}
     </NowTimeContext.Consumer>
   ),
-  // [WIDGET_TYPES.ROS_DIAGNOSTICS]: ({ context, setContext, scope, isZeroData }) => (
-  //   <ROSDiagnosticsFilter
-  //     robotId={getRobotId(context, scope)}
-  //     isZeroData={isZeroData}
-  //     selectedRosDiagnosticsLevel={getRosDiagnosticsLevel(context, scope)}
-  //     setRosDiagnosticsLevel={setRosDiagnosticsLevel(setContext, scope)}
-  //     alwaysLive
-  //   />
-  // ),
+  [WIDGET_TYPES.ROS_DIAGNOSTICS]: ({ context, setContext, scope, isZeroData }) => (
+    <ROSDiagnosticsFilter
+      robotId={getRobotId(context, scope)}
+      selectedRosDiagnosticsLevel={getRosDiagnosticsLevel(context, scope)}
+      setRosDiagnosticsLevel={setRosDiagnosticsLevel(setContext, scope)}
+      alwaysLive
+    />
+  ),
   // [WIDGET_TYPES_IDS.LOGS]: ({ context, setContext, scope }) => (
   //   <VerbosityLevelFilter
   //     robotId={getRobotId(context, scope)}
@@ -699,14 +698,16 @@ const WIDGET_FACTORY = {
   //   />
   // ),
 
-  // [WIDGET_TYPES.ROS_DIAGNOSTICS]: ({ context, setContext, scope, isZeroData }) => (
-  //   <DiagnosticsWidget
-  //     robotId={getRobotId(context, scope)}
-  //     selectedRosDiagnosticsLevel={getRosDiagnosticsLevel(context, scope)}
-  //     setRosDiagnosticsLevel={setRosDiagnosticsLevel(setContext, scope)}
-  //     isZeroData={isZeroData}
-  //   />
-  // ),
+  [WIDGET_TYPES.ROS_DIAGNOSTICS]: ({ context, setContext, scope, isZeroData }) => (
+    <div data-test="x">
+    <DiagnosticsWidget
+      robotId={getRobotId(context, scope)}
+      selectedRosDiagnosticsLevel={getRosDiagnosticsLevel(context, scope)}
+      setRosDiagnosticsLevel={setRosDiagnosticsLevel(setContext, scope)}
+      isZeroData={isZeroData}
+    />
+    </div>
+  ),
 
   // [WIDGET_TYPES.DATA_BAGS]: ({ context, scope, isZeroData }) => (
   //   <NowTimeContext.Consumer>

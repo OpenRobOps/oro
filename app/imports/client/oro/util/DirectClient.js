@@ -21,7 +21,7 @@
  * Uses reference counting: grab an instance via `Mqtt.grabInstance(robotId)`,
  * and call `.release()` when done so the connection can be cleaned up.
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import objectHash from 'object-hash';
 import { isObject, isArray, isEmpty, isString, flatMap } from 'lodash';
 import mqtt from 'mqtt';
@@ -453,7 +453,7 @@ const useDirectClientMulti = ({ robotIds, subtopic, typeString, decodeFunc }) =>
           // but do not decode it, pass it just as received it
           decodedMsg = msg.toString();
         }
-        const update = decodeFunc(decodedMsg);
+        const update = decodeFunc(decodedMsg, robotId);
         if (!update) {
           // Ignore - filtered out by the decodeFunc
         } else if (!isObject(update) || isArray(update)) {
@@ -495,12 +495,12 @@ const useDirectClientMulti = ({ robotIds, subtopic, typeString, decodeFunc }) =>
 };
 
 /**
- * Hook stub — subscribes to a single MQTT topic for a single robot.
- * Returns null until MQTT is implemented.
+ * Simpler version for useDirectClientMulti, subscribing to a single robot.
  */
-export const useDirectClient = (_config) => {
-  console.error("useDirectClient NOT IMPLEMENTED (use useDirectClientMulti instead)", _config);
-  return null;
+export const useDirectClient = ({ robotId, subtopic, typeString, decodeFunc }) => {
+  const robotIds = useMemo(() => ([robotId]), [robotId]); // avoid re-renders
+  const directData = useDirectClientMulti({ robotIds, subtopic, typeString, decodeFunc });
+  return directData?.[robotId];
 };
 
 export const withDirectClient = (WrappedComponent, _config) => {
