@@ -151,8 +151,6 @@ const NavigationDetailComponent = (props) => {
           breakpoints={LAYOUT_BREAKPOINTS}
           cols={LAYOUT_COLUMNS}
           rowHeight={rowHeight}
-          isDraggable={false}
-          isResizable={false}
           isBounded
         >
           <div key={KEY_BACKGROUND}>
@@ -181,8 +179,6 @@ const NavigationDetailComponent = (props) => {
           layouts={layout}
           cols={LAYOUT_COLUMNS}
           compactType={null}
-          isDraggable={false}
-          isResizable={false}
           isBounded
         >
           <div key={KEY_CAMERA} className={classnames(classes.containerDiv)}>

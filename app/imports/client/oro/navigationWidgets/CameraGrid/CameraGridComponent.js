@@ -138,8 +138,6 @@ const CameraGridComponent = (props) => {
       {cameraGridSize && cameraLayout && (
         <RGL
           layout={cameraLayout}
-          isDraggable={false}
-          isResizable={false}
           items={cameras.length}
           cols={RESPONSIVE_COLUMNS}
           rowHeight={rowHeight}

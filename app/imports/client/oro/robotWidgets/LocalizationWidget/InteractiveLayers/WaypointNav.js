@@ -45,9 +45,9 @@ const createPoseFeatures = ({ posePreferences = {} }) => {
   const { radius, scale } = posePreferences;
   const features = [
     createArrowFeature({
-      color: theme.palette.teleop.waypointAvatarFill,
-      radius,
+      color: theme.palette.teleop.waypointAvatar,
       selected: true,
+      radius,
       zIndex: 100
     }),
     ...createRotateIndicatorFeatures({

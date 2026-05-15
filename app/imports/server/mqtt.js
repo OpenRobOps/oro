@@ -28,6 +28,8 @@ import { AsyncCache } from '../shared/simpleCache';
 import { cleanNulls } from '../lib/util';
 import { MqttLogins } from './collections';
 import { Robots, RobotVitals } from '../lib/collections';
+import OroRoles from './roles';
+import { ACCESS_LEVEL_OPERATE } from '../shared/roles';
 
 // Databags update topics. Same as in ingest/databags.js
 const MQTT_ROSBAG_UPLOAD_TOPIC = 'ros/rosbag/upload';
@@ -147,9 +149,40 @@ export default class OroMqtt {
     if (instance === undefined) {
       instance = this;
       this.init(logging);
+      Meteor.methods({
+        'robot.teleopStep': this._meteorTeleopStep,
+        'robot.continuousGoTeleop': this._meteorContinuousGoTeleop,
+      });
     }
     // eslint-disable-next-line no-constructor-return
     return instance;
+  }
+
+  /**
+   * Meteor method: send a single step teleop command (forward/backward/rotate)
+   * to the robot's agent over MQTT. Used by the arrow buttons in NavigationDetail.
+   */
+  async _meteorTeleopStep({ robotId, direction, tsHint }) {
+    if (!await new OroRoles().canAccessRobot(this.userId, robotId, ACCESS_LEVEL_OPERATE)) {
+      throw new Meteor.Error('User not authorized to tele-operate robot');
+    }
+    this.unblock();
+    await new OroMqtt().teleopStep({ robotId, direction, tsHint });
+  }
+
+  /**
+   * Meteor method: send a continuous-go teleop command (joystick) to the robot
+   * over MQTT. The client currently publishes directly via MqttWrapper, but this
+   * method is exposed for server-side fallbacks and parity with the agent API.
+   */
+  async _meteorContinuousGoTeleop({ robotId, linearVelocity, angularVelocity, tsHint }) {
+    if (!await new OroRoles().canAccessRobot(this.userId, robotId, ACCESS_LEVEL_OPERATE)) {
+      throw new Meteor.Error('User not authorized to tele-operate robot');
+    }
+    this.unblock();
+    await new OroMqtt().continuousGoTeleop({
+      robotId, linearVelocity, angularVelocity, tsHint
+    });
   }
 
   /**

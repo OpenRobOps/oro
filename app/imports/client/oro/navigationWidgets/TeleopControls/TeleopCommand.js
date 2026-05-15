@@ -20,10 +20,10 @@
  * Direct teleop via MQTT is always used (doMqttGo path only).
  */
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { throttle } from 'lodash';
+import { Meteor } from 'meteor/meteor';
+import { throttle, isNumber } from 'lodash';
 import PropTypes from 'prop-types';
 // ORO Modules
-import { MqttWrapper } from '../../util/DirectClient';
 import NavigationJoystick from './NavigationJoystick';
 
 // minimal distance joystick must move to trigger robot movement
@@ -42,8 +42,6 @@ const JOYSTICK_MOVEMENT_START = 'move';
 const JOYSTICK_MOVEMENT_ENDED = 'end';
 // time between continuous signals sent to the agent
 const CONTINUOUS_CALL_FREQ = 200; // ms
-// maximum amount of calls by the timer
-const CONTINUITY_SAFETY_THRESHOLD = 2000 / CONTINUOUS_CALL_FREQ; // 2sec of maximum movement time
 
 function TeleopCommand(props) {
   const {
@@ -59,20 +57,7 @@ function TeleopCommand(props) {
   const angularVelocityRef = useRef(0);
   const teleopActiveRef = useRef(false);
   const continuityTimerRef = useRef(null);
-  const continuityCounterRef = useRef(0);
   const timeoutRef = useRef(null);
-  const mqttRef = useRef(null);
-
-  // Grab MQTT instance on mount and release on unmount / robotId change
-  useEffect(() => {
-    mqttRef.current = MqttWrapper.GrabInstance(robotId);
-    return () => {
-      if (mqttRef.current) {
-        mqttRef.current.release();
-        mqttRef.current = null;
-      }
-    };
-  }, [robotId]);
 
   /** Helper function to clear the timer */
   const stopTimer = useCallback(() => {
@@ -94,13 +79,18 @@ function TeleopCommand(props) {
     };
   }, [stopTimer]);
 
-  /**
-   * Teleop send message through MQTT.
-   */
+  // Teleop GO via server-side method. Browser MQTT credentials are subscribe-only,
+  // so publishing must go through the server which holds superuser broker creds.
   const doMqttGo = useCallback(({ tsHint, linearVelocity, angularVelocity }) => {
-    const message = { tsHint, linearVelocity, angularVelocity };
-    mqttRef.current?.publishProtobuf('ros/teleop/go', message, 'TeleopGoCommand');
-  }, []);
+    Meteor.call('robot.continuousGoTeleop', {
+      robotId, tsHint, linearVelocity, angularVelocity
+    }, (error) => {
+      if (error) {
+        onFeedback?.(error.error || 'Error sending teleop go');
+        console.error(error);
+      }
+    });
+  }, [robotId, onFeedback]);
 
   /**
    * Wrapper method to fetch tsHint.
@@ -110,36 +100,22 @@ function TeleopCommand(props) {
     return 0;
   }, [getTsHintProp]);
 
-  /**
-   * Calls to the server to send an MQTT message to move the robot
-   * in a certain direction.
-   * The calledByTimer argument is to determine whether the
-   * method is being called by new movement or by the timer loop.
-   */
+  // Drive the continuous teleop loop. The loop terminates when teleopActiveRef
+  // is set false on the joystick `end` event or on arrow release (stopMove).
   const teleopGoCall = useCallback((calledByTimer = false) => {
-    // SAFETY MEASURE: stop the joystick if it has been called by the timer too many times
-    if (continuityCounterRef.current > CONTINUITY_SAFETY_THRESHOLD) {
-      stopTimer();
-      return;
-    }
-
-    // if not called by the timer, clear any possible timers
     if (!calledByTimer) stopTimer();
     const tsHint = getTsHint();
 
-    // Send teleop message
     doMqttGo({
       tsHint,
       linearVelocity: linearVelocityRef.current,
       angularVelocity: angularVelocityRef.current
     });
-    // only queue if there is no timer defined
     if (!continuityTimerRef.current) {
       continuityTimerRef.current = setTimeout(() => {
         continuityTimerRef.current = null;
         if (teleopActiveRef.current) {
           throttledTeleopCallRef.current(true);
-          continuityCounterRef.current = continuityCounterRef.current + 1;
         }
       }, CONTINUOUS_CALL_FREQ);
     }
@@ -184,30 +160,43 @@ function TeleopCommand(props) {
     timeoutRef.current = setTimeout(() => {
       temporaryDisableControlsEnd();
     }, 2500);
-    // TODO: 'robot.teleopStep' Meteor method is not yet implemented in ORO server.
-    // timestamp when command was sent to the server
-    import('meteor/meteor').then(({ Meteor }) => {
-      Meteor.call('robot.teleopStep', {
-        robotId,
-        tsHint,
-        direction,
-      }, (error) => {
-        if (error) {
-          onFeedback?.(error.error || 'Error sending teleop step');
-          console.error(error.error);
-        }
-      });
+    Meteor.call('robot.teleopStep', {
+      robotId,
+      tsHint,
+      direction,
+    }, (error) => {
+      if (error) {
+        onFeedback?.(error.error || 'Error sending teleop step');
+        console.error(error.error);
+      }
     });
   }, [getTsHint, stepByStep, temporaryDisableControlsStart, temporaryDisableControlsEnd, robotId, onFeedback]);
 
-  /**
-   * Callbacks to use when we are in teleop mode
-   */
-  const teleopCallbacks = {
+  // Continuous arrow handlers: set velocity vector and kick off the MQTT throttle loop.
+  // Used when stepByStep is false so holding an arrow drives ros/teleop/go like the joystick.
+  const startMove = useCallback((linear, angular) => {
+    teleopActiveRef.current = true;
+    linearVelocityRef.current = linear;
+    angularVelocityRef.current = angular;
+    throttledTeleopCallRef.current?.();
+  }, []);
+
+  const stopMove = useCallback(() => {
+    teleopActiveRef.current = false;
+    linearVelocityRef.current = 0;
+    angularVelocityRef.current = 0;
+  }, []);
+
+  const teleopCallbacks = stepByStep ? {
     forwardCallback: () => teleopStepCall(0),
     backwardCallback: () => teleopStepCall(2),
     leftCallback: () => teleopStepCall(1),
     rightCallback: () => teleopStepCall(-1)
+  } : {
+    forwardCallback: () => startMove(1, 0),
+    backwardCallback: () => startMove(-1, 0),
+    leftCallback: () => startMove(0, 1),
+    rightCallback: () => startMove(0, -1)
   };
 
   /**
@@ -216,10 +205,10 @@ function TeleopCommand(props) {
    */
   const handleJoystickMove = useCallback((evt, data) => {
     if (evt.type == JOYSTICK_MOVEMENT_START) {
+      if (!data || !isNumber(data.force)) return;
       // SAFETY MEASURE: Make sure movements are intended by having a min/max displacement check
       if (data.force >= JOYSTICK_MIN_THRESHOLD && data.force < JOYSTICK_MAX_THRESHOLD) {
         teleopActiveRef.current = true;
-        continuityCounterRef.current = 0;
         const force = data.force > 1 ? 1 : data.force;
         const angle = data.angle.radian;
 
@@ -271,6 +260,7 @@ function TeleopCommand(props) {
         leftCallback={leftCallback}
         rightCallback={rightCallback}
         onJoystickMove={handleJoystickMove}
+        onContinuousStop={stepByStep ? undefined : stopMove}
         teleopMode={teleopMode}
         stepwiseMode={stepwiseMode}
         stepByStep={stepByStep}

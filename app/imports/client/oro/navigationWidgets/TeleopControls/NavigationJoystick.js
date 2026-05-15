@@ -98,7 +98,7 @@ const simulateAcceleration = timeStart => Math.floor((Date.now() - timeStart) / 
  * Receives a callback to be executed when the user interacts with the button.
  * Returns event handlers to be passed to the button.
  */
-function useLongPress(callback) {
+function useLongPress(callback, onStop) {
   const [startLongPress, setStartLongPress] = useState(false);
   const [timeoutId, setTimeoutId] = useState();
   const [timeStart, setTimeStart] = useState();
@@ -126,7 +126,8 @@ function useLongPress(callback) {
   const stop = useCallback(() => {
     setStartLongPress(false);
     setTimeStart();
-  }, []);
+    onStop?.();
+  }, [onStop]);
 
   return {
     onMouseDown: start,
@@ -221,7 +222,7 @@ const createJoystickStyle = (joystickUi, props = {}) => {
 
 function NavigationJoystick(props) {
   const {
-    disabled, forwardCallback, backwardCallback, onJoystickMove,
+    disabled, forwardCallback, backwardCallback, onJoystickMove, onContinuousStop,
     leftCallback, rightCallback, stepByStep, teleopMode, stepwiseMode
   } = props;
   const { classes } = useStyles();
@@ -276,10 +277,10 @@ function NavigationJoystick(props) {
   // All four useLongPress hooks are called unconditionally at the component level
   // to comply with the Rules of Hooks.
   // When stepByStep is true, makeEventsToCallbacksObject is used instead.
-  const forwardLongPress = useLongPress(forwardCallback);
-  const leftLongPress = useLongPress(leftCallback);
-  const rightLongPress = useLongPress(rightCallback);
-  const backLongPress = useLongPress(backwardCallback);
+  const forwardLongPress = useLongPress(forwardCallback, onContinuousStop);
+  const leftLongPress = useLongPress(leftCallback, onContinuousStop);
+  const rightLongPress = useLongPress(rightCallback, onContinuousStop);
+  const backLongPress = useLongPress(backwardCallback, onContinuousStop);
 
   const forward = stepByStep ? makeEventsToCallbacksObject(forwardCallback) : forwardLongPress;
   const left = stepByStep ? makeEventsToCallbacksObject(leftCallback) : leftLongPress;
@@ -388,6 +389,7 @@ NavigationJoystick.propTypes = {
   teleopMode: PropTypes.bool,
   stepwiseMode: PropTypes.bool,
   stepByStep: PropTypes.bool,
+  onContinuousStop: PropTypes.func,
   forwardCallback: PropTypes.func,
   leftCallback: PropTypes.func,
   rightCallback: PropTypes.func,
