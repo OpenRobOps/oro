@@ -19,7 +19,8 @@ import { Meteor } from 'meteor/meteor';
 import { isString, isArray } from 'lodash';
 // Oro modules
 import OroRoles from '../server/roles';
-import { ACCESS_LEVEL_VIEW } from '../shared/roles';
+import AgentManager from '../server/agentManager';
+import { ACCESS_LEVEL_VIEW, ACCESS_LEVEL_OPERATE } from '../shared/roles';
 import { queryIncidentsForRobots } from '../lib/alerts';
 import { Robots, RobotKeyValues, RobotCustomData, RobotLocalization, SpatialAnnotations } from '../lib/collections';
 
@@ -218,4 +219,23 @@ Meteor.publish('robot.details', async function ({ robotId, robotIds }) {
   } else {
     return Robots.find({ _id: { $in: robotIds } });
   }
+});
+
+// Published by the teleop UI to load RosTeleopAgentlet on
+// demand. Refcounted via AgentManager.requestMore / requestLess so the module
+// stays loaded while any operator is viewing teleop and unloads when none are.
+Meteor.publish('teleop', async function ({ robotId }) {
+  if (!this.userId) {
+    return this.ready();
+  }
+  if (!await new OroRoles().canAccessRobot(this.userId, robotId, ACCESS_LEVEL_OPERATE)) {
+    console.warn(`Unauthorized (teleop): userId: ${this.userId}, robotId: ${robotId}`);
+    return this.error(new Meteor.Error('Unauthorized'));
+  }
+  const runlevel = 5;
+  await new AgentManager().requestMore(robotId, 'RosTeleopAgentlet', runlevel);
+  this.onStop(async () => {
+    await new AgentManager().requestLess(robotId, 'RosTeleopAgentlet', runlevel);
+  });
+  return this.ready();
 });
