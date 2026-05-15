@@ -44,18 +44,9 @@ const createPoseFeatures = ({ posePreferences = {} }) => {
   const translateFeatures = [];
   const { radius, scale } = posePreferences;
   const features = [
-    createArrowFeature({
-      color: theme.palette.teleop.waypointAvatar,
-      selected: true,
-      radius,
-      zIndex: 100
-    }),
+    createArrowFeature({ color: theme.palette.teleop.waypointAvatar, radius }),
     ...createRotateIndicatorFeatures({
-      color: theme.palette.teleop.waypointAvatar,
-      radius,
-      selected: true,
-      width: 6,
-      zIndex: 100
+      color: theme.palette.teleop.waypointAvatar, radius
     })
   ];
   const polygon = waypointPolygon();
