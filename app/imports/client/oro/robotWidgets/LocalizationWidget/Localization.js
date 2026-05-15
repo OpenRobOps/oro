@@ -229,7 +229,6 @@ function Localization({
         {variant !== LOCALIZATION_VARIANTS.MAP_WIDGET && (
           <InteractionPicker
             robotLocalizationData={selectedRobotLocalizationData}
-            uiPreferences={robotsUiPreferences[selectedRobotId]}
           />
         )}
       </Layers>
