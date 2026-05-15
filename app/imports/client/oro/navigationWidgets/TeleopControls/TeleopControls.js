@@ -58,7 +58,7 @@ function TeleopControls(props) {
   const [gamepadConnected, setGamepadConnected] = useState(false);
 
   // stepByStep defaults to true (safe mode; no preference subscription wired up in ORO)
-  const stepByStep = false;
+  const stepByStep = true;
 
   const onGamepadConnect = useCallback((connected) => {
     setGamepadConnected(connected);
