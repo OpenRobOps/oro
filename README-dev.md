@@ -31,22 +31,24 @@ To configure OAuth mechanisms, create a file `terraform/local.tfvars` with some 
 # smtp_url = "smtp://USER:PASS@SOME_SMTP_SERVER:PORT"
 ```
 
-In `/scripts`, use `generate-settings.sh` to randomize passwords and create settings files (for ingest and appserver).
+In `/scripts`, use `generate-settings.sh` to generate settings files (for ingest and appserver). Secrets are managed by Terraform `random` resources and persist in state across runs, so it is safe to re-run.
 
-Preview with `generate-settings.sh`, then run `generate-settings --apply`.
+ * `generate-settings.sh` — apply the Terraform configuration, preserving existing secrets (default).
+ * `generate-settings.sh --plan` — preview changes without writing files.
+ * `generate-settings.sh --clean` — regenerate all secrets from scratch.
 
-You can check created files `web/app/settings.json` and `ingest/settings.json`; as well as further customize them.
+You can check created files `app/settings.json` and `ingest/settings.json`; as well as further customize them.
 
 ## Run services (manually)
 
-First make sure `npm` packages are installed. This can be done only once (unless you packages are added). Under `/ingest` and `/web/app`, run `npm i`.
+First make sure `npm` packages are installed. This can be done only once (unless you packages are added). Under `/ingest` and `/app`, run `npm i`.
 
 Then to run all services, just run `start-local-env.sh`.
 
 Alternatively, run components manually. Each of these on its own terminal window:
 
  * in `/mqtt`: `docker compose up`
- * in `/web/app`: `./run.sh`. Note: this runs both meteor and a mongodb instance (for now)
+ * in `/app`: `./run.sh`. Note: this runs both meteor and a mongodb instance (for now)
  * in `/ingest`: `./run.sh`
 
 Finally point your browser to http://localhost:3000/
@@ -58,8 +60,8 @@ The following components are run by the previous scripts:
 | Name | Description | Port |
 |------|-------------|------|
 | Mosquitto (MQTT) | MQTT broker; auth via Meteor MongoDB | 1883 (MQTT), 9001 (WebSockets) |
-| Web / App | Meteor app + MongoDB (`./run.sh` in `/web/app`); main UI | 3000 |
-| MongoDB | Database used by Meteor (run via `/web/app` run.sh) | 3001 |
+| Web / App | Meteor app + MongoDB (`./run.sh` in `/app`); main UI | 3000 |
+| MongoDB | Database used by Meteor (run via `/app` run.sh) | 3001 |
 | Ingest | Ingest service (`./run.sh` in `/ingest`); connects to MQTT and MongoDB | — |
 
 ## Instance initial setup

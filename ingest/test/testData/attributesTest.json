@@ -1,0 +1,37 @@
+{
+    "robotId": "robot1",
+    "customDataInput1": {
+        "customField": "0",
+        "pairs": [
+            { "key": "apples", "value": 4 },
+            { "key": "pears", "value": 10 }
+        ]
+    },
+    "customDataInput2": {
+        "customField": "0",
+        "pairs": [
+            { "key": "apples", "value": 4 },
+            { "key": "pears", "value": 10 },
+            { "key": "apples", "value": 3 }
+        ]
+    },
+    "rosMonitoringMappingMock": {
+        "topic/rate": {
+            "usb/camera_raw": "attrCameraRate",
+            "scan": "attrScanRate"
+        },
+        "param/value": {
+            "rosdistro": "attrDistro"
+        },
+        "node/ping": {
+            "rosout": "attrPing"
+        }
+    },
+    "rosMonitoringInput": [
+        { "type": "topic/rate", "key": "usb/camera_raw", "value": 4.5 },
+        { "type": "topic/rate", "key": "scan", "value": 20 },
+        { "type": "topic/rate", "key": "random_topic", "value": 999 },
+        { "type": "param/value", "key": "rosdistro", "value": "noetic" },
+        { "type": "node/ping", "key": "rosout", "value": 1.1 }
+    ]
+}

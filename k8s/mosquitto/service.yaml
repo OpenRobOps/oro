@@ -1,0 +1,34 @@
+# ClusterIP Service for the Mosquitto broker. The oro-app pod reaches it via
+# `mosquitto.oro.svc.cluster.local:1883` (matches METEOR_SETTINGS.mqtt
+# .brokers.local.hostname in the app secret).
+#
+# To expose 9001 (WebSockets) to browsers, front this Service with an Ingress
+# that supports websocket upgrades (or a separate LoadBalancer Service).
+apiVersion: v1
+kind: Service
+metadata:
+  name: mosquitto
+  namespace: oro
+  labels:
+    app.kubernetes.io/name: mosquitto
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: mosquitto
+  ports:
+    - name: mqtt
+      port: 1883
+      targetPort: mqtt
+      protocol: TCP
+    - name: mqtts
+      port: 8883
+      targetPort: mqtts
+      protocol: TCP
+    - name: ws
+      port: 9001
+      targetPort: ws
+      protocol: TCP
+    - name: wss
+      port: 9443
+      targetPort: wss
+      protocol: TCP

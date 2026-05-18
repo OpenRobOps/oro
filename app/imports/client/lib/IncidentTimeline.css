@@ -1,0 +1,168 @@
+/**
+ * Copyright 2026 InOrbit, Inc.
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
+/**
+ * CSS for react-calendar-timeline — Dark Navy theme.
+ * https://www.npmjs.com/package/react-calendar-timeline
+ */
+
+/*
+ * Structural layout rules copied from react-calendar-timeline's style.css.
+ * The 0.30 package declares `"sideEffects": false`, which causes bundlers to
+ * drop `import 'react-calendar-timeline/style.css'`; without these rules the
+ * sidebar and scroll panels render as block elements and stack vertically
+ * instead of side-by-side, throwing all item coordinates out of alignment.
+ */
+.react-calendar-timeline * { box-sizing: border-box; }
+.react-calendar-timeline .rct-outer {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.react-calendar-timeline .rct-scroll {
+  display: inline-block;
+  white-space: normal;
+  vertical-align: top;
+  overflow: hidden;
+  touch-action: none;
+}
+.react-calendar-timeline .rct-sidebar {
+  overflow: hidden;
+  white-space: normal;
+  display: inline-block;
+  vertical-align: top;
+  position: relative;
+  box-sizing: border-box;
+}
+.react-calendar-timeline .rct-sidebar .rct-sidebar-row {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  box-sizing: border-box;
+  margin: 0;
+}
+.react-calendar-timeline .rct-vertical-lines .rct-vl {
+  position: absolute;
+  z-index: 30;
+}
+.react-calendar-timeline .rct-horizontal-lines {
+  user-select: none;
+}
+.react-calendar-timeline .rct-horizontal-lines .rct-hl-even,
+.react-calendar-timeline .rct-horizontal-lines .rct-hl-odd {
+  box-sizing: border-box;
+  z-index: 40;
+}
+.react-calendar-timeline .rct-item:hover { z-index: 88; }
+.react-calendar-timeline .rct-item .rct-item-content {
+  position: sticky;
+  left: 0;
+  overflow: hidden;
+  display: inline-block;
+  border-radius: 2px;
+  padding: 0 6px;
+  height: 100%;
+}
+.react-calendar-timeline .rct-dateHeader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  cursor: pointer;
+  font-size: 14px;
+}
+.react-calendar-timeline .rct-dateHeader-primary { background-color: initial; }
+
+/* Sidebar rows — raised background for robot names */
+#react-target .react-calendar-timeline .rct-sidebar .rct-sidebar-row {
+  padding: 0;
+  border-bottom: 1px solid #3E3155 !important;
+  background: #0E0918 !important;
+}
+
+#react-target .react-calendar-timeline .rct-sidebar .rct-sidebar-row.rct-sidebar-row-odd {
+  background: #0E0918 !important;
+}
+
+#react-target .react-calendar-timeline .rct-sidebar .rct-sidebar-row.rct-sidebar-row-even {
+  background: #0E0918 !important;
+}
+
+/* Weekend vertical lines — same raised bg */
+#react-target .react-calendar-timeline .rct-vertical-lines .rct-vl.rct-day-6,
+#react-target .react-calendar-timeline .rct-vertical-lines .rct-vl.rct-day-0 {
+  background: #0E0918 !important;
+  border-left: 1px solid #3E3155 !important;
+  border-right: 1px solid #3E3155 !important;
+  border-bottom: 1px solid #3E3155 !important;
+}
+
+/* Horizontal lines */
+#react-target .react-calendar-timeline .rct-horizontal-lines .rct-hl-even,
+#react-target .react-calendar-timeline .rct-horizontal-lines .rct-hl-odd {
+  background: #170E28 !important;
+  border-bottom: 1px solid #3E3155 !important;
+}
+
+/* Calendar header */
+.react-calendar-timeline .rct-calendar-header {
+  border: 0;
+  background: #170E28 !important;
+}
+
+/* Root background */
+.react-calendar-timeline {
+  background: #170E28 !important;
+  border: none !important;
+}
+
+.react-calendar-timeline .rct-header-root {
+  background: #170E28 !important;
+  border: none !important;
+}
+
+/* Date headers */
+.react-calendar-timeline .rct-dateHeader {
+  background: #170E28 !important;
+  border-color: #3E3155 !important;
+  color: #D9D9D9;
+}
+
+/* Sidebar */
+.react-calendar-timeline .rct-sidebar {
+  background: #0E0918 !important;
+  border-color: #3E3155 !important;
+}
+
+.react-calendar-timeline .rct-sidebar-header {
+  background: #0E0918 !important;
+  border-color: #3E3155 !important;
+}
+
+/* Vertical lines */
+.react-calendar-timeline .rct-vertical-lines .rct-vl {
+  border-color: #251A38 !important;
+}
+
+/* Scroll area */
+.react-calendar-timeline .rct-scroll {
+  background: #170E28 !important;
+}
+
+/* Outer border */
+.react-calendar-timeline .rct-outer {
+  background: #170E28 !important;
+}

@@ -1,0 +1,75 @@
+name: Tests
+
+on:
+  push:
+    paths: 
+    - .github/workflows/test-ingest.yaml
+    - 'ingest/**'
+    # Include all files copied by import.sh
+    - 'app/imports/shared/**'
+    - 'app/private/oro.proto'
+
+#   pull_request:
+    # types:
+    # - synchronize
+
+jobs:
+
+  test-ingest:
+    name: Ingest Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      # mongo-unit needs libssl1.1
+      - name: Install libssl1.1
+        run: |
+          wget https://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2_amd64.deb
+          sudo dpkg -i libssl1.1_1.1.1f-1ubuntu2_amd64.deb
+          rm libssl1.1_1.1.1f-1ubuntu2_amd64.deb
+
+      - name: Cache .npm directory
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('app/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Cache node_modules
+        id: cache-node-modules
+        uses: actions/cache@v4
+        with:
+          path: ingest/node_modules
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('ingest/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-modules-
+
+      - name: Install dependencies [if not cached]
+        working-directory: ingest
+        run: npm ci
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
+
+      - name: Import shared code
+        working-directory: ingest
+        run: ./import.sh
+
+      - name: Run tests
+        working-directory: ingest
+        run: npm run test:unit:report
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-results-ingest
+          path: ingest/junit_ingest.xml
+
+      - name: Publish test results
+        if: always()
+        uses: dorny/test-reporter@v3
+        with:
+          name: Test Results
+          path: ingest/junit_ingest.xml
+          reporter: java-junit

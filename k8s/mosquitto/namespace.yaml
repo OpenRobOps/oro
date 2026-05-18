@@ -1,0 +1,19 @@
+# The mosquitto manifests live in the same `oro` namespace as the app.
+# This file is idempotent with app/k8s/namespace.yaml — applying both is
+# harmless. Skip it if you already created the namespace via the app
+# manifests.
+#
+# Suggested apply order for THIS directory:
+#
+#   kubectl apply -f namespace.yaml
+#   cp secret.example.yaml secret.yaml   # then edit; secret.yaml is gitignored
+#   kubectl apply -f secret.yaml
+#   kubectl apply -f deployment.yaml
+#   kubectl apply -f service.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: oro
+  labels:
+    app.kubernetes.io/name: mosquitto
+    app.kubernetes.io/part-of: oro

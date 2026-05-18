@@ -1,0 +1,21 @@
+# Non-secret runtime configuration for oro-app.
+# Anything that contains a credential belongs in secret.yaml, not here.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: oro-app-config
+  namespace: oro
+  labels:
+    app.kubernetes.io/name: oro-app
+data:
+  # The public URL the app will be served from. Must match what users (and
+  # OAuth callbacks) hit — typically the Ingress hostname with https://.
+  ROOT_URL: "https://oro.example.com"
+
+  # The image already defaults to PORT=3000; override only if you change the
+  # container port in deployment.yaml as well.
+  # PORT: "3000"
+
+  # Optional: stable identifier for this pod (defaults to a random UUID).
+  # Usually leave unset and let the app generate one per pod.
+  # POD_ID: "oro-app-prod"

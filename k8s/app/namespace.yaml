@@ -1,0 +1,28 @@
+# Sample manifests for deploying the oro-app image on a Kubernetes cluster.
+#
+# This is a starting point — adapt every value marked <...> or "example.com"
+# to match your environment. Manifests are intentionally plain YAML (no
+# kustomize/helm) so they can be cherry-picked into whatever tooling you use.
+#
+# Suggested apply order:
+#
+#   kubectl apply -f namespace.yaml
+#   cp secret.example.yaml secret.yaml   # then edit; secret.yaml is gitignored
+#   kubectl apply -f secret.yaml
+#   kubectl apply -f configmap.yaml
+#   kubectl apply -f deployment.yaml
+#   kubectl apply -f service.yaml
+#   kubectl apply -f ingress.yaml        # optional; adapt to your ingress class
+#
+# External dependencies the manifests do NOT provision (point to existing
+# clusters in your environment):
+#   - MongoDB         → MONGO_URL in secret
+#   - MQTT broker     → METEOR_SETTINGS.mqtt.brokers.* in secret
+#   - SMTP (optional) → METEOR_SETTINGS.smtp.url in secret
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: oro
+  labels:
+    app.kubernetes.io/name: oro-app
+    app.kubernetes.io/part-of: oro

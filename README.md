@@ -67,7 +67,7 @@ Robot Agent (on-device)
 
 ```
 oro/
-├── web/app/          # Meteor application (client + server)
+├── app/              # Meteor application (client + server)
 ├── ingest/           # Telemetry ingest service
 ├── mqtt/             # Mosquitto broker config & Docker Compose
 ├── terraform/        # Settings generation (Terraform)

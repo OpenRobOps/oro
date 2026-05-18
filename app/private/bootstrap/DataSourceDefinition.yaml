@@ -1,0 +1,258 @@
+apiVersion: v0.1
+kind: DataSourceDefinition
+metadata:
+  id: cpuLoadPercentage
+spec:
+  label: CPU usage
+  precision: 1
+  unit: '%'
+  timeline: {}
+---
+apiVersion: v0.1
+kind: DataSourceDefinition
+metadata:
+  id: ramUsagePercentage
+spec:
+  label: RAM usage
+  precision: 1
+  unit: '%'
+  timeline: {}
+---
+apiVersion: v0.1
+kind: DataSourceDefinition
+metadata:
+  id: diskUsagePercentage
+spec:
+  label: Disk usage
+  precision: 1
+  unit: '%'
+---
+apiVersion: v0.1
+kind: DataSourceDefinition
+metadata:
+  id: diskAgentUsagePercentage
+spec:
+  label: InOrbit disk usage (%)
+  precision: 1
+  unit: '%'
+---
+apiVersion: v0.1
+kind: DataSourceDefinition
+metadata:
+  id: diskAgentUsageMb
+spec:
+  label: InOrbit disk usage (Mb)
+  precision: 0
+  unit: Mb
+---
+apiVersion: v0.1
+kind: DataSourceDefinition
+metadata:
+  id: networkTotalRate
+spec:
+  label: Network rate
+  precision: 0
+  unit: kB/s
+  timeline: {}
+---
+apiVersion: v0.1
+kind: DataSourceDefinition
+metadata:
+  id: networkAgentRate
+spec:
+  label: Agent network rate
+  precision: 0
+  unit: kB/s
+---
+apiVersion: v0.1
+kind: DataSourceDefinition
+metadata:
+  id: networkTotalTxRate
+spec:
+  label: Network upload rate
+  precision: 0
+  unit: kb/s
+---
+apiVersion: v0.1
+kind: DataSourceDefinition
+metadata:
+  id: networkTotalRxRate
+spec:
+  label: Network download rate
+  precision: 0
+  unit: kB/s
+---
+apiVersion: v0.1
+kind: DataSourceDefinition
+metadata:
+  id: networkAgentTxRate
+spec:
+  label: Agent upload rate
+  precision: 0
+  unit: kB/s
+---
+apiVersion: v0.1
+kind: DataSourceDefinition
+metadata:
+  id: networkAgentRxRate
+spec:
+  label: Agent download rate
+  precision: 0
+  unit: kB/s
+---
+apiVersion: v0.1
+kind: DataSourceDefinition
+metadata:
+  id: networkTotalTxBytes
+spec:
+  label: Network upload
+  precision: 0
+  unit: bytes
+---
+apiVersion: v0.1
+kind: DataSourceDefinition
+metadata:
+  id: networkTotalRxBytes
+spec:
+  label: Network download
+  precision: 0
+  unit: bytes
+---
+apiVersion: v0.1
+kind: DataSourceDefinition
+metadata:
+  id: networkAgentTxBytes
+spec:
+  label: Agent network upload
+  precision: 0
+  unit: bytes
+---
+apiVersion: v0.1
+kind: DataSourceDefinition
+metadata:
+  id: networkAgentRxBytes
+spec:
+  label: Agent network download
+  precision: 0
+  unit: bytes
+---
+apiVersion: v0.1
+kind: DataSourceDefinition
+metadata:
+  id: speedLinear
+spec:
+  label: Linear speed
+  precision: 3
+  unit: m/s
+---
+apiVersion: v0.1
+kind: DataSourceDefinition
+metadata:
+  id: speedAngular
+spec:
+  label: Angular speed
+  precision: 3
+  unit: rad/s
+---
+apiVersion: v0.1
+kind: DataSourceDefinition
+metadata:
+  id: distanceLinearSince
+spec:
+  label: Accumulated linear distance
+  precision: 3
+  unit: m
+---
+apiVersion: v0.1
+kind: DataSourceDefinition
+metadata:
+  id: distanceAngularSince
+spec:
+  label: Accumulated angular distance
+  precision: 3
+  unit: rad
+---
+apiVersion: v0.1
+kind: DataSourceDefinition
+metadata:
+  id: distanceLinear
+spec:
+  label: Linear distance
+  precision: 3
+  unit: m
+---
+apiVersion: v0.1
+kind: DataSourceDefinition
+metadata:
+  id: distanceAngular
+spec:
+  label: Angular distance
+  precision: 3
+  unit: rad
+---
+apiVersion: v0.1
+kind: DataSourceDefinition
+metadata:
+  id: rosMasterStatus
+spec:
+  label: ROS Status
+---
+apiVersion: v0.1
+kind: DataSourceDefinition
+metadata:
+  id: agentOnline
+spec:
+  label: Online
+---
+apiVersion: v0.1
+kind: DataSourceDefinition
+metadata:
+  id: agentVersion
+spec:
+  label: Agent version
+---
+apiVersion: v0.1
+kind: DataSourceDefinition
+metadata:
+  id: tmpAgentStatus
+spec:
+  label: ROS Diagnostics - legacy
+---
+apiVersion: v0.1
+kind: DataSourceDefinition
+metadata:
+  id: rosDiagnosticsStatus
+spec:
+  label: ROS Diagnostics
+---
+apiVersion: v0.1
+kind: DataSourceDefinition
+metadata:
+  id: pingAvg
+spec:
+  label: Averaged Ping Time
+  unit: ms
+---
+apiVersion: v0.1
+kind: DataSourceDefinition
+metadata:
+  id: pingLast
+spec:
+  label: Raw Ping Time
+  unit: ms
+---
+apiVersion: v0.1
+kind: DataSourceDefinition
+metadata:
+  id: pose
+spec:
+  label: Robot Pose
+  type: json
+---
+apiVersion: v0.1
+kind: DataSourceDefinition
+metadata:
+  id: gpsFix
+spec:
+  label: GPS Fix
+  type: json

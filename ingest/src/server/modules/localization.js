@@ -1,4 +1,20 @@
 /**
+ * Copyright 2026 InOrbit, Inc.
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
+/**
  * Ingest-side implementation of the Localization agent module
  */
 import Jimp from 'jimp';
@@ -6,13 +22,12 @@ import moment from 'moment';
 import { _ } from 'lodash';
 import Long from 'long';
 // ORO imports
-import { AsyncCache } from '../simpleCache';
+import { AsyncCache } from '../../shared/simpleCache';
 import RateLimiter from '../rateLimiter';
 import MongoManager from '../../mongo';
 import AnnotationsManager from '../annotations';
 import { COLLECTIONS, MODULE_NAMES, SPATIAL_ANNOTATION_TYPES, ID_TYPE_ROBOT } from '../../shared/constants';
 import { VITAL_POSE } from '../../shared/attributes';
-import { transformPose } from '../../shared/geometry';
 import AttributesManager from '../attributes';
 import MapsStorage from '../mapsStorage';
 import { deltaIntDecodePoints } from '../../shared/arrayUtil';
@@ -420,8 +435,6 @@ export default class RobotLocalizationModule {
       theta: decodedMsg.yaw,
       ts
     };
-    console.log("onPoseAndLaserData: poseUpdates=", poseUpdates);
-
     if (decodedMsg.frameId) {
       poseUpdates.frameId = decodedMsg.frameId;
     }
@@ -504,7 +517,7 @@ export default class RobotLocalizationModule {
         gradientEndColor = GRADIENT_COLOR_DEFAULT,
         alphaValue = 1,
         isAlphaGradient = true
-      } = costmapPreference;
+      } = costmapPreference || {};
 
       // TODO Confirm that each color is exactly an array with three numbers
 
@@ -512,7 +525,7 @@ export default class RobotLocalizationModule {
       // all data points end up being a uniform color.
       // NOTE(adamantivm) This is done on a separate destructuring call in order to use another
       // property as a default value for this one.
-      const { gradientStartColor = gradientEndColor } = costmapPreference;
+      const { gradientStartColor = gradientEndColor } = costmapPreference || {};
 
       // Do some postprocessing on the costmap image. Costmaps get sent in grayscale (with
       // very low bpp, to save bandwidth): transform this to color, add some color
@@ -630,10 +643,9 @@ export default class RobotLocalizationModule {
   };
 
   onPath = async (robotId, msg) => {
-    console.log('onPath: robotId=', robotId, 'msg=', msg);
     const decodedMsg = this.PathDataMessage.decode(msg);
     // Get cached config per robot
-    const { storePath, rateLimitMsPerPath = {} } = await this._agentModuleCache.get(robotId);
+    const { storePath, rateLimitMsPerPath = {} } = {} // TODO re-enable await this._agentModuleCache.get(robotId);
 
     // Filter empty and rate limited paths
     const paths = ((decodedMsg && decodedMsg.paths) || []).filter(({ pathId, ts }) => {
@@ -658,19 +670,6 @@ export default class RobotLocalizationModule {
       }
     }
 
-    // Transform each path to the sublocation world frame if spatial transformations are configured
-    for (const path of paths) {
-      // eslint-disable-next-line no-await-in-loop
-      const robotTsublocation = await this._getToSublocationWorldFrameTransformation(
-        robotId,
-        path.frameId
-      );
-      if (robotTsublocation) {
-        path.points = path.points.map((p) => transformPose(p, robotTsublocation));
-        path.frameId = robotTsublocation.frameId;
-      }
-    }
-
     // Build the updates for localization db object
     // Collect points, from each protobuf PathPoint object
     const updates = {};
@@ -689,6 +688,7 @@ export default class RobotLocalizationModule {
     const msgTs = decodedMsg.ts && Number.parseInt(decodedMsg.ts, 10);
     // NOTE: Request per-key updates to avoid overwriting paths that weren't
     // provided in this call
+    console.log("onPath: updates=", updates);
     await this._doUpdate(robotId, updates, LOCALIZATION_SUBOBJECTS.PATH, msgTs, true);
 
     // Store the paths, if enabled for the robot
@@ -750,6 +750,9 @@ export default class RobotLocalizationModule {
       });
     } else {
       subobjectUpdates[subobject] = updates;
+    }
+    if (!["laserRanges", "robotPose", "laserConfig"].includes(subobject)) { // FIXME remove debugging
+        console.log("_doUpdate", robotId, subobject, subobjectUpdates)
     }
     await this._localizationColl.updateOne(
       { _id: robotId },

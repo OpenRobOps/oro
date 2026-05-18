@@ -1,4 +1,20 @@
 /**
+ * Copyright 2026 InOrbit, Inc.
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
+/**
  * Ingest service entry point
  *
  * This file is the entry point for the Ingest service.
@@ -15,12 +31,12 @@ import OroMqtt from './server/mqtt';
 // import { RedisManager } from './shared/redis';
 import PeerClient from './server/peer';
 // import EventTracker from './shared/tracking';
-// import metricsProxy from './shared/server/metrics';
-// import { registerMetricsViews } from './metricsDefinitions';
 // import WorkerQueue from './server/messageQueue';
 import { anonymizeUri } from './lib/util';
 // import ObjectsManager from './server/objectsManager';
-// import EventLog from './shared/server/eventLogger';
+import AttributesManager from './server/attributes';
+import InMemoryWorkerQueues from './server/queues/memoryWorkerQueue';
+import DerivedAttributesService from './services/derivedAttributes/svcDerivedAttributes';
 
 import {
   BasicsModule,
@@ -28,12 +44,12 @@ import {
   RobotLocalizationModule,
 //   DataBagsModule,
 //   AlertsModule,
-//   DiagnosticsModule,
+  DiagnosticsModule,
 //   StatesModule,
 //   RosoutModule,
   CustomDataModule,
 //   RosMonitorModule,
-//   CustomCommandsModule,
+  CustomCommandsModule,
 //   RobotEventsModule,
 //   ImagesModule,
 //   GpsModule,
@@ -59,6 +75,8 @@ let peerClient;
 let metrics;
 let queue;
 let objectsManager;
+let attributesManager;
+
 async function run() {
   console.log('---------------------------------------------------------');
   console.log('Ingest service starting at ' + moment().format());
@@ -70,14 +88,18 @@ async function run() {
   console.log('Profiler is ' + (settings.profiler?.enabled ? 'ON' : 'OFF'));
   console.log('Objects Manager ' + (settings.objectsManager?.enabled ? 'ON' : 'OFF'));
 
-  // Only start processing after all database
-  // connections are active
-  // Create metrics before mqtt and other modules that could use it
-  // queue = new WorkerQueue();
-  // await new WorkerQueue().init(settings.queue);
-  // metricsProxy.init(settings.metrics);
+
   mongo = new MongoManager();
   await mongo.init(settings.mongo);
+  // Create queues
+  queue = new InMemoryWorkerQueues();
+  await queue.init({
+    // logging: true 
+  });
+  await new AttributesManager().init({ workerQueue: queue });
+  // Only start processing after all database
+  // connections are active
+  // await new WorkerQueue().init(settings.queue);
   // redis = new RedisManager();
   // await redis.init(settings.redis);
   // storage = new StorageManager();
@@ -88,10 +110,6 @@ async function run() {
   // await new EventTracker().init(settings.pendo);
   // objectsManager = new ObjectsManager();
   // await objectsManager.init(settings.objectsManager);
-
-  // // TODO: When modes are migrated fully to dynamic collections, EventLog won't be needed here
-  // // anymore
-  // new EventLog().init(settings.eventLog);
 
   // TODO Separate init from run and make sure the service
   // is considered ready (including readiness probe) when connection
@@ -111,7 +129,8 @@ async function run() {
   new BasicsModule(mqtt).load();
   new SystemModule(mqtt).load();
   new CustomDataModule({ mqtt, mongo }).load();
-  // new DiagnosticsModule(mqtt).load(moduleSettings.diagnostics);
+  new DiagnosticsModule(mqtt).load(moduleSettings.diagnostics);
+  new CustomCommandsModule(mqtt).load();
 
   await new RobotLocalizationModule({
     mqtt,
@@ -134,6 +153,9 @@ async function run() {
   // } else {
   //   console.warn('ImagesModule is disabled');
   // }
+
+  const derivedAttributesService = new DerivedAttributesService({});
+  await derivedAttributesService.init({ workerQueue: queue });
 
   // registerMetricsViews('ingest');
   console.log('Ingest service ready for business');

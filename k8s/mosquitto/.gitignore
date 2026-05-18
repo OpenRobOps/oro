@@ -1,0 +1,3 @@
+# Real Mongo credentials for the mosquitto-go-auth plugin live in
+# secret.yaml (generated locally from secret.example.yaml). Never commit it.
+secret.yaml

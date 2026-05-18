@@ -1,0 +1,29 @@
+{
+  "dummy": {
+    "_id": "1234",
+    "status":{
+      "agentOnline": true
+    }
+  },
+  "dummyOffline": {
+    "_id": "1234",
+    "status":{
+      "agentOnline": false
+    }
+  },
+  "dummyWithMode": {
+    "_id": "1234",
+    "modes": {
+      "mode::0": {
+        "label" : "OK",
+        "value" : "0",
+        "collectionId" : "OkCollectionId",
+        "ts" : 1606948922517
+      }
+    }
+  },
+  "dummyWithApiKey": {
+    "_id": "1234",
+    "robotKey": "aRobotKey"
+  }
+}

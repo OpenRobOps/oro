@@ -1,0 +1,91 @@
+# oro-ingest Deployment.
+#
+# Single replica because the worker subscribes to MQTT topics and runs the
+# in-process worker queue (server/queues/memoryWorkerQueue) — multiple
+# replicas would each receive every retained / live message and double-
+# process. Move to a shared queue (Redis / external broker) before scaling
+# beyond one.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oro-ingest
+  namespace: oro
+  labels:
+    app.kubernetes.io/name: oro-ingest
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: oro-ingest
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: oro-ingest
+    spec:
+      # fsGroup makes the kubelet recursively chgrp mounted volumes to this
+      # GID. The Secret below is mounted with defaultMode 0440 (owner+group
+      # read), so without fsGroup matching the container UID/GID, the
+      # non-root user can't read /app/settings.json. 1000 is the `node`
+      # group from the base image (matches USER 1000:1000 in the image).
+      securityContext:
+        fsGroup: 1000
+
+      # Uncomment if you publish images to a private GHCR repo. Create the
+      # secret with:
+      #   kubectl create secret docker-registry ghcr-pull-secret \
+      #     --docker-server=ghcr.io \
+      #     --docker-username=<github-user> \
+      #     --docker-password=<PAT-with-read:packages> \
+      #     --namespace=oro
+      # imagePullSecrets:
+      #   - name: ghcr-pull-secret
+
+      # Recommended: pin to an immutable tag (a sha or version) in production.
+      # `:main` is fine for dev/staging but moves on every push.
+      containers:
+        - name: ingest
+          image: ghcr.io/openrobops/oro-ingest:main
+          imagePullPolicy: IfNotPresent
+
+          volumeMounts:
+            # Single-file mount of the Secret's settings.json key. The
+            # service reads /app/settings.json at startup (see
+            # ingest/src/main.js, which resolves `__dirname/../settings.json`
+            # — __dirname is /app/src). subPath keeps the rest of /app/
+            # untouched so the bundled source and node_modules remain
+            # available.
+            - name: config
+              mountPath: /app/settings.json
+              subPath: settings.json
+              readOnly: true
+
+          # No HTTP listener and no readiness file (yet) — main.js exits if
+          # boot fails, so the kubelet's restart policy is the readiness
+          # signal. Add a readiness probe once main.js writes /tmp/ready or
+          # exposes a TCP port (the TODO at the bottom of main.js).
+
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false  # babel-node writes to a cache dir
+            runAsNonRoot: true
+            capabilities:
+              drop: ["ALL"]
+
+      volumes:
+        - name: config
+          secret:
+            secretName: oro-ingest-config
+            defaultMode: 0440
+            items:
+              - key: settings.json
+                path: settings.json
