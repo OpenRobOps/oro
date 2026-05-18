@@ -12,13 +12,16 @@ The service starts in `ingest/src/main.js`, which initializes core managers and 
 
 ```
 Ingest Service Startup
-├── MongoManager.init()      → Connect to MongoDB
-├── PeerClient.init()        → Connect to web app Peer API
-├── OroMqtt.run()            → Connect to MQTT broker
+├── MongoManager.init()       → Connect to MongoDB
+├── PeerClient.init()         → Connect to web app Peer API
+├── OroMqtt.run()             → Connect to MQTT broker
+├── DerivedAttributesService  → Worker queue for derived attributes
 └── Load modules:
     ├── BasicsModule
     ├── SystemModule
     ├── CustomDataModule
+    ├── DiagnosticsModule
+    ├── CustomCommandsModule
     └── RobotLocalizationModule
 ```
 
@@ -75,10 +78,12 @@ class MyModule {
 
 | Module | MQTT Topics | MongoDB Collection | Description |
 |--------|------------|-------------------|-------------|
-| **BasicsModule** | Basic robot topics | `robots` | Robot identity, version, online status |
-| **SystemModule** | System stats | `robot_vitals` | CPU, RAM, disk, network metrics |
-| **CustomDataModule** | Custom data | Various | Key-value pairs, text, images |
-| **RobotLocalizationModule** | Localization | `localization` | Pose, maps, lasers, paths |
+| **BasicsModule** | `state`, `out_cmd` | `robots` | Robot identity, version, online status; routes outbound commands |
+| **SystemModule** | `system/stats` | `attr_values` | CPU, RAM, disk, network metrics (via AttributesManager) |
+| **CustomDataModule** | `custom` | `custom_data`, `robot_key_values` | Key-value pairs, text, images |
+| **DiagnosticsModule** | `ros/diagnostics2`, `ros/diagnostics/status` | `diagnostics` | ROS hardware diagnostics, severity-based status |
+| **CustomCommandsModule** | `custom_command/script/status` | `custom_script` | Command/action execution feedback |
+| **RobotLocalizationModule** | `ros/loc/*` (pose, map, path, costmap, ...) | `localization`, `spatial_annotations`, `module_states` | Pose, maps, lasers, paths, costmaps |
 
 ### Module Settings
 
@@ -93,6 +98,10 @@ Per-module configuration can be provided via the `modules` key in `ingest/settin
   }
 }
 ```
+
+### Derived Attributes Service
+
+In addition to MQTT-driven modules, the ingest service runs a `DerivedAttributesService` worker that periodically computes new attributes from existing ones. Derived attributes are configured via the ConfigAPI; see [ConfigAPI](../api/configapi.md).
 
 ## Data Processing Flow
 

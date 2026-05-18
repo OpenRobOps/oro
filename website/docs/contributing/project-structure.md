@@ -10,24 +10,27 @@ Overview of the OpenRobOps repository layout and key directories.
 
 ```
 oro/
-├── web/app/          # Meteor application (client + server)
-├── ingest/           # Telemetry ingest service
-├── mqtt/             # Mosquitto broker config & Docker Compose
-├── terraform/        # Settings generation (Terraform)
-├── scripts/          # Utility scripts
-├── website/          # Docusaurus documentation site
-├── README.md         # Project overview
-├── README-dev.md     # Development environment setup
-├── CONTRIBUTING.md   # Contribution guidelines
-└── LICENSE           # Apache License 2.0
+├── app/             # Meteor application (client + server)
+├── ingest/          # Telemetry ingest service
+├── mqtt/            # Mosquitto broker config & Docker Compose
+├── terraform/       # Settings generation (Terraform)
+├── scripts/         # Utility scripts
+├── website/         # Docusaurus documentation site
+├── docs/            # Top-level repo docs (separate from website/)
+├── k8s/             # Kubernetes manifests
+├── README.md        # Project overview
+├── README-dev.md    # Development environment setup
+├── CONTRIBUTING.md  # Contribution guidelines
+├── COPYRIGHT        # Copyright notices
+└── LICENSE          # Apache License 2.0
 ```
 
-## `web/app/` — Meteor Application
+## `app/` — Meteor Application
 
 The main application, serving both the React frontend and the REST API backend.
 
 ```
-web/app/
+app/
 ├── client/
 │   └── main.jsx              # Client entry point
 ├── server/
@@ -37,12 +40,22 @@ web/app/
 │   │   └── oro/
 │   │       ├── fleetWidgets/        # Fleet-level dashboard widgets
 │   │       │   ├── IncidentTimeline/
-│   │       │   └── IncidentList/
-│   │       └── robotWidgets/        # Robot-specific widgets
-│   │           ├── VitalsWidget/
-│   │           ├── CustomDataWidget/
-│   │           ├── Lock/
-│   │           └── RobotInfoButtons/
+│   │       │   ├── IncidentList/
+│   │       │   ├── AuditLogs/
+│   │       │   └── TextWidget/
+│   │       ├── robotWidgets/        # Robot-specific widgets
+│   │       │   ├── VitalsWidget/
+│   │       │   ├── CustomDataWidget/
+│   │       │   ├── DiagnosticsWidget/
+│   │       │   ├── TimelineWidget/
+│   │       │   ├── LocalizationWidget/
+│   │       │   ├── ListDataWidget/
+│   │       │   ├── ActionsWidget/
+│   │       │   ├── CameraView/
+│   │       │   ├── Lock/
+│   │       │   ├── RobotControlBar/
+│   │       │   └── RobotInfoButtons/
+│   │       └── navigationWidgets/   # Teleop / navigation composite widgets
 │   ├── server/
 │   │   ├── rest_api.js              # Main API router
 │   │   ├── rest_api_common.js       # Shared API utilities
@@ -94,7 +107,9 @@ ingest/
 │   │       ├── basics.js            # BasicsModule
 │   │       ├── system.js            # SystemModule
 │   │       ├── localization.js      # RobotLocalizationModule
-│   │       └── customData.js        # CustomDataModule
+│   │       ├── customData.js        # CustomDataModule
+│   │       ├── diagnostics.js       # DiagnosticsModule
+│   │       └── customCommands.js    # CustomCommandsModule
 │   ├── shared/
 │   │   └── oro.proto                # Protobuf definitions (source of truth)
 │   └── lib/
@@ -131,7 +146,9 @@ terraform/
 ```
 scripts/
 ├── generate-settings.sh             # Generate settings.json files
-└── start-local-env.sh               # Start all services
+├── build-app-image.sh               # Build the app Docker image
+├── build-ingest-image.sh            # Build the ingest Docker image
+└── smoke-test-app-image.sh          # Smoke-test a built app image
 ```
 
 ## `website/` — Documentation

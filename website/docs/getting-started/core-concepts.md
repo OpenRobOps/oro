@@ -51,6 +51,14 @@ Telemetry flows through MQTT as protobuf-encoded messages and is processed by th
 
 **Actions** are operations that can be triggered on robots (e.g., restart, send command). Action definitions are managed through the ConfigAPI.
 
+## Audit Log
+
+The **Audit Log** records action executions, command feedback, and notable robot events. It powers the fleet-wide and per-robot log widgets so operators can trace who did what, when, and with what result.
+
+## Derived Attributes
+
+In addition to attributes pulled directly from telemetry, ORO can compute **derived attributes** — values calculated from one or more existing attributes on a configurable schedule. See [ConfigAPI](../api/configapi.md) for details.
+
 ## ConfigAPI
 
 The **ConfigAPI** is a declarative configuration system for managing platform behavior. It follows a "configuration as code" pattern where you apply JSON/YAML configuration objects to define robot attributes, dashboard widgets, incident definitions, etc.
@@ -63,8 +71,10 @@ Configuration is applied via `POST /api/configuration/apply` and retrieved via `
 
 - **BasicsModule** — basic robot identification and status
 - **SystemModule** — system resource monitoring (CPU, RAM, disk, network)
-- **RobotLocalizationModule** — pose, maps, paths, and laser data
+- **RobotLocalizationModule** — pose, maps, paths, laser, and costmap
 - **CustomDataModule** — user-defined key-value data, text, and images
+- **DiagnosticsModule** — ROS-style hardware diagnostics with severity levels
+- **CustomCommandsModule** — execution feedback from remote commands and actions
 
 ## MQTT Topics
 

@@ -15,6 +15,13 @@ During this Getting Started guide, all examples assume ORO runs locally (host na
 - A running OpenRobOps instance (see [Quick Start](./quick-start.md))
 - An admin user with an API key
 
+:::tip[Don't have a robot yet?]
+You can drive ORO end-to-end using the
+[Flatland simulator](https://github.com/OpenRobOps/sim-flatland), which publishes
+the same MQTT/protobuf telemetry as a real ORO agent. It's the fastest way to
+verify your installation.
+:::
+
 ## Step 1: Get Your API Key
 
 :::info

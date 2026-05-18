@@ -36,6 +36,7 @@ Configuration objects follow a consistent structure:
 | [`StatusDefinition`](./configapikinds.md#statusdefinition) | Robot status computation rules |
 | [`ActionDefinition`](./configapikinds.md#actiondefinition) | Robot action definitions |
 | [`DashboardDefinition`](./configapikinds.md#dashboarddefinition) | Custom dashboard layouts with widgets |
+| **`ModuleState`** | Singleton state document for a configurable ingest/app module — used to persist per-module configuration applied via the ConfigAPI |
 
 For detailed schemas and examples of each kind, see [Config API Kinds](./configapikinds.md).
 

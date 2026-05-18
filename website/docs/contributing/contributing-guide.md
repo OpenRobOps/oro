@@ -36,11 +36,12 @@ cd oro
 ./scripts/generate-settings.sh --apply
 
 # Install dependencies
-cd web/app && npm install
-cd ../../ingest && npm install
+cd app && npm install
+cd ../ingest && npm install
 cd ..
 
-# Start all services
+# Start all services (planned helper — for now run each service in its own
+# terminal as shown in the Quick Start)
 ./scripts/start-local-env.sh
 ```
 
@@ -58,7 +59,7 @@ Run tests before submitting a pull request:
 
 ```bash
 # Web app tests
-cd web/app && npm test
+cd app && npm test
 
 # Ingest service tests
 cd ingest && npm test

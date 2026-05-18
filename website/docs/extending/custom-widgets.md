@@ -10,8 +10,8 @@ OpenRobOps dashboards are built with React 18 and Material UI. You can create ne
 
 Each widget lives in its own directory under either:
 
-- `web/app/imports/client/oro/robotWidgets/` — for robot-specific widgets
-- `web/app/imports/client/oro/fleetWidgets/` — for fleet-level widgets
+- `app/imports/client/oro/robotWidgets/` — for robot-specific widgets
+- `app/imports/client/oro/fleetWidgets/` — for fleet-level widgets
 
 A typical widget consists of:
 
@@ -25,7 +25,7 @@ MyWidget/
 
 ### 1. Create the Component
 
-Create `web/app/imports/client/oro/robotWidgets/MyWidget/MyWidgetComponent.js`:
+Create `app/imports/client/oro/robotWidgets/MyWidget/MyWidgetComponent.js`:
 
 ```jsx
 import React from 'react';
@@ -46,7 +46,7 @@ export default MyWidgetComponent;
 
 ### 2. Create the Index
 
-Create `web/app/imports/client/oro/robotWidgets/MyWidget/index.js`:
+Create `app/imports/client/oro/robotWidgets/MyWidget/index.js`:
 
 ```javascript
 export { default as MyWidgetComponent } from './MyWidgetComponent';
@@ -119,7 +119,9 @@ Study these widgets for reference:
 | **VitalsWidget** | `robotWidgets/VitalsWidget/` | System metrics display |
 | **CustomDataWidget** | `robotWidgets/CustomDataWidget/` | Multi-format data (KV, text, image) |
 | **Lock** | `robotWidgets/Lock/` | Interactive state management |
+| **Timeline (Chart)** | `robotWidgets/TimelineWidget/` | Time-series visualization with aggregations |
 | **IncidentTimeline** | `fleetWidgets/IncidentTimeline/` | Calendar-based fleet view |
+| **Navigation Detail** | `navigationWidgets/NavigationDetail/` | Composite widget with map + teleop + cameras |
 
 ## Next Steps
 

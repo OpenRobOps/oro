@@ -78,11 +78,23 @@ Handles arbitrary data published by the robot agent. Supports three data types:
 
 Uses the `CustomDataMessage` protobuf type.
 
+### DiagnosticsModule
+
+Processes ROS-style hardware diagnostics published by the robot agent: per-component status (OK / Warn / Error / Stale), human-readable messages, and structured key-value detail. Severity is fed back into the robot's attributes so it can drive fleet-level health indicators.
+
+Subscribes to `r/<robot_id>/ros/diagnostics2` and `r/<robot_id>/ros/diagnostics/status`. Uses the `RosDiagnosticsMessage` protobuf type. Writes to the `diagnostics` collection.
+
+### CustomCommandsModule
+
+Captures the execution feedback of remote commands and actions — exit codes, stdout, stderr, and progress updates — so the UI can show whether a triggered action succeeded.
+
+Subscribes to `r/<robot_id>/custom_command/script/status`. Uses the `CustomScriptCommandMessage` protobuf type. Writes to the `custom_script` collection.
+
 ## Protobuf Messages
 
 All telemetry is serialized using Protocol Buffers for efficiency. 
 These are some of the protobuf messages in the ORO protocol.
-The complete schema is defined in [`web/app/private/oro.proto`](https://github.com/OpenRobOps/oro/blob/main/web/app/private/oro.proto). 
+The complete schema is defined in [`app/private/oro.proto`](https://github.com/OpenRobOps/oro/blob/main/app/private/oro.proto). 
 
 Key message types:
 
@@ -117,11 +129,9 @@ These modules are being completed and documentation needs updating.
 The following modules exist in the codebase but are not yet enabled:
 
 - **AlertsModule** — robot alert handling
-- **DiagnosticsModule** — ROS diagnostics integration
 - **StatesModule** — robot state machine tracking
 - **RosoutModule** — ROS log forwarding
 - **RosMonitorModule** — ROS topic/node/param monitoring
-- **CustomCommandsModule** — remote command execution
 - **RobotEventsModule** — robot event processing
 - **ImagesModule** — camera image handling
 
