@@ -23,11 +23,11 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { isNumber } from 'lodash';
-import { Meteor } from 'meteor/meteor';
 // ORO Modules
 import { useActiveInteraction } from '../../contexts/ActiveInteractionContext';
 import TeleopControls from './TeleopControls';
 import { useFullscreenContext } from '../../contexts/FullscreenContext';
+import useTeleopSubscription from '../../hooks/useTeleopSubscription';
 
 // Velocity limits and defaults (inlined from TeleopSettings)
 // TODO: Read from settings (low priority)
@@ -94,15 +94,11 @@ function TeleopControlsContainer({
 
   // If we entered fullscreen, disable active interactions.
   // This is because the joystick breaks on screen resizes and layout changes.
-  useEffect(() => { setActiveInteraction(null); }, [isFullscreen, setActiveInteraction]);
-
-  // Refcounted load of RosTeleopAgentlet via the `teleop` publication;
-  // unsubscribe on unmount triggers requestLess on the server.
   useEffect(() => {
-    if (!robotId) return undefined;
-    const handle = Meteor.subscribe('teleop', { robotId });
-    return () => handle.stop();
-  }, [robotId]);
+    setActiveInteraction(null);
+  }, [isFullscreen, setActiveInteraction]);
+
+  useTeleopSubscription(robotId);
 
   return (
     <TeleopControls
