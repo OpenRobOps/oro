@@ -10,9 +10,9 @@
   border-radius: 10px;
 }
 
-/* Invert the map image so it reads as dark-background / light-lines
-   on the dark Navigation UI. Opacity softens the contrast slightly. */
-.ol-map canvas {
+/* Invert only the map image layer so it reads as dark-background / light-lines
+   on the dark Navigation UI. Vector overlays (robot icon, waypoints) keep true colors. */
+.ol-map-image-layer {
   filter: invert(0.9) opacity(0.85);
 }
 .ol-control {

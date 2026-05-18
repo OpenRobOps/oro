@@ -227,6 +227,7 @@ const theme = createTheme({
       lightGray: '#C2C2C2',
       mediumDarkGray: '#BEAEDD',
       muted: '#AAAAAA',
+      mutedDark: '#585858',
       subtle: '#D0D0D0',
       buttonText: '#D9D9D9',
       inactive: '#9488AA',
@@ -245,6 +246,10 @@ const theme = createTheme({
       navDark: '#0E0918',
       white: '#FFFFFF',
       surface: '#170E28',
+      mintAccent: '#5ECFA8',
+      mintAccentDim: '#1D4942',
+      orangeAccent: '#F4935A',
+      orangeAccentDim: '#5F3021',
       lightBlue: '#1A0F2E',
       veryLightGray: '#1A0F2E',
       lightGray: '#251A38',
@@ -298,8 +303,7 @@ const theme = createTheme({
       wayPoint: '#006B00',
       completedPath: '#2A3C98',
       openTeleop: '#F05523',
-      waypointAvatar: 'transparent',
-      waypointAvatarFill: '#2A3C9859'
+      waypointAvatar: '#CFFAEC'
     },
     severityColor: {
       'SEV 0': '#700893',
@@ -327,7 +331,7 @@ const theme = createTheme({
       baseArrow: '#B9B9B9',
       darkModeArrow: '#696969',
       stepwise: '#88BF2D',
-      teleop: '#F05523'
+      teleop: '#F4935A'
     },
     cameras: {
       delayTime: '#FFBB32'
