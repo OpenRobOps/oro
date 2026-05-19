@@ -84,8 +84,8 @@ const NippleJoystick = forwardRef(({
     assignRef(ref, { joystick });
 
     EVENT_MAP.forEach(([event, prop]) => {
-      joystick.on(event, (evt, data) => {
-        callbacksRef.current[prop]?.(evt, data);
+      joystick.on(event, (evt) => {
+        callbacksRef.current[prop]?.(evt, evt?.data);
       });
     });
 

@@ -33,23 +33,24 @@ import { addCoordinateTransforms } from 'ol/proj';
 // to the utils library to use this from anywhere
 
 const PALETTE = {
-  point: 'rgba(128,128,255,0.9)',
+  point: '#8080FFE6',
   pointOutline: '#404080',
-  selected: 'rgba(113,186,225,1)',
+  selected: '#71BAE1',
   relocalizeDrag: {
-    color: 'rgba(136, 191, 45, 0.2)',
-    stroke: 'rgba(110, 171, 9, 1)',
+    color: '#5ECFA84D',
+    stroke: '#5ECFA8',
     strokeWidth: '5',
   },
   relocalizeRotate: {
-    color: 'rgba(42,60,152,1)',
-    stroke: 'rgba(42,60,152,1)',
+    color: '#5ECFA8',
+    stroke: '#5ECFA8',
     strokeWidth: '3',
   },
+  relocalizeInnerFrame: '#BE9AFF',
   selectedOutline: '#8080FF',
-  robotPoseNormalPrimary: '#2A3C98',
-  robotPoseNormalSecondary: '#CCCCCC',
-  robotPoseNormalOutline: '#666666'
+  robotPoseNormalPrimary: '#BE9AFF',
+  robotPoseNormalSecondary: '#3E3155',
+  robotPoseNormalOutline: '#BE9AFF'
 };
 const CURRENT_DATA_MS = 1000 * 15; // 15sec, fresh and current data
 const RECENT_DATA_MS = 1000 * 60; // 1min, relatively recent data

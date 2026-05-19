@@ -114,11 +114,15 @@ const TranslateRotateComponent = ({
       angle: initialPose.theta
     });
 
-    // Translate interaction, include all features except the rotate handle
+    // Translate interaction, include all features so they move together; the
+    // `filter` restricts which feature can *trigger* the drag.
+    // OL 10 ignores the `filter` option when `features` is supplied
+    // (Translate.js: `this.filter_ = options.filter && !this.features_ ? options.filter : TRUE`),
+    // so set it directly after construction to restore the intended behavior.
     const translate = new TranslateInteraction({
-      features: new Collection([...features, ...translateFeatures]),
-      filter: translateHandleFilter
+      features: new Collection([...features, ...translateFeatures])
     });
+    if (translateHandleFilter) translate.filter_ = translateHandleFilter;
 
     rotate.on('rotateend', (evt) => {
       // Update the current rotation of the control
@@ -140,9 +144,12 @@ const TranslateRotateComponent = ({
     map.addLayer(layer);
     layer.setZIndex(1000);
     // The order of the interactions is important: the last one will be triggered first.
-    // Rotate must fire before translate so that clicking on rotate handles (arrow, arcs)
-    // is not stolen by translate when pin pixels overlap below the rotate handle.
-    map.getInteractions().extend([translate, rotate]);
+    // Translate fires before rotate. Translate uses `featuresAtPixel_` which iterates
+    // features under the pointer with `filter_` as a predicate, so non-translate features
+    // (e.g. rotate handle) are skipped and the event falls through to rotate. Reversing
+    // the order would let rotate steal every click on a feature in its collection, since
+    // RotateFeatureInteraction has no equivalent filter mechanism.
+    map.getInteractions().extend([rotate, translate]);
 
     // clean up the component once unmounted
     return () => {

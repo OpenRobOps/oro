@@ -35,7 +35,7 @@ const useStyles = makeStyles()(theme => ({
   outerRing: {
     borderRadius: '50%',
     height: '100%',
-    border: `${theme.palette.teleopArrows.lightBackground} solid 2px`,
+    border: `${theme.palette.text.mutedDark} solid 2px`,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -50,7 +50,7 @@ const useStyles = makeStyles()(theme => ({
     opacity: '0.5'
   },
   backgroundCircle: {
-    background: theme.palette.teleopArrows.lightBackground,
+    background: theme.palette.background.navDark,
     borderRadius: '50%',
     height: 'calc(100% - 4px)',
     width: 'calc(100% - 4px)',
@@ -73,7 +73,7 @@ const useStyles = makeStyles()(theme => ({
   },
   iconButtonRoot: {
     fontSize: '3rem',
-    color: theme.palette.teleopArrows.darkModeArrow
+    color: theme.palette.text.muted
   },
   arrowTeleopMode: {
     color: theme.palette.teleopArrows.teleop
@@ -98,7 +98,7 @@ const simulateAcceleration = timeStart => Math.floor((Date.now() - timeStart) / 
  * Receives a callback to be executed when the user interacts with the button.
  * Returns event handlers to be passed to the button.
  */
-function useLongPress(callback) {
+function useLongPress(callback, onStop) {
   const [startLongPress, setStartLongPress] = useState(false);
   const [timeoutId, setTimeoutId] = useState();
   const [timeStart, setTimeStart] = useState();
@@ -126,7 +126,8 @@ function useLongPress(callback) {
   const stop = useCallback(() => {
     setStartLongPress(false);
     setTimeStart();
-  }, []);
+    onStop?.();
+  }, [onStop]);
 
   return {
     onMouseDown: start,
@@ -186,12 +187,13 @@ const createJoystickStyle = (joystickUi, props = {}) => {
     height: JOYSTICK_BACKGROUND_SIZE,
     marginLeft: `calc(-${JOYSTICK_BACKGROUND_SIZE} / 2)`,
     marginTop: `calc(-${JOYSTICK_BACKGROUND_SIZE} / 2)`,
-    background: theme.palette.teleopArrows.baseArrow
+    background: teleopMode ? theme.palette.background.navDark : theme.palette.teleopArrows.baseArrow
   });
 
   let frontBorder = 'initial';
   if (stepwiseMode && !stepByStep) frontBorder = `2px solid ${theme.palette.teleopArrows.stepwise}`;
-  if (teleopMode && !stepByStep) frontBorder = `2px solid ${theme.palette.teleopArrows.teleop}`;
+  if (teleopMode) frontBorder = `2px solid ${theme.palette.teleopArrows.teleop}`;
+  const lightGradient = 'radial-gradient(113.54% 113.54% at 40.33% 15.25%, #FFFFFF 0%, #FAFAFA 26.38%, #ECECEC 57.1%, #D5D5D5 89.86%, #CCCCCC 100%)';
   setStylesOnElement(front, {
     display: 'flex',
     alignItems: 'center',
@@ -201,17 +203,21 @@ const createJoystickStyle = (joystickUi, props = {}) => {
     height: JOYSTICK_FRONT_SIZE,
     marginLeft: `calc(-${JOYSTICK_FRONT_SIZE} / 2)`,
     marginTop: `calc(-${JOYSTICK_FRONT_SIZE} / 2)`,
-    background: 'radial-gradient(113.54% 113.54% at 40.33% 15.25%, #FFFFFF 0%, #FAFAFA 26.38%, #ECECEC 57.1%, #D5D5D5 89.86%, #CCCCCC 100%)',
+    background: teleopMode ? theme.palette.background.navDark : lightGradient,
     border: frontBorder
   });
 
+  // Teleop mode inner gradient, light and dark mode
   const frontDecoratorChild = front.childNodes[0] ? front.childNodes[0] : document.createElement('div');
+  const darkInnerGradient = 'radial-gradient(113.31% 113.31% at 59.66% 84.68%, #1A1230 0%, #150E26 21.38%, #110B1F 40.82%, #0E0918 59.53%, #0E0918 100%)';
+  const lightInnerGradient = 'radial-gradient(113.31% 113.31% at 59.66% 84.68%, #FFFFFF 0%, #FBFBFB 21.38%, #F0F0F0 40.82%, #DEDEDE 59.53%, #C4C4C4 77.77%, #A3A3A3 95.52%, #999999 100%)';
   setStylesOnElement(frontDecoratorChild, {
     height: 'calc(100% - 10px)',
     width: 'calc(100% - 10px)',
     borderRadius: '50%',
     opacity: 1,
-    background: 'radial-gradient(113.31% 113.31% at 59.66% 84.68%, #FFFFFF 0%, #FBFBFB 21.38%, #F0F0F0 40.82%, #DEDEDE 59.53%, #C4C4C4 77.77%, #A3A3A3 95.52%, #999999 100%)'
+    background: teleopMode ? darkInnerGradient : lightInnerGradient,
+    border: teleopMode ? `1px solid ${theme.palette.teleopArrows.teleop}` : 'initial'
   });
 
   // Only append if not already in the DOM; appendChild on an existing child
@@ -221,7 +227,7 @@ const createJoystickStyle = (joystickUi, props = {}) => {
 
 function NavigationJoystick(props) {
   const {
-    disabled, forwardCallback, backwardCallback, onJoystickMove,
+    disabled, forwardCallback, backwardCallback, onJoystickMove, onContinuousStop,
     leftCallback, rightCallback, stepByStep, teleopMode, stepwiseMode
   } = props;
   const { classes } = useStyles();
@@ -276,10 +282,10 @@ function NavigationJoystick(props) {
   // All four useLongPress hooks are called unconditionally at the component level
   // to comply with the Rules of Hooks.
   // When stepByStep is true, makeEventsToCallbacksObject is used instead.
-  const forwardLongPress = useLongPress(forwardCallback);
-  const leftLongPress = useLongPress(leftCallback);
-  const rightLongPress = useLongPress(rightCallback);
-  const backLongPress = useLongPress(backwardCallback);
+  const forwardLongPress = useLongPress(forwardCallback, onContinuousStop);
+  const leftLongPress = useLongPress(leftCallback, onContinuousStop);
+  const rightLongPress = useLongPress(rightCallback, onContinuousStop);
+  const backLongPress = useLongPress(backwardCallback, onContinuousStop);
 
   const forward = stepByStep ? makeEventsToCallbacksObject(forwardCallback) : forwardLongPress;
   const left = stepByStep ? makeEventsToCallbacksObject(leftCallback) : leftLongPress;
@@ -294,9 +300,7 @@ function NavigationJoystick(props) {
         [classes.outerRingStepwiseMode]: stepwiseMode,
       })}
     >
-      <div
-        className={classes.backgroundCircle}
-      >
+      <div className={classes.backgroundCircle}>
         <div className={classes.rowContainer}>
           <IconButton
             {...forward}
@@ -327,7 +331,7 @@ function NavigationJoystick(props) {
             />
           </IconButton>
           <div className={classes.nippleContainer}>
-            {!stepwiseMode && (
+            {!stepwiseMode && !stepByStep && (
               <NippleJoystick
                 id={uniqueNodeId}
                 ref={joystickRef}
@@ -388,6 +392,7 @@ NavigationJoystick.propTypes = {
   teleopMode: PropTypes.bool,
   stepwiseMode: PropTypes.bool,
   stepByStep: PropTypes.bool,
+  onContinuousStop: PropTypes.func,
   forwardCallback: PropTypes.func,
   leftCallback: PropTypes.func,
   rightCallback: PropTypes.func,

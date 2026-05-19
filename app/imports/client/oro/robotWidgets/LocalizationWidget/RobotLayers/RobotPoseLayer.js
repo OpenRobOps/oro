@@ -37,7 +37,7 @@ import theme from '../../../../Styles';
 import { PALETTE } from '../utils/utils';
 
 // Default styles
-const ARROW_COLOR = '#2A3C98';
+const ARROW_COLOR = '#BE9AFF';
 
 /**
  * Creates a feature with the shape of an arrow representing a generic robot avatar
@@ -118,6 +118,7 @@ const createFeatures = ({
   primaryColor, // color for selection
   secondaryColor, // color for fill
   outlineColor, // color for the outline (visible when not selected)
+  arrowColor, // override for arrow fill; falls back to selected ? primaryColor : outlineColor
   zIndex,
   showPoseOutline = true,
   posePreferences = {},
@@ -152,7 +153,7 @@ const createFeatures = ({
   // If oriented, add style to arrow feature, takes the color from the prop primaryColor
   const features = oriented
     ? [createArrowFeature({
-      color: selected ? primaryColor : outlineColor, radius, selected
+      color: arrowColor || (selected ? primaryColor : outlineColor), radius, selected
     }), innerBorderFeature] : [innerBorderFeature];
 
   // Add style to the outer circle (ring) feature, takes the color from the prop primaryColor
@@ -203,8 +204,9 @@ const RobotPoseLayer = ({
   } = useMemo(() => {
     const features = createFeatures({
       primaryColor: selected ? PALETTE.robotPoseNormalPrimary : primaryColor,
-      outlineColor: primaryColor,
-      secondaryColor,
+      outlineColor: selected ? PALETTE.robotPoseNormalPrimary : primaryColor,
+      secondaryColor: selected ? PALETTE.robotPoseNormalSecondary : secondaryColor,
+      arrowColor: selected ? PALETTE.robotPoseNormalPrimary : undefined,
       zIndex,
       showPoseOutline,
       posePreferences,

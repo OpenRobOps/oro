@@ -28,8 +28,7 @@ import Point from 'ol/geom/Point';
 import theme from '../../../../Styles';
 import { useActiveInteraction } from '../../../contexts/ActiveInteractionContext';
 import { createFeature } from '../utils/utils';
-import { noStyle, markerStyle } from '../Map/Styles';
-import { waypointPolygon } from '../Map/CustomShapes';
+import { noStyle, pinIconStyle } from '../Map/Styles';
 import { TranslateRotateComponent, ClickComponent } from './ReactInteractions';
 import { createArrowFeature, createRotateIndicatorFeatures } from '../RobotLayers/RobotPoseLayer';
 import PathLayer from '../RobotLayers/PathLayer';
@@ -45,7 +44,7 @@ const createPoseFeatures = ({ posePreferences = {} }) => {
   const { radius, scale } = posePreferences;
   const features = [
     createArrowFeature({
-      color: theme.palette.teleop.waypointAvatarFill,
+      color: theme.palette.teleop.waypointAvatar,
       radius,
       selected: true,
       zIndex: 100
@@ -58,17 +57,9 @@ const createPoseFeatures = ({ posePreferences = {} }) => {
       zIndex: 100
     })
   ];
-  const polygon = waypointPolygon();
-  if (scale) {
-    polygon.scale(scale);
-  }
-  const feature = createFeature(polygon, 'waypointPolygon', 0);
+  const feature = createFeature(new Point([0, 0]), 'waypointPin', 0);
   feature.setId('translateFeature');
-  feature.setStyle(markerStyle(
-    theme.palette.teleop.completedPath,
-    theme.palette.teleop.completedPath,
-    1
-  ));
+  feature.setStyle(pinIconStyle('#CFFAEC', scale ? 32 * scale : 32));
   translateFeatures.push(feature);
 
   const center = createFeature(new Point([0, 0]), 'center', 0);

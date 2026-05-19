@@ -27,6 +27,7 @@ import { isNumber } from 'lodash';
 import { useActiveInteraction } from '../../contexts/ActiveInteractionContext';
 import TeleopControls from './TeleopControls';
 import { useFullscreenContext } from '../../contexts/FullscreenContext';
+import useTeleopSubscription from '../../hooks/useTeleopSubscription';
 
 // Velocity limits and defaults (inlined from TeleopSettings)
 // TODO: Read from settings (low priority)
@@ -93,7 +94,11 @@ function TeleopControlsContainer({
 
   // If we entered fullscreen, disable active interactions.
   // This is because the joystick breaks on screen resizes and layout changes.
-  useEffect(() => { setActiveInteraction(null); }, [isFullscreen, setActiveInteraction]);
+  useEffect(() => {
+    setActiveInteraction(null);
+  }, [isFullscreen, setActiveInteraction]);
+
+  useTeleopSubscription(robotId);
 
   return (
     <TeleopControls
