@@ -28,7 +28,6 @@ import MongoManager from '../../mongo';
 import AnnotationsManager from '../annotations';
 import { COLLECTIONS, MODULE_NAMES, SPATIAL_ANNOTATION_TYPES, ID_TYPE_ROBOT } from '../../shared/constants';
 import { VITAL_POSE } from '../../shared/attributes';
-import { transformPose } from '../../shared/geometry';
 import AttributesManager from '../attributes';
 import MapsStorage from '../mapsStorage';
 import { deltaIntDecodePoints } from '../../shared/arrayUtil';

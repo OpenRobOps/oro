@@ -1,0 +1,251 @@
+/*
+Guide: https://docusaurus.io/docs/styling-layout
+
+Main color pallette (v0):
+    lilac #9E6FF3
+    suface #170E28
+    raised #0E0918
+
+    void #1A0F2E
+    border #251A38
+    body #BEAEDD
+    error FB7188
+
+Notes:
+  - Verify contrast ratio for light/dark themes in https://docusaurus.io/docs/styling-layout
+  - Check also "Exhaustive list of stable class names"
+  - See also Infima classes: https://docusaurus.community/knowledge/design/css/variables/ or https://gist.github.com/n4bb12/05cb485e2ac83b482ebcadee68e4ffaa
+*/
+
+:root {
+  /* Backgrounds */
+  --oro-color-void: #1A0F2E;
+  --oro-color-surface: #170E28;
+  --oro-color-raised: #0E0918;
+  /* Borders */
+  --oro-color-border: #251A38;
+  --oro-color-border-strong: #444950;
+  --oro-color-border-muted: #606770;
+  /* Lilac scale */
+  --oro-color-lilac: #9E6FF3;
+  --oro-color-lilac-300: #B896FF;
+  --oro-color-lilac-200: #D4BBFF;
+  /* Text */
+  --oro-color-text: #E3E3E3;
+  --oro-color-text-muted: #DADDE1;
+  --oro-color-text-faint: #9E9E9E;
+  --oro-color-cream: #FAF0F0;
+  /* Interactive */
+  --oro-color-white: #FFFFFF;
+  --oro-color-hover-bg: rgba(255, 255, 255, 0.05);
+  --ifm-color-primary: var(--oro-color-lilac);
+}
+
+
+/* Main - fonts */
+/* dm-mono-regular - latin */
+@font-face {
+  font-display: swap;
+  font-family: 'DM Mono';
+  font-style: normal;
+  font-weight: 400;
+  src: url('/static/fonts/dm-mono-v16-latin-regular.woff2') format('woff2');
+}
+/* inter-regular - latin */
+@font-face {
+  font-display: swap;
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  src: url('/static/fonts/inter-v20-latin-regular.woff2') format('woff2');
+}
+html {
+  font-family: "Inter";
+}
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Inter";
+}
+pre,
+code {
+  /*font-family: "DM Mono"; Not real monospace (bad for diagrams). TODO use it for code, but not diagrams */
+}
+
+[data-theme='dark'] {
+  --ifm-background-color: var(--oro-color-void);
+  --ifm-heading-color: var(--oro-color-text);
+  --ifm-font-color-base: var(--oro-color-text);
+
+  pre,
+  code {
+    background-color: var(--oro-color-raised);
+  }
+}
+
+/* ===== NAVBAR ===== */
+
+.navbar__brand .navbar__title {
+  color: var(--oro-color-lilac-300);
+}
+
+/* Active navbar item */
+.navbar__link--active {
+  color: var(--oro-color-lilac-300);
+}
+
+.navbar__logo {
+  padding: 0 40px 0 60px;
+}
+
+.navbar__items {
+  gap: 32px;
+}
+
+/* ===== HOMEPAGE ===== */
+
+/* Hero section */
+.hero--primary {
+  background-color: var(--oro-color-void);
+  color: var(--oro-color-cream);
+}
+
+/* Hero text */
+.hero__title,
+.hero__subtitle {
+  color: var(--oro-color-cream);
+}
+
+/* ===== FOOTER ===== */
+
+.footer--dark {
+  background-color: var(--oro-color-void);
+}
+
+/* ===== BLOG PAGE ===== */
+
+h1 a, h2 a, h3 a, h4 a, h5 a, h6 a {
+  color: inherit;
+}
+
+h1 a:hover, h2 a:hover, h3 a:hover, h4 a:hover, h5 a:hover, h6 a:hover {
+  color: var(--oro-color-lilac-200);
+  text-decoration: none;
+}
+
+/* Author names */
+.avatar__name a,
+.avatar__name {
+  color: var(--oro-color-lilac-200);
+}
+
+/* Post metadata (date, read time) */
+.blog-post-meta time,
+.blog-post-meta {
+  color: var(--oro-color-text-faint);
+}
+
+/* "Read more" link */
+a[aria-label^="Read more"] {
+  color: var(--oro-color-text) !important;
+}
+
+a[aria-label^="Read more"]:hover {
+  color: var(--oro-color-lilac-200) !important;
+}
+
+/* Tags */
+.blog-tags-list a,
+.tag,
+a[href^="/blog/tags/"],
+.badge {
+  color: var(--oro-color-lilac-300) !important;
+  border-color: var(--oro-color-lilac-300) !important;
+  background-color: transparent !important;
+}
+
+.blog-tags-list a:hover,
+.tag:hover,
+a[href^="/blog/tags/"]:hover,
+.badge:hover {
+  color: var(--oro-color-lilac-200) !important;
+  border-color: var(--oro-color-lilac-200) !important;
+  background-color: var(--oro-color-hover-bg) !important;
+}
+
+/* Blog sidebar links */
+.blog-recent-posts__title,
+.sidebar_re4s a {
+  color: var(--oro-color-lilac-200);
+}
+
+/* ===== DOCS PAGE ===== */
+
+/* Sidebar — surface background + right border */
+.theme-doc-sidebar-container {
+  background-color: var(--oro-color-surface);
+  border-right: 1px solid var(--oro-color-border-strong) !important;
+}
+
+/* Sidebar links — default color */
+.menu__link {
+  color: var(--oro-color-text-muted);
+}
+
+.menu__link:hover {
+  color: var(--oro-color-text);
+  background-color: var(--oro-color-hover-bg);
+}
+
+/* Sidebar active link — lilac + subtle bg */
+.menu__link--active,
+.menu__link--active:hover {
+  color: var(--oro-color-lilac-200);
+  background-color: var(--oro-color-hover-bg);
+}
+
+/* Sidebar category collapse button */
+.menu__caret::before {
+  background-color: var(--oro-color-text-muted);
+}
+
+/* Breadcrumbs */
+.breadcrumbs__link {
+  color: var(--oro-color-text);
+}
+
+.breadcrumbs__item--active .breadcrumbs__link {
+  background-color: var(--oro-color-hover-bg);
+  color: var(--oro-color-lilac-200);
+  border-radius: 24px;
+}
+
+/* Heading anchor links */
+.hash-link {
+  color: var(--oro-color-lilac-200);
+}
+
+/* Table of contents (right sidebar) */
+.table-of-contents {
+  border-left: 1px solid var(--oro-color-border-strong) !important;
+}
+
+.table-of-contents__link {
+  color: var(--oro-color-text);
+}
+
+.table-of-contents__link:hover,
+.table-of-contents__link--active {
+  color: var(--oro-color-lilac-200);
+}
+
+/* Pagination nav */
+.pagination-nav__link {
+  border-color: var(--oro-color-border-muted);
+}
+
+.pagination-nav__sublabel {
+  color: var(--oro-color-text);
+}
+
+.pagination-nav__label {
+  color: var(--oro-color-lilac-200);
+}

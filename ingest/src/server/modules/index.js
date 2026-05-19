@@ -19,7 +19,7 @@ export { default as RobotLocalizationModule } from './localization';
 // export { default as DataBagsModule } from './databags';
 // export { default as AlertsModule } from './alerts';
 // export { default as ImagesModule } from './images';
-// export { default as DiagnosticsModule } from './diagnostics';
+export { default as DiagnosticsModule } from './diagnostics';
 // export { default as StatesModule } from './states';
 // export { default as RosoutModule } from './rosout';
 export { default as CustomDataModule } from './customData';

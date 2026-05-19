@@ -630,7 +630,7 @@ export default class AgentManager {
    * Removes a request for a given module on a given robot at a given runlevel.
    */
   requestLess = async (robotId, moduleName, runlevel) => (
-    this._doRequestLess(realRobotId || robotId, moduleName, runlevel)
+    this._doRequestLess(robotId, moduleName, runlevel)
   );
 
   /**

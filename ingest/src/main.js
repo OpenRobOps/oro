@@ -44,7 +44,7 @@ import {
   RobotLocalizationModule,
 //   DataBagsModule,
 //   AlertsModule,
-//   DiagnosticsModule,
+  DiagnosticsModule,
 //   StatesModule,
 //   RosoutModule,
   CustomDataModule,
@@ -129,7 +129,7 @@ async function run() {
   new BasicsModule(mqtt).load();
   new SystemModule(mqtt).load();
   new CustomDataModule({ mqtt, mongo }).load();
-  // new DiagnosticsModule(mqtt).load(moduleSettings.diagnostics);
+  new DiagnosticsModule(mqtt).load(moduleSettings.diagnostics);
   new CustomCommandsModule(mqtt).load();
 
   await new RobotLocalizationModule({

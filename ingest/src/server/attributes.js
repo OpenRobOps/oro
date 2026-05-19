@@ -561,9 +561,9 @@ class AttributesManager {
     const robotConfig = await this.getRobotVitalsConfig(robotId);
     // Since this is a single attribute, with no options, it doesn't need
     // additional mapping.
-    const updated = { [VITAL_ROS_DIAGNOSTICS_STATUS]: { value: status } };
+    const attributeValues = { [VITAL_ROS_DIAGNOSTICS_STATUS]: { value: status } };
     this.saveAttributeValues({
-      robotId, attributeValues: updated, ts, config: robotConfig
+      robotId, attributeValues, ts, config: robotConfig
     });
   }
 

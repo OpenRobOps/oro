@@ -1,0 +1,20 @@
+herchu:
+  name: Hernan Badenes
+  title: Architect at InOrbit, Inc.
+  url: https://linkedin.com/in/hbadenes
+  image_url: https://avatars.githubusercontent.com/u/4777191
+  page: true
+  socials:
+    linkedin: hbadenes
+    github: herchu
+
+
+florian:
+  name: Florian Pestoni
+  title: Founder & CEO at InOrbit, Inc.
+  url: https://linkedin.com/in/florianpestoni
+  image_url: https://media.licdn.com/dms/image/v2/D4D35AQGQR7rMtNNiVA/profile-framedphoto-shrink_200_200/B4DZqTHi7UJcAY-/0/1763404820450?e=1774548000&v=beta&t=J76q5gLbi4n2p-9ec9Jzobm8sHEqceVL59chbAlVViY
+  page: true
+  socials:
+    linkedin: florianpestoni
+

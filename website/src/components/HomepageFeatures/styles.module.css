@@ -1,0 +1,12 @@
+.features {
+  display: flex;
+  align-items: center;
+  padding: 5rem 0 2.5rem;
+  width: 100%;
+  background-color: var(--oro-color-raised);
+}
+
+.featureSvg {
+  width: 100%;
+  height: auto;
+}
