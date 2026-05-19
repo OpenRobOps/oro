@@ -59,6 +59,7 @@ const MapImageLayer = ({ url, mapMetadata, style, zIndex = 0, autoFit = false })
     registerMapImageTransforms(mapProjection, imageProjection, mapMetadata);
 
     const imageLayer = new OLImageLayer({
+      className: 'ol-map-image-layer',
       source: new Static({
         url,
         projection: imageProjection,

@@ -60,17 +60,22 @@ const useStyles = makeStyles()(theme => ({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  containerDivFull: {
+    pointerEvents: 'auto',
+    display: 'flex',
+    justifyContent: 'flex-end',
+  },
   subContainerDiv: {
     height: 'calc(100% - 10px)',
     width: 'calc(100% - 10px)',
     pointerEvents: 'auto',
   },
-  teleopActiveBackground: {
-    background: 'repeating-linear-gradient(-45deg, #F5834E, #F5834E 15px, rgb(240, 85, 35) 15px, rgb(240, 85, 35) 30px)',
-    borderRadius: '0 10px 10px 0',
+  subContainerDivFull: {
+    height: '100%',
+    width: '70px',
+    pointerEvents: 'auto',
   },
-  waypointNavActiveBackground: {
-    background: 'repeating-linear-gradient(-45deg, #88BF2D, #88BF2D 15px, rgb(0,107,0, 70%) 15px, rgb(0,107,0, 70%) 30px)',
+  activeBackground: {
     borderRadius: '0 10px 10px 0',
   },
   teleopActiveBorder: {
@@ -124,8 +129,7 @@ const NavigationDetailComponent = (props) => {
       [classes.waypointNavActiveBorder]: waypointNavMode,
     },
     activeInteractionBackground: {
-      [classes.teleopActiveBackground]: teleopMode && !isFullscreen,
-      [classes.waypointNavActiveBackground]: waypointNavMode && !isFullscreen,
+      [classes.activeBackground]: (teleopMode || waypointNavMode) && !isFullscreen,
     },
   }), [teleopMode, waypointNavMode, isFullscreen]);
 
@@ -187,8 +191,8 @@ const NavigationDetailComponent = (props) => {
             </div>
           </div>
 
-          <div key={KEY_INTERACTION} className={classnames(classes.containerDiv, activeInteractionBackground)}>
-            <div className={classnames(classes.subContainerDiv, { [classes.fullscreenDiv]: isFullscreen })}>
+          <div key={KEY_INTERACTION} className={classnames(classes.containerDivFull, activeInteractionBackground)}>
+            <div className={classnames(classes.subContainerDivFull, { [classes.fullscreenDiv]: isFullscreen })}>
               <ActiveInteractionControl
                 robotOffline={robotOffline}
                 robotId={robotId}
