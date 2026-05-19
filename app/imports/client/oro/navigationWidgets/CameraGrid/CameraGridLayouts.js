@@ -45,7 +45,8 @@ const twoCamerasPerRowLayout = cameras => (
       // Calculate the height of each camera by dividing layout rows (RESPONSIVE_ROWS) by the amount
       // of camera rows
       h: RESPONSIVE_ROWS / Math.ceil(cameras.length / 2),
-      i: cam.id ? cam.id.toString() : ix.toString()
+      i: cam.id ? cam.id.toString() : ix.toString(),
+      static: true
     }
   ))
 );
@@ -64,7 +65,8 @@ const threeCamerasPerRowLayout = cameras => (
       y: 0,
       w: 1,
       h: RESPONSIVE_ROWS / Math.ceil(cameras.length / RESPONSIVE_COLUMNS),
-      i: cam.id ? cam.id.toString() : ix.toString()
+      i: cam.id ? cam.id.toString() : ix.toString(),
+      static: true
     }
   ))
 );
@@ -86,7 +88,8 @@ const generateCamerasLayout = (cameras) => {
             y: 0,
             w: RESPONSIVE_COLUMNS,
             h: RESPONSIVE_ROWS,
-            i: cameras[0].id ? cameras[0].id.toString() : 'Camera 1'
+            i: cameras[0].id ? cameras[0].id.toString() : 'Camera 1',
+            static: true
           }
         ]);
       case 2: //  Two camera layout - layout is split in "two columns"
@@ -96,14 +99,16 @@ const generateCamerasLayout = (cameras) => {
             y: 0,
             w: RESPONSIVE_COLUMNS / 2,
             h: RESPONSIVE_ROWS,
-            i: cameras[0].id ? cameras[0].id.toString() : 'Camera 1'
+            i: cameras[0].id ? cameras[0].id.toString() : 'Camera 1',
+            static: true
           },
           {
             x: RESPONSIVE_COLUMNS / 2,
             y: 0,
             w: RESPONSIVE_COLUMNS / 2,
             h: RESPONSIVE_ROWS,
-            i: cameras[1].id ? cameras[1].id.toString() : 'Camera 2'
+            i: cameras[1].id ? cameras[1].id.toString() : 'Camera 2',
+            static: true
           },
         ]);
       // Three camera layout
@@ -116,21 +121,24 @@ const generateCamerasLayout = (cameras) => {
             y: 0,
             w: RESPONSIVE_COLUMNS,
             h: RESPONSIVE_ROWS / 2,
-            i: cameras[0].id ? cameras[0].id.toString() : 'Camera 1'
+            i: cameras[0].id ? cameras[0].id.toString() : 'Camera 1',
+            static: true
           },
           {
             x: 0,
             y: 6,
             w: RESPONSIVE_COLUMNS / 2,
             h: RESPONSIVE_ROWS / 2,
-            i: cameras[1].id ? cameras[1].id.toString() : 'Camera 2'
+            i: cameras[1].id ? cameras[1].id.toString() : 'Camera 2',
+            static: true
           },
           {
             x: RESPONSIVE_COLUMNS / 2,
             y: 6,
             w: RESPONSIVE_COLUMNS / 2,
             h: RESPONSIVE_ROWS / 2,
-            i: cameras[2].id ? cameras[2].id.toString() : 'Camera 3'
+            i: cameras[2].id ? cameras[2].id.toString() : 'Camera 3',
+            static: true
           }
         ]);
       // 4, 5, 6 cameras return a grid with 2 cameras per row

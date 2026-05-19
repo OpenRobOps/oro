@@ -47,6 +47,11 @@ const ANGLE_INCREMENT = FULL_CIRCLE / CIRCLE_POLYGON_SIDES;
 // Baseline for the avatar size using the radius
 const AVATAR_BORDER_RADIUS = 0.45;
 
+// Waypoint marker geometry constants (map units)
+const WAYPOINT_HEIGHT = 0.5;
+const WAYPOINT_RADIUS = 0.2;
+const WAYPOINT_INNER_RADIUS = 0.1;
+
 /**
  * Creates a circle used to decorate the border ring of the robot pose avatar
  */
@@ -166,6 +171,39 @@ const createSquarePolygon = halfSize => new Polygon([[
   [-halfSize, -halfSize]]
 ]);
 
+/**
+ * Creates the waypoint indicator cone as a Polygon with a circle in the middle.
+ * Used as the visual marker for Waypoint Teleop interactions.
+ */
+const waypointPolygon = () => {
+  // First line from origin (0,0) to the top-left start of the cone
+  const points = [[0, 0], [-WAYPOINT_RADIUS, WAYPOINT_HEIGHT]];
+
+  // Cone arc (top half-circle)
+  for (let i = 1; i <= CIRCLE_POLYGON_SIDES / 2; i++) {
+    points.push([
+      Math.cos(ANGLE_INCREMENT * i) * -WAYPOINT_RADIUS,
+      WAYPOINT_HEIGHT + (Math.sin(ANGLE_INCREMENT * i) * WAYPOINT_RADIUS)
+    ]);
+  }
+
+  // Inner circle of the marker
+  let i = 0;
+  for (; i <= CIRCLE_POLYGON_SIDES; i++) {
+    points.push([
+      Math.cos(ANGLE_INCREMENT * i) * WAYPOINT_INNER_RADIUS,
+      WAYPOINT_HEIGHT + (Math.sin(ANGLE_INCREMENT * i) * WAYPOINT_INNER_RADIUS)
+    ]);
+  }
+  i--;
+  points.push([
+    Math.cos(ANGLE_INCREMENT * i) * WAYPOINT_RADIUS,
+    WAYPOINT_HEIGHT + (Math.sin(ANGLE_INCREMENT * i) * WAYPOINT_RADIUS)
+  ]);
+
+  return new Polygon([points]);
+};
+
 export {
   avatarArrowPolygon,
   createAvatarArrowPolygon,
@@ -173,6 +211,7 @@ export {
   createAvatarBorderRing,
   avatarBorderRing,
   createSquarePolygon,
+  waypointPolygon,
   THREE_QUARTER_CIRCLE,
   CIRCLE_POLYGON_SIDES,
   ANGLE_INCREMENT

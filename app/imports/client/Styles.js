@@ -43,7 +43,7 @@ const theme = createTheme({
             // is going to make 6px the total width of the scrollbar:
             // 12px - 3px right border - 3px left border
             // also it's going to create a space of 3px in the top and the bottom of the scrollbar
-            border: '3px solid rgba(0, 0, 0, 0)',
+            border: '3px solid #00000000',
             backgroundClip: 'padding-box'
           }
         }
@@ -227,6 +227,7 @@ const theme = createTheme({
       lightGray: '#C2C2C2',
       mediumDarkGray: '#BEAEDD',
       muted: '#AAAAAA',
+      mutedDark: '#585858',
       subtle: '#D0D0D0',
       buttonText: '#D9D9D9',
       inactive: '#9488AA',
@@ -245,6 +246,10 @@ const theme = createTheme({
       navDark: '#0E0918',
       white: '#FFFFFF',
       surface: '#170E28',
+      mintAccent: '#5ECFA8',
+      mintAccentDim: '#1D4942',
+      orangeAccent: '#F4935A',
+      orangeAccentDim: '#5F3021',
       lightBlue: '#1A0F2E',
       veryLightGray: '#1A0F2E',
       lightGray: '#251A38',
@@ -298,7 +303,7 @@ const theme = createTheme({
       wayPoint: '#006B00',
       completedPath: '#2A3C98',
       openTeleop: '#F05523',
-      waypointAvatar: 'transparent'
+      waypointAvatar: '#CFFAEC'
     },
     severityColor: {
       'SEV 0': '#700893',
@@ -316,9 +321,9 @@ const theme = createTheme({
       lightBeige: '#E5C494'
     },
     shadowColor: {
-      gray: 'rgba(0, 0, 0, 0.5)',
-      white: 'rgba(250, 240, 240, 0.1)',
-      darkGrayWithOpacity: 'rgba(14, 9, 24, 0.3)'
+      gray: '#00000080',
+      white: '#FAF0F01A',
+      darkGrayWithOpacity: '#0E09184D'
     },
     teleopArrows: {
       darkBackground: '#2B2B2B',
@@ -326,7 +331,7 @@ const theme = createTheme({
       baseArrow: '#B9B9B9',
       darkModeArrow: '#696969',
       stepwise: '#88BF2D',
-      teleop: '#F05523'
+      teleop: '#F4935A'
     },
     cameras: {
       delayTime: '#FFBB32'

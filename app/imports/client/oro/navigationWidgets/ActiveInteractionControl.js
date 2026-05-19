@@ -32,13 +32,14 @@ import ZoomInIcon from '../graphics/op/ZoomInIcon/ZoomInIcon';
 import ZoomOutIcon from '../graphics/op/ZoomOutIcon/ZoomOutIcon';
 import LocalizeIcon from '../graphics/op/LocalizeIcon/LocalizeIcon';
 import RetroPadIcon from '../graphics/op/RetroPadIcon/RetroPadIcon';
+import LocPinIcon from '../graphics/op/LocPinIcon/LocPinIcon';
 import ConfirmIcon from '../graphics/op/ConfirmIcon';
 // ORO imports
 import { useActiveInteraction } from '../contexts/ActiveInteractionContext';
-import { useDarkModeContext } from '../contexts/DarkModeContext';
 import { useLocalizationWidget } from '../contexts/LocalizationWidgetContext';
 import CancelNavToGoalButton from './CancelNavToGoalButton';
 import {
+  NAVIGATE_MODE,
   RELOCALIZE_MODE,
   TELEOP_MODE,
 } from './interactions';
@@ -47,20 +48,30 @@ import { KEY_TELEOP } from './LayoutManager.js';
 
 const useStyles = makeStyles()(theme => ({
   boxContainer: {
-    borderRadius: '10px',
+    borderRadius: '0 10px 10px 0',
     padding: '10px',
     height: '100%',
+    width: '100%',
+    boxSizing: 'border-box',
+  },
+  boxContainerMint: {
+    backgroundColor: theme.palette.background.mintAccentDim,
+  },
+  boxContainerOrange: {
+    backgroundColor: theme.palette.background.orangeAccentDim,
   },
   firstIconContainer: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
+    gap: '8px'
   },
   secondIconContainer: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    marginTop: '50px'
+    marginTop: '50px',
+    gap: '8px'
   },
   thirdIconContainer: {
     height: '45px',
@@ -70,66 +81,64 @@ const useStyles = makeStyles()(theme => ({
     marginTop: '30px'
   },
   navBtn: {
-    color: theme.palette.text.secondary,
-    backgroundColor: theme.palette.action.selected,
+    color: theme.palette.text.primary,
+    backgroundColor: theme.palette.background.surface,
     borderRadius: '50%',
     padding: '6px',
     marginBottom: '4px',
     '& .MuiSvgIcon-root': { fontSize: '24px' },
     '&:hover': {
-      backgroundColor: theme.palette.action.hover,
+      backgroundColor: theme.palette.background.navDark,
       color: theme.palette.text.primary,
     },
-    '&.active': {
-      backgroundColor: theme.palette.primary.main,
-      color: theme.palette.common.white,
-      '&:hover': {
-        backgroundColor: theme.palette.primary.dark,
-      }
+    '&.active-mint': {
+      backgroundColor: theme.palette.background.surface,
+      color: theme.palette.background.mintAccent,
+      boxShadow: `0 0 0 1.5px ${theme.palette.background.mintAccent}`,
+      '&:hover': { backgroundColor: theme.palette.background.navDark },
     },
-    '&.active-secondary': {
-      backgroundColor: theme.palette.secondary.main,
-      color: theme.palette.common.white,
+    '&.active-orange': {
+      backgroundColor: theme.palette.background.surface,
+      color: theme.palette.background.orangeAccent,
+      boxShadow: `0 0 0 1.5px ${theme.palette.background.orangeAccent}`,
+      '&:hover': { backgroundColor: theme.palette.background.navDark },
     }
   },
   confirmButton: {
     flexDirection: 'row',
     margin: '10px 8px',
-    boxShadow:
-      '0px 3px 5px -1px rgba(0,0,0,0.2), 0px 6px 10px 0px rgba(0,0,0,0.14), 0px 1px 18px 0px rgba(0,0,0,0.12)',
     width: '36px',
     height: '36px',
-    backgroundColor: theme.palette.background.white,
+    backgroundColor: theme.palette.background.surface,
+    boxShadow: `0 0 0 1.5px ${theme.palette.background.mintAccent}`,
     '&:hover, &.Mui-focusVisible': {
-      backgroundColor: theme.palette.text.notesLight
+      backgroundColor: theme.palette.background.navDark
     },
   },
-  confirmDarkMode: {
-    backgroundColor: theme.palette.teleop?.completedPath,
-    '&:hover, &.Mui-focusVisible': {
-      backgroundColor: theme.palette.background.titleBar
-    },
+  confirmButtonOrange: {
+    boxShadow: `0 0 0 1.5px ${theme.palette.background.orangeAccent}`,
   },
   checkmark: {
-    color: '#3F3F3F'
+    color: theme.palette.background.mintAccent
   },
-  checkmarkDark: {
-    color: theme.palette.teleopArrows?.lightBackground
+  checkmarkOrange: {
+    color: theme.palette.background.orangeAccent
   }
 }));
 
 /**
  * Small icon button for the nav sidebar. Highlights when `active`.
  */
-const NavButton = ({ tooltip, onClick, disabled, active, activeVariant = 'primary', children }) => {
+const NavButton = ({ tooltip, onClick, disabled, active, activeVariant = 'mint', children }) => {
   const { classes } = useStyles();
   const btn = (
     <IconButton
       onClick={onClick}
       disabled={disabled}
       className={classnames(classes.navBtn, {
-        active: active && activeVariant === 'primary',
-        'active-secondary': active && activeVariant === 'secondary'
+        // using colors because waypoint nav AND relocalize are mint and teleop is orange
+        'active-mint': active && activeVariant === 'mint',
+        'active-orange': active && activeVariant === 'orange'
       })}
       size="medium"
     >
@@ -149,7 +158,7 @@ NavButton.propTypes = {
   onClick: PropTypes.func,
   disabled: PropTypes.bool,
   active: PropTypes.bool,
-  activeVariant: PropTypes.oneOf(['primary', 'secondary']),
+  activeVariant: PropTypes.oneOf(['mint', 'orange']),
   children: PropTypes.node,
 };
 
@@ -164,10 +173,10 @@ const ActiveInteractionControl = ({
     executeInteraction,
   } = useActiveInteraction();
   const { increaseZoom, decreaseZoom, reset } = useLocalizationWidget();
-  const { isDarkMode } = useDarkModeContext();
 
   const isRelocalizeActive = activeInteraction === RELOCALIZE_MODE;
   const isTeleopActive = activeInteraction === TELEOP_MODE;
+  const isNavigationActive = activeInteraction === NAVIGATE_MODE;
   const isAnyActionActive = Boolean(activeInteraction);
 
   const handleResetZoom = useCallback(() => reset?.(), [reset]);
@@ -175,12 +184,16 @@ const ActiveInteractionControl = ({
   const handleDecreaseZoom = useCallback(() => decreaseZoom?.(), [decreaseZoom]);
   const handleTeleop = useCallback(() => setActiveInteraction(isTeleopActive ? null : TELEOP_MODE), [isTeleopActive, setActiveInteraction]);
   const handleRelocalize = useCallback(() => setActiveInteraction(isRelocalizeActive ? null : RELOCALIZE_MODE), [isRelocalizeActive, setActiveInteraction]);
+  const handleNavigation = useCallback(() => setActiveInteraction(isNavigationActive ? null : NAVIGATE_MODE), [isNavigationActive, setActiveInteraction]);
   const handleConfirm = useCallback(() => executeInteraction(), [executeInteraction]);
 
   const offlineMsg = !isZeroData && robotOffline ? 'Robot offline' : undefined;
 
   return (
-    <Grid container className={classes.boxContainer}>
+    <Grid container className={classnames(classes.boxContainer, {
+      [classes.boxContainerMint]: isRelocalizeActive || isNavigationActive,
+      [classes.boxContainerOrange]: isTeleopActive,
+    })}>
 
       {/* Group 1: zoom controls */}
       <Grid size={{ xs: 12 }} className={classes.firstIconContainer}>
@@ -203,7 +216,12 @@ const ActiveInteractionControl = ({
           </NavButton>
         )}
         {isPanelVisibleFn(KEY_TELEOP) && (
-          <NavButton tooltip={offlineMsg || 'Open Teleop'} onClick={handleTeleop} disabled={robotOffline && isZeroData} active={isTeleopActive} activeVariant="secondary">
+          <NavButton tooltip={offlineMsg || 'Waypoint Teleop'} onClick={handleNavigation} disabled={robotOffline && isZeroData} active={isNavigationActive}>
+            <LocPinIcon />
+          </NavButton>
+        )}
+        {isPanelVisibleFn(KEY_TELEOP) && (
+          <NavButton tooltip={offlineMsg || 'Open Teleop'} onClick={handleTeleop} disabled={robotOffline && isZeroData} active={isTeleopActive} activeVariant="orange">
             <RetroPadIcon />
           </NavButton>
         )}
@@ -225,10 +243,10 @@ const ActiveInteractionControl = ({
               <IconButton
                 disabled={robotOffline && isZeroData}
                 onClick={handleConfirm}
-                className={classnames(classes.confirmButton, { [classes.confirmDarkMode]: isDarkMode })}
+                className={classnames(classes.confirmButton, { [classes.confirmButtonOrange]: isTeleopActive })}
                 size="large"
               >
-                <ConfirmIcon classes={{ checkmark: classnames(classes.checkmark, { [classes.checkmarkDark]: isDarkMode }) }} />
+                <ConfirmIcon classes={{ checkmark: classnames(classes.checkmark, { [classes.checkmarkOrange]: isTeleopActive }) }} />
               </IconButton>
             </span>
           </Tooltip>

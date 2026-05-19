@@ -68,9 +68,16 @@ const StyledTabs = styled(Tabs)(({ theme }) => ({
 const StyledTab = styled(props => (
   <Tab disableRipple {...props} />
 ))(({ theme }) => ({
+  position: 'relative',
   '&.Mui-selected': {
     color: theme.palette.text.contrastText,
-    borderBottom: `3px solid ${theme.palette.background.tabSelected}`
+  },
+  '&.Mui-selected::after': {
+    content: '""',
+    position: 'absolute',
+    inset: 'auto 0 0 0',
+    height: '3px',
+    background: theme.palette.background.tabSelected,
   }
 }));
 

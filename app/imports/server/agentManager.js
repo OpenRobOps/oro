@@ -369,8 +369,6 @@ export default class AgentManager {
     //   moduleName: 'GPSAgentlet',
     //   minRunlevel: 5
     // });
-    // Make RosTeleopAgentlet publish zero vel at the end of teleop by default
-    // This prevents the last command being a vel value which can cause infinite movement
     await RobotModuleState.insertAsync({
       entityId,
       entityType,

@@ -125,9 +125,9 @@ const createFeatures = ({
   feature.setId('translateFeature');
   features.push(feature);
 
-  // Feature: blue frame around green square
+  // Feature: lavender frame around mint square
   feature = createFeature(relocalizeRotateOffset.clone(), 'translateOffset', 0);
-  feature.setStyle(markerStyle('transparent', rotateStyle.stroke, rotateStyle.strokeWidth));
+  feature.setStyle(markerStyle('transparent', PALETTE.relocalizeInnerFrame, 3));
   feature.setId('translateFeatureOffset');
   features.push(feature);
 
@@ -152,7 +152,13 @@ const createFeatures = ({
   // TODO: If robot has no orientation or orientation is a non finite number
   // relocalization won't work, the logic needs to be re-thought
   const robotPoseFeatures = createRobotPoseFeatures({
-    primaryColor, secondaryColor, posePreferences, oriented: true
+    primaryColor,
+    secondaryColor,
+    outlineColor: primaryColor,
+    arrowColor: primaryColor,
+    selected: true,
+    posePreferences,
+    oriented: true
   });
   const laserFeatures = createMultipleLaserPointsFeatures({
     laserConfig, laserRanges, uiPreferences
