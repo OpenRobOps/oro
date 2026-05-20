@@ -25,7 +25,8 @@ import { useTracker } from 'meteor/react-meteor-data';
 // ORO modules
 import CameraGridComponent from './CameraGridComponent';
 import { cameraStateToArray } from '../../../../lib/states';
-import { getCalculatedState } from '../../util/stateUtils';
+import { RobotModuleState } from '../../../../lib/collections';
+import { ID_TYPE_ROBOT, MODULE_NAMES } from '../../../../shared/constants';
 
 const CAMERAS_PREFERENCES = 'cameras';
 
@@ -38,32 +39,36 @@ const CameraGridContainer = (ownProps) => {
   const trackerData = useTracker(() => {
     if (!robotId) return {};
     // Fetch module states to know how many cameras are available
-    const moduleStateHandle = Meteor.subscribe('robot.module_states', {
-      robotId, moduleName: 'RosImageAgentlet'
-    });
+    const moduleStateHandle = Meteor.subscribe('robot.module_states', { robotId, moduleName: MODULE_NAMES.ROS_IMAGE_AGENTLET });
 
     const isLoading = !moduleStateHandle.ready();
 
     // Determine camera topic and arguments
-    const states = getCalculatedState({ entityId: robotId });
-    const userImageState = (states.RosImageAgentlet || { cameraViewOn: false, highSpeed: false });
-    // Collect all cameras (by topic) in a sorted array
-    const camerasConfig = userImageState.cameras_config || {};
-    const cameras = cameraStateToArray(camerasConfig);
+    const robotState = RobotModuleState.findOne({ entityId: robotId, entityType: ID_TYPE_ROBOT })?.[MODULE_NAMES.ROS_IMAGE_AGENTLET] || {};
 
-    const camerasFiltered = cameras.filter((cam, ix) => {
-      // if the container is not called as a main camera widget
-      // then it should remove the main camera, because the main camera is being
-      // displayed somewhere else
-      if (!isMainCamera) return cam.id !== mainCameraId;
-      // if the widget is main camera it should return the camera from
-      // the mainCameraId or the first one
-      return mainCameraId ? cam.id == mainCameraId : ix === 0;
-    });
+    // const userImageState = (states.RosImageAgentlet || { cameraViewOn: false, highSpeed: false });
+    // Collect all cameras (by topic) in a sorted array
+    const camerasConfig = robotState.cameras_config || {};
+
+    // TODO reimplement this logic, using agent states (not robotmodulestate)
+    // const cameras = cameraStateToArray(camerasConfig);
+    // const camerasFiltered = cameras.filter((cam, ix) => {
+    //   // if the container is not called as a main camera widget
+    //   // then it should remove the main camera, because the main camera is being
+    //   // displayed somewhere else
+    //   if (!isMainCamera) return cam.id !== mainCameraId;
+    //   // if the widget is main camera it should return the camera from
+    //   // the mainCameraId or the first one
+    //   return mainCameraId ? cam.id == mainCameraId : ix === 0;
+    // });
+    const cameras = Object.keys(camerasConfig).map(id => ({
+      id,
+      topic: robotState?.camera_topics?.[id]
+    }));
 
     return {
       isLoading,
-      cameras: camerasFiltered
+      cameras
     };
   }, [robotId, isMainCamera, mainCameraId]);
 

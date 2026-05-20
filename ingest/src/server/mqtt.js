@@ -320,12 +320,9 @@ export default class OroMqtt {
 
   /**
    * Shuts down all MQTT connections cleanly.
-   * Presents a promise interface to allow awaiting.
    */
-  shutdown = () => {
-    const promises = Object.values(this.brokers).map(broker => broker.shutdown());
-    this._activeRobotsTrackers.forEach(t => t.stop());
-    return Promise.all(promises);
+  shutdown = async () => {
+    await Promise.all(Object.values(this.brokers).map(broker => broker.shutdown()));
   };
 
   /**

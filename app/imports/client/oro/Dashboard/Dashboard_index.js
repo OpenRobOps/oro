@@ -17,7 +17,7 @@
 /**
  * Dashboard Meteor dependant component
  */
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { Meteor } from 'meteor/meteor';
 import PropTypes from 'prop-types';
 import fp from 'lodash/fp';
@@ -44,7 +44,7 @@ import VitalsWidget from '../robotWidgets/VitalsWidget';
 import DiagnosticsWidget from '../robotWidgets/DiagnosticsWidget';
 // import DataBagWidget from '../robotWidgets/DataBagWidget';
 // import LogsWidget from '../robotWidgets/LogsWidget';
-// import CameraView from '../robotWidgets/CameraView';
+import CameraView from '../robotWidgets/CameraView';
 import IncidentTimeline from '../fleetWidgets/IncidentTimeline';
 import IncidentList from '../fleetWidgets/IncidentList';
 import ActionsWidget from '../robotWidgets/ActionsWidget';
@@ -745,14 +745,14 @@ const WIDGET_FACTORY = {
   //   />
   // ),
 
-  // [WIDGET_TYPES.CAMERA]: ({ config, context, scope, isZeroData }) => (
-  //   <CameraView
-  //     robotId={getRobotId(context, scope)}
-  //     config={config}
-  //     standalone
-  //     isZeroData={isZeroData}
-  //   />
-  // ),
+  [WIDGET_TYPES.CAMERA]: ({ config, context, scope, isZeroData }) => (
+    <CameraView
+      robotId={getRobotId(context, scope)}
+      config={config}
+      standalone
+      isZeroData={isZeroData}
+    />
+  ),
 
   [WIDGET_TYPES.ACTIONS]: ({ config, context, scope, isZeroData }) => (
     <ActionsWidget

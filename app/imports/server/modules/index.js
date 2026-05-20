@@ -25,5 +25,5 @@
 // export { default as RobotLocalizationModule } from './localization';
 // export { default as CustomDataModule } from './customData';
 // export { default as RosMonitorModule } from './rosMonitor';
-// export { default as ImagesModule } from './images';
+export { default as ImagesModule } from './images';
 export { default as Navigation2DModule } from './nav2d';

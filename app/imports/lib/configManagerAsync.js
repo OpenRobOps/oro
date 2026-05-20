@@ -27,6 +27,8 @@ import {
   ID_TYPE_USER,
   ID_DEFAULT
 } from '../shared/constants';
+import { glueId } from '../shared/roles';
+import objectHash from 'object-hash';
 
 // Type hierarchy, modeled as partial order.
 //
@@ -167,7 +169,6 @@ export default class ConfigManager {
       );
     const projection = { fields: filters };
     // fetch and sort the configurations for the different levels of the hierarchy
-    console.log("makeEntityQuery", query, projection)
     return this._coll.find(query, projection);
   };
 
@@ -198,7 +199,6 @@ export default class ConfigManager {
   getEntityConfig = async (
     { entityId, entityType, conditions, fields, groupingKey }
   ) => {
-    console.log("getEntityConfig", entityId, entityType, conditions, fields, groupingKey)
     if (!isIdString(entityId) || !isIdString(entityType)) {
       throw new Error('Missing entityId/entityType');
     }
@@ -206,9 +206,21 @@ export default class ConfigManager {
     const query = await this.makeEntityQuery({
       entityId, entityType, conditions, fields
     });
-    const configArray = (await query.fetchAsync()).sort(this._checkObjectHierarchy);
+    return this._calculateEntityConfig(await query.fetchAsync(), groupingKey);
+  };
+
+  /**
+   * Calculates an effective configuration given a list of possibly overlapping config documents.
+   * This is a helper for getEntityConfig (and its publication variant publishEntityConfig)
+   * 
+   * It sorts the array of configs on every call, and calculates all the overlaps: it is
+   * not efficient, it should not be called with a large number of documents.
+   */
+  _calculateEntityConfig = (configsArray, groupingKey)  => {
+    // sort config docs
+    const sortedConfigs = configsArray.sort(this._checkObjectHierarchy);
     // reduce the configurations array to a final object with all the default applied
-    const config = configArray.reduce((acc, value) => {
+    return sortedConfigs.reduce((acc, value) => {
       delete value._id;
       delete value.entityId;
       delete value.entityType;
@@ -219,8 +231,62 @@ export default class ConfigManager {
       }
       return applyDefaults(acc, value);
     }, {});
-    return config;
-  };
+  }
+
+  /**
+   * Performs config calculations for a given entity and publishes the result to a Meteor publication.
+   * This publishes a single document with { entityId, entityType } containing the computed configuration.
+   * 
+   * The publication observes changes to any involved document (e.g. entityType=robot or entityTyp=system) and
+   * for any change, it re-calculates the resulting configuration and publishes the update.
+   * 
+   * NOTE: No two single calls to publishEntityConfig should publish data on the same entity and collection but
+   * different conditions, as the documents would collide on the client.
+   */
+  publishEntityConfig = async (
+    { publication, entityId, entityType, conditions, fields, groupingKey }
+  ) => {
+    if (!entityId || !isString(entityId)) {
+      throw new Error('entityId must be a string');
+    }
+    const collectionName = this._coll._name; // HACK: uses a private Meteor field from a Mongo.Collection
+    // query for the configuration documents for the different levels of the hierarchy
+    const query = await this.makeEntityQuery({ entityId, entityType, conditions, fields });
+    const docsById = {};
+    const fakeId = glueId(entityId, entityType);
+    publication.added(collectionName, fakeId, {}); // similar to getEntityConfig: initial result is never empty.
+    let publishTimer = null;
+    const publishNow = () => {
+      // publish the calculated configuration and clear the timer
+      publishTimer = null;
+      const resultConfig = this._calculateEntityConfig(Object.values(docsById), groupingKey);
+      // patch the config to look like a mongodb doc (the only doc)
+      resultConfig._id = fakeId;
+      resultConfig.entityId = entityId;
+      resultConfig.entityType = entityType;
+      publication.changed(collectionName, fakeId, resultConfig);  
+    }
+    return await query.observeAsync({
+      added: (doc) => {
+        docsById[doc._id] = doc;
+        if (!publishTimer) { // queue at timer to publish soon - this batches added()/changed() calls
+          publishTimer = setTimeout(publishNow, 10);
+        }
+      },
+      changed: (_id, doc) => {
+        docsById[_id] = doc;
+        if (!publishTimer) { // queue at timer to publish soon - this batches added()/changed() calls
+          publishTimer = setTimeout(publishNow, 10);
+        }
+      },
+      removed: (_id) => {
+        delete docsById[_id];
+        if (!publishTimer) { // queue at timer to publish soon - this batches added()/changed() calls
+          publishTimer = setTimeout(publishNow, 10);
+        }
+      },
+    });
+  }
 
   /**
    * Sets a configuration on a particular entity, defined by an entityId and entityType.
