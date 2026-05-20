@@ -92,18 +92,6 @@ const CameraViewContainer = (props) => {
       const cameraHiRes = clientImageState && isObject(clientImageState.clientOverrides)
         && clientImageState.clientOverrides[cameraNumber] == 'focus';
 
-      console.log("return DATA", { robotState, agentImageState, clientImageState }, {
-        robotId,
-        cameraModuleOn,
-        disableMqtt: !cameraModuleOn,
-        isLoading,
-        cameraId,
-        camerasConfig,
-        cameraEnabled,
-        cameraHiRes,
-        offline,
-        cameraNumber,
-      } )
       if (!isLoading && cameraModuleOn) {
         // Create a subscription to track usage of camera. This does not publish/retrieve docs, it only 
         // activates the requestMore() mechanism for agentlets
