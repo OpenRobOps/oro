@@ -78,7 +78,7 @@ const WIDGET_TYPES = {
   CUSTOM_DATA: 'customData',
   LOGS: 'logsWidget',
   ACTIONS: 'actionsWidget',
-  // CAMERA: 'cameraWidget',
+  CAMERA: 'cameraWidget',
   AUDIT_LOG: 'auditLog',
   LIST_DATA: 'listData',
   TEXT: 'text'

@@ -32,8 +32,8 @@ Thank you for your interest in contributing to OpenRobOps! This project is open 
 git clone https://github.com/OpenRobOps/oro.git
 cd oro
 
-# Generate settings
-./scripts/generate-settings.sh --apply
+# Generate settings (optionally try with `--plan` first)
+./scripts/generate-settings.sh
 
 # Install dependencies
 cd app && npm install
