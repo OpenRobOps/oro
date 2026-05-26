@@ -308,74 +308,78 @@ export default class AgentManager {
     // Create module state defaults
     const entityId = ID_DEFAULT;
     const entityType = ID_TYPE_SYSTEM_WIDE;
-    // Reset custom data module defaults
-    await RobotModuleState.removeAsync({ entityId, entityType });
-    // Add a hardcoded, hidden key/value source as ID 0
-    await RobotModuleState.insertAsync({
-      entityId,
-      entityType,
-      moduleName: 'CustomDataAgentlet',
-      custom_data_sources: [{ type: 'key_value', id: '0', name: 'Key Values' }]
-    });
-    // Make camera module enabled by default
-    await RobotModuleState.insertAsync({
-      entityId,
-      entityType,
-      moduleName: 'RosImageAgentlet',
-      cameraViewOn: true,
-      cameras_config: {
-        // higher frequency preset, found in CameraSettings.js
-        0: {
-          output_encoding: 'mono8',
-          quality: 10,
-          rate: 2,
-          img_width: 380,
-          img_height: 240,
-          is_on: true,
+    const defaultDocs = await RobotModuleState.find({ entityId, entityType }).countAsync();
+    if (defaultDocs) {
+      console.log('Skipping creation of default module states; a configuration already exists');
+    } else {
+      // Reset custom data module defaults
+      await RobotModuleState.removeAsync({ entityId, entityType });
+      // Add a hardcoded, hidden key/value source as ID 0
+      await RobotModuleState.insertAsync({
+        entityId,
+        entityType,
+        moduleName: 'CustomDataAgentlet',
+        custom_data_sources: [{ type: 'key_value', id: '0', name: 'Key Values' }]
+      });
+      // Make camera module enabled by default
+      await RobotModuleState.insertAsync({
+        entityId,
+        entityType,
+        moduleName: 'RosImageAgentlet',
+        cameraViewOn: true,
+        cameras_config: {
+          // higher frequency preset, found in CameraSettings.js
+          0: {
+            output_encoding: 'mono8',
+            quality: 10,
+            rate: 2,
+            img_width: 380,
+            img_height: 240,
+            is_on: true,
+          }
         }
-      }
-    });
-    // Make RosMapAgentlet loaded by default
-    await RobotModuleState.insertAsync({
-      entityId,
-      entityType,
-      moduleName: 'RosMapAgentlet',
-      minRunlevel: 5
-    });
-    // Make RosPoseAgentlet loaded by default (new method)
-    // TODO Move to AgentManager when migrating from old AgentModuleRequests
-    // based method
-    await RobotModuleState.insertAsync({
-      entityId,
-      entityType,
-      moduleName: 'RosPoseAgentlet',
-      minRunlevel: 5
-    });
-    // Make RosLocalizationAgentlet loaded by default (new method)
-    // TODO Move to AgentManager when migrating from old AgentModuleRequests
-    // based method
-    await RobotModuleState.insertAsync({
-      entityId,
-      entityType,
-      moduleName: 'RosLocalizationAgentlet',
-      minRunlevel: 5
-    });
-    // Make GPSAgentlet loaded by default (new method)
-    // TODO Move to AgentManager when migrating from old AgentModuleRequests
-    // based method
-    // await RobotModuleState.insertAsync({
-    //   entityId,
-    //   entityType,
-    //   moduleName: 'GPSAgentlet',
-    //   minRunlevel: 5
-    // });
-    await RobotModuleState.insertAsync({
-      entityId,
-      entityType,
-      moduleName: 'RosTeleopAgentlet',
-      publish_zero_vel: true
-    });
-
+      });
+      // Make RosMapAgentlet loaded by default
+      await RobotModuleState.insertAsync({
+        entityId,
+        entityType,
+        moduleName: 'RosMapAgentlet',
+        minRunlevel: 5
+      });
+      // Make RosPoseAgentlet loaded by default (new method)
+      // TODO Move to AgentManager when migrating from old AgentModuleRequests
+      // based method
+      await RobotModuleState.insertAsync({
+        entityId,
+        entityType,
+        moduleName: 'RosPoseAgentlet',
+        minRunlevel: 5
+      });
+      // Make RosLocalizationAgentlet loaded by default (new method)
+      // TODO Move to AgentManager when migrating from old AgentModuleRequests
+      // based method
+      await RobotModuleState.insertAsync({
+        entityId,
+        entityType,
+        moduleName: 'RosLocalizationAgentlet',
+        minRunlevel: 5
+      });
+      // Make GPSAgentlet loaded by default (new method)
+      // TODO Move to AgentManager when migrating from old AgentModuleRequests
+      // based method
+      // await RobotModuleState.insertAsync({
+      //   entityId,
+      //   entityType,
+      //   moduleName: 'GPSAgentlet',
+      //   minRunlevel: 5
+      // });
+      await RobotModuleState.insertAsync({
+        entityId,
+        entityType,
+        moduleName: 'RosTeleopAgentlet',
+        publish_zero_vel: true
+      });
+    }
     // Run clean-up for the first time on start-up
     this.refreshDefaultsAndCleanup();
   };
@@ -466,7 +470,7 @@ export default class AgentManager {
   /**
    * Returns the full module configuration for a given robot, taking into system defaults.
    *
-   * TODO Replace users of this with getCalculatedState
+   * TODO Replace users of this with getCalculatedStateAsync
    */
   getModuleStates = async (robotId, moduleName, key) => {
     const keys = key === undefined ? undefined : [key];
@@ -675,4 +679,45 @@ export default class AgentManager {
       await this._changeModule(robotId, moduleName, expectedRunlevel);
     }
   };
+
+
+  /**
+   * Registers the `callback` that will get called right before
+   * the runlevel change is sent to the corresponding agentlet
+   *
+   * The callback should accept `robotId` and `runlevel` as parameters.
+   *
+   * @param {string} moduleName
+   * @param {function} callback
+   * @memberof AgentManager
+   */
+  registerRunlevelChangeCallback(moduleName, callback) {
+    const validModuleNames = Object.values(MODULE_NAMES);
+
+    if (!validModuleNames.includes(moduleName)) {
+      throw new Error(`The module ${moduleName} is not valid`);
+    }
+    this.runlevelChangeCallbacks[moduleName] = callback;
+  }
+
+  /**
+   * Registers the `callback` that will get called right beforea
+   * returning `getModuleStates`, so that each module can override the module state
+   * with custom logic.
+   *
+   * The callback should accept `robotId` and `currentState` as parameters.
+   *
+   * @param {string} moduleName
+   * @param {function} callback
+   * @memberof AgentManager
+   */
+  registerModuleStateOverride(moduleName, callback) {
+    const validModuleNames = Object.values(MODULE_NAMES);
+
+    if (!validModuleNames.includes(moduleName)) {
+      throw new Error(`The module ${moduleName} is not valid`);
+    }
+
+    this.moduleStateOverrides[moduleName] = callback;
+  }
 }

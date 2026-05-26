@@ -22,7 +22,9 @@ import OroRoles from '../server/roles';
 import AgentManager from '../server/agentManager';
 import { ACCESS_LEVEL_VIEW, ACCESS_LEVEL_OPERATE } from '../shared/roles';
 import { queryIncidentsForRobots } from '../lib/alerts';
-import { Robots, RobotKeyValues, RobotCustomData, RobotLocalization, SpatialAnnotations, RobotDiagnostics, RobotVitals } from '../lib/collections';
+import { Robots, RobotKeyValues, RobotCustomData, RobotLocalization, SpatialAnnotations, RobotDiagnostics, RobotVitals, RobotModuleState } from '../lib/collections';
+import { ID_TYPE_AGENT, ID_TYPE_ROBOT } from '../shared/constants';
+import ConfigManager from '../lib/configManagerAsync';
 import RttManager from './rttManager';
 
 /**
@@ -147,6 +149,9 @@ Meteor.publish('robot.key_values', async function ({ robotId, pollingIntervalMs 
   if (!this.userId) {
     return this.ready();
   }
+  if (!robotId) {
+    return this.ready();
+  }
   if (!await new OroRoles().canAccessRobot(this.userId, robotId, ACCESS_LEVEL_VIEW)) {
     return this.error(new Meteor.Error('Unauthorized'));
   }
@@ -159,6 +164,9 @@ Meteor.publish('robot.key_values', async function ({ robotId, pollingIntervalMs 
 
 Meteor.publish('custom_data', async function ({ robotId }) {
   if (!this.userId) {
+    return this.ready();
+  }
+  if (!robotId) {
     return this.ready();
   }
   if (!await new OroRoles().canAccessRobot(this.userId, robotId, ACCESS_LEVEL_VIEW)) {
@@ -279,4 +287,75 @@ Meteor.publish('robot.connectionQuality', async function ({ robotId }) {
   const { enableHighSpeedPolling } = Meteor.settings;
   const pollingIntervalMs = enableHighSpeedPolling === false ? 10000 : 1000;
   return RobotVitals.find({ _id: robotId }, { fields: { sysNetRtt: 1 }, pollingIntervalMs });
+});
+
+/**
+ * Publication to send an individual robot's module_states.
+ * Note that module states for this robot _and its company_ are published (as well as any
+ * collection) the robot belongs to, if we had RobotModuleStates working on this type of
+ * entities too).
+ * The RobotModuleState elements are not exactly the docs from the DB, but instead having
+ * merged the hierarchical configurations.
+ *
+ * @param moduleName (string, optional) is an specific module to be published
+ *    (e.g. RosImageAgentlet). If not given, all module states for the robot are published.
+ */
+Meteor.publish('robot.module_states', async function ({
+  robotId,
+  moduleName
+}) {
+  if (!this.userId) { // User must be logged in
+    return this.ready();
+  }
+  if (!isString(robotId)) {
+    console.warn('robot.module_states: bad params ');
+    return this.error(new Meteor.Error('wrong-parameter', 'robotId must be a string'));
+  }
+  if (moduleName && !isString(moduleName)) {
+    console.warn('robot.module_states: bad params ');
+    return this.error(new Meteor.Error('wrong-parameter', 'moduleName must be a string'));
+  }
+  if (!await new OroRoles().canAccessRobot(this.userId, robotId, ACCESS_LEVEL_VIEW)) {
+    console.warn('robot.module_states: unauthorized ');
+    return this.error(new Meteor.Error('Unauthorized'));
+  }
+
+  const pubHandle = await new ConfigManager(RobotModuleState).publishEntityConfig({
+    publication: this,
+    entityId: robotId,
+    entityType: ID_TYPE_ROBOT,
+    groupingKey: 'moduleName',
+    conditions: { moduleName }
+  })
+  this.ready();
+  this.onStop(() => pubHandle.stop());
+});
+
+// Publication to send only module states with entityType `agent`
+Meteor.publish('robot.agent_module_states', async function ({
+  robotId,
+  moduleName
+}) {
+  if (!this.userId) { // User must be logged in
+    console.warn('robot.agent_module_states: not logged in ');
+    return this.ready();
+  }
+  if (moduleName && !isString(moduleName)) {
+    console.warn('robot.agent_module_states: bad params ');
+    return this.error(new Meteor.Error('wrong-parameter', 'moduleName must be a string'));
+  }
+  if (!await new OroRoles().canAccessRobot(this.userId, robotId, ACCESS_LEVEL_VIEW)) {
+    console.warn('robot.agent_module_states: unauthorized ');
+    return this.error(new Meteor.Error('Unauthorized'));
+  }
+
+  const pubHandle = await new ConfigManager(RobotModuleState).publishEntityConfig({
+    publication: this,
+    entityId: robotId,
+    entityType: ID_TYPE_AGENT,
+    groupingKey: 'moduleName',
+    conditions: { moduleName }
+  })
+  this.ready();
+  this.onStop(() => pubHandle.stop());
 });

@@ -18,8 +18,7 @@
  * Camera View widget
  * Displays images from the selected robot's camera on the client
  */
-import moment from 'moment';
-import React, { Fragment, useState, useRef, useEffect, useCallback, useContext } from 'react';
+import { Fragment, useState, useRef, useEffect, useCallback, useContext } from 'react';
 import { Typography, Grid, Tooltip } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
 import PropTypes from 'prop-types';
@@ -150,12 +149,14 @@ const useStyles = makeStyles()(theme => ({
   }
 }));
 
+const EMPTY_OBJECT = {};
+
 const CameraView = (props) => {
   const {
     cameraModuleOn,
     cameraNumber,
     camerasConfig,
-    image = {},
+    image = EMPTY_OBJECT,
     isLoading,
     offline,
     onCameraClicked,

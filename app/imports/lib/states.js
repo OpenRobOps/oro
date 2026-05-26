@@ -69,7 +69,7 @@ const isEmpty = state => {
 }
 
 /**
- * Implements getCalculatedState with the new entityId / entityType API.
+ * Implements getting the 'calculated' state for a robot (merging robot and system states).
  */
 const getCalculatedStateAsync = async ({ robotId, moduleName, keys }) => {
   const moduleConfig = new ConfigManager(RobotModuleState);
@@ -197,3 +197,4 @@ export {
   ALL_MODULE_NAMES,
   ID_TYPE_AGENT
 };
+

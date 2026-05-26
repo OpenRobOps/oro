@@ -46,7 +46,7 @@ import AuditLogManager from '../imports/server/eventLog/auditLogManager';
 import TimeSeriesManager from '../imports/server/timeseries';
 import {
   // RobotLocalizationModule,
-  // ImagesModule,
+  ImagesModule,
   Navigation2DModule,
 } from '../imports/server/modules';
 import { bootstrapConfigData } from './bootstrapConfig';
@@ -112,8 +112,10 @@ const oroAppMain = async () => {
   const mqtt = new OroMqtt();
   mqtt.run(Meteor.settings.mqtt);
 
+  await new AgentManager().init({ serverId: instanceValues.serverId });
   // Pre-create SOME modules - the ones required to initialize any manager
   moduleInstances.Navigation2DModule = new Navigation2DModule();
+  moduleInstances.ImagesModule = new ImagesModule();
   // TODO add and initialize modules
   await new DashboardsManager().init();
   await new SearchManager().init();
@@ -122,11 +124,10 @@ const oroAppMain = async () => {
   await new OroRoles().createDefaultRoles();
   await new LockManager().init();
   const configApi = await new ConfigAPI().init({});
-  await new AgentManager().init({ serverId: instanceValues.serverId });
   await new ActionsEngine().init({
     mqtt,
     nav2d: moduleInstances.Navigation2DModule,
-    // images: moduleInstances.ImagesModule,
+    images: moduleInstances.ImagesModule,
   });
 
   // Bootstrap default configuration data
