@@ -22,7 +22,8 @@ import OroRoles from '../server/roles';
 import AgentManager from '../server/agentManager';
 import { ACCESS_LEVEL_VIEW, ACCESS_LEVEL_OPERATE } from '../shared/roles';
 import { queryIncidentsForRobots } from '../lib/alerts';
-import { Robots, RobotKeyValues, RobotCustomData, RobotLocalization, SpatialAnnotations, RobotDiagnostics } from '../lib/collections';
+import { Robots, RobotKeyValues, RobotCustomData, RobotLocalization, SpatialAnnotations, RobotDiagnostics, RobotVitals } from '../lib/collections';
+import RttManager from './rttManager';
 
 /**
  * Publish localization data (pose, map metadata + URL) for one or more robots.
@@ -254,4 +255,28 @@ Meteor.publish('diagnostics', async function ({ robotId }) {
     await new AgentManager().requestLess(robotId, 'RosDiagnosticsAgentlet', runLevel);
   });
   return RobotDiagnostics.find({ _id: robotId });
+});
+
+/**
+ * High-rate RTT publication for the teleop ConnectionQuality gauge.
+ * Triggers an active ping loop while subscribed; stops when no subscribers remain.
+ */
+Meteor.publish('robot.connectionQuality', async function ({ robotId }) {
+  if (!isString(robotId)) {
+    return this.error(new Meteor.Error('wrong-parameter', 'robotId must be a string'));
+  }
+  if (!this.userId) {
+    return this.error(new Meteor.Error('User is not logged in'));
+  }
+  if (!await new OroRoles().canAccessRobot(this.userId, robotId, ACCESS_LEVEL_VIEW)) {
+    console.warn(`Unauthorized (robot.connectionQuality): userId: ${this.userId}, robotId: ${robotId}`);
+    return this.error(new Meteor.Error('Unauthorized'));
+  }
+  new RttManager().startPing(robotId);
+  this.onStop(() => {
+    new RttManager().stopPing(robotId);
+  });
+  const { enableHighSpeedPolling } = Meteor.settings;
+  const pollingIntervalMs = enableHighSpeedPolling === false ? 10000 : 1000;
+  return RobotVitals.find({ _id: robotId }, { fields: { sysNetRtt: 1 }, pollingIntervalMs });
 });

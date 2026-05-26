@@ -27,17 +27,17 @@ import fs from 'fs';
 // ORO imports
 import { COLLECTIONS } from '../shared/constants';
 // import { Robot, Company } from './model';
-// import AttributesManager from './attributes';
+import AttributesManager from './attributes';
 import RateLimiter from './rateLimiter';
-// import {
-//   VITAL_SPEED_LINEAR,
-//   VITAL_SPEED_ANGULAR,
-//   VITAL_DISTANCE_LINEAR,
-//   VITAL_DISTANCE_ANGULAR,
-//   VITAL_DISTANCE_LINEAR_SINCE,
-//   VITAL_DISTANCE_ANGULAR_SINCE,
-//   VITAL_AGENT_TIME_DIFF
-// } from '../shared/attributes';
+import {
+  VITAL_SPEED_LINEAR,
+  VITAL_SPEED_ANGULAR,
+  VITAL_DISTANCE_LINEAR,
+  VITAL_DISTANCE_ANGULAR,
+  VITAL_DISTANCE_LINEAR_SINCE,
+  VITAL_DISTANCE_ANGULAR_SINCE,
+  VITAL_AGENT_TIME_DIFF
+} from '../shared/attributes';
 import MongoManager from '../mongo';
 import ThrottledLogger from '../shared/throttledLogger';
 
@@ -184,7 +184,7 @@ export default class OroMqtt {
     this.throttledLogger = new ThrottledLogger({ throttlingMs: 600 * 1000 });
 
     // Vitals module configuration
-    // this.attrMgr = new AttributesManager();
+    this.attrMgr = new AttributesManager();
 
     // Create pointers to different necessary collections
     this.mongoManager = new MongoManager();

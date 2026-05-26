@@ -115,7 +115,6 @@ const useMeteorMapData = (
 /**
  * Hook to return RTT data for a single robot from Meteor, obtained from
  * RobotVitals by subscribing to robot.connectionQuality.
- * TODO: 'robot.connectionQuality' publication is not yet implemented in ORO server.
  */
 const useMeteorRttData = ({ robotId }, cb = null) => useTracker(() => {
   const rttHandle = Meteor.subscribe('robot.connectionQuality', { robotId });

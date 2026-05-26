@@ -40,6 +40,7 @@ import { STATUS } from '../lib/status';
 import RobotStatusManager from './status';
 import { applyDefaults, assignIfDistinct } from '../lib/util';
 import OroRoles from './roles';
+import AgentManager from './agentManager';
 import {
   VITAL_CPU_LOAD_PERCENTAGE,
   VITAL_RAM_USAGE_PERCENTAGE,
@@ -1199,6 +1200,29 @@ Meteor.publish('attributes.values', async function ({ robotId, attributes, polli
   if (!await new OroRoles().canAccessRobot(this.userId, robotId, ACCESS_LEVEL_VIEW)) {
     throw new Meteor.Error(`User not authorized to view robot's ${robotId} data`);
   }
+  return queryRobotAttributeValues({ robotId, attributes, pollingIntervalMs });
+});
+
+/**
+ * High-speed attribute publication used by TeleopGauges (speed/rotation).
+ * Polls more aggressively than `attributes.values`; reserve for live teleop UI only.
+ */
+Meteor.publish('attributes.teleopGauges', async function ({ robotId, attributes }) {
+  if (!this.userId) {
+    return this.ready();
+  }
+  if (!await new OroRoles().canAccessRobot(this.userId, robotId, ACCESS_LEVEL_VIEW)) {
+    throw new Meteor.Error(`User not authorized to view robot's ${robotId} data`);
+  }
+  // Raise RosOdometryAgentlet to runlevel 10 so the agent reports linear/angular speed.
+  // At the default runlevel only distance is published; speedAvailable stays false.
+  const odomRunlevel = 10;
+  await new AgentManager().requestMore(robotId, 'RosOdometryAgentlet', odomRunlevel);
+  this.onStop(async () => {
+    await new AgentManager().requestLess(robotId, 'RosOdometryAgentlet', odomRunlevel);
+  });
+  const { enableHighSpeedPolling } = Meteor.settings;
+  const pollingIntervalMs = enableHighSpeedPolling === false ? 10000 : 1000;
   return queryRobotAttributeValues({ robotId, attributes, pollingIntervalMs });
 });
 
