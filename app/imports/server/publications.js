@@ -22,8 +22,10 @@ import OroRoles from '../server/roles';
 import AgentManager from '../server/agentManager';
 import { ACCESS_LEVEL_VIEW, ACCESS_LEVEL_OPERATE } from '../shared/roles';
 import { queryIncidentsForRobots } from '../lib/alerts';
-import { Robots, RobotKeyValues, RobotCustomData, RobotLocalization, SpatialAnnotations, RobotDiagnostics, RobotVitals, RobotModuleState } from '../lib/collections';
+import { Robots, RobotKeyValues, RobotCustomData, RobotLocalization, SpatialAnnotations, RobotDiagnostics, RobotModuleState } from '../lib/collections';
 import { ID_TYPE_AGENT, ID_TYPE_ROBOT } from '../shared/constants';
+import { queryRobotAttributeValues } from '../lib/attributes';
+import { VITAL_PING_RTT_AVG, VITAL_PING_RTT_LAST } from '../shared/attributes';
 import ConfigManager from '../lib/configManagerAsync';
 import RttManager from './rttManager';
 
@@ -284,9 +286,14 @@ Meteor.publish('robot.connectionQuality', async function ({ robotId }) {
   this.onStop(() => {
     new RttManager().stopPing(robotId);
   });
-  const { enableHighSpeedPolling } = Meteor.settings;
-  const pollingIntervalMs = enableHighSpeedPolling === false ? 10000 : 1000;
-  return RobotVitals.find({ _id: robotId }, { fields: { sysNetRtt: 1 }, pollingIntervalMs });
+  // RTT is written by RttManager as robot attribute values (pingAvg/pingLast) and read here
+  // through the standard attribute-values pipeline. Polls at 1s — only subscribed while the
+  // ConnectionQuality bar is visible.
+  return queryRobotAttributeValues({
+    robotId,
+    attributes: [VITAL_PING_RTT_AVG, VITAL_PING_RTT_LAST],
+    pollingIntervalMs: 1000,
+  });
 });
 
 /**

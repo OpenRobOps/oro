@@ -1211,6 +1211,11 @@ Meteor.publish('attributes.teleopGauges', async function ({ robotId, attributes 
   if (!this.userId) {
     return this.ready();
   }
+  // Guard against a null/non-string robotId (client can subscribe before it resolves).
+  // Without this, requestMore + canAccessRobot build a qualified id from null and throw.
+  if (!isString(robotId)) {
+    return this.ready();
+  }
   if (!await new OroRoles().canAccessRobot(this.userId, robotId, ACCESS_LEVEL_VIEW)) {
     throw new Meteor.Error(`User not authorized to view robot's ${robotId} data`);
   }
@@ -1221,9 +1226,8 @@ Meteor.publish('attributes.teleopGauges', async function ({ robotId, attributes 
   this.onStop(async () => {
     await new AgentManager().requestLess(robotId, 'RosOdometryAgentlet', odomRunlevel);
   });
-  const { enableHighSpeedPolling } = Meteor.settings;
-  const pollingIntervalMs = enableHighSpeedPolling === false ? 10000 : 1000;
-  return queryRobotAttributeValues({ robotId, attributes, pollingIntervalMs });
+  // High-rate polling: gauges only subscribe while visible, so always poll at 1s.
+  return queryRobotAttributeValues({ robotId, attributes, pollingIntervalMs: 1000 });
 });
 
 export default AttributesManager;

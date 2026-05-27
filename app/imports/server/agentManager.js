@@ -270,7 +270,7 @@ export default class AgentManager {
     },
     {
       moduleName: 'RosOdometryAgentlet',
-      runlevel: 5,
+      runlevel: 1,
     },
     {
       moduleName: 'CustomDataAgentlet',

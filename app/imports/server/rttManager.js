@@ -20,7 +20,8 @@
  * subscribers remain for a given robot.
  */
 import { Meteor } from 'meteor/meteor';
-import { RobotVitals } from '../lib/collections';
+import { AttrValues } from '../lib/attributes';
+import { VITAL_PING_RTT_AVG, VITAL_PING_RTT_LAST } from '../shared/attributes';
 import OroMqtt from './mqtt';
 import QueuesMap from './lib/queuesMap';
 
@@ -83,8 +84,9 @@ export default class RttManager {
   };
 
   /**
-   * Records a ping callback timing and updates RobotVitals.sysNetRtt / sysNetAgentTimeDelta
-   * with rolling stats over the queue window.
+   * Records a ping callback timing and writes the rolling-average + last RTT as robot
+   * attribute values (pingAvg / pingLast). Consumed via the standard attribute-values
+   * pipeline.
    */
   recordTiming = async (robotId, { tsServerReceive, tsServerSend, tsAgent }) => {
     let invalid = false;
@@ -101,29 +103,18 @@ export default class RttManager {
     queue.push({ tsServerSend, tsServerReceive, tsAgent });
     const now = Date.now();
     const results = queue.getValues(now);
-    let max = 0;
-    let min = Number.MAX_SAFE_INTEGER;
-    let totalRtt = 0;
-    let totalAgentDelta = 0;
-    results.forEach((data) => {
-      const rtt = data.tsServerReceive - data.tsServerSend;
-      // Estimate agent clock skew as agent time minus midpoint between send and receive.
-      totalAgentDelta += data.tsAgent - (data.tsServerReceive + data.tsServerSend) / 2;
-      totalRtt += rtt;
-      min = Math.min(min, rtt);
-      max = Math.max(max, rtt);
-    });
-    const agentTimeDelta = totalAgentDelta / results.length;
+    const lastRtt = tsServerReceive - tsServerSend;
+    const totalRtt = results.reduce((sum, data) => sum + (data.tsServerReceive - data.tsServerSend), 0);
     const avg = totalRtt / results.length;
-    const mdev = 0;
-    const sysNetRtt = { min, avg, max, mdev, ts: now };
-    const sysNetAgentTimeDelta = { value: agentTimeDelta, ts: now };
     try {
-      await RobotVitals.upsertAsync({ _id: robotId }, {
-        $set: { sysNetRtt, sysNetAgentTimeDelta }
+      await AttrValues.upsertAsync({ _id: robotId }, {
+        $set: {
+          [VITAL_PING_RTT_AVG]: { value: avg, ts: now },
+          [VITAL_PING_RTT_LAST]: { value: lastRtt, ts: now },
+        }
       });
     } catch (error) {
-      console.error('Exception updating RTT values', error);
+      console.error('Exception updating RTT attribute values', error);
     }
   };
 }

@@ -30,7 +30,9 @@
 import { useTracker } from 'meteor/react-meteor-data';
 import { Meteor } from 'meteor/meteor';
 // ORO Modules
-import { Robots, RobotLocalization, RobotVitals, SpatialAnnotations } from '../../../../lib/collections';
+import { Robots, RobotLocalization, SpatialAnnotations } from '../../../../lib/collections';
+import { fetchRobotAttributeValues } from '../../../../lib/attributes';
+import { VITAL_PING_RTT_AVG } from '../../../../shared/attributes';
 import { keyBy } from 'lodash';
 import {
   multipleRobotsLocalizationData, mapData, rttData, robotDetailsData
@@ -113,14 +115,16 @@ const useMeteorMapData = (
 }, [robotId, entityId, label]);
 
 /**
- * Hook to return RTT data for a single robot from Meteor, obtained from
- * RobotVitals by subscribing to robot.connectionQuality.
+ * Hook to return RTT data for a single robot. Subscribing to robot.connectionQuality starts
+ * the server-side ping loop and publishes the pingAvg attribute value, which we read through
+ * the standard attribute-values pipeline.
  */
 const useMeteorRttData = ({ robotId }, cb = null) => useTracker(() => {
   const rttHandle = Meteor.subscribe('robot.connectionQuality', { robotId });
   const isLoading = !rttHandle.ready();
-  const vitals = RobotVitals.findOne({ _id: robotId });
-  const rtt = (vitals && vitals.sysNetRtt);
+  const values = fetchRobotAttributeValues({ robotId, attributes: [VITAL_PING_RTT_AVG] });
+  const pingAvg = values?.[VITAL_PING_RTT_AVG];
+  const rtt = (pingAvg?.value != null) ? { avg: pingAvg.value, ts: pingAvg.ts } : undefined;
   const data = { isLoading, rtt };
   cb && cb(data);
   return data;
