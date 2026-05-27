@@ -1211,8 +1211,6 @@ Meteor.publish('attributes.teleopGauges', async function ({ robotId, attributes 
   if (!this.userId) {
     return this.ready();
   }
-  // Guard against a null/non-string robotId (client can subscribe before it resolves).
-  // Without this, requestMore + canAccessRobot build a qualified id from null and throw.
   if (!isString(robotId)) {
     return this.ready();
   }
