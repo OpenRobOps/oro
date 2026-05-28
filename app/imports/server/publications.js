@@ -22,10 +22,13 @@ import OroRoles from '../server/roles';
 import AgentManager from '../server/agentManager';
 import { ACCESS_LEVEL_VIEW, ACCESS_LEVEL_OPERATE } from '../shared/roles';
 import { queryIncidentsForRobots } from '../lib/alerts';
-import { Robots, RobotKeyValues, RobotCustomData, RobotLocalization, SpatialAnnotations, RobotDiagnostics } from '../lib/collections';
+import { Robots, RobotKeyValues, RobotCustomData, RobotLocalization, SpatialAnnotations, RobotDiagnostics, RobotModuleState } from '../lib/collections';
 import { ID_TYPE_AGENT, ID_TYPE_ROBOT } from '../shared/constants';
-import { RobotModuleState } from '../lib/collections';
+import { queryRobotAttributeValues } from '../lib/attributes';
+import { VITAL_PING_RTT_AVG, VITAL_PING_RTT_LAST } from '../shared/attributes';
 import ConfigManager from '../lib/configManagerAsync';
+import RttManager from './rttManager';
+
 /**
  * Publish localization data (pose, map metadata + URL) for one or more robots.
  * The `lowBandwidth` flag omits laser ranges and paths to reduce data transfer.
@@ -264,6 +267,34 @@ Meteor.publish('diagnostics', async function ({ robotId }) {
   return RobotDiagnostics.find({ _id: robotId });
 });
 
+/**
+ * High-rate RTT publication for the teleop ConnectionQuality gauge.
+ * Triggers an active ping loop while subscribed; stops when no subscribers remain.
+ */
+Meteor.publish('robot.connectionQuality', async function ({ robotId }) {
+  if (!isString(robotId)) {
+    return this.error(new Meteor.Error('wrong-parameter', 'robotId must be a string'));
+  }
+  if (!this.userId) {
+    return this.error(new Meteor.Error('User is not logged in'));
+  }
+  if (!await new OroRoles().canAccessRobot(this.userId, robotId, ACCESS_LEVEL_VIEW)) {
+    console.warn(`Unauthorized (robot.connectionQuality): userId: ${this.userId}, robotId: ${robotId}`);
+    return this.error(new Meteor.Error('Unauthorized'));
+  }
+  new RttManager().startPing(robotId);
+  this.onStop(() => {
+    new RttManager().stopPing(robotId);
+  });
+  // RTT is written by RttManager as robot attribute values (pingAvg/pingLast) and read here
+  // through the standard attribute-values pipeline. Polls at 1s — only subscribed while the
+  // ConnectionQuality bar is visible.
+  return queryRobotAttributeValues({
+    robotId,
+    attributes: [VITAL_PING_RTT_AVG, VITAL_PING_RTT_LAST],
+    pollingIntervalMs: 1000,
+  });
+});
 
 /**
  * Publication to send an individual robot's module_states.
