@@ -95,18 +95,18 @@ function determineLatency({ rtt, offline, isZeroData }) {
     return { barNumber: 0, rttDisplay: '0' };
   }
   let barNumber;
-  if (rtt.avg < LOW_LATENCY_THRESHOLD) {
+  if (rtt.value < LOW_LATENCY_THRESHOLD) {
     barNumber = LOW_LATENCY_STATUS;
-  } else if (rtt.avg < MEDIUM_LOW_LATENCY_THRESHOLD) {
+  } else if (rtt.value < MEDIUM_LOW_LATENCY_THRESHOLD) {
     barNumber = MEDIUM_LOW_LATENCY_STATUS;
-  } else if (rtt.avg < MEDIUM_LATENCY_THRESHOLD) {
+  } else if (rtt.value < MEDIUM_LATENCY_THRESHOLD) {
     barNumber = MEDIUM_LATENCY_STATUS;
-  } else if (rtt.avg < HIGH_LATENCY_THRESHOLD) {
+  } else if (rtt.value < HIGH_LATENCY_THRESHOLD) {
     barNumber = MEDIUM_HIGH_LATENCY_STATUS;
   } else {
     barNumber = HIGH_LATENCY_STATUS;
   }
-  const rttDisplay = (Math.ceil(rtt.avg * 10) / 10 || 0.0).toString();
+  const rttDisplay = (Math.ceil(rtt.value * 10) / 10 || 0.0).toString();
   return { barNumber, rttDisplay };
 }
 

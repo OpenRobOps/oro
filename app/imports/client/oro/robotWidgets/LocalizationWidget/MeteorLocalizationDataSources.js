@@ -117,14 +117,14 @@ const useMeteorMapData = (
 /**
  * Hook to return RTT data for a single robot. Subscribing to robot.connectionQuality starts
  * the server-side ping loop and publishes the pingAvg attribute value, which we read through
- * the standard attribute-values pipeline.
+ * the standard attribute-values pipeline. `rtt` is the raw attribute object — `{ value, ts }`
+ * — so consumers should read `rtt.value` and `rtt.ts`.
  */
 const useMeteorRttData = ({ robotId }, cb = null) => useTracker(() => {
   const rttHandle = Meteor.subscribe('robot.connectionQuality', { robotId });
   const isLoading = !rttHandle.ready();
   const values = fetchRobotAttributeValues({ robotId, attributes: [VITAL_PING_RTT_AVG] });
-  const pingAvg = values?.[VITAL_PING_RTT_AVG];
-  const rtt = (pingAvg?.value != null) ? { avg: pingAvg.value, ts: pingAvg.ts } : undefined;
+  const rtt = values?.[VITAL_PING_RTT_AVG];
   const data = { isLoading, rtt };
   cb && cb(data);
   return data;

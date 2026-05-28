@@ -682,7 +682,7 @@ ${robotId} but robot has no broker (These messages are throttled)`);
     // provide server time if tsHint is undefined
     if (!tsHint) {
       const attrValues = await AttrValues.findOneAsync({ _id: robotId });
-      // use avgRtt (pingAvg attribute), if not available, use a 500ms delay guess
+      // use pingAvg attribute, if not available, use a 500ms delay
       const avgRtt = attrValues?.[VITAL_PING_RTT_AVG]?.value || 500;
       tsHint = Date.now() + avgRtt;
     }
