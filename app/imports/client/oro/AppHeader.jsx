@@ -20,7 +20,6 @@
 import React, { useState } from 'react';
 import {
   AppBar,
-  Avatar,
   Box,
   Divider,
   Menu,
@@ -30,18 +29,14 @@ import {
 } from '@mui/material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import LogoutIcon from '@mui/icons-material/Logout';
+import SettingsIcon from '@mui/icons-material/Settings';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
-
-/** Return up to two initials from a full name. */
-const getInitials = (name) => {
-  if (!name) return '?';
-  const parts = name.trim().split(/\s+/);
-  if (parts.length === 1) return parts[0][0].toUpperCase();
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-};
+import AvatarInitials from './util/AvatarInitials';
 
 const AppHeader = () => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState(null);
   const menuOpen = Boolean(anchorEl);
 
@@ -54,6 +49,11 @@ const AppHeader = () => {
   const handleLogout = () => {
     handleClose();
     logout();
+  };
+
+  const handleSettings = () => {
+    handleClose();
+    navigate('/configuration');
   };
 
   return (
@@ -82,20 +82,7 @@ const AppHeader = () => {
               borderRadius: '4px',
             }}
           >
-          <Avatar
-            src={avatar || undefined}
-            sx={{
-              width: 22,
-              height: 22,
-              bgcolor: 'background.chip',
-              fontSize: '11px',
-              fontWeight: 700,
-              color: 'text.subtle',
-              fontFamily: 'Inter, Helvetica, Arial, sans-serif',
-            }}
-          >
-            {!avatar && getInitials(name)}
-          </Avatar>
+          <AvatarInitials name={name} src={avatar} size={22} />
           <Box sx={{ display: 'flex', flexDirection: 'column', lineHeight: 1 }}>
             <Typography sx={{ fontSize: '10px', color: 'common.white', lineHeight: 'normal', textTransform: 'capitalize' }}>
               {name?.split(' ')[0] || 'User'}
@@ -123,6 +110,10 @@ const AppHeader = () => {
             )}
           </Box>
           <Divider />
+          <MenuItem onClick={handleSettings}>
+            <SettingsIcon fontSize="small" sx={{ mr: 1 }} />
+            Settings
+          </MenuItem>
           <MenuItem onClick={handleLogout}>
             <LogoutIcon fontSize="small" sx={{ mr: 1 }} />
             Logout

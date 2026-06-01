@@ -38,3 +38,24 @@ Meteor.publish('user.details', function () {
     }
   );
 });
+
+// Lists every user.
+Meteor.publish('users.all', function () {
+  if (!this.userId) {
+    return this.ready();
+  }
+  return Meteor.users.find(
+    {},
+    {
+      fields: {
+        'profile.name': 1,
+        'profile.email': 1,
+        'profile.avatar': 1,
+        emails: 1,
+        userRoles: 1,
+        createdAt: 1,
+      },
+      sort: { createdAt: -1 },
+    }
+  );
+});
