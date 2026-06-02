@@ -56,6 +56,8 @@ const AppHeader = () => {
     navigate('/configuration');
   };
 
+  const handleLogoClick = () => navigate('/dashboards');
+
   return (
     <AppBar
       position="static"
@@ -64,7 +66,13 @@ const AppHeader = () => {
       sx={{ bgcolor: 'background.paper' }}
     >
       <Toolbar sx={{ justifyContent: 'space-between' }}>
-        <img src="/images/oro-logo.svg" alt="ORO" height="22" />
+        <img
+          src="/images/oro-logo.svg"
+          alt="ORO:go to dashboards"
+          height="22"
+          onClick={handleLogoClick}
+          style={{ cursor: 'pointer' }}
+        />
         <Box sx={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Divider
             orientation="vertical"
