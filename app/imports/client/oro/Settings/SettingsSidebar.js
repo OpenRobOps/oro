@@ -25,7 +25,7 @@ import { makeStyles } from 'tss-react/mui';
 import AvatarInitials from '../util/AvatarInitials';
 
 export const SECTIONS = [
-  { id: 'userModeration', label: 'User Moderation', Icon: GroupOutlinedIcon },
+  { id: 'users', label: 'Users', Icon: GroupOutlinedIcon },
 ];
 
 const useStyles = makeStyles()(theme => ({

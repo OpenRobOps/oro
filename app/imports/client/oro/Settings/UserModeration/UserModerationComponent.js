@@ -287,7 +287,7 @@ const PendingRow = ({ user, onApproveUser, onRejectUser }) => {
     <Box className={classes.card}>
       <UserIdentity user={user} />
       <Box className={classes.detailsBox}>
-        <DetailsCell label="Requested Role">
+        <DetailsCell label="Role">
           <Select
             size="small"
             value={roleId}
@@ -369,6 +369,9 @@ const UserModerationComponent = ({
       {isLoading && <Typography className={classes.loading}>Loading users…</Typography>}
       {!isLoading && (
         <>
+          <Typography className={classes.sectionHeader}>
+            Pending ({pendingUsers.length})
+          </Typography>
           {pendingUsers.length === 0 ? (
             <Typography className={classes.emptyText}>No pending users.</Typography>
           ) : (

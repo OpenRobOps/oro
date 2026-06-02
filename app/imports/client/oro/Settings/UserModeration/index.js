@@ -21,33 +21,55 @@
 import React, { useCallback, useMemo } from 'react';
 import { isEmpty } from 'lodash';
 import { useMethod } from '../../util/meteorUtils';
+import useConfirmationSnackbar, { SnackbarVariants } from '../../util/useConfirmationSnackbar';
 import useAllUsers from './hooks/useAllUsers';
 import UserModerationComponent from './UserModerationComponent';
 
 const UserModeration = () => {
   const { isLoading, data: users } = useAllUsers();
-  const setUserRole = useMethod('users.setUserRole');
-  const rejectUser = useMethod('users.reject');
+  const { call: setUserRole } = useMethod('users.setUserRole');
+  const { call: rejectUser } = useMethod('users.reject');
+  const { openDialog, ConfirmationDialog } = useConfirmationSnackbar();
 
   const { pendingUsers, approvedUsers } = useMemo(() => ({
     pendingUsers: users.filter(u => isEmpty(u.userRoles)),
     approvedUsers: users.filter(u => !isEmpty(u.userRoles)),
   }), [users]);
 
-  const handleApproveUser = useCallback((userId, roleId) => (
-    setUserRole.call(userId, roleId)
-  ), [setUserRole]);
+ // TODO: Add missing methods for rejectUser and approveUser.
+  const handleApproveUser = useCallback(async (userId, roleId) => {
+    try {
+      await setUserRole(userId, roleId);
+    } catch (err) {
+      openDialog({
+        message: `Could not approve user: ${err?.reason || err?.message || err}`,
+        variant: SnackbarVariants.ERROR,
+      });
+    }
+  }, [setUserRole, openDialog]);
 
-  const handleRejectUser = useCallback(userId => rejectUser.call(userId), [rejectUser]);
+  const handleRejectUser = useCallback(async (userId) => {
+    try {
+      await rejectUser(userId);
+    } catch (err) {
+      openDialog({
+        message: `Could not reject user: ${err?.reason || err?.message || err}`,
+        variant: SnackbarVariants.ERROR,
+      });
+    }
+  }, [rejectUser, openDialog]);
 
   return (
-    <UserModerationComponent
-      isLoading={isLoading}
-      pendingUsers={pendingUsers}
-      approvedUsers={approvedUsers}
-      onApproveUser={handleApproveUser}
-      onRejectUser={handleRejectUser}
-    />
+    <>
+      <UserModerationComponent
+        isLoading={isLoading}
+        pendingUsers={pendingUsers}
+        approvedUsers={approvedUsers}
+        onApproveUser={handleApproveUser}
+        onRejectUser={handleRejectUser}
+      />
+      {ConfirmationDialog}
+    </>
   );
 };
 

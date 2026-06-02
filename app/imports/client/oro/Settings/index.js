@@ -15,19 +15,17 @@
  */
 
 /**
- * Settings page — sidebar on the left, scrollable section list on the right,
- * sticky footer with Cancel / Save Changes. Clicking a sidebar entry scrolls
+ * Settings page — sidebar on the left, scrollable section list on the right.
+ * Clicking a sidebar entry scrolls
  * the matching section into view.
  */
 import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { Box, Typography } from '@mui/material';
 import { isFunction } from 'lodash';
 import { makeStyles } from 'tss-react/mui';
 import { useAuth } from '../contexts/AuthContext';
 import { ALL_ROLE_DOCS } from '../../../shared/roles';
-import PrimaryButton from '../util/PrimaryButton';
-import SecondaryButton from '../util/SecondaryButton';
 import SettingsSidebar, { SECTIONS } from './SettingsSidebar';
 import UserModeration from './UserModeration';
 
@@ -37,7 +35,7 @@ const roleLabel = (roleId) => {
 };
 
 const SECTION_COMPONENTS = {
-  userModeration: UserModeration,
+  users: UserModeration,
 };
 
 const useStyles = makeStyles()(theme => ({
@@ -74,20 +72,11 @@ const useStyles = makeStyles()(theme => ({
     flexDirection: 'column',
     gap: '40px',
     paddingBottom: '24px',
-  },
-  footer: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    gap: '12px',
-    padding: '14px 24px',
-    borderTop: `1px solid ${theme.palette.background.borderLight}`,
-  },
+  }
 }));
 
 const Settings = () => {
   const { classes } = useStyles();
-  const navigate = useNavigate();
   const { section: routeSection } = useParams();
   const { user } = useAuth();
 
@@ -117,8 +106,6 @@ const Settings = () => {
     }
   }, [routeSection]);
 
-  const handleClose = useCallback(() => navigate('/dashboards'), [navigate]);
-
   return (
     <Box className={classes.page}>
       <Box className={classes.topBar}>
@@ -140,10 +127,6 @@ const Settings = () => {
             );
           })}
         </Box>
-      </Box>
-      <Box className={classes.footer}>
-        <SecondaryButton onClick={handleClose}>Cancel</SecondaryButton>
-        <PrimaryButton>Save Changes</PrimaryButton>
       </Box>
     </Box>
   );

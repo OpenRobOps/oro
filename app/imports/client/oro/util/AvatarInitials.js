@@ -36,12 +36,14 @@ const useStyles = makeStyles()(theme => ({
 
 const AvatarInitials = ({ name, src, size = 36, className }) => {
   const { classes, cx } = useStyles();
+  // filter(Boolean) drops empty entries so a whitespace-only `name`
+  // (e.g. "   ") doesn't yield a `[""]` array and crash on `[0][0]`.
+  const words = isString(name) ? name.trim().split(/\s+/).filter(Boolean) : [];
   let initials = '?';
-  if (isString(name) && !isEmpty(name)) {
-    const parts = name.trim().split(/\s+/);
-    initials = parts.length === 1
-      ? parts[0][0]
-      : parts[0][0] + parts[parts.length - 1][0];
+  if (!isEmpty(words)) {
+    initials = words.length === 1
+      ? words[0][0]
+      : words[0][0] + words[words.length - 1][0];
     initials = initials.toUpperCase();
   }
   return (

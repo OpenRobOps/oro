@@ -21,6 +21,7 @@
  * Explicitly excludes services.* (OAuth tokens/secrets).
  */
 import { Meteor } from 'meteor/meteor';
+import OroRoles from './roles';
 
 Meteor.publish('user.details', function () {
   if (!this.userId) {
@@ -39,9 +40,13 @@ Meteor.publish('user.details', function () {
   );
 });
 
-// Lists every user.
-Meteor.publish('users.all', function () {
+// Lists every user. Admin-only — the User Moderation page consumes this and
+// must not be visible to non-admins (it exposes profile name/email + roles).
+Meteor.publish('users.all', async function () {
   if (!this.userId) {
+    return this.ready();
+  }
+  if (!(await new OroRoles().isAdmin(this.userId))) {
     return this.ready();
   }
   return Meteor.users.find(
