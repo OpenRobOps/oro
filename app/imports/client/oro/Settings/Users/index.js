@@ -15,7 +15,7 @@
  */
 
 /**
- * User Moderation container: Splits users into pending (empty userRoles) and
+ * Users container: Splits users into pending (empty userRoles) and
  * members.
  */
 import React, { useCallback, useMemo } from 'react';
@@ -23,9 +23,9 @@ import { isEmpty } from 'lodash';
 import { useMethod } from '../../util/meteorUtils';
 import useConfirmationSnackbar, { SnackbarVariants } from '../../util/useConfirmationSnackbar';
 import useAllUsers from './hooks/useAllUsers';
-import UserModerationComponent from './UserModerationComponent';
+import UsersComponent from './UsersComponent';
 
-const UserModeration = () => {
+const Users = () => {
   const { isLoading, data: users } = useAllUsers();
   const { call: setUserRole } = useMethod('users.setUserRole');
   const { call: rejectUser } = useMethod('users.reject');
@@ -61,7 +61,7 @@ const UserModeration = () => {
 
   return (
     <>
-      <UserModerationComponent
+      <UsersComponent
         isLoading={isLoading}
         pendingUsers={pendingUsers}
         approvedUsers={approvedUsers}
@@ -73,4 +73,4 @@ const UserModeration = () => {
   );
 };
 
-export default UserModeration;
+export default Users;

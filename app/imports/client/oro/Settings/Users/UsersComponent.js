@@ -15,7 +15,7 @@
  */
 
 /**
- * UserModerationComponent: Display the pending and approved users.
+ * UsersComponent: Display the pending and approved users.
  */
 import React, { useCallback, useState } from 'react';
 import PropTypes from 'prop-types';
@@ -355,7 +355,7 @@ const MemberRow = ({ user }) => {
   );
 };
 
-const UserModerationComponent = ({
+const UsersComponent = ({
   isLoading, pendingUsers, approvedUsers, onApproveUser, onRejectUser,
 }) => {
   const { classes } = useStyles();
@@ -408,7 +408,7 @@ const UserModerationComponent = ({
   );
 };
 
-UserModerationComponent.propTypes = {
+UsersComponent.propTypes = {
   isLoading: PropTypes.bool,
   pendingUsers: PropTypes.array.isRequired,
   approvedUsers: PropTypes.array.isRequired,
@@ -416,4 +416,4 @@ UserModerationComponent.propTypes = {
   onRejectUser: PropTypes.func.isRequired,
 };
 
-export default UserModerationComponent;
+export default UsersComponent;
