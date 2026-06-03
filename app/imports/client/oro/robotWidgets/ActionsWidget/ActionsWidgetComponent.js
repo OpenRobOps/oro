@@ -18,9 +18,7 @@
  * Actions widget
  * Displays a list of actions that can be executed on robot.
  *
- * TODO(herchu) Do better design. This is first version, no design at all.
  */
-import React from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from 'tss-react/mui';
 

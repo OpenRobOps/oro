@@ -45,9 +45,9 @@
  *  - Toggling High Resolution mode
  */
 import { Meteor } from 'meteor/meteor';
-import { isString, isObject } from 'lodash';
+import { isString, isObject, get } from 'lodash';
 // ORO modules
-import { propGet, applyDefaults } from '../../lib/util';
+import { applyDefaults } from '../../lib/util';
 import Mqtt from '../mqtt';
 import ConfigManager, { ID_TYPE_ROBOT } from '../../lib/configManagerAsync';
 import { MODULE_NAMES } from '../../shared/constants';
@@ -278,6 +278,9 @@ class ImagesModule {
    * @memberof ImagesModule
    */
   _getStateWithOverrides = async (robotId, overrides) => {
+    if (!robotId) {
+      throw new Error('robotId is required');
+    }
     // Calculate overrides for each camera
     const camerasPrefs = await this.uiPreferences.getEntityConfig({
       entityId: robotId,
@@ -316,11 +319,11 @@ class ImagesModule {
     // Do this for each camera to override
     Object.entries(overrides).forEach(([cameraId, override]) => {
       // Start with the values specific for this camera ID
-      configOverrides[cameraId] = propGet(camerasPreferences,
+      configOverrides[cameraId] = get(camerasPreferences,
         `${cameraId}.config_overrides.${override}`) || {};
       // Apply defaults from the special _all_ entry
       applyDefaults(configOverrides[cameraId],
-        propGet(camerasPreferences, `_all_.config_overrides.${override}`) || {});
+        get(camerasPreferences, `_all_.config_overrides.${override}`) || {});
     });
 
     return configOverrides;

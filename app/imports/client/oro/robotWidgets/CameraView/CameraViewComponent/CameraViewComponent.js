@@ -58,7 +58,7 @@ const useStyles = makeStyles()(theme => ({
   },
   cameraContainer: {
     alignItems: 'center',
-    background: theme.palette.background?.white,
+    background: 'transparent',
     display: 'flex',
     height: '100%',
     justifyContent: 'center',
@@ -100,8 +100,8 @@ const useStyles = makeStyles()(theme => ({
     textAlign: 'center'
   },
   widgetLabel: {
-    background: theme.palette.background?.darkGray,
-    border: `1px solid ${theme.palette.background?.gray}`,
+    background: theme.palette.background.darkGray,
+    border: `1px solid ${theme.palette.background.borderMedium}`,
     borderRadius: '2px',
     boxSizing: 'border-box',
     color: theme.palette.text?.contrastText,

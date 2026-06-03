@@ -27,7 +27,7 @@
  * TODO: Support different bandwidth modes (e.g.: overview vs. focus) aka lowBandwidth
  */
 import { Meteor } from 'meteor/meteor';
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { isEmpty, keyBy } from 'lodash';
 import Localization from './Localization';

@@ -72,6 +72,9 @@ const isEmpty = state => {
  * Implements getting the 'calculated' state for a robot (merging robot and system states).
  */
 const getCalculatedStateAsync = async ({ robotId, moduleName, keys }) => {
+  if (!robotId) {
+    throw new Error('robotId is required');
+  }
   const moduleConfig = new ConfigManager(RobotModuleState);
   const configParams = { groupingKey: 'moduleName' };
   if (moduleName) {

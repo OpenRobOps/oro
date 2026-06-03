@@ -23,8 +23,7 @@
  * https://github.com/iegomez/mosquitto-go-auth#mongodb
  */
 import { Meteor } from 'meteor/meteor';
-import { groupBy, pick } from 'lodash';
-import crypto from 'crypto';
+import { isArray, groupBy, pick } from 'lodash';
 // ORO modules
 import { MqttLogins } from './collections';
 import {
@@ -189,7 +188,7 @@ Meteor.methods({
     robotIds, 
     ts // used to generate the secret word
   }) {
-    if (!Array.isArray(robotIds) || robotIds.length === 0) {
+    if (!Array.isArray(robotIds) || robotIds.map(Boolean).length === 0) {
       throw new Meteor.Error('Missing robotIds');
     }
     if (!ts) {
