@@ -41,7 +41,7 @@ const useStyles = makeStyles()(theme => ({
   },
   tableHead: {
     display: 'grid',
-    gridTemplateColumns: '2fr 1fr 1fr 1fr',
+    gridTemplateColumns: '2fr 1fr 1fr',
     padding: '14px 20px',
     borderBottom: `1px solid ${theme.palette.background.sidebarBorder}`,
   },
@@ -70,7 +70,6 @@ const MembersTable = ({ users }) => {
           <Box className={classes.tableHead}>
             <Typography className={classes.headCell}>User</Typography>
             <Typography className={classes.headCell}>Role</Typography>
-            <Typography className={classes.headCell}>Status</Typography>
             <Typography className={classes.headCell}>Joined</Typography>
           </Box>
           {users.map(u => <MemberRow key={u._id} user={u} />)}

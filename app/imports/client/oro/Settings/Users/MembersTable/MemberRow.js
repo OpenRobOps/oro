@@ -28,7 +28,7 @@ import UserComponent from '../UserComponent';
 const useStyles = makeStyles()(theme => ({
   row: {
     display: 'grid',
-    gridTemplateColumns: '2fr 1fr 1fr 1fr',
+    gridTemplateColumns: '2fr 1fr 1fr',
     padding: '14px 20px',
     alignItems: 'center',
     '&:not(:last-of-type)': {
@@ -44,20 +44,6 @@ const useStyles = makeStyles()(theme => ({
     border: `1px solid ${theme.palette.background.sidebarBorder}`,
     borderRadius: '6px',
     padding: '4px 10px',
-  },
-  activeChip: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '6px',
-    fontSize: '12px',
-    color: theme.palette.background.mintAccent,
-  },
-  activeDot: {
-    width: 6,
-    height: 6,
-    borderRadius: '50%',
-    backgroundColor: theme.palette.background.mintAccent,
-    display: 'inline-block',
   },
   date: {
     fontSize: '14px',
@@ -83,10 +69,6 @@ const MemberRow = ({ user }) => {
         {firstRole && (
           <span className={classes.rolePill}>{roleLabel}</span>
         )}
-      </Box>
-      <Box className={classes.activeChip}>
-        <span className={classes.activeDot} />
-        Active
       </Box>
       <Typography className={classes.date}>
         {formatDate(user.createdAt)}
