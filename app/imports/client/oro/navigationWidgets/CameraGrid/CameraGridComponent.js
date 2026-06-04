@@ -137,15 +137,23 @@ const CameraGridComponent = (props) => {
       {/* Wait on rendering until we have a defined width and height */}
       {cameraGridSize && cameraLayout && (
         <RGL
+          // Remount the grid when the measured size settles. The first render can
+          // happen with a transient pre-layout size; keying on the size forces a
+          // fresh layout once it settles.
+          key={`${Math.round(width)}x${Math.round(rowHeight)}`}
           layout={cameraLayout}
-          items={cameras.length}
-          cols={RESPONSIVE_COLUMNS}
-          rowHeight={rowHeight}
           width={width}
-          // Inner margins between the cameras
-          margin={[CAMERAS_MARGIN, CAMERAS_MARGIN]}
-          // Padding of the container with the cameras
-          containerPadding={isFullscreen ? [0, 0] : [5, 1]}
+          // react-grid-layout v2 takes the grid sizing via gridConfig; passing
+          // cols/rowHeight/margin as top-level props (the v1 API) is ignored and
+          // the items fall back to library defaults (cols 12, rowHeight 150).
+          gridConfig={{
+            cols: RESPONSIVE_COLUMNS,
+            rowHeight,
+            // Inner margins between the cameras
+            margin: [CAMERAS_MARGIN, CAMERAS_MARGIN],
+            // Padding of the container with the cameras
+            containerPadding: isFullscreen ? [0, 0] : [5, 1],
+          }}
         >
           {renderCameras}
         </RGL>

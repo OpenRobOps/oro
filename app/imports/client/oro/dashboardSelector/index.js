@@ -57,7 +57,6 @@ const DashboardContainer = props => (
 const DashboardSelectorContainer = (props) => {
   const { urlDashboardId } = props;
   const trackerData = useTracker(() => {
-    const dashboardId = urlDashboardId || null;
     const userId = Meteor.userId();
 
     if (!userId) { // TODO(herchu) re-enable when log in is implemented
@@ -86,9 +85,13 @@ const DashboardSelectorContainer = (props) => {
     // Get the initially selected dashboard configuration if it is present
     const { initialDashboardId } = dashboardCfg.dashboards || {};
 
-    return { isLoading: false, dashboardSpecs, dashboardId, initialDashboardId };
-  }, [urlDashboardId]);
-  return <DashboardContainer {...props} {...trackerData} />;
+    return { isLoading: false, dashboardSpecs, initialDashboardId };
+  }, []);
+  // The selected dashboard is derived from the URL, not the subscription. Keeping
+  // it out of the tracker deps stops a tab switch from tearing down and re-running
+  // the subscription, which flashed a loading state on every tab change.
+  const dashboardId = urlDashboardId || null;
+  return <DashboardContainer {...props} {...trackerData} dashboardId={dashboardId} />;
 };
 
 DashboardSelectorContainer.propTypes = {

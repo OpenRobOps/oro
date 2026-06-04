@@ -699,14 +699,12 @@ const WIDGET_FACTORY = {
   // ),
 
   [WIDGET_TYPES.ROS_DIAGNOSTICS]: ({ context, setContext, scope, isZeroData }) => (
-    <div data-test="x">
     <DiagnosticsWidget
       robotId={getRobotId(context, scope)}
       selectedRosDiagnosticsLevel={getRosDiagnosticsLevel(context, scope)}
       setRosDiagnosticsLevel={setRosDiagnosticsLevel(setContext, scope)}
       isZeroData={isZeroData}
     />
-    </div>
   ),
 
   // [WIDGET_TYPES.DATA_BAGS]: ({ context, scope, isZeroData }) => (

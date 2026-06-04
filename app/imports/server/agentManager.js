@@ -473,6 +473,10 @@ export default class AgentManager {
    * TODO Replace users of this with getCalculatedStateAsync
    */
   getModuleStates = async (robotId, moduleName, key) => {
+    if (!robotId) {
+      console.warn('getModuleStates called without robotId; skipping');
+      return {};
+    }
     const keys = key === undefined ? undefined : [key];
 
     const state = await getCalculatedStateAsync({
