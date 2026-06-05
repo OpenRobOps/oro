@@ -53,6 +53,7 @@ import {
 //   RobotEventsModule,
 //   ImagesModule,
 //   GpsModule,
+  UpstreamModule,
 } from './server/modules';
 
 // Read settings from configuration file
@@ -76,6 +77,7 @@ let metrics;
 let queue;
 let objectsManager;
 let attributesManager;
+let upstreamModule;
 
 async function run() {
   console.log('---------------------------------------------------------');
@@ -87,10 +89,24 @@ async function run() {
   console.log('Peer API is ON: ' + settings.peerClient.url);
   console.log('Profiler is ' + (settings.profiler?.enabled ? 'ON' : 'OFF'));
   console.log('Objects Manager ' + (settings.objectsManager?.enabled ? 'ON' : 'OFF'));
-
+  console.log('Upstream is ' 
+    + (settings.upstream?.enabled ? 'ON: ' + settings.upstream.api?.baseUrl : 'OFF'));
+  // Per module settings
+  const moduleSettings = settings.modules || {};
 
   mongo = new MongoManager();
   await mongo.init(settings.mongo);
+
+  mqtt = new OroMqtt(); // Created but not yet started (connected)
+  // UpstreamModule is disabled by default. When enabled it forwards local
+  // robot telemetry to an upstream MQTT broker (another ORO / InOrbit).
+  // This module is started earlier and we attempt to wait for connection so that any incoming mqtt message
+  // (including retained messages; robot states) are forwarded immediately upon connecting our local mqtt broker.
+  if (settings.upstream?.enabled) {
+    upstreamModule = new UpstreamModule({ mqtt, mqttConfig: settings.mqtt });
+    await upstreamModule.load(settings.upstream);
+  }
+
   // Create queues
   queue = new InMemoryWorkerQueues();
   await queue.init({
@@ -106,7 +122,6 @@ async function run() {
   // await storage.init(settings.storage);
   peerClient = new PeerClient();
   await peerClient.init(settings.peerClient);
-  mqtt = new OroMqtt();
   // await new EventTracker().init(settings.pendo);
   // objectsManager = new ObjectsManager();
   // await objectsManager.init(settings.objectsManager);
@@ -121,9 +136,6 @@ async function run() {
   //   mqtt,
   //   settings: settings.profiler
   // }).load();
-
-  // Per module settings
-  const moduleSettings = settings.modules || {};
 
   // Initialize modules
   new BasicsModule(mqtt).load();
@@ -170,6 +182,7 @@ async function shutdown() {
   console.log('---------------------------------------------------------');
   console.log('Ingest service shutdown initiated at ' + moment().format());
   // Shutdown all modules cleanly
+  upstreamModule && await upstreamModule.shutdown();
   mqtt && await mqtt.shutdown();
   storage && await storage.shutdown();
   mongo && await mongo.shutdown();

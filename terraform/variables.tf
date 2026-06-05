@@ -103,3 +103,43 @@ variable "profiler_enabled" {
   type        = bool
   default     = true
 }
+
+variable "upstream_enabled" {
+  description = "Enable the ingest UpstreamModule (forwards local robot telemetry to an upstream ORO/InOrbit MQTT broker)"
+  type        = bool
+  default     = false
+}
+
+variable "upstream_api_base_url" {
+  description = "Base URL of the upstream server exposing /mqtt_config (e.g. https://control.inorbit.ai)"
+  type        = string
+  default     = ""
+}
+
+variable "upstream_api_key" {
+  description = "Upstream-issued robot API key used to call /mqtt_config and provision per-robot credentials"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
+variable "upstream_robot_mapping" {
+  description = "List of {localRobotId, upstreamRobotId} pairs to forward upstream"
+  type = list(object({
+    localRobotId    = string
+    upstreamRobotId = string
+  }))
+  default = []
+}
+
+variable "upstream_reject_unauthorized" {
+  description = "Verify upstream broker TLS certificate. Set to false only for testing with self-signed certs."
+  type        = bool
+  default     = true
+}
+
+variable "upstream_deny_topic_suffixes" {
+  description = "Subtopics to drop instead of forwarding upstream (typically server->robot topics like in_cmd)"
+  type        = list(string)
+  default     = ["in_cmd", "modules/set_state"]
+}
