@@ -19,8 +19,10 @@
  * "upstream" broker (another ORO or an InOrbit cloud), forwarding robot
  * telemetry as if each local robot were directly connected to upstream.
  *
- * v1 scope: upstream-only forwarding (robot -> upstream). Downstream
- * delivery (upstream -> local robots) is intentionally a follow-up.
+ * Forwarding is primarily upstream (robot -> upstream telemetry). Downstream
+ * delivery (upstream -> local robot) is currently limited to an allow-list of
+ * commands (see DOWNSTREAM_COMMANDS), republished onto the local broker so the
+ * robot receives them as if sent locally.
  *
  * Per-robot credentials are required by the upstream protocol today; the
  * module therefore opens one MQTT client per mapped robot. When upstream
@@ -43,6 +45,28 @@ import { encryptPassword, decryptPassword } from '../../shared/mqttCredentialCry
 
 const COLLECTION_NAME = 'upstream_mqtt_credentials';
 const DEFAULT_DENY_SUBTOPICS = ['in_cmd', 'modules/set_state'];
+// Server->robot commands delivered downstream (upstream -> local robot), each
+// republished onto the local broker under the local robot's topic.
+//
+// This is deliberately an allow-list, not a whole subtree:
+//  - `custom_command/` also carries robot->server feedback (e.g.
+//    `custom_command/script/status`) which must keep flowing upstream and must
+//    not be echoed back to the robot, so only the actual command subtopics are
+//    listed.
+//  - `in_cmd` is a single topic carrying many server->robot commands plus
+//    echo/ping messages (sent as '<seq>|' by the callback mechanism). For now
+//    only the agent-restart command is delivered; `acceptsPayload` filters out
+//    echoes and every other in_cmd command.
+//
+// The robot never publishes these command topics, so anything seen on them by
+// the upstream forwarder is our own downstream injection echoing off the local
+// broker; the forwarder skips them to avoid a loop (and `in_cmd` is in the deny
+// list as well).
+const DOWNSTREAM_COMMANDS = [
+  { subtopic: 'custom_command/ros' },
+  { subtopic: 'custom_command/script/command' },
+  { subtopic: 'in_cmd', acceptsPayload: (payload) => payload.toString() === 'restart' },
+];
 // After a permanent (HTTP 4xx) failure, don't hammer the upstream API.
 const PERMANENT_FAILURE_RETRY_MS = 5 * 60 * 1000;
 // Auth-failure refetch throttle, to avoid loops if upstream keeps rejecting
@@ -389,7 +413,11 @@ export class UpstreamRobotClient {
       if (this._logging) {
         console.log(`[upstream] ${this.localRobotId}: upstream connected (as ${this.upstreamRobotId})`);
       }
+      this._subscribeUpstreamCommands();
       this._flushRetainedMessages();
+    });
+    this._upstreamClient.on('message', (topic, payload, packet) => {
+      this._handleUpstreamMessage(topic, payload, packet);
     });
     this._upstreamClient.on('close', () => {
       this._connected = false;
@@ -484,6 +512,12 @@ export class UpstreamRobotClient {
       );
       return;
     }
+    if (this._isDownstreamCommandSubtopic(subtopic)) {
+      // Server->robot command we deliver downstream; the robot never publishes
+      // it, so anything seen here is our own injection echoing off the local
+      // broker. Never forward it upstream (would loop back to us).
+      return;
+    }
     const upstreamTopic = `r/${this.upstreamRobotId}/${subtopic}`;
     const qos = packet.qos || 0;
 
@@ -531,7 +565,7 @@ export class UpstreamRobotClient {
 
   _publishToUpstream = (upstreamTopic, payload, qos, retain) => {
     if (upstreamTopic.endsWith("/state")) { // debug this topic only for online/offline states
-      console.log("publishToUpstream", new Date() , upstreamTopic, upstreamTopic.endsWith("/state") ? String(payload) : "")
+      console.log("publishToUpstream", new Date() , retain, upstreamTopic, upstreamTopic.endsWith("/state") ? String(payload) : "")
     }
     const publishOptions = {
       qos,
@@ -545,6 +579,78 @@ export class UpstreamRobotClient {
         );
       }
     });
+  };
+
+  // eslint-disable-next-line class-methods-use-this
+  _downstreamCommandFor = (subtopic) => DOWNSTREAM_COMMANDS.find((c) => c.subtopic === subtopic);
+
+  _isDownstreamCommandSubtopic = (subtopic) => !!this._downstreamCommandFor(subtopic);
+
+  /**
+   * Subscribe the upstream client to the server->robot command topics we
+   * deliver downstream. Invoked on every upstream 'connect' (subscriptions do
+   * not survive a reconnect with a fresh clientId/session).
+   */
+  _subscribeUpstreamCommands = () => {
+    const subtopics = [...new Set(DOWNSTREAM_COMMANDS.map((c) => c.subtopic))];
+    for (const subtopic of subtopics) {
+      const topic = `r/${this.upstreamRobotId}/${subtopic}`;
+      // qos 1: commands matter; don't silently lose them on a flaky link.
+      this._upstreamClient.subscribe(topic, { qos: 1 }, (err) => {
+        if (err) {
+          console.error(`[upstream] ${this.localRobotId}: upstream subscribe to ${topic} failed: ${err.message}`);
+        } else if (this._logging) {
+          console.log(`[upstream] ${this.localRobotId}: subscribed upstream to ${topic}`);
+        }
+      });
+    }
+  };
+
+  /**
+   * Deliver a message received from upstream down to the local robot, by
+   * republishing it onto the local broker under the local robot's topic.
+   * Only the allow-listed commands are delivered (see DOWNSTREAM_COMMANDS),
+   * subject to each command's optional payload filter; everything else
+   * (including in_cmd echoes) is ignored.
+   */
+  _handleUpstreamMessage = (topic, payload, packet) => {
+    if (this._logging) console.log("[upstream] handleUpstreamMessage", topic, String(payload))
+    const prefix = `r/${this.upstreamRobotId}/`;
+    if (!topic.startsWith(prefix)) return;
+    const subtopic = topic.substring(prefix.length);
+    const command = this._downstreamCommandFor(subtopic);
+    if (!command) return;
+    if (command.acceptsPayload && !command.acceptsPayload(payload)) return;
+    if (!this._localClient) {
+      this._logger.warn(
+        `upstream-cmd-no-local-${this.localRobotId}`,
+        `[upstream] ${this.localRobotId}: local client unavailable; dropping command '${subtopic}'`
+      );
+      return;
+    }
+    const localTopic = `r/${this.localRobotId}/${subtopic}`;
+    if (this._logging) {
+      console.log(`[upstream] ${this.localRobotId}: delivering upstream command '${subtopic}' to robot`);
+    }
+    this._logUpstreamCommand(topic, payload);
+    // Commands are transient: never retained on the local broker.
+    this._localClient.publish(localTopic, payload, { qos: packet.qos || 0, retain: false }, (err) => {
+      if (err) {
+        this._logger.warn(
+          `upstream-cmd-publish-fail-${this.localRobotId}`,
+          `[upstream] ${this.localRobotId}: publish command to ${localTopic} failed: ${err.message}`
+        );
+      }
+    });
+  };
+
+
+  _logUpstreamCommand = (topic, payload) => {
+    // Log event. Use the Id of the robot that called the action
+    // await new EventLog().logExecutedAction(new Robot(robotId), action, user, eventLogArguments);
+    console.log("logUpstreamCommand", topic, String(payload))
+
+    // this._logEvent(`command-executed-remote`, this.localRobotId, { commandTopic: topic, commandPayload: payload.toString() });
   };
 }
 

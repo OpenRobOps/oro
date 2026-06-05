@@ -125,3 +125,119 @@ describe('UpstreamRobotClient retained-message buffering', () => {
     assert.strictEqual(fake.published[0].options.retain, false);
   });
 });
+
+describe('UpstreamRobotClient downstream command delivery', () => {
+  it('republishes an upstream custom_command/ros to the local robot', () => {
+    const client = makeClient();
+    const fakeLocal = makeFakeUpstream();
+    client._localClient = fakeLocal;
+
+    client._handleUpstreamMessage('r/up1/custom_command/ros', Buffer.from('cmd'), { qos: 0 });
+
+    assert.strictEqual(fakeLocal.published.length, 1);
+    const pub = fakeLocal.published[0];
+    assert.strictEqual(pub.topic, 'r/local1/custom_command/ros');
+    assert.strictEqual(pub.payload.toString(), 'cmd');
+    assert.strictEqual(pub.options.retain, false);
+  });
+
+  it('republishes an upstream custom_command/script/command to the local robot', () => {
+    const client = makeClient();
+    const fakeLocal = makeFakeUpstream();
+    client._localClient = fakeLocal;
+
+    client._handleUpstreamMessage('r/up1/custom_command/script/command', Buffer.from('s'), { qos: 1 });
+
+    assert.strictEqual(fakeLocal.published.length, 1);
+    assert.strictEqual(fakeLocal.published[0].topic, 'r/local1/custom_command/script/command');
+    assert.strictEqual(fakeLocal.published[0].options.qos, 1);
+  });
+
+  it('ignores upstream status feedback (custom_command/script/status)', () => {
+    const client = makeClient();
+    const fakeLocal = makeFakeUpstream();
+    client._localClient = fakeLocal;
+
+    client._handleUpstreamMessage('r/up1/custom_command/script/status', Buffer.from('x'), { qos: 0 });
+
+    assert.strictEqual(fakeLocal.published.length, 0);
+  });
+
+  it('ignores upstream messages outside the upstream robot prefix', () => {
+    const client = makeClient();
+    const fakeLocal = makeFakeUpstream();
+    client._localClient = fakeLocal;
+
+    client._handleUpstreamMessage('r/otherbot/custom_command/ros', Buffer.from('x'), { qos: 0 });
+
+    assert.strictEqual(fakeLocal.published.length, 0);
+  });
+
+  it('does not forward downstream command subtopics back upstream (no echo loop)', () => {
+    const client = makeClient();
+    const fake = makeFakeUpstream();
+    client._upstreamClient = fake;
+    client._connected = true;
+
+    // This would be our own downstream-injected command echoing off the local broker.
+    client._forward('r/local1/custom_command/ros', Buffer.from('cmd'), { retain: false, qos: 0 });
+
+    assert.strictEqual(fake.published.length, 0);
+  });
+
+  it('still forwards custom_command/script/status feedback upstream', () => {
+    const client = makeClient();
+    const fake = makeFakeUpstream();
+    client._upstreamClient = fake;
+    client._connected = true;
+
+    client._forward('r/local1/custom_command/script/status', Buffer.from('s'), { retain: false, qos: 0 });
+
+    assert.strictEqual(fake.published.length, 1);
+    assert.strictEqual(fake.published[0].topic, 'r/up1/custom_command/script/status');
+  });
+
+  it('delivers an upstream in_cmd restart to the local robot', () => {
+    const client = makeClient();
+    const fakeLocal = makeFakeUpstream();
+    client._localClient = fakeLocal;
+
+    client._handleUpstreamMessage('r/up1/in_cmd', Buffer.from('restart'), { qos: 0 });
+
+    assert.strictEqual(fakeLocal.published.length, 1);
+    assert.strictEqual(fakeLocal.published[0].topic, 'r/local1/in_cmd');
+    assert.strictEqual(fakeLocal.published[0].payload.toString(), 'restart');
+  });
+
+  it('ignores upstream in_cmd echo/ping messages', () => {
+    const client = makeClient();
+    const fakeLocal = makeFakeUpstream();
+    client._localClient = fakeLocal;
+
+    // Echo pings are sent as '<seq>|' by the callback mechanism.
+    client._handleUpstreamMessage('r/up1/in_cmd', Buffer.from('42|'), { qos: 0 });
+
+    assert.strictEqual(fakeLocal.published.length, 0);
+  });
+
+  it('ignores other upstream in_cmd commands (e.g. update)', () => {
+    const client = makeClient();
+    const fakeLocal = makeFakeUpstream();
+    client._localClient = fakeLocal;
+
+    client._handleUpstreamMessage('r/up1/in_cmd', Buffer.from('update'), { qos: 0 });
+
+    assert.strictEqual(fakeLocal.published.length, 0);
+  });
+
+  it('does not forward in_cmd back upstream (no echo loop)', () => {
+    const client = makeClient();
+    const fake = makeFakeUpstream();
+    client._upstreamClient = fake;
+    client._connected = true;
+
+    client._forward('r/local1/in_cmd', Buffer.from('restart'), { retain: false, qos: 0 });
+
+    assert.strictEqual(fake.published.length, 0);
+  });
+});
