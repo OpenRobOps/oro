@@ -24,7 +24,6 @@ import { Grid } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
 // ORO modules
 import TimeIntervalToolbarWithHook from '../../../util/TimeIntervalToolbar';
-import LiveButton from '../../../util/LiveButton';
 import { StartTsPropType } from '../../../util/timeUtils';
 
 const useStyles = makeStyles()(() => ({
@@ -34,7 +33,6 @@ const useStyles = makeStyles()(() => ({
 }));
 
 const TimeIntervalFilter = (props) => {
-  const { startTs, setStartTime, timeRangeMs, config } = props;
   const { classes } = useStyles();
   // Creating a more reusable way to write widget size-dependent code
   // TODO: next time we should not copy this code, instead we have to generalize it and create our own hook.
@@ -45,20 +43,10 @@ const TimeIntervalFilter = (props) => {
     setWidth(elementRef.current.offsetWidth);
   }, [elementRef]);
 
-  // Timelines accept a staticTimeOnly config property, used in Time Capsule, that disables Live
-  // mode. In that setting, we simply skip the LiveButton
-  const staticTimeOnly = Boolean(config && config.staticTimeOnly);
   return (
     <Grid container ref={elementRef} spacing={1} className={classes.container}>
-      { !staticTimeOnly ? (
-        <LiveButton
-          startTs={startTs}
-          timeRangeMs={timeRangeMs}
-          setStartTime={setStartTime}
-        />
-      ) : (/* When LiveButton is skipped, fill its space */
-        <Grid style={{ flex: 1 }} />
-      )}
+      {/* Spacer where the Live button used to be, so the time interval toolbar stays aligned */}
+      <Grid style={{ flex: 1 }} />
       <TimeIntervalToolbarWithHook width={width} {...props} />
     </Grid>
   );

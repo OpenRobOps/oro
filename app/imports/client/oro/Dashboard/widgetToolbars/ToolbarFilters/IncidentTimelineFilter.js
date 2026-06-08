@@ -29,10 +29,12 @@ import { makeStyles } from 'tss-react/mui';
 import SeverityFilter from '../../../util/SeverityFolder';
 import IncidentComponentFilter from '../../../util/IncidentComponentFilter';
 import TimeIntervalToolbar from '../../../util/TimeIntervalToolbar';
-import LiveButton from '../../../util/LiveButton';
 import { StartTsPropType } from '../../../util/timeUtils';
 
 const useStyles = makeStyles()(() => ({
+  container: {
+    justifyContent: 'end'
+  },
   itemContainer: {
     display: 'flex',
     alignItems: 'center',
@@ -41,16 +43,10 @@ const useStyles = makeStyles()(() => ({
 }));
 
 const IncidentTimelineFilter = (props) => {
-  const { startTs, setStartTime, timeRangeMs } = props;
   const { classes } = useStyles();
 
   return (
-    <Grid container spacing={1}>
-      <LiveButton
-        startTs={startTs}
-        timeRangeMs={timeRangeMs}
-        setStartTime={setStartTime}
-      />
+    <Grid container className={classes.container} spacing={1}>
       <Grid className={classes.itemContainer}>
         {/* eslint-disable-next-line react/jsx-props-no-spreading */}
         <SeverityFilter {...props} />

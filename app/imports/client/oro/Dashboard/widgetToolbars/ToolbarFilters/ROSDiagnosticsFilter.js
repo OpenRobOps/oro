@@ -25,7 +25,6 @@ import PropTypes from 'prop-types';
 import { Grid } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
 import { capitalize } from 'lodash';
-import LiveButton from '../../../util/LiveButton';
 import ToolBarFilterComponent from '../../../util/ToolBarFilter';
 import { DIAG_VALUES_BUTTONS } from '../../../robotWidgets/DiagnosticsWidget/DiagnosticsWidgetComponent/DiagnosticsEntry';
 import { LEVEL_ALL, LEVEL_ERROR, LEVEL_STALE, LEVEL_WARNING } from '../../../robotWidgets/DiagnosticsWidget/DiagnosticsWidgetComponent/DiagnosticsWidgetComponent';
@@ -34,10 +33,8 @@ const useStyles = makeStyles()(() => ({
   itemContainer: {
     display: 'flex',
     alignItems: 'center',
-    maxHeight: '32px'
-  },
-  withoutLiveData: {
-    justifyContent: 'flex-end'
+    maxHeight: '32px',
+    justifyContent: 'end'
   },
   icon: {
     width: '12px',
@@ -50,8 +47,7 @@ const useStyles = makeStyles()(() => ({
 const RosDiagnosticsFilter = (props) => {
   const {
     selectedRosDiagnosticsLevel,
-    setRosDiagnosticsLevel,
-    alwaysLive
+    setRosDiagnosticsLevel
   } = props;
   const { classes, theme, cx } = useStyles();
 
@@ -95,9 +91,8 @@ const RosDiagnosticsFilter = (props) => {
   return (
     <Grid
       container
-      className={cx(classes.itemContainer, { [classes.withoutLiveData]: !alwaysLive })}
+      className={classes.itemContainer}
     >
-      {alwaysLive && <LiveButton alwaysLive />}
       <ToolBarFilterComponent
         selectedToolBarButton={selectedRosDiagnosticsLevel}
         setSelectedToolBarButton={setRosDiagnosticsLevel}
@@ -110,9 +105,7 @@ const RosDiagnosticsFilter = (props) => {
 
 RosDiagnosticsFilter.propTypes = {
   selectedRosDiagnosticsLevel: PropTypes.string,
-  setRosDiagnosticsLevel: PropTypes.func,
-  // Boolean that checks when to display the live button
-  alwaysLive: PropTypes.bool
+  setRosDiagnosticsLevel: PropTypes.func
 };
 
 export default RosDiagnosticsFilter;
