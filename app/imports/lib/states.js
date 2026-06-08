@@ -73,11 +73,8 @@ const isEmpty = state => {
  * Implements getting the 'calculated' state for a robot (merging robot and system states).
  */
 const getCalculatedStateAsync = async ({ robotId, moduleName, keys }) => {
-  // A missing/invalid robotId means "no robot, no state". Return an empty result instead of
-  // letting getEntityConfig throw 'Missing entityId/entityType'; that error was uncaught in
-  // some callers (e.g. agent-connect module resend) and crashed the whole server process.
   if (!robotId || !isString(robotId)) {
-    console.warn('getCalculatedStateAsync called without a valid robotId; returning empty state', { robotId });
+    console.warn('getCalculatedStateAsync called without a valid robotId:', robotId);
     return moduleName !== undefined ? null : {};
   }
   const moduleConfig = new ConfigManager(RobotModuleState);

@@ -28,7 +28,7 @@ import { StartTsPropType } from '../../../util/timeUtils';
 
 const useStyles = makeStyles()(() => ({
   container: {
-    alignItems: 'self-end'
+    justifyContent: 'end'
   }
 }));
 
@@ -45,8 +45,6 @@ const TimeIntervalFilter = (props) => {
 
   return (
     <Grid container ref={elementRef} spacing={1} className={classes.container}>
-      {/* Spacer where the Live button used to be, so the time interval toolbar stays aligned */}
-      <Grid style={{ flex: 1 }} />
       <TimeIntervalToolbarWithHook width={width} {...props} />
     </Grid>
   );
