@@ -32,13 +32,7 @@ import {
 import PropTypes from 'prop-types';
 // ORO modules
 import DashboardSelector from './screens/DashboardSelector';
-
-// Settings Screen component
-const SettingsScreen = () => {
-  return (
-    "Settings Screen placeholder"
-  )
-};
+import Settings from '../Settings';
 
 // eslint-disable-next-line react/prop-types
 const RedirectWithParams = ({ url, ignoreHash }) => {
@@ -59,7 +53,7 @@ const OroRoutes = () => {
       {/* Paths only available to fully registered users */}
       {/* ---------------------------------------------- */}
 
-      <Route path="/configuration/:section?" Component={SettingsScreen} />
+      <Route path="/configuration/:section?" Component={Settings} />
       {/* Dashboard are accessible under /dashboards/... route */}
       <Route path="/dashboards/:dashboardId?" Component={DashboardSelector} />
 
