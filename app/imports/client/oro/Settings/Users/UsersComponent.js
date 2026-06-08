@@ -24,7 +24,7 @@ import PropTypes from 'prop-types';
 import { Box, Typography } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
 import PendingList from './PendingList';
-import MembersTable from './MembersTable';
+import UsersTable from './UsersTable';
 
 const useStyles = makeStyles()(theme => ({
   title: {
@@ -64,7 +64,7 @@ const UsersComponent = ({
             onApproveUser={onApproveUser}
             onRejectUser={onRejectUser}
           />
-          <MembersTable users={approvedUsers} />
+          <UsersTable users={approvedUsers} />
         </>
       )}
     </Box>

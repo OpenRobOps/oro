@@ -15,13 +15,13 @@
  */
 
 /**
- * MembersTable: section header + table of approved users.
+ * UsersTable: section header + table of approved users.
  */
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Box, Typography } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
-import MemberRow from './MemberRow';
+import UserRow from './UserRow';
 
 const useStyles = makeStyles()(theme => ({
   header: {
@@ -56,31 +56,31 @@ const useStyles = makeStyles()(theme => ({
   },
 }));
 
-const MembersTable = ({ users }) => {
+const UsersTable = ({ users }) => {
   const { classes } = useStyles();
   return (
     <>
       <Typography className={classes.header}>
-        Members ({users.length})
+        Users ({users.length})
       </Typography>
       {users.length === 0 ? (
-        <Typography className={classes.empty}>No members yet.</Typography>
+        <Typography className={classes.empty}>No users yet.</Typography>
       ) : (
         <Box className={classes.table}>
           <Box className={classes.tableHead}>
             <Typography className={classes.headCell}>User</Typography>
-            <Typography className={classes.headCell}>Role</Typography>
+            <Typography className={classes.headCell}>Roles</Typography>
             <Typography className={classes.headCell}>Joined</Typography>
           </Box>
-          {users.map(u => <MemberRow key={u._id} user={u} />)}
+          {users.map(u => <UserRow key={u._id} user={u} />)}
         </Box>
       )}
     </>
   );
 };
 
-MembersTable.propTypes = {
+UsersTable.propTypes = {
   users: PropTypes.array.isRequired,
 };
 
-export default MembersTable;
+export default UsersTable;

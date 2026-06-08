@@ -15,7 +15,7 @@
  */
 
 /**
- * MemberRow: single grid row in the approved members table.
+ * UserRow: single grid row in the approved users table.
  */
 import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
@@ -34,6 +34,11 @@ const useStyles = makeStyles()(theme => ({
     '&:not(:last-of-type)': {
       borderBottom: `1px solid ${theme.palette.background.sidebarBorder}`,
     },
+  },
+  roles: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '4px',
   },
   rolePill: {
     display: 'inline-block',
@@ -58,17 +63,20 @@ const getRoleLabel = (roleId) => {
   return roleDoc ? roleDoc.label : roleId;
 };
 
-const MemberRow = ({ user }) => {
+const UserRow = ({ user }) => {
   const { classes } = useStyles();
-  const firstRole = user.userRoles?.[0];
-  const roleLabel = useMemo(() => getRoleLabel(firstRole), [firstRole]);
+  // Display every assigned role; the system supports multiple roles per user.
+  const roles = useMemo(
+    () => (user.userRoles ?? []).map(roleId => ({ id: roleId, label: getRoleLabel(roleId) })),
+    [user.userRoles]
+  );
   return (
     <Box className={classes.row}>
       <UserComponent user={user} size={32} />
-      <Box>
-        {firstRole && (
-          <span className={classes.rolePill}>{roleLabel}</span>
-        )}
+      <Box className={classes.roles}>
+        {roles.map(role => (
+          <span key={role.id} className={classes.rolePill}>{role.label}</span>
+        ))}
       </Box>
       <Typography className={classes.date}>
         {formatDate(user.createdAt)}
@@ -77,8 +85,8 @@ const MemberRow = ({ user }) => {
   );
 };
 
-MemberRow.propTypes = {
+UserRow.propTypes = {
   user: PropTypes.object.isRequired,
 };
 
-export default MemberRow;
+export default UserRow;
