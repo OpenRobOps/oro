@@ -25,7 +25,7 @@ import { UpstreamRobotClient } from '../src/server/modules/upstream';
 
 const noopLogger = { log: () => {}, warn: () => {}, error: () => {} };
 
-function makeClient({ publishRetained = true } = {}) {
+function makeClient({ publishRetained = true, oroMqtt, eventLogColl } = {}) {
   return new UpstreamRobotClient({
     localRobotId: 'local1',
     upstreamRobotId: 'up1',
@@ -38,7 +38,29 @@ function makeClient({ publishRetained = true } = {}) {
     localBrokerConfig: {},
     logging: false,
     throttledLogger: noopLogger,
+    oroMqtt,
+    eventLogColl,
   });
+}
+
+// A fake event-log mongo collection recording inserted documents.
+function makeFakeEventLog() {
+  const inserted = [];
+  return {
+    inserted,
+    insertOne(doc) { inserted.push(doc); return Promise.resolve({ acknowledged: true }); },
+  };
+}
+
+// A fake oroMqtt exposing lookupType, returning decoders keyed by proto type name.
+function makeFakeOroMqtt(decoders) {
+  return {
+    lookupType(name) {
+      const decode = decoders[name];
+      if (!decode) throw new Error(`no such type ${name}`);
+      return { decode };
+    },
+  };
 }
 
 // A fake upstream mqtt client that records publishes and invokes the callback.
@@ -239,5 +261,85 @@ describe('UpstreamRobotClient downstream command delivery', () => {
     client._forward('r/local1/in_cmd', Buffer.from('restart'), { retain: false, qos: 0 });
 
     assert.strictEqual(fake.published.length, 0);
+  });
+});
+
+describe('UpstreamRobotClient _logUpstreamCommand', () => {
+  it('logs a PublishToTopic action for custom_command/ros, decoding the protobuf', async () => {
+    const eventLog = makeFakeEventLog();
+    const oroMqtt = makeFakeOroMqtt({
+      'oro.CustomCommandRosMessage': () => ({ cmd: 'do-something' }),
+    });
+    const client = makeClient({ oroMqtt, eventLogColl: eventLog });
+
+    await client._logUpstreamCommand('r/up1/custom_command/ros', Buffer.from('ignored'));
+
+    assert.strictEqual(eventLog.inserted.length, 1);
+    const doc = eventLog.inserted[0];
+    assert.strictEqual(doc.module, 'action');
+    assert.strictEqual(doc.eventType, 'action.executed');
+    assert.strictEqual(doc.robotId, 'local1');
+    assert.strictEqual(doc.eventData.type, 'PublishToTopic');
+    assert.strictEqual(doc.eventData.action.source, 'upstream');
+    assert.strictEqual(doc.eventData.action.upstreamRobotId, 'up1');
+    assert.strictEqual(doc.eventData.action.elementValues.message, 'do-something');
+    assert.strictEqual(typeof doc.ts, 'number');
+  });
+
+  it('logs a RunScript action for custom_command/script/command, decoding the protobuf', async () => {
+    const eventLog = makeFakeEventLog();
+    const oroMqtt = makeFakeOroMqtt({
+      'oro.CustomScriptCommandMessage': () => ({ fileName: 'job.sh', executionId: 'e1', argOptions: ['-x'] }),
+    });
+    const client = makeClient({ oroMqtt, eventLogColl: eventLog });
+
+    await client._logUpstreamCommand('r/up1/custom_command/script/command', Buffer.from('ignored'));
+
+    assert.strictEqual(eventLog.inserted.length, 1);
+    const { eventData } = eventLog.inserted[0];
+    assert.strictEqual(eventData.type, 'RunScript');
+    assert.strictEqual(eventData.action.elementValues.fileName, 'job.sh');
+    assert.strictEqual(eventData.action.elementValues.executionId, 'e1');
+  });
+
+  it('logs a RestartAgent action for in_cmd restart (no protobuf decode)', async () => {
+    const eventLog = makeFakeEventLog();
+    const client = makeClient({ eventLogColl: eventLog });
+
+    await client._logUpstreamCommand('r/up1/in_cmd', Buffer.from('restart'));
+
+    assert.strictEqual(eventLog.inserted.length, 1);
+    assert.strictEqual(eventLog.inserted[0].eventData.type, 'RestartAgent');
+  });
+
+  it('does not log for unknown command topics', async () => {
+    const eventLog = makeFakeEventLog();
+    const client = makeClient({ eventLogColl: eventLog });
+
+    await client._logUpstreamCommand('r/up1/custom_command/script/status', Buffer.from('x'));
+    await client._logUpstreamCommand('r/up1/pose', Buffer.from('x'));
+
+    assert.strictEqual(eventLog.inserted.length, 0);
+  });
+
+  it('still logs the action when protobuf decoding fails (best effort)', async () => {
+    const eventLog = makeFakeEventLog();
+    const oroMqtt = makeFakeOroMqtt({
+      'oro.CustomCommandRosMessage': () => { throw new Error('bad payload'); },
+    });
+    const client = makeClient({ oroMqtt, eventLogColl: eventLog });
+
+    await client._logUpstreamCommand('r/up1/custom_command/ros', Buffer.from('garbage'));
+
+    assert.strictEqual(eventLog.inserted.length, 1);
+    assert.strictEqual(eventLog.inserted[0].eventData.type, 'PublishToTopic');
+    // Could not decode → no message argument captured.
+    assert.strictEqual(eventLog.inserted[0].eventData.action.elementValues.message, undefined);
+  });
+
+  it('does not throw when no event-log collection is configured', async () => {
+    const client = makeClient();
+    await client._logUpstreamCommand('r/up1/in_cmd', Buffer.from('restart'));
+    // No assertion needed; reaching here without throwing is the test.
   });
 });

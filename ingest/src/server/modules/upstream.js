@@ -41,6 +41,7 @@ import axios from 'axios';
 import https from 'https';
 import MongoManager from '../../mongo';
 import ThrottledLogger from '../../shared/throttledLogger';
+import { COLLECTIONS } from '../../shared/constants';
 import { encryptPassword, decryptPassword } from '../../shared/mqttCredentialCrypto';
 
 const COLLECTION_NAME = 'upstream_mqtt_credentials';
@@ -67,6 +68,21 @@ const DOWNSTREAM_COMMANDS = [
   { subtopic: 'custom_command/script/command' },
   { subtopic: 'in_cmd', acceptsPayload: (payload) => payload.toString() === 'restart' },
 ];
+
+// Action type/label values, mirroring app/imports/shared/actions.js ACTION_TYPES
+// so the events written here read consistently alongside locally-executed ones.
+const ACTION_TYPES = {
+  RESTART_AGENT: 'RestartAgent',
+  RUN_SCRIPT: 'RunScript',
+  PUBLISH_TO_TOPIC: 'PublishToTopic',
+};
+// Event log module/type, mirroring app/imports/lib/events.js (EVENT_MODULES.ACTION,
+// EVENT_TYPES.ACTION_EXECUTED). The event_log collection is shared with the app.
+const EVENT_MODULE_ACTION = 'action';
+const EVENT_TYPE_ACTION_EXECUTED = 'action.executed';
+// Audit-log identity for commands that arrived over the upstream link rather
+// than from a local user.
+const UPSTREAM_USER_ID = 'upstream';
 // After a permanent (HTTP 4xx) failure, don't hammer the upstream API.
 const PERMANENT_FAILURE_RETRY_MS = 5 * 60 * 1000;
 // Auth-failure refetch throttle, to avoid loops if upstream keeps rejecting
@@ -129,6 +145,7 @@ export default class UpstreamModule {
     this._logging = logging;
     this._localBrokerConfig = localBrokerConfig;
     this._credsColl = this._mongo.getCollection(COLLECTION_NAME);
+    this._eventLogColl = this._mongo.getCollection(COLLECTIONS.EVENT_LOG);
     this._logger = new ThrottledLogger({ throttlingMs: 60 * 1000 });
 
     await this._credsColl.createIndex(
@@ -158,6 +175,8 @@ export default class UpstreamModule {
         localBrokerConfig: this._localBrokerConfig,
         logging: this._logging,
         throttledLogger: this._logger,
+        oroMqtt: this._oroMqtt,
+        eventLogColl: this._eventLogColl,
       });
       this._robotClients.set(entry.localRobotId, client);
       client.start().catch((err) => {
@@ -213,6 +232,8 @@ export class UpstreamRobotClient {
     localBrokerConfig,
     logging,
     throttledLogger,
+    oroMqtt,
+    eventLogColl,
   }) {
     this.localRobotId = localRobotId;
     this.upstreamRobotId = upstreamRobotId;
@@ -227,6 +248,10 @@ export class UpstreamRobotClient {
     this._localBrokerConfig = localBrokerConfig;
     this._logging = logging;
     this._logger = throttledLogger;
+    // oroMqtt provides protobuf type lookup (lookupType); eventLogColl is the
+    // shared `event_log` mongo collection. Both used by _logUpstreamCommand.
+    this._oroMqtt = oroMqtt;
+    this._eventLogColl = eventLogColl;
 
     this._upstreamClient = null;
     this._localClient = null;
@@ -645,12 +670,119 @@ export class UpstreamRobotClient {
   };
 
 
-  _logUpstreamCommand = (topic, payload) => {
-    // Log event. Use the Id of the robot that called the action
-    // await new EventLog().logExecutedAction(new Robot(robotId), action, user, eventLogArguments);
-    console.log("logUpstreamCommand", topic, String(payload))
+  /**
+   * Best-effort: record an event-log entry for a command that arrived from
+   * upstream and was delivered to the local robot, mirroring what the Meteor
+   * app (app/imports/server/actions.js) logs via EventLog.logExecutedAction
+   * when a command is executed locally.
+   *
+   * The payload is decoded with the protobuf type appropriate to the topic.
+   * Unknown topics, decode failures, or a missing event-log collection are all
+   * handled gracefully (the command delivery itself must never be blocked by
+   * logging).
+   */
+  _logUpstreamCommand = async (topic, payload) => {
+    try {
+      const prefix = `r/${this.upstreamRobotId}/`;
+      const subtopic = topic.startsWith(prefix) ? topic.slice(prefix.length) : topic;
 
-    // this._logEvent(`command-executed-remote`, this.localRobotId, { commandTopic: topic, commandPayload: payload.toString() });
+      let type;
+      let label;
+      let args;
+      switch (subtopic) {
+        case 'custom_command/ros': {
+          // Publish-to-topic: CustomCommandRosMessage { ts, cmd }.
+          const msg = this._decodeCommand('oro.CustomCommandRosMessage', payload);
+          type = ACTION_TYPES.PUBLISH_TO_TOPIC;
+          label = 'Publish to topic';
+          args = { message: msg?.cmd };
+          break;
+        }
+        case 'custom_command/script/command': {
+          // Run-script: CustomScriptCommandMessage { ts, file_name, arg_options, ... }.
+          const msg = this._decodeCommand('oro.CustomScriptCommandMessage', payload);
+          type = ACTION_TYPES.RUN_SCRIPT;
+          label = 'Run script';
+          args = {
+            fileName: msg?.fileName,
+            args: msg?.argOptions,
+            executionId: msg?.executionId,
+          };
+          break;
+        }
+        case 'in_cmd': {
+          // Plain-string command; only 'restart' is delivered downstream.
+          if (payload.toString() === 'restart') {
+            type = ACTION_TYPES.RESTART_AGENT;
+            label = 'Restart agent';
+            args = {};
+          }
+          break;
+        }
+        default:
+          // Not a known command topic; nothing to log.
+          break;
+      }
+
+      if (!type) return;
+      await this._writeExecutedActionEvent({ subtopic, type, label, args });
+    } catch (e) {
+      this._logger.warn(
+        `upstream-log-cmd-${this.localRobotId}`,
+        `[upstream] ${this.localRobotId}: failed to log upstream command on '${topic}': ${e && e.message}`
+      );
+    }
+  };
+
+  // Decode a protobuf command payload. Best-effort: returns null (and warns) if
+  // the protobuf lookup is unavailable or decoding fails, so the action is
+  // still logged even when its arguments can't be recovered.
+  _decodeCommand = (typeName, payload) => {
+    if (!this._oroMqtt || typeof this._oroMqtt.lookupType !== 'function') {
+      return null;
+    }
+    try {
+      return this._oroMqtt.lookupType(typeName).decode(payload);
+    } catch (e) {
+      this._logger.warn(
+        `upstream-decode-${this.localRobotId}-${typeName}`,
+        `[upstream] ${this.localRobotId}: failed to decode ${typeName}: ${e && e.message}`
+      );
+      return null;
+    }
+  };
+
+  // Insert an ACTION_EXECUTED event into the shared event_log collection. The
+  // document shape mirrors app/imports/server/eventLog/meteorDbEventStore:
+  // common fields at top-level, module-specific fields nested under `eventData`.
+  _writeExecutedActionEvent = async ({ subtopic, type, label, args }) => {
+    if (!this._eventLogColl) return;
+    const actionId = `upstream:${type}`;
+    const action = {
+      actionId,
+      type,
+      label,
+      context: { robotId: this.localRobotId },
+      // Provenance: this command arrived over the upstream link.
+      source: 'upstream',
+      upstreamRobotId: this.upstreamRobotId,
+      commandTopic: subtopic,
+      elementValues: args || {},
+    };
+    await this._eventLogColl.insertOne({
+      module: EVENT_MODULE_ACTION,
+      eventType: EVENT_TYPE_ACTION_EXECUTED,
+      userId: UPSTREAM_USER_ID,
+      userName: 'Upstream',
+      robotId: this.localRobotId,
+      ts: Date.now(),
+      eventData: {
+        actionId,
+        type,
+        label,
+        action,
+      },
+    });
   };
 }
 
