@@ -884,7 +884,7 @@ class OroRoles {
   fetchRolesGrants = async (roleIds = null) => {
     const rolesConfig = await this.fetchRoles();
     return (roleIds || Object.keys(rolesConfig)).reduce((acc, id) => {
-      acc[id] = rolesConfig[id][GRANTS_FIELD] || [];
+      acc[id] = rolesConfig[id]?.[GRANTS_FIELD] || [];
       return acc;
     }, {});
   };
