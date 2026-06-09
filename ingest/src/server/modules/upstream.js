@@ -55,9 +55,13 @@ const DEFAULT_DENY_SUBTOPICS = ['in_cmd', 'modules/set_state'];
 //    not be echoed back to the robot, so only the actual command subtopics are
 //    listed.
 //  - `in_cmd` is a single topic carrying many server->robot commands plus
-//    echo/ping messages (sent as '<seq>|' by the callback mechanism). For now
-//    only the agent-restart command is delivered; `acceptsPayload` filters out
-//    echoes and every other in_cmd command.
+//    echo/ping messages (sent as '<seq>|' by the callback mechanism). 
+//    For now this is partially handled:
+//       - get_state is forwarded downstream [TODO]
+//       - restart is forwarded downstream
+//       - sequence numbers (pings) are handled and responded from this service.
+//       - everything else is filtered out (e.g. load_module); they conflict with
+//         commands from this ORO instance. TODO fix this.
 //
 // The robot never publishes these command topics, so anything seen on them by
 // the upstream forwarder is our own downstream injection echoing off the local
@@ -66,7 +70,10 @@ const DEFAULT_DENY_SUBTOPICS = ['in_cmd', 'modules/set_state'];
 const DOWNSTREAM_COMMANDS = [
   { subtopic: 'custom_command/ros' },
   { subtopic: 'custom_command/script/command' },
-  { subtopic: 'in_cmd', acceptsPayload: (payload) => payload.toString() === 'restart' },
+  { 
+    subtopic: 'in_cmd', 
+    acceptsPayload: (payload) => ['restart', 'get_state'].includes(payload.toString()) 
+  },
 ];
 
 // Action type/label values, mirroring app/imports/shared/actions.js ACTION_TYPES
@@ -589,9 +596,6 @@ export class UpstreamRobotClient {
   };
 
   _publishToUpstream = (upstreamTopic, payload, qos, retain) => {
-    if (upstreamTopic.endsWith("/state")) { // debug this topic only for online/offline states
-      console.log("publishToUpstream", new Date() , retain, upstreamTopic, upstreamTopic.endsWith("/state") ? String(payload) : "")
-    }
     const publishOptions = {
       qos,
       retain: this._publishRetained ? retain : false,
@@ -643,6 +647,15 @@ export class UpstreamRobotClient {
     const prefix = `r/${this.upstreamRobotId}/`;
     if (!topic.startsWith(prefix)) return;
     const subtopic = topic.substring(prefix.length);
+    // Reply to in_cmd messages with an Echo, exactly as a real agent would (see
+    // inorbit/link.py _send_echo). The upstream server uses these echoes to
+    // resolve its pending callbacks (pings sent as '<seq>|') and to consider the
+    // robot alive; since we impersonate the robot upstream, we must answer them
+    // here. This is done before the command/payload filtering below so that
+    // pings (which are not restart/get_state) are still echoed.
+    if (subtopic === 'in_cmd') {
+      this._sendEchoUpstream(topic, payload);
+    }
     const command = this._downstreamCommandFor(subtopic);
     if (!command) return;
     if (command.acceptsPayload && !command.acceptsPayload(payload)) return;
@@ -669,6 +682,44 @@ export class UpstreamRobotClient {
     });
   };
 
+
+  /**
+   * Publish an Echo protobuf back to upstream for a message we received on the
+   * upstream link, mirroring the agent's behavior (inorbit/link.py _send_echo):
+   * Echo { time_stamp, topic, string_payload }. The upstream server matches the
+   * '<seq>|' prefix carried in string_payload against its pending callbacks.
+   *
+   * Best-effort: the protobuf lookup may be unavailable (guarded) and any
+   * failure is logged (throttled) but never thrown — a failed echo must not
+   * disrupt command delivery.
+   */
+  _sendEchoUpstream = (topic, payload) => {
+    if (!this._upstreamClient || !this._connected) return;
+    if (!this._oroMqtt || typeof this._oroMqtt.lookupType !== 'function') return;
+    try {
+      const EchoType = this._oroMqtt.lookupType('oro.Echo');
+      const message = EchoType.create({
+        timeStamp: Date.now(),
+        topic,
+        stringPayload: payload.toString(),
+      });
+      const buffer = EchoType.encode(message).finish();
+      const echoTopic = `r/${this.upstreamRobotId}/echo`;
+      this._upstreamClient.publish(echoTopic, buffer, { qos: 0 }, (err) => {
+        if (err) {
+          this._logger.warn(
+            `upstream-echo-fail-${this.localRobotId}`,
+            `[upstream] ${this.localRobotId}: echo publish to ${echoTopic} failed: ${err.message}`
+          );
+        }
+      });
+    } catch (e) {
+      this._logger.warn(
+        `upstream-echo-${this.localRobotId}`,
+        `[upstream] ${this.localRobotId}: failed to send echo for '${topic}': ${e && e.message}`
+      );
+    }
+  };
 
   /**
    * Best-effort: record an event-log entry for a command that arrived from
