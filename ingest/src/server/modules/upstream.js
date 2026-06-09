@@ -46,6 +46,10 @@ import { encryptPassword, decryptPassword } from '../../shared/mqttCredentialCry
 
 const COLLECTION_NAME = 'upstream_mqtt_credentials';
 const DEFAULT_DENY_SUBTOPICS = ['in_cmd', 'modules/set_state'];
+// Flag appended to an upstream echo request ('<seq>|') before relaying it to the
+// robot on in_cmd, so the robot's echo of it ('<seq>|upstream') can be told apart
+// from echoes of this ORO's own local pings and relayed back upstream.
+const UPSTREAM_ECHO_FLAG = 'upstream';
 // Server->robot commands delivered downstream (upstream -> local robot), each
 // republished onto the local broker under the local robot's topic.
 //
@@ -537,6 +541,13 @@ export class UpstreamRobotClient {
     const prefix = `r/${this.localRobotId}/`;
     if (!topic.startsWith(prefix)) return;
     const subtopic = topic.substring(prefix.length);
+    if (subtopic === 'echo') {
+      // The robot's Echo responses are not telemetry to forward as-is; route them
+      // so we can relay upstream only the ones answering upstream echo requests
+      // (see _handleEchoRequest / _handleRobotEcho).
+      this._handleRobotEcho(payload);
+      return;
+    }
     if (this._denySubtopics.has(subtopic)) {
       this._logger.log(
         `upstream-deny-${subtopic}`,
@@ -647,14 +658,15 @@ export class UpstreamRobotClient {
     const prefix = `r/${this.upstreamRobotId}/`;
     if (!topic.startsWith(prefix)) return;
     const subtopic = topic.substring(prefix.length);
-    // Reply to in_cmd messages with an Echo, exactly as a real agent would (see
-    // inorbit/link.py _send_echo). The upstream server uses these echoes to
-    // resolve its pending callbacks (pings sent as '<seq>|') and to consider the
-    // robot alive; since we impersonate the robot upstream, we must answer them
-    // here. This is done before the command/payload filtering below so that
-    // pings (which are not restart/get_state) are still echoed.
+    // in_cmd carries the upstream server's echo requests ('<seq>|') used to probe
+    // the robot it believes it owns. Rather than answering them here, relay them
+    // to the real robot (see _handleEchoRequest) so the round-trip latency the
+    // upstream server measures reflects the actual robot. The robot's reply comes
+    // back as an Echo, handled in _handleRobotEcho. This runs before the
+    // command/payload filtering below so echo requests (which are not
+    // restart/get_state) are still relayed.
     if (subtopic === 'in_cmd') {
-      this._sendEchoUpstream(topic, payload);
+      this._handleEchoRequest(payload);
     }
     const command = this._downstreamCommandFor(subtopic);
     if (!command) return;
@@ -684,24 +696,80 @@ export class UpstreamRobotClient {
 
 
   /**
-   * Publish an Echo protobuf back to upstream for a message we received on the
-   * upstream link, mirroring the agent's behavior (inorbit/link.py _send_echo):
-   * Echo { time_stamp, topic, string_payload }. The upstream server matches the
-   * '<seq>|' prefix carried in string_payload against its pending callbacks.
+   * Handle an in_cmd message received from upstream.
    *
-   * Best-effort: the protobuf lookup may be unavailable (guarded) and any
-   * failure is logged (throttled) but never thrown — a failed echo must not
-   * disrupt command delivery.
+   * The upstream server probes the robot it believes it owns by sending echo
+   * requests on in_cmd: a bare '<seq>|' (a sequence number followed by an empty
+   * payload). A real agent would echo it straight back; instead we relay the
+   * probe to the actual robot so the round-trip — and therefore the latency the
+   * upstream server measures — reflects the real robot, not just this forwarder.
+   *
+   * The relayed probe is tagged with the 'upstream' flag ('<seq>|upstream') so
+   * that when the robot echoes it back (alongside echoes of this ORO's own local
+   * pings) _handleRobotEcho can recognize ours and relay it upstream.
+   *
+   * Non-echo in_cmd payloads (e.g. 'restart') are not echo requests and are left
+   * untouched for the command handling in _handleUpstreamMessage.
    */
-  _sendEchoUpstream = (topic, payload) => {
+  _handleEchoRequest = (payload) => {
+    const text = payload.toString();
+    const [seq, ...rest] = text.split('|');
+    // An echo request is just a sequence number: '<seq>|', nothing after the pipe.
+    const isEchoRequest = rest.length === 1 && rest[0] === '' && /^\d+$/.test(seq);
+    if (!isEchoRequest) return;
+    if (!this._localClient) {
+      this._logger.warn(
+        `upstream-echo-no-local-${this.localRobotId}`,
+        `[upstream] ${this.localRobotId}: local client unavailable; dropping echo request '${text}'`
+      );
+      return;
+    }
+    const flaggedPayload = `${seq}|${UPSTREAM_ECHO_FLAG}`;
+    const localTopic = `r/${this.localRobotId}/in_cmd`;
+    if (this._logging) {
+      console.log(`[upstream] ${this.localRobotId}: relaying echo request '${text}' to robot as '${flaggedPayload}'`);
+    }
+    this._localClient.publish(localTopic, flaggedPayload, { qos: 0, retain: false }, (err) => {
+      if (err) {
+        this._logger.warn(
+          `upstream-echo-relay-fail-${this.localRobotId}`,
+          `[upstream] ${this.localRobotId}: relaying echo request to ${localTopic} failed: ${err.message}`
+        );
+      }
+    });
+  };
+
+  /**
+   * Handle an Echo published by the robot on the local broker.
+   *
+   * The robot echoes every in_cmd message it receives — both this ORO's own local
+   * pings ('<seq>|') and the upstream echo requests we relayed flagged as
+   * '<seq>|upstream'. Only the latter are meant for the upstream server: strip the
+   * flag, rebuild the original '<seq>|' the upstream server sent, and publish a
+   * fresh Echo upstream so its callback registry resolves the sequence number.
+   * Unflagged echoes are responses to our own local pings and are ignored.
+   *
+   * Best-effort: guarded against a missing protobuf lookup / disconnected
+   * upstream, and any failure is logged (throttled) rather than thrown.
+   */
+  _handleRobotEcho = (payload) => {
     if (!this._upstreamClient || !this._connected) return;
     if (!this._oroMqtt || typeof this._oroMqtt.lookupType !== 'function') return;
     try {
       const EchoType = this._oroMqtt.lookupType('oro.Echo');
+      const echo = EchoType.decode(payload);
+      // The echoed in_cmd payload lives in the oneof; echo.payload holds the name
+      // of the populated field. Only string payloads can carry our flag.
+      const echoed = echo[echo.payload];
+      if (typeof echoed !== 'string') return;
+      const [seq, flag] = echoed.split('|');
+      if (flag !== UPSTREAM_ECHO_FLAG) return; // not one we relayed; ignore
+      // Rebuild the original '<seq>|' so the upstream server matches its sequence.
+      // Preserve the robot's own timestamp so upstream sees the real agent timing.
       const message = EchoType.create({
-        timeStamp: Date.now(),
-        topic,
-        stringPayload: payload.toString(),
+        timeStamp: echo.timeStamp,
+        topic: `r/${this.upstreamRobotId}/in_cmd`,
+        stringPayload: `${seq}|`,
       });
       const buffer = EchoType.encode(message).finish();
       const echoTopic = `r/${this.upstreamRobotId}/echo`;
@@ -716,7 +784,7 @@ export class UpstreamRobotClient {
     } catch (e) {
       this._logger.warn(
         `upstream-echo-${this.localRobotId}`,
-        `[upstream] ${this.localRobotId}: failed to send echo for '${topic}': ${e && e.message}`
+        `[upstream] ${this.localRobotId}: failed to relay robot echo: ${e && e.message}`
       );
     }
   };
