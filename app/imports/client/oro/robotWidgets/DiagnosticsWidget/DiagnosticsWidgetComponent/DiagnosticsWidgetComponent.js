@@ -84,7 +84,8 @@ const useStyles = makeStyles()(() => ({
   },
   arrowIcon: {
     padding: '0px',
-    fontSize: '1rem'
+    fontSize: '1rem',
+    color: '#9E6FF3'
   }
 }));
 

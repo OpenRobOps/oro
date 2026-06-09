@@ -104,7 +104,7 @@ const AppHeader = () => {
               Admin
             </Typography>
           </Box>
-          <KeyboardArrowDownIcon sx={{ color: 'text.muted', fontSize: '18px' }} />
+          <KeyboardArrowDownIcon sx={{ color: 'text.muted', fontSize: '1.5rem' }} />
           </Box>
         </Box>
         <Menu
@@ -114,7 +114,7 @@ const AppHeader = () => {
           anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
           transformOrigin={{ vertical: 'top', horizontal: 'right' }}
         >
-          <Box sx={{ px: 2, py: 1 }}>
+          <Box sx={{ px: 2, py: 1, backgroundColor: '#170E28' }}>
             <Typography variant="subtitle2">{name}</Typography>
             {email && (
               <Typography variant="body2" color="text.secondary">

@@ -63,15 +63,13 @@ const useStyles = makeStyles()(theme => ({
     alignItems: 'center',
     justifyContent: 'space-between',
     flexWrap: 'wrap',
-    height: '32px',
-    paddingBottom: '6px'
+    paddingBottom: '12px'
   },
   widgetLabel: {
     fontFamily: 'Inter, Helvetica, Arial, sans-serif',
     fontWeight: '300',
     fontSize: '1.125rem',
     display: 'flex',
-    height: '22px',
     alignItems: 'center'
   },
   widgetToolbar: {
@@ -180,7 +178,7 @@ const DashboardWidgetWrapper = (props) => {
       >
         {((chroma && widgetTitle) || toolbar) && (
           <div className={classes.widgetTitleBar}>
-            <Typography variant="subtitle1" className={classes.widgetLabel}>
+            <Typography className={classes.widgetLabel}>
               {chroma && widgetTitle}
             </Typography>
             <div className={classes.widgetToolbar}>

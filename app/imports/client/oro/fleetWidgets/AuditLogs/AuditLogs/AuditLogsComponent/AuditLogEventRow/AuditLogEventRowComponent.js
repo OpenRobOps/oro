@@ -68,7 +68,7 @@ const useStyles = makeStyles()(theme => ({
     width: '30px'
   },
   expandedRow: {
-    backgroundColor: `${theme.palette.background.lightBackground} !important`
+    backgroundColor: '#0E0918 !important'
   }
 }));
 
@@ -151,7 +151,9 @@ const AuditLogEventRowComponent = ({
         <StyledTableCell className={cx({ [classes.withoutBorder]: isExpanded })} width="10%">
           {actionExecutionId ? ( // only rows corresponding to executing scripts can be expanded
             <IconButton aria-label="expand row" size="small" onClick={onExpandRowClicked} sx={{ p: 0 }}>
-              {isExpanded ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+              {isExpanded
+                ? <KeyboardArrowUpIcon sx={{ color: '#9E6FF3' }} />
+                : <KeyboardArrowDownIcon sx={{ color: '#9E6FF3' }} />}
             </IconButton>
           ) : (
             null

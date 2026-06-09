@@ -25,7 +25,7 @@ import { alpha } from '@mui/material/styles';
 import { Button, Grid, Typography } from '@mui/material';
 import {
   FormatListBulleted,
-  AddCircle,
+  ControlPoint,
   Settings,
   Cancel,
 } from '@mui/icons-material';
@@ -125,6 +125,8 @@ const useStyles = makeStyles()(theme => ({
   settingsIcon: {
     fontSize: '24px !important',
     color: theme.palette.text.buttonText,
+    display: 'flex',
+    alignItems: 'center',
     cursor: 'pointer',
     flexShrink: 0,
     '&:hover': {
@@ -236,7 +238,7 @@ const FleetControlWidgetComponent = ({
             disabled
             disableRipple
           >
-            <AddCircle className={classes.buttonIcon} />
+            <ControlPoint className={classes.buttonIcon} />
             <Typography className={classes.buttonText}>New Robot</Typography>
           </Button>
         </Grid>

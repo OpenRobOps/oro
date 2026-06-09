@@ -589,7 +589,7 @@ class IncidentListWidget extends React.Component {
           />
         </StyledTableCell>
         <StyledTableCell width="5%">
-          <ChevronDown size={20} color={theme.palette.text.lightGray} />
+          <ChevronDown color="#9E6FF3" />
         </StyledTableCell>
       </StyledTableRow>
     ));
@@ -713,7 +713,7 @@ class IncidentListWidget extends React.Component {
           {data}
         </StyledTableCell>
         <StyledTableCell width='5%'>
-          <ChevronDown size={20} color={theme.palette.text.lightGray} />
+          <ChevronDown color="#9E6FF3" />
         </StyledTableCell>
       </StyledTableRow>
     )];
@@ -737,7 +737,7 @@ class IncidentListWidget extends React.Component {
           selected={isSelected}
           className={classnames({ [classes.selectedRow]: isSelected })}
         >
-          <StyledTableCell colSpan={7} style={{ width: 'auto' }}>
+          <StyledTableCell colSpan={7} style={{ width: 'auto', backgroundColor: '#0E0918' }}>
             <ul>
               <li>
                 Message: {getIncidentMessage(incident)}

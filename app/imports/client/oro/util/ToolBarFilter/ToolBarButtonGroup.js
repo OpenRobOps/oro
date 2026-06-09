@@ -27,23 +27,45 @@ import { ToggleButtonGroup, ToggleButton } from '@mui/material';
 
 const StyledButtonGroup = styled(ToggleButton)(({ theme }) => ({
   '&.MuiToggleButton-root': {
-    fontWeight: theme.fontWeight && theme.fontWeight.medium,
+    fontFamily: 'Inter',
+    fontWeight: 500,
     width: 'fit-content',
-    minHeight: '50%',
     textTransform: 'capitalize',
-    height: '20px',
-    fontSize: '12px',
-    borderRadius: '5px',
-    border: `1px solid ${theme.palette.text.darkBlue}`,
-    color: theme.palette.text.title,
-    padding: '5px'
+    height: '19px',
+    fontSize: '13px',
+    lineHeight: 'normal',
+    padding: '2px 8px',
+    // Segmented control: square by default; only the outer corners are rounded below.
+    borderRadius: 0,
+    border: `1px solid ${theme.palette.background.borderLight}`,
+    backgroundColor: theme.palette.background.surface,
+    color: theme.palette.text.buttonText,
+    '&:hover': {
+      backgroundColor: theme.palette.background.surface,
+      border: `1px solid ${theme.palette.background.borderLight} !important`,
+      opacity: 0.7
+    },
   },
   '&.MuiToggleButton-root.Mui-selected': {
-    backgroundColor: theme.palette.background.selected,
+    color: `${theme.palette.text.primary} !important`,
+    opacity: '1 !important',
+    backgroundColor: `${theme.palette.background.selected} !important`,
+    border: `1px solid ${theme.palette.background.borderLight} !important`,
+    '&.Mui-disabled': {
+      color: `${theme.palette.text.primary} !important`,
+      opacity: '1 !important',
+      backgroundColor: `${theme.palette.background.selected} !important`,
+    },
   },
-  '&.MuiToggleButton-root:hover': {
-    border: `1px solid ${theme.palette.text.title} !important`,
-  }
+  // Round only the outer corners so the group reads as one segmented control.
+  '&.MuiToggleButtonGroup-grouped:first-of-type': {
+    borderTopLeftRadius: '4px',
+    borderBottomLeftRadius: '4px',
+  },
+  '&.MuiToggleButtonGroup-grouped:last-of-type': {
+    borderTopRightRadius: '4px',
+    borderBottomRightRadius: '4px',
+  },
 }));
 
 /**

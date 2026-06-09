@@ -128,6 +128,10 @@ const theme = createTheme({
           border: '1px solid #3E3155',
           color: '#FAF0F0',
         },
+        // Targets .MuiMenu-list (the <ul> inside the menu).
+        list: {
+          backgroundColor: '#170E28',
+        },
       },
     },
     MuiMenuItem: {

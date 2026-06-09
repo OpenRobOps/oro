@@ -43,7 +43,6 @@ const ToolBarFilterComponent = (props) => {
 
   // Function to read the button selected by the user
   const onButtonChange = useCallback((event, selectedButton) => {
-    console.log("xx selectedButton", selectedButton);
     setSelectedToolBarButton(selectedButton);
   }, [setSelectedToolBarButton]);
 
