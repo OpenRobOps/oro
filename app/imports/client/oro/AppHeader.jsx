@@ -28,8 +28,7 @@ import {
   Typography,
 } from '@mui/material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import LogoutIcon from '@mui/icons-material/Logout';
-import SettingsIcon from '@mui/icons-material/Settings';
+import { Settings as SettingsIcon, LogOut as LogoutIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
 import AvatarInitials from './util/AvatarInitials';
@@ -109,21 +108,12 @@ const AppHeader = () => {
           anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
           transformOrigin={{ vertical: 'top', horizontal: 'right' }}
         >
-          <Box sx={{ px: 2, py: 1, backgroundColor: '#170E28' }}>
-            <Typography variant="subtitle2">{name}</Typography>
-            {email && (
-              <Typography variant="body2" color="text.secondary">
-                {email}
-              </Typography>
-            )}
-          </Box>
-          <Divider />
           <MenuItem onClick={handleSettings}>
-            <SettingsIcon fontSize="small" sx={{ mr: 1 }} />
+            <SettingsIcon size={18} style={{ marginRight: 8 }} />
             Settings
           </MenuItem>
           <MenuItem onClick={handleLogout}>
-            <LogoutIcon fontSize="small" sx={{ mr: 1 }} />
+            <LogoutIcon size={18} style={{ marginRight: 8 }} />
             Logout
           </MenuItem>
         </Menu>
