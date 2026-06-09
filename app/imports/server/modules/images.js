@@ -173,10 +173,9 @@ class ImagesModule {
     // Search for which other cameras the robot has configured and add them to overrides
     // with the 'hide' profile
     const camerasConfig = await getCalculatedStateAsync({
-      entityId: robotId,
-      entityType: ID_TYPE_ROBOT,
+      robotId,
       moduleName: MODULE_NAMES.ROS_IMAGE_AGENTLET,
-      fields: ['cameras_config']
+      keys: ['cameras_config']
     });
     Object.keys(camerasConfig.cameras_config || {}).forEach((camNum) => {
       if (!(camNum in overrides)) {
@@ -211,8 +210,7 @@ class ImagesModule {
 
     // Search which cameras the robot has configured
     const camerasConfig = await getCalculatedStateAsync({
-      entityId: robotId,
-      entityType: ID_TYPE_ROBOT,
+      robotId,
       moduleName: MODULE_NAMES.ROS_IMAGE_AGENTLET,
       keys: ['cameras_config']
     });
@@ -288,8 +286,7 @@ class ImagesModule {
 
     // Get cameras_config according to agentManager
     const camerasConfig = await getCalculatedStateAsync({
-      entityId: robotId,
-      entityType: ID_TYPE_ROBOT,
+      robotId,
       moduleName: MODULE_NAMES.ROS_IMAGE_AGENTLET,
       keys: ['cameras_config'],
     });
