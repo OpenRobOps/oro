@@ -650,11 +650,14 @@ export class UpstreamRobotClient {
    * Deliver a message received from upstream down to the local robot, by
    * republishing it onto the local broker under the local robot's topic.
    * Only the allow-listed commands are delivered (see DOWNSTREAM_COMMANDS),
-   * subject to each command's optional payload filter; everything else
-   * (including in_cmd echoes) is ignored.
+   * subject to each command's optional payload filter; everything else is
+   * ignored. The one special case is in_cmd echo requests, which are relayed
+   * to the real robot (see _handleEchoRequest) rather than being filtered out.
    */
   _handleUpstreamMessage = (topic, payload, packet) => {
-    if (this._logging) console.log("[upstream] handleUpstreamMessage", topic, String(payload))
+    if (this._logging && !topic.endsWith('/in_cmd')) {
+      console.log("[upstream] handleUpstreamMessage", topic, String(payload))
+    }
     const prefix = `r/${this.upstreamRobotId}/`;
     if (!topic.startsWith(prefix)) return;
     const subtopic = topic.substring(prefix.length);
@@ -726,9 +729,6 @@ export class UpstreamRobotClient {
     }
     const flaggedPayload = `${seq}|${UPSTREAM_ECHO_FLAG}`;
     const localTopic = `r/${this.localRobotId}/in_cmd`;
-    if (this._logging) {
-      console.log(`[upstream] ${this.localRobotId}: relaying echo request '${text}' to robot as '${flaggedPayload}'`);
-    }
     this._localClient.publish(localTopic, flaggedPayload, { qos: 0, retain: false }, (err) => {
       if (err) {
         this._logger.warn(

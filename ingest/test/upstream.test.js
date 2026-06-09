@@ -231,15 +231,20 @@ describe('UpstreamRobotClient downstream command delivery', () => {
     assert.strictEqual(fakeLocal.published[0].payload.toString(), 'restart');
   });
 
-  it('ignores upstream in_cmd echo/ping messages', () => {
+  it('relays upstream in_cmd echo/ping messages to the local robot, flagged', () => {
     const client = makeClient();
     const fakeLocal = makeFakeUpstream();
     client._localClient = fakeLocal;
 
-    // Echo pings are sent as '<seq>|' by the callback mechanism.
+    // Echo pings are sent as '<seq>|' by the callback mechanism. Rather than
+    // answering them here, we relay them to the real robot flagged as
+    // '<seq>|upstream' so the round-trip latency the upstream server measures
+    // reflects the actual robot (see _handleEchoRequest / _handleRobotEcho).
     client._handleUpstreamMessage('r/up1/in_cmd', Buffer.from('42|'), { qos: 0 });
 
-    assert.strictEqual(fakeLocal.published.length, 0);
+    assert.strictEqual(fakeLocal.published.length, 1);
+    assert.strictEqual(fakeLocal.published[0].topic, 'r/local1/in_cmd');
+    assert.strictEqual(fakeLocal.published[0].payload.toString(), '42|upstream');
   });
 
   it('ignores other upstream in_cmd commands (e.g. update)', () => {
