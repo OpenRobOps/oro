@@ -18,4 +18,5 @@ cp -u ../app/private/oro.proto \
   ../app/imports/shared/simpleCache.js \
   ../app/imports/shared/throttledLogger.js \
   ../app/imports/shared/timeseriesStore.js \
+  ../app/imports/shared/mqttCredentialCrypto.js \
   src/shared

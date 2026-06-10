@@ -1,0 +1,109 @@
+---
+sidebar_position: 5
+---
+
+# Upstream MQTT Forwarding
+
+ORO can act as a *transparent middle node* between local robots and an "upstream" MQTT broker — either another ORO instance or InOrbit's commercial cloud. When enabled, robots continue to connect to this ORO instance as normal, and ORO additionally connects *as those robots* to the upstream broker, republishing their telemetry. The upstream broker sees what looks like the robots themselves connecting.
+
+The feature lives in the ingest service as `UpstreamModule` (`ingest/src/server/modules/upstream.js`) and is **off by default**.
+
+## Data flow
+
+```
+                                ┌─ existing modules (basics, system, …)
+local robots → Mosquitto → ingest
+                                └─ UpstreamModule
+                                      │ one MQTT client per mapped robot
+                                      ▼
+                                Upstream broker (other ORO / InOrbit)
+                                topics: r/{upstreamRobotId}/...
+```
+
+For each mapped robot, the module:
+
+1. Subscribes on the local broker to `r/{localRobotId}/#`.
+2. For each received message, drops it if its subtopic appears in the configured deny list (typically server→robot topics such as `in_cmd`), otherwise republishes it to the upstream broker as `r/{upstreamRobotId}/{subtopic}` with the original payload bytes, QoS, and retain flag preserved.
+
+v1 scope is **upstream-only**. Messages received from upstream are not yet routed back to local robots; that direction is planned as a follow-up.
+
+## Credentials
+
+Operators do **not** seed credentials manually. On startup, for each mapped robot, the module:
+
+1. Looks up `(localRobotId, apiBaseUrl)` in the `upstream_mqtt_credentials` MongoDB collection.
+2. If absent (or if the stored password fails to decrypt), it calls the upstream server's `/mqtt_config` HTTP endpoint:
+
+   ```
+   POST {api.baseUrl}/mqtt_config
+   { apiKey, robotId: <upstreamRobotId>, hostname, agentVersion }
+   → 200 { hostname, port, protocol, username, password }
+   ```
+
+   This is the same endpoint robots use to bootstrap themselves. As a side effect, the upstream creates the robot record and provisions broker credentials if they don't already exist.
+3. Encrypts the returned password with the local `credentialEncryptionKey` (AES-256-GCM) and persists the row.
+4. Connects the upstream MQTT client using the stored credentials.
+
+On an MQTT auth failure (`CONNACK` codes 4 or 5), the stored row is invalidated and re-fetched. Permanent HTTP failures (400/403/404) are recorded with a 5-minute retry cool-down so a misconfigured robot does not hammer the upstream.
+
+:::caution
+The `upstream_mqtt_credentials` collection is managed entirely by the module. Do not edit it by hand.
+:::
+
+## Per-robot connection constraint
+
+The upstream protocol issues credentials *per robot*. The module therefore opens **one MQTT client per mapped robot**. When upstream support for multi-robot credentials becomes available, the per-robot design — encapsulated in the `UpstreamRobotClient` class — will be extended to optionally share one upstream connection across multiple mapped robots. Until then, expect N upstream connections for N mapped robots.
+
+## Configuration
+
+All operator-facing configuration lives under `modules.upstream` in `ingest/settings.json`:
+
+```json
+{
+  "modules": {
+    "upstream": {
+      "enabled": false,
+      "api": {
+        "baseUrl": "https://control.inorbit.ai",
+        "apiKey": "<upstream-issued-robot-api-key>"
+      },
+      "brokerOptions": {
+        "rejectUnauthorized": true
+      },
+      "robotMapping": [
+        { "localRobotId": "robot-1", "upstreamRobotId": "abc-1" }
+      ],
+      "forwarding": {
+        "denyTopicSuffixes": ["in_cmd", "modules/set_state"],
+        "publishRetainedMessages": true
+      },
+      "credentialEncryptionKey": "<64-hex-char key>",
+      "logging": false
+    }
+  }
+}
+```
+
+| Field | Purpose |
+|-------|---------|
+| `enabled` | Master switch. Module is not instantiated unless `true`. |
+| `api.baseUrl` | Upstream server base URL exposing `/mqtt_config`. |
+| `api.apiKey` | Upstream-issued robot API key. Must be in the upstream's `robotApiKeys` settings. |
+| `brokerOptions` | MQTT client options not returned by `/mqtt_config`. `rejectUnauthorized` controls TLS verification for both MQTT and the HTTPS call to `/mqtt_config`. |
+| `robotMapping` | List of `{ localRobotId, upstreamRobotId }` pairs. Empty list = no forwarding. |
+| `forwarding.denyTopicSuffixes` | Subtopics to drop (exact match against the part after `r/{robotId}/`). |
+| `forwarding.publishRetainedMessages` | Whether to preserve the retain flag when republishing. Default `true`. |
+| `credentialEncryptionKey` | 64-character hex string used to AES-256-GCM-encrypt stored upstream passwords. Typically reuses the value from `mqtt.credentialEncryptionKey`. |
+| `logging` | Verbose per-message logging. Off by default. |
+
+These keys are also exposed as Terraform variables (`upstream_enabled`, `upstream_api_base_url`, `upstream_api_key`, `upstream_robot_mapping`, `upstream_reject_unauthorized`, `upstream_deny_topic_suffixes`) when settings are generated via `scripts/generate-settings.sh`.
+
+## Verifying
+
+A local end-to-end check needs a second MQTT-capable upstream (another ORO instance is the simplest):
+
+1. On the upstream, add the local key to `robotApiKeys` and confirm `/mqtt_config` reaches the server.
+2. Set the matching `modules.upstream` block on the local ingest, with at least one mapping, then restart ingest.
+3. Confirm a row appears in `upstream_mqtt_credentials` and an MQTT connection is established to the upstream (check ingest logs and the upstream's `r/{upstreamRobotId}/state` topic).
+4. Publish a synthetic message to the local broker on `r/{localRobotId}/state` and confirm it shows up upstream at `r/{upstreamRobotId}/state`.
+5. Publish on `r/{localRobotId}/in_cmd` and confirm it is **not** forwarded.

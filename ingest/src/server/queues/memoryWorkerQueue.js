@@ -134,6 +134,10 @@ class InMemoryWorkerQueues extends BaseWorkerQueues {
     doAck = (message) => {
         // Ignore
     }
+
+    shutdown = async () => {
+      // TODO
+    }
 }
 
 export default InMemoryWorkerQueues;
