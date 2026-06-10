@@ -20,7 +20,9 @@
  * We use this module file to create and export all top level
  * theme and style information for easier re-use.
  */
+import React from 'react';
 import { createTheme, responsiveFontSizes } from '@mui/material/styles';
+import { ChevronDown } from 'lucide-react';
 
 const theme = createTheme({
   components: {
@@ -57,6 +59,12 @@ const theme = createTheme({
     MuiSelect: {
       defaultProps: {
         variant: 'standard',
+        IconComponent: ChevronDown,
+      },
+      styleOverrides: {
+        icon: {
+          color: '#9E6FF3',
+        },
       },
     },
     MuiSvgIcon: {
@@ -144,6 +152,9 @@ const theme = createTheme({
       },
     },
     MuiAutocomplete: {
+      defaultProps: {
+        popupIcon: React.createElement(ChevronDown),
+      },
       styleOverrides: {
         paper: {
           backgroundColor: '#170E28',
@@ -167,7 +178,7 @@ const theme = createTheme({
           },
         },
         popupIndicator: {
-          color: '#BEAEDD',
+          color: '#9E6FF3',
         },
         clearIndicator: {
           color: '#BEAEDD',

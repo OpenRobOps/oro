@@ -45,7 +45,6 @@ const STATUS_FLAG_LABELS = {
 const useStyles = makeStyles()(theme => ({
   fleetControlContainer: {
     background: theme.palette.background.surface,
-    border: `1px solid ${theme.palette.background.borderLight}`,
     borderRadius: '10px',
     position: 'relative',
     margin: '0px',

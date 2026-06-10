@@ -24,7 +24,8 @@ import React, { Fragment, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { IconButton } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
-import { CloseFullscreenIcon, OpenFullscreenIcon } from '../graphics/customNavigationIcons';
+import { MoveDiagonal } from 'lucide-react';
+import { CloseFullscreenIcon } from '../graphics/customNavigationIcons';
 
 const useStyles = makeStyles()(theme => ({
   button: {
@@ -44,8 +45,10 @@ const FullscreenButton = ({ fullscreen, onClick, dataTest, style }) => {
       onClick={onClick}
       data-test={`${dataTest}close`}
       size="large">
-      <CloseFullscreenIcon
-        classes={renderFullscreenIcon}
+      <MoveDiagonal
+        width={20}
+        height={20}
+        className={classes.button}
         style={style}
       />
     </IconButton>
@@ -55,7 +58,7 @@ const FullscreenButton = ({ fullscreen, onClick, dataTest, style }) => {
       onClick={onClick}
       data-test={`${dataTest}open`}
       size="large">
-      <OpenFullscreenIcon
+      <CloseFullscreenIcon
         classes={renderFullscreenIcon}
         style={style}
       />

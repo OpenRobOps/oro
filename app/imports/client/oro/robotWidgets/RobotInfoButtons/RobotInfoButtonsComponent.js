@@ -28,7 +28,7 @@ import { Button, Typography, Tooltip, Grid, Box }
 import {
   Cancel, Refresh, Update
 } from '@mui/icons-material';
-import { Navigation, Settings } from 'lucide-react';
+import { Navigation2, Settings } from 'lucide-react';
 import { useTracker } from 'meteor/react-meteor-data';
 import moment from 'moment';
 // ORO modules
@@ -355,7 +355,7 @@ class RobotInfoButtons extends React.Component {
             onClick={onNavigationDetail}
             classes={{ text: classes.lowerCaseButton }}
           >
-            <Navigation size={24} color={theme.palette.text.lightGray} style={{ marginRight: '4px' }} />
+            <Navigation2 size={20} color={theme.palette.text.lightGray} style={{ marginRight: '4px' }} />
             <Box sx={LG_BREAKPOINT}>
               Navigation
             </Box>

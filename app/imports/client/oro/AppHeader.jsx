@@ -26,6 +26,7 @@ import {
   MenuItem,
   Toolbar,
   Typography,
+  useTheme,
 } from '@mui/material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { Settings as SettingsIcon, LogOut as LogoutIcon } from 'lucide-react';
@@ -38,9 +39,9 @@ const AppHeader = () => {
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState(null);
   const menuOpen = Boolean(anchorEl);
-
+  const theme = useTheme();
   const profile = user?.profile || {};
-  const { name, email, avatar } = profile;
+  const { name, avatar } = profile;
 
   const handleOpen = (e) => setAnchorEl(e.currentTarget);
   const handleClose = () => setAnchorEl(null);
@@ -98,7 +99,7 @@ const AppHeader = () => {
               Admin
             </Typography>
           </Box>
-          <KeyboardArrowDownIcon sx={{ color: 'text.muted', fontSize: '1.5rem' }} />
+          <KeyboardArrowDownIcon sx={{ color: 'text.darkBlue', fontSize: '1.5rem' }} />
           </Box>
         </Box>
         <Menu
@@ -109,11 +110,11 @@ const AppHeader = () => {
           transformOrigin={{ vertical: 'top', horizontal: 'right' }}
         >
           <MenuItem onClick={handleSettings}>
-            <SettingsIcon size={18} style={{ marginRight: 8 }} />
+            <SettingsIcon size={18} style={{ marginRight: 8, color: theme.palette.background.brightBlue }} />
             Settings
           </MenuItem>
           <MenuItem onClick={handleLogout}>
-            <LogoutIcon size={18} style={{ marginRight: 8 }} />
+            <LogoutIcon size={18} style={{ marginRight: 8, color: theme.palette.background.brightBlue }} />
             Logout
           </MenuItem>
         </Menu>
