@@ -62,7 +62,7 @@ resource "local_file" "web_app_settings" {
       public = {
         oauthProviders = local.oauth_providers
       }
-      robotApiKeys = [random_password.robot_api_key.result]
+      robotApiKeys   = [random_password.robot_api_key.result]
       allowedOrigins = []
       allowedHeaders = []
       mqtt = {
@@ -117,10 +117,9 @@ resource "local_file" "web_app_settings" {
   ))
 }
 
-resource "local_file" "ingest_settings" {
-  filename        = "${path.module}/../ingest/settings.json"
-  file_permission = "0644"
-  content = jsonencode({
+locals {
+  # Base ingest settings shared regardless of whether upstream is enabled.
+  ingest_base_settings = {
     mqtt = {
       brokers = {
         local = {
@@ -151,5 +150,37 @@ resource "local_file" "ingest_settings" {
       peerKey           = random_password.peer_key.result
       connectionPooling = true
     }
-  })
+  }
+
+  # When upstream is disabled, only `enabled = false` is written so no other
+  # upstream settings leak into the rendered file. The two structures are
+  # encoded independently (string-level conditional) to avoid Terraform's
+  # conditional type unification, which would otherwise inject null attributes.
+  ingest_settings = var.upstream_enabled ? jsonencode(merge(local.ingest_base_settings, {
+    upstream = {
+      enabled = true
+      api = {
+        baseUrl = var.upstream_api_base_url
+        apiKey  = var.upstream_api_key
+      }
+      brokerOptions = {
+        rejectUnauthorized = var.upstream_reject_unauthorized
+      }
+      robotMapping = var.upstream_robot_mapping
+      forwarding = {
+        denyTopicSuffixes       = var.upstream_deny_topic_suffixes
+        publishRetainedMessages = true
+      }
+      credentialEncryptionKey = random_id.mqtt_credential_encryption_key.hex
+      logging                 = false
+    }
+  })) : jsonencode(merge(local.ingest_base_settings, {
+    modules = { upstream = { enabled = false } }
+  }))
+}
+
+resource "local_file" "ingest_settings" {
+  filename        = "${path.module}/../ingest/settings.json"
+  file_permission = "0644"
+  content         = local.ingest_settings
 }
