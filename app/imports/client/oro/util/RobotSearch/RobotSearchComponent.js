@@ -46,9 +46,9 @@ const styles = theme => ({
   autocompleteInputFullscreen: {
     '&.MuiOutlinedInput-root': {
       padding: '5px',
-      color: 'white',
+      color: theme.palette.background.white,
       backgroundColor: theme.palette.background.black,
-      border: '1px solid white'
+      border: `1px solid ${theme.palette.background.white}`
     }
   },
   listboxFullScreen: {
@@ -63,7 +63,7 @@ const styles = theme => ({
     },
   },
   popupIndicator: {
-    color: 'white'
+    color: theme.palette.background.white
   },
   searchBoxContainer: {
     background: theme.palette.background.black,

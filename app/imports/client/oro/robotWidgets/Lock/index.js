@@ -84,10 +84,8 @@ import React, {
       }
     }, [unlockRobot, openDialog]);
   
-    /**
-     * The same button locks and unlocks. When the robot is already locked by a different user,
-     * confirm before breaking their lock.
-     */
+    // The same button locks and unlocks. When the robot is already locked by a
+    // different user, confirm before breaking their lock.
     const handleToggleLock = useCallback(async () => {
       if (!locked) {
         try {

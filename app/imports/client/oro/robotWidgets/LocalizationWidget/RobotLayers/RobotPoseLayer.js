@@ -38,7 +38,7 @@ import theme from '../../../../Styles';
 import { PALETTE } from '../utils/utils';
 
 // Default styles
-const ARROW_COLOR = '#BE9AFF';
+const ARROW_COLOR = theme.palette.text.robotAvatar;
 const ARROW_RADIUS_RATIO = 0.6;
 
 /**

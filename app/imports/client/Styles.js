@@ -238,6 +238,7 @@ const theme = createTheme({
       content: '#C2C2C2',
       contrastText: '#FAF0F0',
       darkBlue: '#9E6FF3',
+      robotAvatar: '#BE9AFF',
       statusError: '#FB7188',
       lightGray: '#C2C2C2',
       mediumDarkGray: '#BEAEDD',
@@ -253,6 +254,7 @@ const theme = createTheme({
       onApprove: '#1A004A',
       heading: '#E2D8F0',
       subheading: '#A898C4',
+      black: '#000000',
     },
     background: {
       default: '#1A0F2E',

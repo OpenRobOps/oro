@@ -64,7 +64,7 @@ const StyledTableCell = React.forwardRef(({ width, sx, ...props }, ref) => (
       borderBottom: `1px solid ${theme.palette.background.borderLight}`,
       // Table header cells (applies to every table built on StyledTableCell, sticky or not).
       '&.MuiTableCell-head': {
-        color: '#FAF0F0',
+        color: theme.palette.text.primary,
         fontFamily: 'Inter',
         fontSize: '13px',
         fontStyle: 'normal',

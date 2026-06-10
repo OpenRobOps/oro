@@ -531,6 +531,7 @@ class IncidentListWidget extends React.Component {
    */
   renderZeroData = () => {
     const { classes, theme } = this.props;
+    const { darkBlue } = theme.palette.text;
     const incidentsZeroData = ICM_SEV_ALL;
     return incidentsZeroData.map((SEV) => (
       <StyledTableRow
@@ -589,7 +590,7 @@ class IncidentListWidget extends React.Component {
           />
         </StyledTableCell>
         <StyledTableCell width="5%">
-          <ChevronDown color="#9E6FF3" />
+          <ChevronDown color={darkBlue} />
         </StyledTableCell>
       </StyledTableRow>
     ));
@@ -713,7 +714,7 @@ class IncidentListWidget extends React.Component {
           {data}
         </StyledTableCell>
         <StyledTableCell width='5%'>
-          <ChevronDown color="#9E6FF3" />
+          <ChevronDown color={theme.palette.text.darkBlue} />
         </StyledTableCell>
       </StyledTableRow>
     )];
@@ -737,7 +738,7 @@ class IncidentListWidget extends React.Component {
           selected={isSelected}
           className={classnames({ [classes.selectedRow]: isSelected })}
         >
-          <StyledTableCell colSpan={7} style={{ width: 'auto', backgroundColor: '#0E0918' }}>
+          <StyledTableCell colSpan={7} style={{ width: 'auto', backgroundColor: theme.palette.background.navDark }}>
             <ul>
               <li>
                 Message: {getIncidentMessage(incident)}

@@ -53,14 +53,14 @@ const useStyles = makeStyles()(theme => ({
   iconButton: {
     padding: 0,
     fontSize: '1.5rem !important',
-    color: '#9E6FF3'
+    color: theme.palette.text.darkBlue
   },
   expandIcon: {
-    color: '#9E6FF3'
+    color: theme.palette.text.darkBlue
   },
   // Background of the expanded (details) row.
   expandedCell: {
-    backgroundColor: '#0E0918'
+    backgroundColor: theme.palette.background.navDark
   }
 }));
 

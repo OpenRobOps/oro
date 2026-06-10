@@ -51,15 +51,15 @@ const useStyles = makeStyles()(theme => ({
   },
 }));
 
-const tooltipStyles = {
+const tooltipStyles = theme => ({
   tooltip: {
-    color: 'white',
-    backgroundColor: 'black',
-    border: 'solid 1px white',
+    color: theme.palette.background.white,
+    backgroundColor: theme.palette.text.black,
+    border: `solid 1px ${theme.palette.background.white}`,
     borderRadius: 0,
     fontSize: 13
   }
-};
+});
 const CustomTooltip = withStyles(Tooltip, tooltipStyles);
 CustomTooltip.muiName = 'Tooltip';
 
@@ -74,7 +74,6 @@ const LockComponent = (props) => {
 
   const lockButton = (
     <Button
-      data-test="robot-lock-button"
       size="small"
       variant={locked ? 'contained' : 'text'}
       className={locked ? classes.buttonLocked : classes.buttonUnlocked}
@@ -108,7 +107,7 @@ LockComponent.propTypes = {
   label: PropTypes.string,
   lockedBy: PropTypes.string, // tooltip text describing who holds the lock
   disabled: PropTypes.bool,
-  onToggleLock: PropTypes.func, // toggles lock/unlock; owned by the container
+  onToggleLock: PropTypes.func, // toggles lock/unlock
 };
 
 export default LockComponent;
