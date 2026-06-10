@@ -18,8 +18,7 @@
  * Shared library with common code to handle extraction of
  * module state configuration from database collections
  */
-import { RobotModuleState } from './collections';
-import { isString } from 'lodash';
+import { RobotModuleState, Robots } from './collections';
 import ConfigManager  from './configManagerAsync';
 import {
   ID_TYPE_AGENT,
@@ -73,10 +72,6 @@ const isEmpty = state => {
  * Implements getting the 'calculated' state for a robot (merging robot and system states).
  */
 const getCalculatedStateAsync = async ({ robotId, moduleName, keys }) => {
-  if (!robotId || !isString(robotId)) {
-    console.warn('getCalculatedStateAsync called without a valid robotId:', robotId);
-    return moduleName !== undefined ? null : {};
-  }
   const moduleConfig = new ConfigManager(RobotModuleState);
   const configParams = { groupingKey: 'moduleName' };
   if (moduleName) {

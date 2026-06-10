@@ -27,12 +27,10 @@ import { Grid } from '@mui/material';
 import { withStyles } from 'tss-react/mui';
 import SeverityFilter from '../../../util/SeverityFolder';
 import IncidentComponentFilter from '../../../util/IncidentComponentFilter';
+import LiveButton from '../../../util/LiveButton';
 import { StartTsPropType } from '../../../util/timeUtils';
 
 const styles = () => ({
-  container: {
-    justifyContent: 'end'
-  },
   itemContainer: {
     display: 'flex',
     alignItems: 'center',
@@ -42,10 +40,15 @@ const styles = () => ({
 
 
 const IncidentsFilter = (props) => {
-  const { classes } = props;
+  const { classes, startTs, setStartTime, timeRangeMs } = props;
 
   return (
-    <Grid container className={classes.container} spacing={1}>
+    <Grid container spacing={1}>
+      <LiveButton
+        startTs={startTs}
+        timeRangeMs={timeRangeMs}
+        setStartTime={setStartTime}
+      />
       <Grid className={classes.itemContainer}>
         <SeverityFilter {...props} />
       </Grid>
