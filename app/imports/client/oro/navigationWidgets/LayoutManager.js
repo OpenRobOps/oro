@@ -56,28 +56,28 @@ const LAYOUT_COLUMNS = { xl: COLUMNS, lg: COLUMNS, md: COLUMNS, sm: COLUMNS };
 const DEFAULT_LAYOUT = {
   sm: [
     { i: KEY_BACKGROUND,  x: 0,  y: 0,  w: 70, h: ROWS, static: true },
-    { i: KEY_CAMERA,      x: 70, y: 0,  w: 24, h: 55,   static: true },
+    { i: KEY_CAMERA,      x: 70, y: 0,  w: 24, h: 53,   static: true },
     { i: KEY_INTERACTION, x: 94, y: 0,  w: 6,  h: ROWS, static: true },
     { i: KEY_GAUGES,      x: 70, y: 55, w: 24, h: 20,   static: true },
     { i: KEY_TELEOP,      x: 70, y: 75, w: 24, h: 25,   static: true },
   ],
   md: [
     { i: KEY_BACKGROUND,  x: 0,  y: 0,  w: 70, h: ROWS, static: true },
-    { i: KEY_CAMERA,      x: 70, y: 0,  w: 25, h: 55,   static: true },
+    { i: KEY_CAMERA,      x: 70, y: 0,  w: 25, h: 53,   static: true },
     { i: KEY_INTERACTION, x: 95, y: 0,  w: 5,  h: ROWS, static: true },
     { i: KEY_GAUGES,      x: 70, y: 55, w: 25, h: 20,   static: true },
     { i: KEY_TELEOP,      x: 70, y: 75, w: 25, h: 25,   static: true },
   ],
   lg: [
     { i: KEY_BACKGROUND,  x: 0,  y: 0,  w: 70, h: ROWS, static: true },
-    { i: KEY_CAMERA,      x: 70, y: 0,  w: 26, h: 55,   static: true },
+    { i: KEY_CAMERA,      x: 70, y: 0,  w: 26, h: 53,   static: true },
     { i: KEY_INTERACTION, x: 96, y: 0,  w: 4,  h: ROWS, static: true },
     { i: KEY_GAUGES,      x: 70, y: 55, w: 26, h: 20,   static: true },
     { i: KEY_TELEOP,      x: 70, y: 75, w: 26, h: 25,   static: true },
   ],
   xl: [
     { i: KEY_BACKGROUND,  x: 0,  y: 0,  w: 70, h: ROWS, static: true },
-    { i: KEY_CAMERA,      x: 70, y: 0,  w: 27, h: 55,   static: true },
+    { i: KEY_CAMERA,      x: 70, y: 0,  w: 27, h: 53,   static: true },
     { i: KEY_INTERACTION, x: 97, y: 0,  w: 3,  h: ROWS, static: true },
     { i: KEY_GAUGES,      x: 70, y: 55, w: 27, h: 20,   static: true },
     { i: KEY_TELEOP,      x: 70, y: 75, w: 27, h: 25,   static: true },

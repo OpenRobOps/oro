@@ -110,10 +110,12 @@ const styles = theme => ({
     }
   },
   hiddenTextInputRoot: {
-    width: '0px',
+    // The <input> itself is hidden via hiddenTextInputInput (display: none); keep the
+    // root sized to its content so the dropdown arrow (endAdornment) stays visible when
+    // a robot is selected. Collapsing the root to width 0 / overflow hidden also hid the
+    // arrow, which only reappeared after deselecting the robot.
     padding: '0',
     marginLeft: 'auto',
-    overflow: 'hidden',
   },
   showTextInputRoot: {
     width: '100%',

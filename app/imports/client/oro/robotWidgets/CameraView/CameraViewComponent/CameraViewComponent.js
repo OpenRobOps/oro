@@ -58,13 +58,13 @@ const useStyles = makeStyles()(theme => ({
   },
   cameraContainer: {
     alignItems: 'center',
-    background: theme.palette.background?.white,
+    background: theme.palette.background?.navMedium,
     display: 'flex',
     height: '100%',
     justifyContent: 'center',
     overflow: 'hidden',
     width: '100%',
-    border: `1px solid ${theme.palette.background?.lightGray}`
+    border: `1px solid ${theme.palette.background?.navLight}`
   },
   container: {
     alignItems: 'center',
