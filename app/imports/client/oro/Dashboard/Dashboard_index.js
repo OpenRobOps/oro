@@ -32,7 +32,6 @@ import ListData from '../robotWidgets/ListDataWidget';
 // import NavigationToolbar from './widgetToolbars/NavigationToolbar';
 // import SettingsToolbar from './widgetToolbars/SettingsToolbar';
 // import DataBagsToolbar from './widgetToolbars/DataBagsToolbar';
-import LiveButtonToolbar from './widgetToolbars/LiveButtonToolbar';
 import IncidentsFilter from './widgetToolbars/ToolbarFilters/IncidentsFilter';
 import LocalizationAdapter from '../robotWidgets/LocalizationWidget/LocalizationAdapter';
 import CustomDataWidget from '../robotWidgets/CustomDataWidget';
@@ -368,7 +367,6 @@ const TOOLBAR_FACTORY = {
   //     isZeroData={isZeroData}
   //   />
   // ),
-  [WIDGET_TYPES.KEY_VALUES]: () => <LiveButtonToolbar alwaysLive />,
   // [WIDGET_TYPES.LOCALIZATION]: ({ switchTo }) => (
   //   <NavigationToolbar
   //     navigationDetailCallback={() => switchTo({ scope: CONTEXT_SLOTS.NAVIGATION })}
@@ -431,7 +429,6 @@ const TOOLBAR_FACTORY = {
       robotId={getRobotId(context, scope)}
       selectedRosDiagnosticsLevel={getRosDiagnosticsLevel(context, scope)}
       setRosDiagnosticsLevel={setRosDiagnosticsLevel(setContext, scope)}
-      alwaysLive
     />
   ),
   // [WIDGET_TYPES_IDS.LOGS]: ({ context, setContext, scope }) => (
@@ -480,7 +477,6 @@ const TOOLBAR_FACTORY = {
   //     )}
   //   </NowTimeContext.Consumer>
   // ),
-  [WIDGET_TYPES_IDS.CUSTOM_DATA_TEXT]: () => <LiveButtonToolbar alwaysLive />,
   // [WIDGET_TYPES_IDS.TIME_CAPSULE_DATA_BAGS]: ({ setContext, scope, context }) => (
   //   <DataBagsToolbar
   //     robotId={getRobotId(context, scope)}
@@ -502,18 +498,6 @@ const TOOLBAR_FACTORY = {
   //     setMissionFilter={setMissionFilter(setContext, scope)}
   //   />
   // ),
-  // [WIDGET_TYPES_IDS.HISTORY]: ({ setContext, scope, context }) => (
-  //   <LiveButtonToolbar
-  //     startTs={getStartTime(context, scope)}
-  //     setStartTime={setStartTime(setContext, scope)}
-  //     timeRangeMs={getTimeRangeMs(context, scope)}
-  //   />
-  // ),
-  // [WIDGET_TYPES_IDS.FLEET_STATUS]: () => <LiveButtonToolbar alwaysLive />,
-  [WIDGET_TYPES_IDS.VITALS]: () => <LiveButtonToolbar alwaysLive />,
-  // [WIDGET_TYPES_IDS.CAMERA]: () => <LiveButtonToolbar alwaysLive />,
-  [WIDGET_TYPES_IDS.LIST_DATA]: () => <LiveButtonToolbar alwaysLive />,
-  [WIDGET_TYPES_IDS.CUSTOM_DATA_IMAGE]: () => <LiveButtonToolbar alwaysLive />,
 };
 
 /**

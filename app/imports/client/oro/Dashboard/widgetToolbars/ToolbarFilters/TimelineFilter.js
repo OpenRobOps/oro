@@ -29,7 +29,7 @@ import { StartTsPropType } from '../../../util/timeUtils';
 
 const useStyles = makeStyles()(() => ({
   container: {
-    alignItems: 'self-end'
+    justifyContent: 'end'
   }
 }));
 
