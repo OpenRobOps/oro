@@ -86,7 +86,9 @@ log_dest stdout
 EOF
 
 # 3. Inline test settings — minimum to satisfy server/main.js boot path.
-ENC_KEY="$(openssl rand -hex 16)"
+# credentialEncryptionKey must be a 32-byte AES-256-GCM key, i.e. 64 hex chars
+# (validated on startup by imports/server/settingsValidation.js).
+ENC_KEY="$(openssl rand -hex 32)"
 PEER_KEY="$(openssl rand -hex 32)"
 cat >"$WORK_DIR/settings.json" <<EOF
 {
