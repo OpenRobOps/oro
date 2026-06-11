@@ -50,6 +50,7 @@ import {
   Navigation2DModule,
 } from '../imports/server/modules';
 import { bootstrapConfigData } from './bootstrapConfig';
+import { assertValidSettings } from '../imports/server/settingsValidation';
 import EventLog from '../imports/server/eventLog/eventLogger';
 import DbEventStore from '../imports/server/eventLog/meteorDbEventStore';
 
@@ -68,6 +69,10 @@ const moduleInstances = {};
 // Ignore the `new SomeManager()` with side effects to init modules:
 /* eslint-disable no-new */
 const oroAppMain = async () => {
+  // Validate critical settings before doing anything else. Throws (aborting
+  // startup) if e.g. the credential encryption key is missing or malformed.
+  assertValidSettings();
+
   // Set-up instance ID
   instanceValues.serverId = process.env.POD_ID || uuidv4();
   console.log('Application Server Starting: serverId: ' + instanceValues.serverId);
