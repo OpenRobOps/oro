@@ -28,6 +28,24 @@ const { defineConfig } = require("@meteorjs/rspack");
  */
 module.exports = defineConfig((Meteor) => {
   return {
+    ignoreWarnings: [
+      // fastest-validator uses `new Function(...)` to compile schemas, which
+      // rspack flags as a critical dynamic dependency. The behavior is
+      // intentional, so silence the warning only for this library.
+      {
+        module: /[\\/]fastest-validator[\\/]/,
+        message: /Critical dependency: the request of a dependency is an expression/,
+      },
+    ],
+    resolve: {
+      alias: {
+        // Handlebars' main entry uses the deprecated Node `require.extensions`
+        // API to register a loader for .handlebars/.hbs files, which rspack
+        // can't statically analyze. The precompiled dist build omits that
+        // loader while still exposing the full compiler API we use.
+        handlebars: "handlebars/dist/handlebars.js",
+      },
+    },	  
     module: {
       rules: [
         // Add support for importing SVGs as React components
