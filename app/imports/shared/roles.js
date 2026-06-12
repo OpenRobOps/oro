@@ -208,7 +208,7 @@ const glueId = (arg1, arg2 = null) => {
   }
   if (!arg2 || arg2.indexOf('/') >= 0) {
     console.error('arg2 error in glueId', arg1, arg2);
-    throw new Error('Invalid arg2 argument to build a qualified id: ' + arg2);
+    throw new Error('Invalid arg2 argument to build a qualified id: ' + arg1 + "/" + arg2);
   }
   return arg2 ? `${arg1}${SCOPE_SEPARATOR}${arg2}` : arg1;
 };

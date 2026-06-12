@@ -68,7 +68,7 @@ class TimeSeriesManager {
 
   async _meteorQueryTimeseries({ attributeIds, aggregations, robotId, startTs, endTs, intervalMinutes }) {
     if (!robotId) {
-      throw new Meteor.Error('robotId is required');
+      return {};
     }
     if (!isArray(attributeIds) || attributeIds.length == 0) {
       throw new Meteor.Error('attributeIds is required');

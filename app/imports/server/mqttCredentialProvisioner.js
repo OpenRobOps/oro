@@ -189,7 +189,7 @@ Meteor.methods({
     robotIds, 
     ts // used to generate the secret word
   }) {
-    if (!Array.isArray(robotIds) || robotIds.length === 0) {
+    if (!Array.isArray(robotIds) || robotIds.filter(Boolean).length === 0) {
       throw new Meteor.Error('Missing robotIds');
     }
     if (!ts) {

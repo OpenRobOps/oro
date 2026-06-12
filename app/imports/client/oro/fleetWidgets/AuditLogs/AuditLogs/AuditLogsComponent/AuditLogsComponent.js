@@ -17,7 +17,7 @@
 * Audit Logs
 * Component that renders a list of event log lines customized to each event module/type
 */
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import {
   Table,
@@ -54,6 +54,11 @@ const AuditLogs = ({
 }) => {
   const [expanded, setExpanded] = useState({});
   const { classes } = useStyles();
+  // Always display entries newest-first, regardless of the order they arrive in.
+  const sortedAuditLogs = useMemo(
+    () => [...(auditLogs ?? [])].sort((a, b) => (b.ts ?? 0) - (a.ts ?? 0)),
+    [auditLogs]
+  );
   // click handler to expand event rows
   const handleClick = (event) => {
     // for efficiency, we use only 1 click handler; but then need to bubble
@@ -178,7 +183,7 @@ const AuditLogs = ({
       >
         {tableHeader}
         <StyledTableBody>
-          {auditLogs.map((event, index) => (
+          {sortedAuditLogs.map((event, index) => (
             <AuditLogEventRow
               // eslint-disable-next-line react/no-array-index-key
               key={index}

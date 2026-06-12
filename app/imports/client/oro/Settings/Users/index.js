@@ -27,6 +27,13 @@ import useAllUsers from './hooks/useAllUsers';
 import UsersComponent from './UsersComponent';
 import NoAccess from './NoAccess';
 
+// Key a user is sorted by: display name, falling back to email/address.
+const userSortKey = u => u.profile?.name || u.profile?.email || u.emails?.[0]?.address || '';
+// Case-insensitive alphabetical comparator.
+const compareByName = (a, b) => (
+  userSortKey(a).localeCompare(userSortKey(b), undefined, { sensitivity: 'base' })
+);
+
 const Users = () => {
   const { isLoading, data: users, accessDenied } = useAllUsers();
   const { userId: currentUserId } = useAuth();
@@ -35,10 +42,13 @@ const Users = () => {
   const { call: deleteUser } = useMethod('users.delete');
   const { openDialog, ConfirmationDialog } = useConfirmationSnackbar();
 
-  const { pendingUsers, approvedUsers } = useMemo(() => ({
-    pendingUsers: users.filter(u => isEmpty(u.userRoles)),
-    approvedUsers: users.filter(u => !isEmpty(u.userRoles)),
-  }), [users]);
+  const { pendingUsers, approvedUsers } = useMemo(() => {
+    const sorted = [...users].sort(compareByName);
+    return {
+      pendingUsers: sorted.filter(u => isEmpty(u.userRoles)),
+      approvedUsers: sorted.filter(u => !isEmpty(u.userRoles)),
+    };
+  }, [users]);
 
  // TODO: Add missing methods for rejectUser and approveUser.
   const handleApproveUser = useCallback(async (userId, roleId) => {
