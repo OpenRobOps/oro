@@ -25,6 +25,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { LockKeyhole } from 'lucide-react';
 import { makeStyles, withStyles } from 'tss-react/mui';
+import { alpha } from '@mui/material/styles';
 import { Button, Tooltip, Box, Typography } from '@mui/material';
 
 const useStyles = makeStyles()(theme => ({
@@ -37,8 +38,8 @@ const useStyles = makeStyles()(theme => ({
   },
   buttonLocked: {
     borderRadius: '5px',
-    border: '1px solid rgba(190, 174, 221, 0.30)',
-    background: 'rgba(255, 255, 255, 0.20)',
+    border: `1px solid ${alpha(theme.palette.text.secondary, 0.3)}`,
+    background: alpha(theme.palette.background.white, 0.2),
   },
   buttonUnlocked: {
     backgroundColor: theme.palette.background.default,
