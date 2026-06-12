@@ -183,7 +183,7 @@ const AuditLogs = ({
       >
         {tableHeader}
         <StyledTableBody>
-          {auditLogs.map((event, index) => (
+          {sortedAuditLogs.map((event, index) => (
             <AuditLogEventRow
               // eslint-disable-next-line react/no-array-index-key
               key={index}
