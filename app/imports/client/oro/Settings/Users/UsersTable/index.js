@@ -17,10 +17,11 @@
 /**
  * UsersTable: section header + table of approved users.
  */
-import React from 'react';
+import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { Box, Typography } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
+import { usersSpanMultipleSources } from '../../../../../shared/users';
 import UserRow from './UserRow';
 
 const useStyles = makeStyles()(theme => ({
@@ -41,7 +42,7 @@ const useStyles = makeStyles()(theme => ({
   },
   tableHead: {
     display: 'grid',
-    gridTemplateColumns: '2fr 1fr 1fr',
+    gridTemplateColumns: '2fr 1fr 1fr 1fr 96px',
     padding: '14px 20px',
     borderBottom: `1px solid ${theme.palette.background.sidebarBorder}`,
   },
@@ -56,8 +57,11 @@ const useStyles = makeStyles()(theme => ({
   },
 }));
 
-const UsersTable = ({ users }) => {
+const UsersTable = ({
+  users, currentUserId, onChangeRole, onDeleteUser,
+}) => {
   const { classes } = useStyles();
+  const showSources = useMemo(() => usersSpanMultipleSources(users), [users]);
   return (
     <>
       <Typography className={classes.header}>
@@ -71,8 +75,19 @@ const UsersTable = ({ users }) => {
             <Typography className={classes.headCell}>User</Typography>
             <Typography className={classes.headCell}>Roles</Typography>
             <Typography className={classes.headCell}>Joined</Typography>
+            <Typography className={classes.headCell}>Last Seen</Typography>
+            <Typography className={classes.headCell} />
           </Box>
-          {users.map(u => <UserRow key={u._id} user={u} />)}
+          {users.map(u => (
+            <UserRow
+              key={u._id}
+              user={u}
+              sources={showSources ? u.sources : undefined}
+              isCurrentUser={u._id === currentUserId}
+              onChangeRole={onChangeRole}
+              onDeleteUser={onDeleteUser}
+            />
+          ))}
         </Box>
       )}
     </>
@@ -81,6 +96,9 @@ const UsersTable = ({ users }) => {
 
 UsersTable.propTypes = {
   users: PropTypes.array.isRequired,
+  currentUserId: PropTypes.string,
+  onChangeRole: PropTypes.func.isRequired,
+  onDeleteUser: PropTypes.func.isRequired,
 };
 
 export default UsersTable;

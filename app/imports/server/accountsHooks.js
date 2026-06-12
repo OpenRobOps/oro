@@ -21,6 +21,7 @@
  * registered before any login attempt occurs.
  */
 import { Accounts } from 'meteor/accounts-base';
+import { Meteor } from 'meteor/meteor';
 
 /**
  * Extract a normalized { name, email } from the OAuth service data that
@@ -68,6 +69,18 @@ const registerAccountsHooks = () => {
     // New users start with no roles — an admin must approve them
     user.userRoles = [];
     return user;
+  });
+
+  // Refresh `lastSeenTs` on every successful login. This fires for all login
+  // types, including `resume` (when a client reconnects with a stored token),
+  // so the value tracks the last time the user was actually active.
+  Accounts.onLogin((info) => {
+    const userId = info?.user?._id;
+    if (!userId) {
+      return;
+    }
+    Meteor.users.updateAsync(userId, { $set: { lastSeenTs: Date.now() } })
+      .catch(err => console.error(`Failed to update lastSeenTs for user ${userId}:`, err));
   });
 };
 

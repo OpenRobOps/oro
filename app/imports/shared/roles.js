@@ -40,6 +40,32 @@ const ALL_ROLE_DOCS = [
 ];
 
 /**
+ * Role "rank": a higher number means a more privileged built-in role, following
+ * the order of ALL_ROLE_DOCS (admin highest, viewer lowest). Roles not in that
+ * list (custom roles) rank lowest (0), so they are never treated as higher than
+ * a built-in role.
+ */
+const ROLE_RANK_BY_ID = ALL_ROLE_DOCS.reduce((acc, doc, ix) => {
+  acc[doc._id] = ALL_ROLE_DOCS.length - ix;
+  return acc;
+}, {});
+
+/**
+ * Returns the rank of a single role id (0 for unknown/custom/empty roles).
+ */
+const getRoleRank = roleId => ROLE_RANK_BY_ID[roleId] ?? 0;
+
+/**
+ * Returns the highest rank among a set of role ids (0 if the user has none).
+ * Used to compare a user's overall privilege level against a single role.
+ */
+const getRolesRank = roleIds => (
+  Array.isArray(roleIds) && roleIds.length
+    ? Math.max(...roleIds.map(getRoleRank))
+    : 0
+);
+
+/**
  * System user is used to identify events and actions triggered by the system.
  */
 const SYSTEM_USER_ID = 'oro';
@@ -267,6 +293,8 @@ export {
   ROLE_OPERATOR,
   ROLE_VIEWER,
   ALL_ROLE_DOCS,
+  getRoleRank,
+  getRolesRank,
   // Parsing resources
   isSingletonResourceId,
   SCOPE_SEPARATOR,

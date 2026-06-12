@@ -31,7 +31,7 @@ import SearchManager from '../imports/server/searchManager';
 import StatusManager from '../imports/server/status';
 import { registerAccountsHooks } from '../imports/server/accountsHooks';
 import { configureOAuth } from '../imports/server/oauthConfig';
-import '../imports/server/userPublications';
+import UsersManager from '../imports/server/usersManager';
 import '../imports/server/publications';
 import ConfigAPI from '../imports/server/configAPI/configAPI';
 import OroRoles from '../imports/server/roles';
@@ -127,6 +127,7 @@ const oroAppMain = async () => {
   await new StatusManager().init();
   await new AttributesManager().init();
   await new OroRoles().createDefaultRoles();
+  await new UsersManager().init();
   await new LockManager().init();
   const configApi = await new ConfigAPI().init({});
   await new ActionsEngine().init({
