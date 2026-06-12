@@ -68,7 +68,10 @@ const useStyles = makeStyles()(theme => ({
     width: '30px'
   },
   expandedRow: {
-    backgroundColor: '#0E0918 !important'
+    backgroundColor: `${theme.palette.background.navDark} !important`
+  },
+  expandIcon: {
+    color: theme.palette.text.darkBlue
   }
 }));
 
@@ -152,8 +155,8 @@ const AuditLogEventRowComponent = ({
           {actionExecutionId ? ( // only rows corresponding to executing scripts can be expanded
             <IconButton aria-label="expand row" size="small" onClick={onExpandRowClicked} sx={{ p: 0 }}>
               {isExpanded
-                ? <KeyboardArrowUpIcon sx={{ color: '#9E6FF3' }} />
-                : <KeyboardArrowDownIcon sx={{ color: '#9E6FF3' }} />}
+                ? <KeyboardArrowUpIcon className={classes.expandIcon} />
+                : <KeyboardArrowDownIcon className={classes.expandIcon} />}
             </IconButton>
           ) : (
             null

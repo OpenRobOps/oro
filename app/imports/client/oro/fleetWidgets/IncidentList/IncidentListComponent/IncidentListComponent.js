@@ -603,6 +603,8 @@ class IncidentListWidget extends React.Component {
       selectedIncident,
       robotsMap
     } = this.props;
+    const { darkBlue } = theme.palette.text;
+    const { navDark } = theme.palette.background;
     if (incident.componentsIds && incident.componentsIds[0]
       && incident.componentsIds[0].startsWith('RosDiag:')) {
       return null; // HACK(herchu) Skip these; too many errors otherwise
@@ -714,7 +716,7 @@ class IncidentListWidget extends React.Component {
           {data}
         </StyledTableCell>
         <StyledTableCell width='5%'>
-          <ChevronDown color={theme.palette.text.darkBlue} />
+          <ChevronDown color={darkBlue} />
         </StyledTableCell>
       </StyledTableRow>
     )];
@@ -738,7 +740,7 @@ class IncidentListWidget extends React.Component {
           selected={isSelected}
           className={classnames({ [classes.selectedRow]: isSelected })}
         >
-          <StyledTableCell colSpan={7} style={{ width: 'auto', backgroundColor: theme.palette.background.navDark }}>
+          <StyledTableCell colSpan={7} style={{ width: 'auto', backgroundColor: navDark }}>
             <ul>
               <li>
                 Message: {getIncidentMessage(incident)}
