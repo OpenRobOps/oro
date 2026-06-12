@@ -27,7 +27,7 @@ import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import { withStyles } from 'tss-react/mui';
 import { TextField, Typography, Chip, Autocomplete } from '@mui/material';
-import { Bot } from 'lucide-react';
+import { Bot, CircleX } from 'lucide-react';
 // ORO modules
 import { ID_TYPE_ROBOT } from '../../../../shared/constants';
 import { DarkModeContext } from '../../contexts/DarkModeContext';
@@ -46,9 +46,9 @@ const styles = theme => ({
   autocompleteInputFullscreen: {
     '&.MuiOutlinedInput-root': {
       padding: '5px',
-      color: 'white',
+      color: theme.palette.background.white,
       backgroundColor: theme.palette.background.black,
-      border: '1px solid white'
+      border: `1px solid ${theme.palette.background.white}`
     }
   },
   listboxFullScreen: {
@@ -63,7 +63,7 @@ const styles = theme => ({
     },
   },
   popupIndicator: {
-    color: 'white'
+    color: theme.palette.background.white
   },
   searchBoxContainer: {
     background: theme.palette.background.black,
@@ -81,19 +81,30 @@ const styles = theme => ({
     transform: 'translate(10px, 10px)',
   },
   filterLabel: {
-    fontSize: '13px',
+    fontSize: '11px',
+    color: theme.palette.text.buttonText,
     position: 'relative',
-    lineHeight: 'unset',
+    lineHeight: 'normal',
     display: 'flex',
     alignItems: 'center'
   },
   chipTag: {
-    background: theme.palette.background.chip,
-    borderRadius: '5px',
-    color: theme.palette.text.primary,
-    margin: '2px',
-    fontSize: '13px',
-    maxHeight: '26px'
+    background: theme.palette.background.borderLight,
+    border: `1px solid ${theme.palette.background.borderLight}`,
+    borderRadius: '4px',
+    color: theme.palette.text.buttonText,
+    height: '24.6px',
+    gap: '4px',
+    padding: '0 7px',
+    '& .MuiChip-label': {
+      padding: 0,
+    },
+    '& .MuiChip-icon': {
+      margin: 0,
+    },
+    '& .MuiChip-deleteIcon': {
+      margin: 0,
+    },
   },
   chipTagRobot: {
     cursor: 'pointer'
@@ -104,7 +115,7 @@ const styles = theme => ({
     }
   },
   deleteIcon: {
-    color: `${theme.palette.text.secondary} !important`,
+    color: `${theme.palette.text.buttonText} !important`,
     '&:hover': {
       color: `${theme.palette.text.primary} !important`,
     }
@@ -311,7 +322,8 @@ class RobotSearch extends React.Component {
                     {selectedRobot && !optionsOpened && (
                       WrapWithTooltip(robotVersionTooltip, (
                         <Chip
-                          icon={<Bot size={16} color={this.props.theme.palette.text.secondary} />}
+                          icon={<Bot size={20} color={this.props.theme.palette.text.buttonText} />}
+                          deleteIcon={<CircleX size={16} color={this.props.theme.palette.text.buttonText} />}
                           className={classnames(classes.chipTagRobot, classes.chipTag)}
                           classes={{ deleteIcon: classes.deleteIcon, clickable: classes.chipHover }}
                           label={isRobotLoading ? (

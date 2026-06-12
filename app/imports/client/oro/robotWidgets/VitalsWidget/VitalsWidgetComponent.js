@@ -37,7 +37,6 @@ const styles = () => ({
     alignItems: 'center'
   },
   vital: {
-    height: '50%',
     justifyContent: 'center',
     alignItems: 'center'
   }

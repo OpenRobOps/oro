@@ -30,6 +30,7 @@ import Polygon from 'ol/geom/Polygon';
 // Modules
 import ReactVectorLayer from './ReactVectorLayer';
 import {
+  AVATAR_BORDER_RADIUS,
   createAvatarArrowPolygon, createAvatarBorderRing, createRotationIndicatorPolygons
 } from '../Map/CustomShapes';
 import { transformFeatures, getDistanceBetweenPoints } from '../utils/geometry';
@@ -37,7 +38,8 @@ import theme from '../../../../Styles';
 import { PALETTE } from '../utils/utils';
 
 // Default styles
-const ARROW_COLOR = '#BE9AFF';
+const ARROW_COLOR = theme.palette.text.robotAvatar;
+const ARROW_RADIUS_RATIO = 0.6;
 
 /**
  * Creates a feature with the shape of an arrow representing a generic robot avatar
@@ -51,7 +53,9 @@ const createArrowFeature = (params = {}) => {
     fill: new Fill({ color }),
     stroke: new Stroke({
       color: selected ? strokeColor : theme.palette.text.title,
-      width
+      width,
+      lineJoin: 'miter',
+      lineCap: 'square'
     }),
     zIndex: zIndex + 2
   }));
@@ -151,9 +155,11 @@ const createFeatures = ({
   }));
 
   // If oriented, add style to arrow feature, takes the color from the prop primaryColor
+  const arrowFillColor = arrowColor || (selected ? primaryColor : outlineColor);
+  const arrowRadius = (radius || AVATAR_BORDER_RADIUS) * ARROW_RADIUS_RATIO;
   const features = oriented
     ? [createArrowFeature({
-      color: arrowColor || (selected ? primaryColor : outlineColor), radius, selected
+      color: arrowFillColor, strokeColor: arrowFillColor, radius: arrowRadius, selected
     }), innerBorderFeature] : [innerBorderFeature];
 
   // Add style to the outer circle (ring) feature, takes the color from the prop primaryColor
@@ -203,10 +209,10 @@ const RobotPoseLayer = ({
     featuresAtOrigin, vectorSource
   } = useMemo(() => {
     const features = createFeatures({
-      primaryColor: selected ? PALETTE.robotPoseNormalPrimary : primaryColor,
-      outlineColor: selected ? PALETTE.robotPoseNormalPrimary : primaryColor,
-      secondaryColor: selected ? PALETTE.robotPoseNormalSecondary : secondaryColor,
-      arrowColor: selected ? PALETTE.robotPoseNormalPrimary : undefined,
+      primaryColor: selected ? PALETTE.robotPoseSelectedPrimary : primaryColor,
+      outlineColor: selected ? PALETTE.robotPoseSelectedPrimary : primaryColor,
+      secondaryColor: selected ? PALETTE.robotPoseSelectedSecondary : secondaryColor,
+      arrowColor: selected ? PALETTE.robotPoseSelectedArrow : undefined,
       zIndex,
       showPoseOutline,
       posePreferences,

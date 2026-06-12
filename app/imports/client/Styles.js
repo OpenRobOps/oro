@@ -20,7 +20,9 @@
  * We use this module file to create and export all top level
  * theme and style information for easier re-use.
  */
+import React from 'react';
 import { createTheme, responsiveFontSizes } from '@mui/material/styles';
+import { ChevronDown } from 'lucide-react';
 
 const theme = createTheme({
   components: {
@@ -57,6 +59,12 @@ const theme = createTheme({
     MuiSelect: {
       defaultProps: {
         variant: 'standard',
+        IconComponent: ChevronDown,
+      },
+      styleOverrides: {
+        icon: {
+          color: '#9E6FF3',
+        },
       },
     },
     MuiSvgIcon: {
@@ -128,6 +136,10 @@ const theme = createTheme({
           border: '1px solid #3E3155',
           color: '#FAF0F0',
         },
+        // Targets .MuiMenu-list (the <ul> inside the menu).
+        list: {
+          backgroundColor: '#170E28',
+        },
       },
     },
     MuiMenuItem: {
@@ -140,6 +152,9 @@ const theme = createTheme({
       },
     },
     MuiAutocomplete: {
+      defaultProps: {
+        popupIcon: React.createElement(ChevronDown),
+      },
       styleOverrides: {
         paper: {
           backgroundColor: '#170E28',
@@ -163,7 +178,7 @@ const theme = createTheme({
           },
         },
         popupIndicator: {
-          color: '#BEAEDD',
+          color: '#9E6FF3',
         },
         clearIndicator: {
           color: '#BEAEDD',
@@ -223,6 +238,7 @@ const theme = createTheme({
       content: '#C2C2C2',
       contrastText: '#FAF0F0',
       darkBlue: '#9E6FF3',
+      robotAvatar: '#BE9AFF',
       statusError: '#FB7188',
       lightGray: '#C2C2C2',
       mediumDarkGray: '#BEAEDD',
@@ -238,6 +254,7 @@ const theme = createTheme({
       onApprove: '#1A004A',
       heading: '#E2D8F0',
       subheading: '#A898C4',
+      black: '#000000',
     },
     background: {
       default: '#1A0F2E',

@@ -76,7 +76,7 @@ import DiagnosticsEntry, { DIAG_VALUES } from './DiagnosticsEntry';
 import { StyledTableBody, StyledTableCell, StyledTableContainer, StyledTableRow } from '../../../util/DefaultTable';
 import NoDataIcon from '../../../graphics/op/NoDataIcon';
 
-const useStyles = makeStyles()(() => ({
+const useStyles = makeStyles()(theme => ({
   inactiveIcon: {
     height: '18px',
     paddingRight: '4px',
@@ -84,7 +84,8 @@ const useStyles = makeStyles()(() => ({
   },
   arrowIcon: {
     padding: '0px',
-    fontSize: '1rem'
+    fontSize: '1rem',
+    color: theme.palette.text.darkBlue
   }
 }));
 

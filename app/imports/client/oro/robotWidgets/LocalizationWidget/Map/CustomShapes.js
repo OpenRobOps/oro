@@ -205,6 +205,7 @@ const waypointPolygon = () => {
 };
 
 export {
+  AVATAR_BORDER_RADIUS,
   avatarArrowPolygon,
   createAvatarArrowPolygon,
   createRotationIndicatorPolygons,

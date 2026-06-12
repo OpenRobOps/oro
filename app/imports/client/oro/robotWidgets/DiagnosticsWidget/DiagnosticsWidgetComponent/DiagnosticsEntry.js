@@ -52,7 +52,15 @@ const useStyles = makeStyles()(theme => ({
   },
   iconButton: {
     padding: 0,
-    fontSize: '1rem !important'
+    fontSize: '1.5rem !important',
+    color: theme.palette.text.darkBlue
+  },
+  expandIcon: {
+    color: theme.palette.text.darkBlue
+  },
+  // Background of the expanded (details) row.
+  expandedCell: {
+    backgroundColor: theme.palette.background.navDark
   }
 }));
 
@@ -146,15 +154,15 @@ const DiagnosticsEntry = (props) => {
               onClick={handleExpand}
             >
               {expanded
-                ? <ExpandLessIcon className={classes.iconButton} />
-                : <ExpandMoreIcon className={classes.iconButton} />}
+                ? <ExpandLessIcon className={classes.expandIcon} />
+                : <ExpandMoreIcon className={classes.expandIcon} />}
             </IconButton>
           ) : null}
         </StyledTableCell>
       </StyledTableRow>
       {expanded && keyValues && (
         <StyledTableRow>
-          <StyledTableCell colSpan={4}>
+          <StyledTableCell colSpan={4} className={classes.expandedCell}>
             <DiagnosticsEntryKeyValues keyValues={keyValues} />
           </StyledTableCell>
         </StyledTableRow>

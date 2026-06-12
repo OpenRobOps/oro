@@ -26,10 +26,10 @@ import {
   MenuItem,
   Toolbar,
   Typography,
+  useTheme,
 } from '@mui/material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import LogoutIcon from '@mui/icons-material/Logout';
-import SettingsIcon from '@mui/icons-material/Settings';
+import { Settings as SettingsIcon, LogOut as LogoutIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
 import AvatarInitials from './util/AvatarInitials';
@@ -39,9 +39,9 @@ const AppHeader = () => {
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState(null);
   const menuOpen = Boolean(anchorEl);
-
+  const theme = useTheme();
   const profile = user?.profile || {};
-  const { name, email, avatar } = profile;
+  const { name, avatar } = profile;
 
   const handleOpen = (e) => setAnchorEl(e.currentTarget);
   const handleClose = () => setAnchorEl(null);
@@ -99,7 +99,7 @@ const AppHeader = () => {
               Admin
             </Typography>
           </Box>
-          <KeyboardArrowDownIcon sx={{ color: 'text.muted', fontSize: '18px' }} />
+          <KeyboardArrowDownIcon sx={{ color: 'text.darkBlue', fontSize: '1.5rem' }} />
           </Box>
         </Box>
         <Menu
@@ -109,21 +109,12 @@ const AppHeader = () => {
           anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
           transformOrigin={{ vertical: 'top', horizontal: 'right' }}
         >
-          <Box sx={{ px: 2, py: 1 }}>
-            <Typography variant="subtitle2">{name}</Typography>
-            {email && (
-              <Typography variant="body2" color="text.secondary">
-                {email}
-              </Typography>
-            )}
-          </Box>
-          <Divider />
           <MenuItem onClick={handleSettings}>
-            <SettingsIcon fontSize="small" sx={{ mr: 1 }} />
+            <SettingsIcon size={18} style={{ marginRight: 8, color: theme.palette.background.brightBlue }} />
             Settings
           </MenuItem>
           <MenuItem onClick={handleLogout}>
-            <LogoutIcon fontSize="small" sx={{ mr: 1 }} />
+            <LogoutIcon size={18} style={{ marginRight: 8, color: theme.palette.background.brightBlue }} />
             Logout
           </MenuItem>
         </Menu>

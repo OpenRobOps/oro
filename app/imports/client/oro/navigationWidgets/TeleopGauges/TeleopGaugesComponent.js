@@ -65,6 +65,9 @@ const useStyles = makeStyles()(() => ({
     width: '100%',
     display: 'flex',
     justifyContent: 'center',
+    // Extra breathing room below the network indicator so it isn't crowded against
+    // the teleop joystick in the panel below.
+    marginBottom: '16px',
   },
 }));
 

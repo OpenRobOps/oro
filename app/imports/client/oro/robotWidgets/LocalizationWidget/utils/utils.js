@@ -50,7 +50,10 @@ const PALETTE = {
   selectedOutline: '#8080FF',
   robotPoseNormalPrimary: '#BE9AFF',
   robotPoseNormalSecondary: '#3E3155',
-  robotPoseNormalOutline: '#BE9AFF'
+  robotPoseNormalOutline: '#BE9AFF',
+  robotPoseSelectedPrimary: '#BE9AFF',
+  robotPoseSelectedSecondary: '#3E3155',
+  robotPoseSelectedArrow: '#BE9AFF'
 };
 const CURRENT_DATA_MS = 1000 * 15; // 15sec, fresh and current data
 const RECENT_DATA_MS = 1000 * 60; // 1min, relatively recent data
