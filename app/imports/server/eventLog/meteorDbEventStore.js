@@ -85,7 +85,12 @@ export default class DbEventStore extends EventStore {
     if (eventType) {
       query.eventType = String(eventType)
     }
-    const logs = await EventLog.find(query, { projection: { _id: 0 }, limit }).fetchAsync();
+    // Sort newest-first so the `limit` keeps the most recent events (not the
+    // oldest) and they arrive already ordered for display.
+    const logs = await EventLog.find(
+      query,
+      { projection: { _id: 0 }, sort: { ts: -1 }, limit }
+    ).fetchAsync();
     return logs;
   }
 }

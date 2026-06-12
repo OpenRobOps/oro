@@ -523,7 +523,7 @@ class OroRoles {
   };
 
   canAccessRobots = async (subjectId, robotIds, permissionLevel = ACCESS_LEVEL_VIEW) => {
-    if (!Array.isArray(robotIds)) {
+    if (!Array.isArray(robotIds) || robotIds.some(id => !isString(id) || !id)) {
       throw new Error('robotIds must be an array');
     }
     if (!robotIds.length) {

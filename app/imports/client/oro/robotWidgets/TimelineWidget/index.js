@@ -64,7 +64,7 @@ const TimelineContainer = (props) => {
 
   useEffect(() => {
     const attributeIds = elementList;
-    const aggregations = attributeIds.map(attrId => elementValues?.[attrId].op || 'average');
+    const aggregations = (attributeIds || []).map(attrId => elementValues?.[attrId].op || 'average');
     const { startTs, endTs } = prepareTimeVarsForQuery(propStartTs, timeRangeMs, nowTs);
     const timeframeMs = endTs - startTs;
     // Find the closest 'period' as defined in our toolbars, which is also helpful to select a reasonable granularity

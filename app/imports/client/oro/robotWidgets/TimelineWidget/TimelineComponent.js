@@ -422,8 +422,8 @@ const TimelineComponent = ({
       return {
         // By adding new Date(...) to the x portion of the data series,
         // we are using the current browser's timezone to parse the dates.
-        x: dataToParse.values.map(e => new Date(e[0])),
-        y: dataToParse.values.map(e => applyUnit(fieldConfig, e[index + 1])),
+        x: (dataToParse?.values || []).map(e => new Date(e[0])),
+        y: (dataToParse?.values || []).map(e => applyUnit(fieldConfig, e[index + 1])),
         name: fieldConfig.label,
         hovertemplate,
         type: lineFormat?.type,
