@@ -18,17 +18,34 @@
  * useAllUsers: Subscribes to `users.all` and returns every user sorted by
  * createdAt (newest first).
  *
+ * The publication fails (via this.error) when the current user lacks access to
+ * view users; we capture that through the subscription's onStop callback and
+ * expose it as `accessDenied` so the page can render a "no access" legend.
+ *
  * @returns {Object}
  *  isLoading: boolean - Whether the subscription is still loading
  *  data: Array - All users sorted by createdAt (newest first)
+ *  accessDenied: boolean - Whether the subscription was rejected for lack of access
  */
+import { useState } from 'react';
 import { useTracker } from 'meteor/react-meteor-data';
 import { Meteor } from 'meteor/meteor';
 
-const useAllUsers = () => useTracker(() => {
-  const handle = Meteor.subscribe('users.all');
-  const data = Meteor.users.find({}, { sort: { createdAt: -1 } }).fetch();
-  return { isLoading: !handle.ready(), data };
-}, []);
+const useAllUsers = () => {
+  const [accessDenied, setAccessDenied] = useState(false);
+
+  const { isLoading, data } = useTracker(() => {
+    const handle = Meteor.subscribe('users.all', {
+      // A successful (re)subscription clears any previous denial; onStop fires
+      // with an error when the publication rejects access.
+      onReady: () => setAccessDenied(false),
+      onStop: err => setAccessDenied(Boolean(err)),
+    });
+    const users = Meteor.users.find({}, { sort: { createdAt: -1 } }).fetch();
+    return { isLoading: !handle.ready(), data: users };
+  }, []);
+
+  return { isLoading, data, accessDenied };
+};
 
 export default useAllUsers;

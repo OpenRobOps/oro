@@ -47,7 +47,8 @@ const useStyles = makeStyles()(theme => ({
 }));
 
 const UsersComponent = ({
-  isLoading, pendingUsers, approvedUsers, onApproveUser, onRejectUser,
+  isLoading, pendingUsers, approvedUsers, currentUserId,
+  onApproveUser, onRejectUser, onChangeRole, onDeleteUser,
 }) => {
   const { classes } = useStyles();
   return (
@@ -64,7 +65,12 @@ const UsersComponent = ({
             onApproveUser={onApproveUser}
             onRejectUser={onRejectUser}
           />
-          <UsersTable users={approvedUsers} />
+          <UsersTable
+            users={approvedUsers}
+            currentUserId={currentUserId}
+            onChangeRole={onChangeRole}
+            onDeleteUser={onDeleteUser}
+          />
         </>
       )}
     </Box>
@@ -75,8 +81,11 @@ UsersComponent.propTypes = {
   isLoading: PropTypes.bool,
   pendingUsers: PropTypes.array.isRequired,
   approvedUsers: PropTypes.array.isRequired,
+  currentUserId: PropTypes.string,
   onApproveUser: PropTypes.func.isRequired,
   onRejectUser: PropTypes.func.isRequired,
+  onChangeRole: PropTypes.func.isRequired,
+  onDeleteUser: PropTypes.func.isRequired,
 };
 
 export default UsersComponent;

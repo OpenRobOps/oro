@@ -21,14 +21,18 @@
 import React, { useCallback, useMemo } from 'react';
 import { isEmpty } from 'lodash';
 import { useMethod } from '../../util/meteorUtils';
+import { useAuth } from '../../contexts/AuthContext';
 import useConfirmationSnackbar, { SnackbarVariants } from '../../util/useConfirmationSnackbar';
 import useAllUsers from './hooks/useAllUsers';
 import UsersComponent from './UsersComponent';
+import NoAccess from './NoAccess';
 
 const Users = () => {
-  const { isLoading, data: users } = useAllUsers();
+  const { isLoading, data: users, accessDenied } = useAllUsers();
+  const { userId: currentUserId } = useAuth();
   const { call: setUserRole } = useMethod('users.setUserRole');
   const { call: rejectUser } = useMethod('users.reject');
+  const { call: deleteUser } = useMethod('users.delete');
   const { openDialog, ConfirmationDialog } = useConfirmationSnackbar();
 
   const { pendingUsers, approvedUsers } = useMemo(() => ({
@@ -59,14 +63,58 @@ const Users = () => {
     }
   }, [rejectUser, openDialog]);
 
+  const handleChangeRole = useCallback(async (userId, roleId) => {
+    try {
+      await setUserRole(userId, roleId);
+    } catch (err) {
+      openDialog({
+        message: `Could not update role: ${err?.reason || err?.message || err}`,
+        variant: SnackbarVariants.ERROR,
+      });
+    }
+  }, [setUserRole, openDialog]);
+
+  // Deleting an existing user is destructive, so confirm before calling the
+  // method. `openDialog`'s callback receives `true` when the action is pressed.
+  const handleDeleteUser = useCallback((userId, userName) => {
+    openDialog(
+      {
+        message: `Delete ${userName}? This permanently removes the user and cannot be undone.`,
+        variant: SnackbarVariants.WARNING,
+        actionMessage: 'Delete',
+      },
+      async (confirmed) => {
+        if (!confirmed) {
+          return;
+        }
+        try {
+          await deleteUser(userId);
+        } catch (err) {
+          openDialog({
+            message: `Could not delete user: ${err?.reason || err?.message || err}`,
+            variant: SnackbarVariants.ERROR,
+          });
+        }
+      },
+    );
+  }, [deleteUser, openDialog]);
+
+  // Replace the entire section with a legend when access is denied.
+  if (accessDenied) {
+    return <NoAccess />;
+  }
+
   return (
     <>
       <UsersComponent
         isLoading={isLoading}
         pendingUsers={pendingUsers}
         approvedUsers={approvedUsers}
+        currentUserId={currentUserId}
         onApproveUser={handleApproveUser}
         onRejectUser={handleRejectUser}
+        onChangeRole={handleChangeRole}
+        onDeleteUser={handleDeleteUser}
       />
       {ConfirmationDialog}
     </>

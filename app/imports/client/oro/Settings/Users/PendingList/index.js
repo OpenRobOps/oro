@@ -17,10 +17,11 @@
 /**
  * PendingList: section header + cards for users awaiting approval.
  */
-import React from 'react';
+import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { Box, Typography } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
+import { usersSpanMultipleSources } from '../../../../../shared/users';
 import PendingRow from './PendingRow';
 
 const useStyles = makeStyles()(theme => ({
@@ -46,19 +47,21 @@ const useStyles = makeStyles()(theme => ({
 
 const PendingList = ({ users, onApproveUser, onRejectUser }) => {
   const { classes } = useStyles();
+  const showSources = useMemo(() => usersSpanMultipleSources(users), [users]);
   return (
     <>
       <Typography className={classes.header}>
         Pending ({users.length})
       </Typography>
       {users.length === 0 ? (
-        <Typography className={classes.empty}>No pending users.</Typography>
+        <Typography className={classes.empty}>No pending requests.</Typography>
       ) : (
         <Box className={classes.list}>
           {users.map(u => (
             <PendingRow
               key={u._id}
               user={u}
+              sources={showSources ? u.sources : undefined}
               onApproveUser={onApproveUser}
               onRejectUser={onRejectUser}
             />

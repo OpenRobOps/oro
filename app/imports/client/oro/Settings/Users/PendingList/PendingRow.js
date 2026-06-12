@@ -129,7 +129,7 @@ DetailsCell.propTypes = {
   children: PropTypes.node,
 };
 
-const PendingRow = ({ user, onApproveUser, onRejectUser }) => {
+const PendingRow = ({ user, sources, onApproveUser, onRejectUser }) => {
   const { classes } = useStyles();
   const [roleId, setRoleId] = useState(ROLE_VIEWER);
   const handleRoleChange = useCallback(event => setRoleId(event.target.value), []);
@@ -140,7 +140,7 @@ const PendingRow = ({ user, onApproveUser, onRejectUser }) => {
   const handleReject = useCallback(() => onRejectUser(user._id), [onRejectUser, user._id]);
   return (
     <Box className={classes.card}>
-      <UserComponent user={user} size={48} bordered />
+      <UserComponent user={user} size={48} bordered sources={sources} />
       <Box className={classes.detailsBox}>
         <DetailsCell label="Role">
           <Select
@@ -179,6 +179,7 @@ const PendingRow = ({ user, onApproveUser, onRejectUser }) => {
 
 PendingRow.propTypes = {
   user: PropTypes.object.isRequired,
+  sources: PropTypes.arrayOf(PropTypes.string),
   onApproveUser: PropTypes.func.isRequired,
   onRejectUser: PropTypes.func.isRequired,
 };

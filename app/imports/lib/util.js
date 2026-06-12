@@ -565,6 +565,22 @@ const formatDate = (ts, now = Date.now()) => {
 };
 
 /**
+ * Formats a "last seen" timestamp. Within the last day it is shown as a relative
+ * "ago" value (e.g. "5 minutes ago", "3 hours ago"); older timestamps are shown
+ * as a date via formatDate.
+ */
+const formatLastSeen = (ts, now = Date.now()) => {
+  if (!ts) {
+    return UNDEFINED_VALUE;
+  }
+  const m = moment(ts);
+  if (!m.isValid()) {
+    return UNDEFINED_VALUE;
+  }
+  return (now - ts < MILLIS_IN_DAY) ? m.from(now) : formatDate(ts, now);
+};
+
+/**
  * Formats a *date* interval given by two timestamps. The time of day is ignored. Also since
  * this function is used to represent date periods, a range { X, X + 1 day } is represented
  * by a short label (day "X") instead of a range ("X - Y") even if the timestamp "X + 1 day"
@@ -1040,6 +1056,7 @@ export {
   formatTimeInRange,
   formatTimeInterval,
   formatDate,
+  formatLastSeen,
   formatDateInterval,
   asyncForEach,
   flattenDeepObj,
