@@ -20,10 +20,12 @@
  */
 import React, { useCallback, useMemo } from 'react';
 import { isEmpty } from 'lodash';
+import { missingAdminEmails } from '../../../../shared/users';
 import { useMethod } from '../../util/meteorUtils';
 import { useAuth } from '../../contexts/AuthContext';
 import useConfirmationSnackbar, { SnackbarVariants } from '../../util/useConfirmationSnackbar';
 import useAllUsers from './hooks/useAllUsers';
+import useAdminEmails from './hooks/useAdminEmails';
 import UsersComponent from './UsersComponent';
 import NoAccess from './NoAccess';
 
@@ -36,6 +38,7 @@ const compareByName = (a, b) => (
 
 const Users = () => {
   const { isLoading, data: users, accessDenied } = useAllUsers();
+  const adminEmails = useAdminEmails();
   const { userId: currentUserId } = useAuth();
   const { call: setUserRole } = useMethod('users.setUserRole');
   const { call: rejectUser } = useMethod('users.reject');
@@ -49,6 +52,14 @@ const Users = () => {
       approvedUsers: sorted.filter(u => !isEmpty(u.userRoles)),
     };
   }, [users]);
+
+  // Admin emails configured in settings but not registered yet: their owners
+  // will become admins automatically on first login. Compared against the full
+  // user list (pending + approved).
+  const unregisteredAdminEmails = useMemo(
+    () => missingAdminEmails(users, adminEmails),
+    [users, adminEmails],
+  );
 
  // TODO: Add missing methods for rejectUser and approveUser.
   const handleApproveUser = useCallback(async (userId, roleId) => {
@@ -120,6 +131,7 @@ const Users = () => {
         isLoading={isLoading}
         pendingUsers={pendingUsers}
         approvedUsers={approvedUsers}
+        unregisteredAdminEmails={unregisteredAdminEmails}
         currentUserId={currentUserId}
         onApproveUser={handleApproveUser}
         onRejectUser={handleRejectUser}

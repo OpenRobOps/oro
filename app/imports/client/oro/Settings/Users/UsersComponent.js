@@ -26,6 +26,7 @@ import { makeStyles } from 'tss-react/mui';
 import { usersSpanMultipleSources } from '../../../../shared/users';
 import PendingList from './PendingList';
 import UsersTable from './UsersTable';
+import AdminEmailsWarning from './AdminEmailsWarning';
 
 const useStyles = makeStyles()(theme => ({
   title: {
@@ -48,7 +49,7 @@ const useStyles = makeStyles()(theme => ({
 }));
 
 const UsersComponent = ({
-  isLoading, pendingUsers, approvedUsers, currentUserId,
+  isLoading, pendingUsers, approvedUsers, unregisteredAdminEmails, currentUserId,
   onApproveUser, onRejectUser, onChangeRole, onDeleteUser,
 }) => {
   const { classes } = useStyles();
@@ -73,6 +74,7 @@ const UsersComponent = ({
             onApproveUser={onApproveUser}
             onRejectUser={onRejectUser}
           />
+          <AdminEmailsWarning emails={unregisteredAdminEmails} />
           <UsersTable
             users={approvedUsers}
             showSources={showSources}
@@ -90,6 +92,7 @@ UsersComponent.propTypes = {
   isLoading: PropTypes.bool,
   pendingUsers: PropTypes.array.isRequired,
   approvedUsers: PropTypes.array.isRequired,
+  unregisteredAdminEmails: PropTypes.arrayOf(PropTypes.string),
   currentUserId: PropTypes.string,
   onApproveUser: PropTypes.func.isRequired,
   onRejectUser: PropTypes.func.isRequired,
