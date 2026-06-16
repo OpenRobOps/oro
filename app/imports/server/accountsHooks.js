@@ -22,13 +22,25 @@
  */
 import { Accounts } from 'meteor/accounts-base';
 import { Meteor } from 'meteor/meteor';
+import { ROLE_ADMIN } from '../shared/roles';
+
+/**
+ * Determine the initial roles for a newly created user. Users whose email is
+ * listed in `adminEmails` (configured via `Meteor.settings.adminEmails`) are
+ * granted the admin role; everyone else starts with no roles and must be
+ * approved by an admin. Email matching is case-insensitive.
+ */
+const initialRolesForUser = (email, adminEmails = []) => {
+  const normalized = (adminEmails || []).map(e => String(e).toLowerCase());
+  const isAdmin = !!email && normalized.includes(String(email).toLowerCase());
+  return isAdmin ? [ROLE_ADMIN] : [];
+};
 
 /**
  * Extract a normalized { name, email } from the OAuth service data that
  * Meteor attaches to the user document during login.
  */
 const normalizeOAuthProfile = (options, user) => {
-  console.log('normalizeOAuthProfile', options, user);
   if (user.services?.google) {
     const g = user.services.google;
     return {
@@ -66,8 +78,9 @@ const registerAccountsHooks = () => {
   Accounts.onCreateUser((options, user) => {
     const { name, email, avatar } = normalizeOAuthProfile(options, user);
     user.profile = { name, email, avatar };
-    // New users start with no roles — an admin must approve them
-    user.userRoles = [];
+    // Admins listed in settings start with the admin role; everyone else starts
+    // with no roles and must be approved by an admin.
+    user.userRoles = initialRolesForUser(email, Meteor.settings.adminEmails);
     return user;
   });
 
@@ -84,4 +97,4 @@ const registerAccountsHooks = () => {
   });
 };
 
-export { registerAccountsHooks };
+export { registerAccountsHooks, initialRolesForUser };

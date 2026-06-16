@@ -17,11 +17,10 @@
 /**
  * PendingList: section header + cards for users awaiting approval.
  */
-import React, { useMemo } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { Box, Typography } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
-import { usersSpanMultipleSources } from '../../../../../shared/users';
 import PendingRow from './PendingRow';
 
 const useStyles = makeStyles()(theme => ({
@@ -45,9 +44,10 @@ const useStyles = makeStyles()(theme => ({
   },
 }));
 
-const PendingList = ({ users, onApproveUser, onRejectUser }) => {
+const PendingList = ({
+  users, showSources, onApproveUser, onRejectUser,
+}) => {
   const { classes } = useStyles();
-  const showSources = useMemo(() => usersSpanMultipleSources(users), [users]);
   return (
     <>
       <Typography className={classes.header}>
@@ -74,6 +74,7 @@ const PendingList = ({ users, onApproveUser, onRejectUser }) => {
 
 PendingList.propTypes = {
   users: PropTypes.array.isRequired,
+  showSources: PropTypes.bool,
   onApproveUser: PropTypes.func.isRequired,
   onRejectUser: PropTypes.func.isRequired,
 };

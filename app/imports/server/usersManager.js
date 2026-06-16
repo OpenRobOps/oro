@@ -48,6 +48,7 @@ class UsersManager {
       'users.setUserRole': this._meteorSetUserRole,
       'users.reject': this._meteorRejectUser,
       'users.delete': this._meteorDeleteUser,
+      'users.adminEmails': this._meteorAdminEmails,
     });
     this._registerPublications();
   };
@@ -178,6 +179,25 @@ class UsersManager {
     }
     return true;
   };
+
+  /**
+   * Meteor call returning the configured `adminEmails` (from
+   * `Meteor.settings.adminEmails`). Emails listed here are granted the admin
+   * role automatically on their owner's first login; the User Moderation UI
+   * uses this to warn about admin emails that are not registered yet.
+   *
+   * Gated to VIEW access on the USERS system element — same as the `users.all`
+   * publication that backs the page — so it is admin-only.
+   */
+  // eslint-disable-next-line class-methods-use-this
+  async _meteorAdminEmails() {
+    if (!await new OroRoles().canAccessSystemElement(
+      this.userId, RESOURCE_SINGLETONS.USERS, ACCESS_LEVEL_VIEW
+    )) {
+      throw new Meteor.Error('User not authorized to view users');
+    }
+    return Meteor.settings.adminEmails || [];
+  }
 
   /**
    * Meteor call to assign a role to a user. Invoked from the User Moderation UI

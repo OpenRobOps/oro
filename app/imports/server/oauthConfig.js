@@ -30,14 +30,28 @@ import { ServiceConfiguration } from 'meteor/service-configuration';
 // the endpoint returns an error (403/404) the parsed JSON is an object,
 // causing "emails.find is not a function". We patch OAuth._fetch so that
 // requests to that specific URL always resolve to an array.
+const GITHUB_EMAILS_URL = 'https://api.github.com/user/emails';
 const _originalFetch = OAuth._fetch;
 OAuth._fetch = async function (url, ...args) {
   const response = await _originalFetch.call(this, url, ...args);
-  if (url === 'https://api.github.com/user/emails') {
+  if (url === GITHUB_EMAILS_URL) {
     const origJson = response.json.bind(response);
     response.json = async () => {
       const data = await origJson();
-      return Array.isArray(data) ? data : [];
+      if (Array.isArray(data)) {
+        return data;
+      }
+      // A non-array means GitHub rejected the request — typically HTTP 403
+      // "Resource not accessible by integration" when the credentials belong
+      // to a GitHub App that lacks the "Email addresses" (read-only) account
+      // permission. Coerce to [] so github-oauth doesn't crash on .find(), but
+      // log why: otherwise the user's email silently ends up empty.
+      console.warn(
+        `OAuth: GET ${GITHUB_EMAILS_URL} did not return a list (HTTP ${response.status}); `
+        + 'the user\'s email will be empty. If using a GitHub App, enable the '
+        + `"Email addresses" (read-only) account permission. Response: ${JSON.stringify(data)}`
+      );
+      return [];
     };
   }
   return response;

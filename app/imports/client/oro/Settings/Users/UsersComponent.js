@@ -19,12 +19,14 @@
  * the page title + subtitle and delegates the pending and members lists to
  * their own components.
  */
-import React from 'react';
+import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { Box, Typography } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
+import { usersSpanMultipleSources } from '../../../../shared/users';
 import PendingList from './PendingList';
 import UsersTable from './UsersTable';
+import AdminEmailsWarning from './AdminEmailsWarning';
 
 const useStyles = makeStyles()(theme => ({
   title: {
@@ -47,10 +49,16 @@ const useStyles = makeStyles()(theme => ({
 }));
 
 const UsersComponent = ({
-  isLoading, pendingUsers, approvedUsers, currentUserId,
+  isLoading, pendingUsers, approvedUsers, unregisteredAdminEmails, currentUserId,
   onApproveUser, onRejectUser, onChangeRole, onDeleteUser,
 }) => {
   const { classes } = useStyles();
+  // Decide whether to show per-user source labels once, across the whole screen
+  // (pending + approved), so both lists show them under the same condition.
+  const showSources = useMemo(
+    () => usersSpanMultipleSources([...pendingUsers, ...approvedUsers]),
+    [pendingUsers, approvedUsers],
+  );
   return (
     <Box>
       <Typography className={classes.title}>User Moderation</Typography>
@@ -62,11 +70,14 @@ const UsersComponent = ({
         <>
           <PendingList
             users={pendingUsers}
+            showSources={showSources}
             onApproveUser={onApproveUser}
             onRejectUser={onRejectUser}
           />
+          <AdminEmailsWarning emails={unregisteredAdminEmails} />
           <UsersTable
             users={approvedUsers}
+            showSources={showSources}
             currentUserId={currentUserId}
             onChangeRole={onChangeRole}
             onDeleteUser={onDeleteUser}
@@ -81,6 +92,7 @@ UsersComponent.propTypes = {
   isLoading: PropTypes.bool,
   pendingUsers: PropTypes.array.isRequired,
   approvedUsers: PropTypes.array.isRequired,
+  unregisteredAdminEmails: PropTypes.arrayOf(PropTypes.string),
   currentUserId: PropTypes.string,
   onApproveUser: PropTypes.func.isRequired,
   onRejectUser: PropTypes.func.isRequired,

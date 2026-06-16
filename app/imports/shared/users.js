@@ -88,9 +88,50 @@ const usersSpanMultipleSources = (users) => {
   return false;
 };
 
+/**
+ * Extracts a user's primary email address, lowercased for case-insensitive
+ * comparison. Falls back from `profile.email` to the first `emails[]` entry.
+ *
+ * @param {object} user A user document
+ * @returns {string} The lowercased email, or '' when none is resolvable
+ */
+const getUserEmail = user => String(
+  user?.profile?.email || user?.emails?.[0]?.address || ''
+).toLowerCase();
+
+/**
+ * Given the full user list and the configured `adminEmails`, returns the admin
+ * emails that are NOT yet registered as users (case-insensitive match against
+ * each user's primary email).
+ *
+ * These are emails that will be granted the admin role automatically on their
+ * owner's first login (see `initialRolesForUser` in accountsHooks). Returned in
+ * their original (configured) casing, de-duplicated; blank entries are ignored.
+ *
+ * @param {object[]} users User documents (as published to the client)
+ * @param {string[]} adminEmails The configured `Meteor.settings.adminEmails`
+ * @returns {string[]} The configured admin emails missing from the user list
+ */
+const missingAdminEmails = (users, adminEmails) => {
+  const registered = new Set((users || []).map(getUserEmail).filter(Boolean));
+  const seen = new Set();
+  const missing = [];
+  for (const raw of adminEmails || []) {
+    const normalized = String(raw || '').toLowerCase();
+    if (!normalized || registered.has(normalized) || seen.has(normalized)) {
+      continue;
+    }
+    seen.add(normalized);
+    missing.push(raw);
+  }
+  return missing;
+};
+
 export {
   USER_SOURCES,
   USER_SOURCE_LABELS,
   getUserSources,
   usersSpanMultipleSources,
+  getUserEmail,
+  missingAdminEmails,
 };

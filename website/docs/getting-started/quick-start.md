@@ -54,12 +54,21 @@ To enable Google or GitHub login, create `terraform/local.tfvars`:
 # GitHub OAuth
 # oauth_github_client_id = "your-client-id"
 # oauth_github_secret    = "your-secret"
+# Note: a GitHub App must be granted the "Email addresses" (read-only) account
+# permission, or the user's email cannot be retrieved on sign-in.
 
 # Email passwordless login
 # smtp_url = "smtp://USER:PASS@SOME_SMTP_SERVER:PORT"
+
+# Administrators — users whose sign-in email matches one of these are
+# granted the "admin" role automatically when their account is created.
+# admin_emails = ["you@example.com"]
 ```
 
 Then re-run `./scripts/generate-settings.sh --apply`.
+
+Set `admin_emails` to your own address so your first sign-in is an administrator
+with no extra steps.
 
 ## 3. Install Dependencies
 
@@ -90,32 +99,16 @@ A `./scripts/start-local-env.sh` helper that boots all three services in a singl
 
 ## 5. Open the Dashboard
 
-Navigate to **http://localhost:3000/** in your browser.
+Navigate to **http://localhost:3000/** in your browser and sign in using any
+configured authentication method (OAuth or email).
 
-## 6. Create Your First Admin User
-
-:::note
-This step is going to be unnecessary really soon
-:::
-
-1. Sign in using any configured authentication method (OAuth or email).
-2. You'll see a "Please contact your team admin" message — this is expected for the first user.
-3. Open the MongoDB shell at `localhost:3001`, use the `meteor` database, find the `users` collection, and add `"admin"` to the `userRoles` array on your user document.
-
-```bash
-# Connect to MongoDB
-mongosh mongodb://localhost:3001/meteor
-
-# Find your user and grant admin role
-db.users.updateOne(
-  { "emails.address": "your@email.com" },
-  { $set: { userRoles: ["admin"] } }
-)
-```
+If you're greeted with an access request screen, it means your email didn't
+match any of the addresses listed in `admin_emails` — add it there (step 2) and
+sign in again, or have an existing admin approve your account.
 
 You now have a running OpenRobOps instance ready to accept robot connections.
 
-## 7. (Optional) Connect a Simulated Robot with Flatland
+## 6. (Optional) Connect a Simulated Robot with Flatland
 
 Want to see data flowing without setting up real hardware? The
 [Flatland simulator](https://github.com/OpenRobOps/sim-flatland) is a lightweight

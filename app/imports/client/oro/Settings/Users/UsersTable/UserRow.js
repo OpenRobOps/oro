@@ -77,6 +77,22 @@ const useStyles = makeStyles()(theme => ({
     },
     '& .MuiOutlinedInput-notchedOutline': { border: 0 },
     '& .MuiSvgIcon-root': { color: theme.palette.text.detailsLabel },
+    // Center the dropdown arrow on the value text; MUI's default
+    // `top: calc(50% - .5em)` lets it sit slightly low for this compact select.
+    '& .MuiSelect-icon': {
+      top: '50%',
+      transform: 'translateY(-50%)',
+    },
+  },
+  // Read-only role label shown on the current user's own row, in place of the
+  // Select. Matches the Select's value typography so the column reads the same.
+  currentUserRole: {
+    width: 'fit-content',
+    justifySelf: 'start',
+    fontSize: '14px',
+    fontWeight: 500,
+    lineHeight: '20px',
+    color: theme.palette.text.detailsValue,
   },
   date: {
     fontSize: '14px',
@@ -119,11 +135,13 @@ const UserRow = ({
     <Box className={classes.row}>
       <UserComponent user={user} size={32} sources={sources} />
       {isCurrentUser ? (
-        <Box className={classes.roles}>
+        <>
           {roles.map(role => (
-            <span key={role.id} className={classes.rolePill}>{role.label}</span>
+            <span key={role.id} className={classes.currentUserRole}>
+              {role.label}&nbsp;(you)
+            </span>
           ))}
-        </Box>
+        </>
       ) : (
         <Select
           size="small"

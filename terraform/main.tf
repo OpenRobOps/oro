@@ -65,6 +65,7 @@ resource "local_file" "web_app_settings" {
       robotApiKeys   = [random_password.robot_api_key.result]
       allowedOrigins = []
       allowedHeaders = []
+      adminEmails    = var.admin_emails
       mqtt = {
         credentialEncryptionKey = random_id.mqtt_credential_encryption_key.hex
         masterCredentials = {

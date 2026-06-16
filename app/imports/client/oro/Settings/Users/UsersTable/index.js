@@ -17,11 +17,10 @@
 /**
  * UsersTable: section header + table of approved users.
  */
-import React, { useMemo } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { Box, Typography } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
-import { usersSpanMultipleSources } from '../../../../../shared/users';
 import UserRow from './UserRow';
 
 const useStyles = makeStyles()(theme => ({
@@ -58,10 +57,9 @@ const useStyles = makeStyles()(theme => ({
 }));
 
 const UsersTable = ({
-  users, currentUserId, onChangeRole, onDeleteUser,
+  users, showSources, currentUserId, onChangeRole, onDeleteUser,
 }) => {
   const { classes } = useStyles();
-  const showSources = useMemo(() => usersSpanMultipleSources(users), [users]);
   return (
     <>
       <Typography className={classes.header}>
@@ -96,6 +94,7 @@ const UsersTable = ({
 
 UsersTable.propTypes = {
   users: PropTypes.array.isRequired,
+  showSources: PropTypes.bool,
   currentUserId: PropTypes.string,
   onChangeRole: PropTypes.func.isRequired,
   onDeleteUser: PropTypes.func.isRequired,
