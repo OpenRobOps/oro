@@ -42,6 +42,12 @@ variable "smtp_url" {
   default     = ""
 }
 
+variable "admin_emails" {
+  description = "List of administrator email addresses. Users matching one of these are granted the 'admin' role on account creation."
+  type        = list(string)
+  default     = []
+}
+
 variable "oauth_google_client_id" {
   description = "Google OAuth client ID"
   type        = string
