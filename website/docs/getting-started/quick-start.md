@@ -80,11 +80,21 @@ cd ..
 
 ## 4. Start All Services
 
-Start each component in its own terminal:
+The quickest way is the helper script, which launches all three services (each
+via its `run.sh`) in separate tabs of a tmux session named `oro`:
+
+```bash
+./scripts/start-local-env.sh
+```
+
+This requires **tmux** to be installed. Stop everything with
+`./scripts/stop-local-env.sh`.
+
+Prefer to run them manually? Start each component in its own terminal:
 
 ```bash
 # Terminal 1: MQTT broker
-cd mqtt && docker compose up
+cd mqtt && ./run.sh
 
 # Terminal 2: Web app (also starts MongoDB)
 cd app && ./run.sh
@@ -92,10 +102,6 @@ cd app && ./run.sh
 # Terminal 3: Ingest service
 cd ingest && ./run.sh
 ```
-
-:::info[Coming soon]
-A `./scripts/start-local-env.sh` helper that boots all three services in a single tmux session is planned. Until then, use the three-terminal flow above.
-:::
 
 ## 5. Open the Dashboard
 
