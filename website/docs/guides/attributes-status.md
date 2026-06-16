@@ -4,11 +4,6 @@ sidebar_position: 3
 
 # Attributes & Status
 
-:::warning
-This guide is still incomplete. Missing examples of how to configure attributes (key-values and derived attributes) and how to publish test data.
-:::
-
-
 Attributes and status definitions control how robot data is presented and interpreted in OpenRobOps dashboards.
 
 ## Attributes
@@ -29,7 +24,7 @@ Attributes can be sourced from ROS topics, from REST API calls or derived from o
 Retrieve a robot's attribute value via the REST API:
 
 ```bash
-curl -H "x-auth-app-key: YOUR_KEY" \
+curl -H "x-auth-api-key: YOUR_KEY" \
   http://localhost:3000/api/robots/{robotId}/attributes/{attributeId}
 ```
 
@@ -43,25 +38,65 @@ Response:
 }
 ```
 
-### Defining Attributes via ConfigAPI
+### Defining a Key-Value Attribute
 
-Use `DataSourceDefinition` objects to define how telemetry maps to attributes:
+A `DataSourceDefinition` whose `source.keyValue.key` matches a key the agent publishes
+maps that telemetry into a named attribute:
 
 ```bash
 curl -X POST \
-  -H "x-auth-app-key: YOUR_KEY" \
+  -H "x-auth-api-key: YOUR_KEY" \
   -H "Content-Type: application/json" \
   http://localhost:3000/api/configuration/apply \
   -d '{
+    "apiVersion": "v0.1",
     "kind": "DataSourceDefinition",
     "metadata": { "id": "battery_level" },
     "spec": {
-      // DataSourceDefinition spec fields
+      "label": "Battery Level",
+      "unit": "%",
+      "precision": 0,
+      "source": { "keyValue": { "key": "battery_percentage" } }
     }
   }'
 ```
 
-See the [ConfigAPI Reference](../api/configapi.md) for the full specification.
+### Defining a Derived Attribute
+
+A `derived` source computes a value from other attributes using an expression
+(`filter` is optional and gates when the value is computed):
+
+```bash
+curl -X POST \
+  -H "x-auth-api-key: YOUR_KEY" \
+  -H "Content-Type: application/json" \
+  http://localhost:3000/api/configuration/apply \
+  -d '{
+    "apiVersion": "v0.1",
+    "kind": "DataSourceDefinition",
+    "metadata": { "id": "battery_hours_remaining" },
+    "spec": {
+      "label": "Battery hours remaining",
+      "unit": "h",
+      "precision": 1,
+      "source": {
+        "derived": {
+          "transform": "batteryPercentage / avgDrainRatePerHour",
+          "filter": "batteryPercentage > 0"
+        }
+      }
+    }
+  }'
+```
+
+See the [Config API Kinds reference](../api/configapikinds.md#datasourcedefinition) for every `source` type and field.
+
+### Publishing Test Data
+
+Key-value attributes are fed by custom data the agent publishes over MQTT, which the
+ingest **CustomDataModule** stores and the matching `DataSourceDefinition` maps to the
+attribute `id`. For the end-to-end flow (and how to publish from a robot or the Flatland
+simulator), see [Custom Data Sources](../extending/custom-data-sources.md).
 
 ## Status Definitions
 
@@ -71,19 +106,29 @@ See the [ConfigAPI Reference](../api/configapi.md) for the full specification.
 
 Status definitions are applied through the ConfigAPI:
 
+A `StatusDefinition` shares its `metadata.id` with a `DataSourceDefinition` and lists
+rules that raise a `WARNING` or `ERROR` when the value matches. The example below flags
+an error when CPU stays above 95% for 60 seconds, and a warning above 85%:
+
 ```bash
 curl -X POST \
-  -H "x-auth-app-key: YOUR_KEY" \
+  -H "x-auth-api-key: YOUR_KEY" \
   -H "Content-Type: application/json" \
   http://localhost:3000/api/configuration/apply \
   -d '{
+    "apiVersion": "v0.1",
     "kind": "StatusDefinition",
-    "metadata": { "id": "robot_health" },
+    "metadata": { "id": "cpuLoadPercentage" },
     "spec": {
-      // StatusDefinition spec fields
+      "rules": [
+        { "function": "ABOVE", "params": [0.95], "status": "ERROR", "sustainedForSeconds": 60 },
+        { "function": "ABOVE", "params": [0.85], "status": "WARNING", "sustainedForSeconds": 60 }
+      ]
     }
   }'
 ```
+
+See the [Config API Kinds reference](../api/configapikinds.md#statusdefinition) for all rule functions (`ABOVE`, `BELOW`, `EQUALS`, `NOT_EQUALS`, `CONTAINS`) and the `calculated` option.
 
 ### How Status is Computed
 

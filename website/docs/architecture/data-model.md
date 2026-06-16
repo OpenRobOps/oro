@@ -95,8 +95,8 @@ Standard Meteor Accounts collection with OpenRobOps extensions.
 |-------|------|-------------|
 | `_id` | String | User ID |
 | `emails` | Array | Email addresses |
-| `services` | Object | OAuth tokens and app keys |
-| `services.oro.appKey` | String | REST API authentication key |
+| `services` | Object | OAuth tokens and API keys (server-only) |
+| `services.oro.apiKeys` | Array | Per-user REST API keys: `{ id, name, keyHash, expirationTs, lastUsedTs, createdTs, roleId }` — only the HMAC `keyHash` is stored, never the plaintext |
 | `userRoles` | Array | Role strings (e.g., `["admin"]`) |
 
 ## ConfigAPI Storage

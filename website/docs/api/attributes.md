@@ -49,7 +49,7 @@ Returns the current value of a specific attribute for a robot.
 ### Example
 
 ```bash
-curl -H "x-auth-app-key: YOUR_KEY" \
+curl -H "x-auth-api-key: YOUR_KEY" \
   http://localhost:3000/api/robots/robot_abc123/attributes/battery_level
 ```
 

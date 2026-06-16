@@ -45,7 +45,7 @@ Use the `apply` endpoint to create a `DataSourceDefinition`:
 
 ```bash
 curl -X POST \
-  -H "x-auth-app-key: YOUR_KEY" \
+  -H "x-auth-api-key: YOUR_KEY" \
   -H "Content-Type: application/json" \
   http://localhost:3000/api/configuration/apply \
   -d '{
@@ -63,11 +63,11 @@ curl -X POST \
 
 ```bash
 # Short format (IDs only)
-curl -H "x-auth-app-key: YOUR_KEY" \
+curl -H "x-auth-api-key: YOUR_KEY" \
   "http://localhost:3000/api/configuration/list?kind=DataSourceDefinition"
 
 # Full format (complete spec, re-applicable)
-curl -H "x-auth-app-key: YOUR_KEY" \
+curl -H "x-auth-api-key: YOUR_KEY" \
   "http://localhost:3000/api/configuration/list?kind=DataSourceDefinition&format=full"
 ```
 
@@ -75,7 +75,7 @@ curl -H "x-auth-app-key: YOUR_KEY" \
 
 ```bash
 curl -X POST \
-  -H "x-auth-app-key: YOUR_KEY" \
+  -H "x-auth-api-key: YOUR_KEY" \
   -H "Content-Type: application/json" \
   http://localhost:3000/api/configuration/clear \
   -d '{
@@ -91,7 +91,7 @@ curl -X POST \
 Once a DataSourceDefinition is configured, the computed attribute can be queried via the REST API:
 
 ```bash
-curl -H "x-auth-app-key: YOUR_KEY" \
+curl -H "x-auth-api-key: YOUR_KEY" \
   http://localhost:3000/api/robots/{robotId}/attributes/{attributeId}
 ```
 

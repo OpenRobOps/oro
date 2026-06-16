@@ -88,7 +88,7 @@ Creates or updates a configuration object.
 
 ```bash
 curl -X POST \
-  -H "x-auth-app-key: YOUR_KEY" \
+  -H "x-auth-api-key: YOUR_KEY" \
   -H "Content-Type: application/json" \
   http://localhost:3000/api/configuration/apply \
   -d '{
@@ -139,7 +139,7 @@ Removes a configuration object.
 
 ```bash
 curl -X POST \
-  -H "x-auth-app-key: YOUR_KEY" \
+  -H "x-auth-api-key: YOUR_KEY" \
   -H "Content-Type: application/json" \
   http://localhost:3000/api/configuration/clear \
   -d '{
@@ -189,11 +189,11 @@ The `full` format returns the complete configuration object (including `spec`), 
 
 ```bash
 # List all DataSourceDefinitions
-curl -H "x-auth-app-key: YOUR_KEY" \
+curl -H "x-auth-api-key: YOUR_KEY" \
   "http://localhost:3000/api/configuration/list?kind=DataSourceDefinition"
 
 # Get full details
-curl -H "x-auth-app-key: YOUR_KEY" \
+curl -H "x-auth-api-key: YOUR_KEY" \
   "http://localhost:3000/api/configuration/list?kind=DataSourceDefinition&format=full"
 ```
 
@@ -221,7 +221,7 @@ Returns the list of configuration kinds supported by this instance.
 ### Example
 
 ```bash
-curl -H "x-auth-app-key: YOUR_KEY" \
+curl -H "x-auth-api-key: YOUR_KEY" \
   http://localhost:3000/api/configuration/kinds
 ```
 
