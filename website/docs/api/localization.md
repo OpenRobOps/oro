@@ -54,7 +54,7 @@ Returns the robot's current position and orientation.
 ### Example
 
 ```bash
-curl -H "x-auth-app-key: YOUR_KEY" \
+curl -H "x-auth-api-key: YOUR_KEY" \
   http://localhost:3000/api/robots/robot_abc123/localization/pose
 ```
 
@@ -121,11 +121,11 @@ Returns comprehensive localization data including pose, laser scans, paths, and 
 
 ```bash
 # Get all localization data
-curl -H "x-auth-app-key: YOUR_KEY" \
+curl -H "x-auth-api-key: YOUR_KEY" \
   http://localhost:3000/api/robots/robot_abc123/localization/full
 
 # Get only pose and laser data
-curl -H "x-auth-app-key: YOUR_KEY" \
+curl -H "x-auth-api-key: YOUR_KEY" \
   "http://localhost:3000/api/robots/robot_abc123/localization/full?include=pose&include=lasers"
 ```
 

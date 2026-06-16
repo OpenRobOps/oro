@@ -71,7 +71,7 @@ When `withLocalization=true`, each robot includes pose data:
 
 ```bash
 # List all online robots with localization
-curl -H "x-auth-app-key: YOUR_KEY" \
+curl -H "x-auth-api-key: YOUR_KEY" \
   "http://localhost:3000/api/robots?isOnline=true&withLocalization=true"
 ```
 
@@ -113,7 +113,7 @@ Returns a single robot by ID.
 ### Example
 
 ```bash
-curl -H "x-auth-app-key: YOUR_KEY" \
+curl -H "x-auth-api-key: YOUR_KEY" \
   http://localhost:3000/api/robots/robot_abc123
 ```
 

@@ -7,7 +7,7 @@ sidebar_position: 2
 Get OpenRobOps running locally in under 10 minutes.
 
 :::warning[Work in Progress]
-A more automated startup script is coming soon. Manual steps here are valid and should work in less than 10 minutes!
+These manual steps work in under 10 minutes. The `start-local-env.sh` helper (step 4) launches all services in one command; broader setup automation is still evolving.
 :::
 
 

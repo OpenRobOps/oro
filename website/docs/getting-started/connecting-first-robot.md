@@ -24,20 +24,12 @@ verify your installation.
 
 ## Step 1: Get Your API Key
 
-:::info
-This step is being replaced by the startup wizard.
-:::
+Each user can create API keys for programmatic access from the web app under
+**Settings → API keys**. Click **Create API key**, give it a name, and copy the
+generated key — it is shown only once. See
+[Access Control → API Keys](../guides/access-control.md#api-keys) for details.
 
-Each user in OpenRobOps can have an API key for programmatic access. This key is stored in the user document under `services.oro.appKey`. You can set one via the MongoDB shell:
-
-```bash
-mongosh mongodb://localhost:3001/meteor
-
-db.users.updateOne(
-  { "emails.address": "your@email.com" },
-  { $set: { "services.oro.appKey": "your-secret-api-key" } }
-)
-```
+Use the key in the `x-auth-api-key` header on API requests.
 
 ## Step 2: Register a Robot
 
@@ -55,7 +47,7 @@ Once the agent connects, you can verify connectivity by checking that the robot 
 You can also query the [REST API](../api/overview):
 
 ```bash
-curl -H "x-auth-app-key: your-secret-api-key" \
+curl -H "x-auth-api-key: your-api-key" \
   http://localhost:3000/api/robots
 ```
 
@@ -117,7 +109,7 @@ Browser (WebSocket, Meteor-based)
 | Robot not appearing | Verify MQTT broker is running (`docker compose up` in `mqtt/`). Check robot/agent logs. |
 | Agent shows offline | Check agent MQTT connection logs; verify credentials in `mqtt_credentials` collection |
 | No telemetry data | Ensure ingest service is running; check ingest logs for MQTT subscription errors |
-| API returns 401 | Verify your `x-auth-app-key` header matches the `services.oro.appKey` in your user document |
+| API returns 401 | Verify you are sending a valid key in the `x-auth-api-key` header (create one under Settings → API keys) |
 
 ## Next Steps
 

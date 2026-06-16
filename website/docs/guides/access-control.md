@@ -25,14 +25,20 @@ oauth_github_client_id = "your-github-client-id"
 oauth_github_secret    = "your-github-secret"
 ```
 
-Any of these config pairs (Google or Github) can be omitted and the authentication method will be disabled. 
-
+Any of these config pairs (Google or GitHub) can be omitted and the authentication method will be disabled.
 
 Then regenerate settings:
 
 ```bash
 ./scripts/generate-settings.sh --apply
 ```
+
+:::note[GitHub App email permission]
+If your GitHub credentials belong to a GitHub **App** (rather than a classic OAuth
+App), the app must be granted the **Account → Email addresses (read-only)** permission.
+Without it the `/user/emails` call returns 403 and the user's email comes back empty,
+which also prevents `admin_emails` auto-grant from matching.
+:::
 
 ### Passwordless Email
 
@@ -42,56 +48,74 @@ For environments without OAuth, OpenRobOps supports passwordless email login usi
 smtp_url = "smtp://USER:PASS@SMTP_SERVER:PORT"
 ```
 
-## Role-based authorization
+## Roles
 
-OpenRobOps uses a Role-based mechanism to determine which operations are allowed to authenticated users.
-This is a summary of existing roles. By default, each role is granted all permissions from previous roles in the table.
+OpenRobOps uses roles to determine which operations an authenticated user may perform.
+Each role **includes all permissions of the roles below it**:
 
-| Role | Permissions |
-|------|-------------|
-| **viewer** | Read-only access: view dashboards, query robot data via API |
-| **operator** | Execute actions on robots; send navigation commands. |
-| **manager** | Access to configuration. Modify robot parameters; add new data sources or dashboards. |
-| **admin** | Full access: manage users. |
+| Role | Adds on top of the role below |
+|------|-------------------------------|
+| **viewer** | Read-only: view robots and dashboards, query robot data via the API |
+| **operator** | Execute actions on robots; send navigation commands; lock/operate robots |
+| **engineer** | Configure the fleet (add/remove robots), break other users' locks, and configure navigation, data sources (attributes), incidents, and action definitions |
+| **manager** | Configure dashboards and missions |
+| **admin** | Manage users, roles, integrations, and API-key settings — full access |
+
+A user with **no** role is treated as pending (see [User Moderation](#user-moderation)) and is denied access until an admin grants a role.
 
 ### Assigning Roles
 
-:::warning
-This is a reference for a pre-release version. A UI/API based mechanism is coming soon.
-:::
+Roles are managed from the web app under **Settings → Users** (admin only). For each
+user you can pick a role from the dropdown; changes take effect immediately and are
+recorded in the audit log. There is no need to edit the database directly.
 
-Roles are stored in the `userRoles` array on the user document in MongoDB. Currently, roles are managed directly in the database:
+See [User Moderation](#user-moderation) below for the full approval flow.
 
-```bash
-mongosh mongodb://localhost:3001/meteor
+### First Admin (`admin_emails`)
 
-# Grant admin role
-db.users.updateOne(
-  { "emails.address": "user@example.com" },
-  { $set: { userRoles: ["admin"] } }
-)
+So the first person to sign in isn't locked out, list their email in the `admin_emails`
+Terraform variable:
+
+```hcl
+admin_emails = ["you@example.com"]
 ```
+
+Any user whose sign-in email matches an entry (case-insensitive) is granted the `admin`
+role automatically when their account is created. The **Settings → Users** screen also
+warns about configured admin emails that haven't registered yet. Regenerate settings
+(`./scripts/generate-settings.sh --apply`) after changing the list.
+
+## User Moderation
+
+New sign-ups (via any auth method) start with **no role** and see a "Please contact your
+team admin" message until approved. Admins manage them under **Settings → Users**:
+
+- **Pending** users (no role) can be **approved** — pick a role to grant — or **rejected** (removed).
+- **Approved** users are listed with their role, sign-in source (Google / GitHub / Email), join date and last-seen; their role can be changed or the user deleted.
+
+## API Keys
+
+Programmatic API access uses per-user **API keys**, managed from the web app under
+**Settings → API keys**. Any user with a role can manage their own keys.
+
+- **Create** a key with a name and an optional expiration (30 / 60 / 90 days, or never).
+  The key (prefixed `oro_`) is shown **once** — copy it or download it as JSON. It is
+  stored only as a one-way hash and **cannot be retrieved again**.
+- The list shows each key's **name**, **expiration** and **last used** time. Revoke a key
+  at any time; revocation takes effect immediately.
+- Up to 20 active keys per user.
+
+Use a key by sending it in the `x-auth-api-key` header — see the
+[REST API Overview](../api/overview.md). Expired or revoked keys are rejected with a 403.
 
 :::note
-The first user to sign in will not have any role. You must manually assign the `admin` role via MongoDB as described above.
+Upgrading from an earlier version automatically migrates the previous single
+per-user key to this hashed, multi-key format, so existing integrations keep working.
 :::
-
-## API Authentication
-
-REST API endpoints are authenticated using the `x-auth-app-key` HTTP header. The app key is stored on the user document at `services.oro.appKey`.
-
-```bash
-curl -H "x-auth-app-key: YOUR_API_KEY" \
-  http://localhost:3000/api/robots
-```
 
 ### Internal Service Authentication
 
-For service-to-service communication (e.g., ingest service calling the web app), a separate `x-auth-peer-key` header is used. The peer key is configured in `settings.json` and is not intended for external use.
-
-## User Invites
-
-Currently, any user can sign up through a configured authentication method. However, new users do not receive any role by default and will see a "Please contact your team admin" message until an admin grants them a role.
+For service-to-service communication (e.g., the ingest service calling the web app), a separate `x-auth-peer-key` header is used. The peer key is configured in `settings.json` and is not intended for external use.
 
 ## Next Steps
 

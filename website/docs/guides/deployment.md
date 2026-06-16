@@ -5,7 +5,8 @@ sidebar_position: 5
 # Deployment
 
 :::warning
-This guide describes mostly how to run a local environment. It will be replaced soon including including helper configuration and scripts for cloud-based deployments.
+This guide covers running the stack locally / on a single host. Helper configuration
+and scripts for cloud-based deployments are still in progress.
 :::
 
 This guide covers deploying OpenRobOps for production use.
@@ -63,6 +64,7 @@ Defined in `terraform/variables.tf`:
 | `oauth_google_client_id` / `oauth_google_secret` | Google OAuth credentials |
 | `oauth_github_client_id` / `oauth_github_secret` | GitHub OAuth credentials |
 | `smtp_url` | SMTP server for passwordless email login |
+| `admin_emails` | Emails auto-granted the `admin` role on first login (see [Access Control](./access-control.md#first-admin-admin_emails)) |
 
 Override defaults in `terraform/local.tfvars`.
 
@@ -89,11 +91,20 @@ Override defaults in `terraform/local.tfvars`.
 
 ### Starting Services
 
-Run each component independently:
+The quickest way to launch all three services locally is the helper script, which
+opens a tmux session named `oro` with one tab per service (each running its `run.sh`):
+
+```bash
+./scripts/start-local-env.sh
+```
+
+This requires **tmux**. Stop everything with `./scripts/stop-local-env.sh`.
+
+To run the components independently (or on separate hosts), start each one directly:
 
 ```bash
 # MQTT broker
-cd mqtt && docker compose up -d
+cd mqtt && ./run.sh
 
 # Web app + MongoDB
 cd app && ./run.sh
@@ -101,10 +112,6 @@ cd app && ./run.sh
 # Ingest service
 cd ingest && ./run.sh
 ```
-
-:::info[Coming soon]
-A `./scripts/start-local-env.sh` helper that boots all three services in a single tmux session is planned. Until then, use the per-component flow above.
-:::
 
 ### Monitoring
 
