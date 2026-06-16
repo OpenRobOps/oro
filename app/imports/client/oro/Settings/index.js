@@ -19,10 +19,9 @@
  * Clicking a sidebar entry scrolls
  * the matching section into view.
  */
-import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react';
+import React, { useCallback, useMemo, useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Box, Typography } from '@mui/material';
-import { isFunction } from 'lodash';
 import { makeStyles } from 'tss-react/mui';
 import { useAuth } from '../contexts/AuthContext';
 import { ALL_ROLE_DOCS } from '../../../shared/roles';
@@ -84,7 +83,6 @@ const Settings = () => {
 
   const initialSection = SECTIONS.find(s => s.id === routeSection)?.id || SECTIONS[0].id;
   const [activeSection, setActiveSection] = useState(initialSection);
-  const sectionRefs = useRef({});
 
   const profile = user?.profile || {};
   const firstRoleId = user?.userRoles?.[0];
@@ -96,10 +94,6 @@ const Settings = () => {
 
   const handleSelect = useCallback((id) => {
     setActiveSection(id);
-    const element = sectionRefs.current[id];
-    if (element && isFunction(element.scrollIntoView)) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
   }, []);
 
   useEffect(() => {
@@ -107,6 +101,9 @@ const Settings = () => {
       setActiveSection(routeSection);
     }
   }, [routeSection]);
+
+  // Render only the section selected in the sidebar (one at a time).
+  const ActiveSection = SECTION_COMPONENTS[activeSection];
 
   return (
     <Box className={classes.page}>
@@ -120,14 +117,7 @@ const Settings = () => {
           onSelect={handleSelect}
         />
         <Box className={classes.content}>
-          {SECTIONS.map(({ id }) => {
-            const Section = SECTION_COMPONENTS[id];
-            return (
-              <Box key={id} ref={(el) => { sectionRefs.current[id] = el; }}>
-                <Section user={user} />
-              </Box>
-            );
-          })}
+          {ActiveSection && <ActiveSection user={user} />}
         </Box>
       </Box>
     </Box>
