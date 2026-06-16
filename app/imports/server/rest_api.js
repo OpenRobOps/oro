@@ -49,9 +49,13 @@ import {
   sendRedirectResponse
 } from './rest_api_common';
 import { getSystemUser, glueId, isSystemUser } from '../shared/roles';
+import { hashApiKey } from './apiKeyCrypto';
+import { isExpired } from './apiKeysManager';
 
 // Constants used in this module
-const HTTP_APP_KEY_HEADER = 'x-auth-app-key';
+// Canonical API key header. `x-auth-inorbit-app-key` is also accepted for
+// compatibility with InOrbit tools.
+const HTTP_API_KEY_HEADER = 'x-auth-api-key';
 const HTTP_INORBIT_APP_KEY_HEADER = 'x-auth-inorbit-app-key';
 // Header to allow services authentication with a DIFFERENT (undocumented) 'peer' api key
 const HTTP_PEER_KEY_HEADER = 'x-auth-peer-key';
@@ -59,7 +63,10 @@ const HTTP_EFFECTIVE_USER_ID_HEADER = 'x-auth-effective-user-id';
 // Peer key value, comes from Meteor settings (if present)
 const PEER_KEY = Meteor.settings.peerKey;
 
-const APP_KEY_USER_FIELD = 'services.oro.appKey';
+// Indexed field holding the one-way hash of each of a user's API keys.
+const API_KEY_HASH_FIELD = 'services.oro.apiKeys.keyHash';
+// Only persist an API key's lastUsedTs at most once per this window.
+const API_KEY_LAST_USED_THROTTLE_MS = 5 * 60 * 1000;
 
 /**
  * Test endpoint that returns 200 when the user is authenticated.
@@ -161,12 +168,13 @@ const addApiRoute = (route) => {
 })();
 
 /**
- * Validates that the request headers contain a valid appKey.
+ * Validates that the request headers contain a valid API key.
  * If the key is valid, the associated user document is returned, else false is returned.
  *
  * Two forms of authentication are implemented:
- *  - with an appKey header 'x-auth-app-key': For external calls. The user is normally
- *    a service user
+ *  - with an API key header 'x-auth-api-key' (or the 'x-auth-inorbit-app-key'
+ *    alias for InOrbit tools): For external calls. The user is normally
+ *    a service user.
  *  - with a peerKey header 'x-auth-peer-key': For internal calls from peer services.
  *    In this case, there CAN be another header 'x-auth-effective-user-id' that identifies
  *    the original user making the request.
@@ -175,10 +183,10 @@ const addApiRoute = (route) => {
  * @param {Object} res Web response object
  * @returns {Object} Object with { user, peerApi }
  */
-async function validateAppKey(req, res) {
-  // For compatibility with InOrbit tools, accept both headers for an app key
-  // This can be removed in the future.
-  const appKey = req.headers[HTTP_APP_KEY_HEADER] || req.headers[HTTP_INORBIT_APP_KEY_HEADER] ;
+async function validateApiKey(req, res) {
+  // Accept the canonical header plus the InOrbit tools header.
+  const apiKey = req.headers[HTTP_API_KEY_HEADER]
+    || req.headers[HTTP_INORBIT_APP_KEY_HEADER];
   const peerKey = req.headers[HTTP_PEER_KEY_HEADER];
   const effectiveUserId = req.headers[HTTP_EFFECTIVE_USER_ID_HEADER];
   let user;
@@ -198,19 +206,35 @@ async function validateAppKey(req, res) {
       peerApi = true;
       user = getSystemUser();
     }
-  } else if (!appKey) {
-    // No appKey provided
-    sendJSONResponse(res, 401, { error: `AUTHENTICATION_ERROR: no appKey provided in ${HTTP_APP_KEY_HEADER} HTTP header` });
+  } else if (!apiKey) {
+    // No API key provided
+    sendJSONResponse(res, 401, { error: `AUTHENTICATION_ERROR: no API key provided in ${HTTP_API_KEY_HEADER} HTTP header` });
     return false;
   } else {
-    // Find the user associated with the appKey
-    user = await Accounts.users.findOneAsync(
-      { [APP_KEY_USER_FIELD]: appKey }
-    );
+    // Find the user by the hashed API key (per-user keys).
+    const keyHash = hashApiKey(apiKey);
+    user = await Accounts.users.findOneAsync({ [API_KEY_HASH_FIELD]: keyHash });
+    if (user) {
+      const key = (user.services?.oro?.apiKeys || []).find(k => k.keyHash === keyHash);
+      // Reject expired keys (treat as wrong credentials).
+      if (key && isExpired(key)) {
+        sendJSONResponse(res, 403, { error: 'AUTHENTICATION_ERROR: API key expired' });
+        return false;
+      }
+      // Throttled, fire-and-forget lastUsedTs refresh (mirrors lastSeenTs in
+      // accountsHooks). The query filters on keyHash so `$` targets this key.
+      const now = Date.now();
+      if (key && (!key.lastUsedTs || now - key.lastUsedTs > API_KEY_LAST_USED_THROTTLE_MS)) {
+        Accounts.users.updateAsync(
+          { _id: user._id, [API_KEY_HASH_FIELD]: keyHash },
+          { $set: { 'services.oro.apiKeys.$.lastUsedTs': now } }
+        ).catch(err => console.error('Failed to update API key lastUsedTs', err));
+      }
+    }
   }
 
   if (!user && !peerApi) {
-    // the provided appKey is not associated with any user
+    // the provided API key is not associated with any user
     sendJSONResponse(res, 403, { error: 'AUTHENTICATION_ERROR: wrong credentials' });
     return false;
   }
@@ -282,7 +306,7 @@ WebApp.connectHandlers.use('/api', async (req, res) => {
     res.setHeader('Access-Control-Allow-Methods', '*');
     res.setHeader(
       'Access-Control-Allow-Headers',
-      'x-auth-app-key, content-type'
+      'x-auth-api-key, x-auth-inorbit-app-key, content-type'
     );
     res.writeHead(200);
     res.end();
@@ -298,7 +322,7 @@ WebApp.connectHandlers.use('/api', async (req, res) => {
   let user;
   let peerApi;
   if (!route.allowPublic) {
-    const authentication = await validateAppKey(req, res);
+    const authentication = await validateApiKey(req, res);
     if (!authentication) {
       return;
     }

@@ -61,7 +61,7 @@ const UsersComponent = ({
   );
   return (
     <Box>
-      <Typography className={classes.title}>User Moderation</Typography>
+      <Typography className={classes.title}>Users</Typography>
       <Typography className={classes.subtitle}>
         Review and approve pending registrations.
       </Typography>
