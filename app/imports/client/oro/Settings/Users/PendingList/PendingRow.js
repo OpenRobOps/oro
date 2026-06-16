@@ -85,6 +85,12 @@ const useStyles = makeStyles()(theme => ({
     },
     '& .MuiOutlinedInput-notchedOutline': { border: 0 },
     '& .MuiSvgIcon-root': { color: theme.palette.text.detailsLabel },
+    // Center the dropdown arrow on the value text; MUI's default
+    // `top: calc(50% - .5em)` lets it sit slightly low for this compact select.
+    '& .MuiSelect-icon': {
+      top: '50%',
+      transform: 'translateY(-50%)',
+    },
   },
   pendingPill: {
     display: 'inline-flex',
