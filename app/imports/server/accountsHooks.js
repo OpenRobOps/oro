@@ -41,7 +41,6 @@ const initialRolesForUser = (email, adminEmails = []) => {
  * Meteor attaches to the user document during login.
  */
 const normalizeOAuthProfile = (options, user) => {
-  console.log('normalizeOAuthProfile', options, user);
   if (user.services?.google) {
     const g = user.services.google;
     return {

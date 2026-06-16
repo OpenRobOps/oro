@@ -23,7 +23,9 @@ To configure OAuth mechanisms, create a file `terraform/local.tfvars` with some 
 # oauth_google_client_id = ""
 # oauth_google_secret    = ""
 
-# If using Google auth, create a Github app and enter these values
+# If using GitHub auth, create a GitHub app and enter these values.
+# Note: a GitHub *App* must be granted the "Email addresses" (read-only)
+# account permission, otherwise the user's email cannot be retrieved.
 # oauth_github_client_id = ""
 # oauth_github_secret    = ""
 

@@ -48,6 +48,7 @@ class UsersManager {
       'users.setUserRole': this._meteorSetUserRole,
       'users.reject': this._meteorRejectUser,
       'users.delete': this._meteorDeleteUser,
+      'users.adminEmails': this._meteorAdminEmails,
     });
     this._registerPublications();
   };
