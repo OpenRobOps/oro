@@ -21,11 +21,13 @@ import React, { useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { Box, Chip, Typography } from '@mui/material';
 import GroupOutlinedIcon from '@mui/icons-material/GroupOutlined';
+import VpnKeyOutlinedIcon from '@mui/icons-material/VpnKeyOutlined';
 import { makeStyles } from 'tss-react/mui';
 import AvatarInitials from '../util/AvatarInitials';
 
 export const SECTIONS = [
   { id: 'users', label: 'Users', Icon: GroupOutlinedIcon },
+  { id: 'apiKeys', label: 'API keys', Icon: VpnKeyOutlinedIcon },
 ];
 
 const useStyles = makeStyles()(theme => ({

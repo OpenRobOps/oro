@@ -58,6 +58,7 @@ const EVENT_SETTINGS_SECTION_NAMES = {
   STATUS: 'Status',
   VISUALIZATION: 'Visualization',
   PERMISSIONS: 'Permissions', // All about Roles
+  API_KEYS: 'API Keys', // Per-user API keys
   SYSTEM: 'System', // System settings
   MODULES: 'Modules', // For robot modules: topics, camera settings etc
   FLEET: 'Fleet', // Fleet settings (for now, used for removing robots)

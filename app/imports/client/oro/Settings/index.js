@@ -27,7 +27,8 @@ import { makeStyles } from 'tss-react/mui';
 import { useAuth } from '../contexts/AuthContext';
 import { ALL_ROLE_DOCS } from '../../../shared/roles';
 import SettingsSidebar, { SECTIONS } from './SettingsSidebar';
-import Users from './Users';  
+import Users from './Users';
+import ApiKeys from './ApiKeys';
 
 const roleLabel = (roleId) => {
   const doc = ALL_ROLE_DOCS.find(r => r._id === roleId);
@@ -36,6 +37,7 @@ const roleLabel = (roleId) => {
 
 const SECTION_COMPONENTS = {
   users: Users,
+  apiKeys: ApiKeys,
 };
 
 const useStyles = makeStyles()(theme => ({

@@ -32,6 +32,9 @@ import StatusManager from '../imports/server/status';
 import { registerAccountsHooks } from '../imports/server/accountsHooks';
 import { configureOAuth } from '../imports/server/oauthConfig';
 import UsersManager from '../imports/server/usersManager';
+import ApiKeysManager from '../imports/server/apiKeysManager';
+// Registers database migrations (Migrations.add) before migrateTo() runs below.
+import '../imports/server/migrations';
 import '../imports/server/publications';
 import ConfigAPI from '../imports/server/configAPI/configAPI';
 import OroRoles from '../imports/server/roles';
@@ -80,9 +83,10 @@ const oroAppMain = async () => {
   // Database migrations:
   // Unlocks control for database to migrate
   Migrations.unlock();
-  // Migrate database to desired version
+  // Migrate database to desired version. Awaited so migrations complete before
+  // the rest of startup (and so the try/catch below actually catches errors).
   try {
-    Migrations.migrateTo('latest');
+    await Migrations.migrateTo('latest');
   } catch (e) {
     // If there is an exception in migrateTo(), it can be because of the situation
     // explained above (future migration) or in our migration code itself.
@@ -128,6 +132,7 @@ const oroAppMain = async () => {
   await new AttributesManager().init();
   await new OroRoles().createDefaultRoles();
   await new UsersManager().init();
+  await new ApiKeysManager().init();
   await new LockManager().init();
   const configApi = await new ConfigAPI().init({});
   await new ActionsEngine().init({
