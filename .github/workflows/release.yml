@@ -1,0 +1,96 @@
+name: Release
+
+# Actions-UI release path (see RELEASING.md).
+#
+# Cuts a release from the Actions tab: validates the version, creates an
+# annotated `vX.Y.Z` git tag on the selected ref, pushes it, and publishes a
+# GitHub Release with auto-generated notes. Pushing the tag triggers the
+# build-app-image / build-ingest-image workflows, which build & push
+# oro-app:X.Y.Z and oro-ingest:X.Y.Z together (unified version).
+#
+# IMPORTANT: the tag MUST be pushed with a token other than the default
+# GITHUB_TOKEN — tags pushed by GITHUB_TOKEN do not trigger other workflows
+# (GitHub's recursion guard), so the image builds would never fire. Set a
+# repo/org secret named RELEASE_TOKEN (a PAT or GitHub App token with
+# `contents:write` + `workflow`). See RELEASING.md.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version, e.g. 1.4.0 or v1.4.0 (semver; pre-release like 1.4.0-rc1 allowed)"
+        required: true
+        type: string
+      prerelease:
+        description: "Mark the GitHub Release as a pre-release"
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  release:
+    name: Tag & publish release
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout (with release token so the tag push triggers builds)
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          # Falls back to GITHUB_TOKEN if RELEASE_TOKEN is unset, but then the
+          # tag push will NOT trigger the image-build workflows (see header).
+          token: ${{ secrets.RELEASE_TOKEN || github.token }}
+
+      - name: Normalize & validate version
+        id: ver
+        run: |
+          raw="${{ inputs.version }}"
+          # Accept with or without a leading "v"; normalize to vX.Y.Z.
+          ver="${raw#v}"
+          if ! printf '%s' "$ver" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?(\+[0-9A-Za-z.]+)?$'; then
+            echo "::error::'$raw' is not a valid semver version (expected e.g. 1.4.0 or 1.4.0-rc1)"
+            exit 1
+          fi
+          tag="v$ver"
+          if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
+            echo "::error::tag $tag already exists"
+            exit 1
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "Releasing $tag from ${{ github.sha }}"
+
+      - name: Create & push annotated tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "${{ steps.ver.outputs.tag }}" -m "Release ${{ steps.ver.outputs.tag }}"
+          git push origin "${{ steps.ver.outputs.tag }}"
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ steps.ver.outputs.tag }}" \
+            --title "${{ steps.ver.outputs.tag }}" \
+            --generate-notes \
+            ${{ inputs.prerelease && '--prerelease' || '' }}
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "## Release ${{ steps.ver.outputs.tag }}"
+            echo ""
+            echo "Tag pushed from \`${{ github.sha }}\`."
+            echo ""
+            if [ -z "${{ secrets.RELEASE_TOKEN }}" ]; then
+              echo "> ⚠️ RELEASE_TOKEN is not set — the tag was pushed with the default"
+              echo "> token, so the image-build workflows will NOT have triggered."
+              echo "> Set RELEASE_TOKEN (see RELEASING.md) or push the tag locally."
+            else
+              echo "Image builds (oro-app, oro-ingest) triggered by the tag push."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

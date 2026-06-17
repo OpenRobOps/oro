@@ -78,6 +78,12 @@ oro/
 
 See [Developer's documentation](README-dev.md)
 
+## Releases & Docker Images
+
+Container images for the app and ingest services are built in CI and published
+to GHCR. See [RELEASING.md](RELEASING.md) for the tag scheme, how to cut a
+release, and how to deploy/roll back.
+
 ## Contributing
 
 We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines
