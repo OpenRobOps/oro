@@ -33,8 +33,9 @@ spec:
       # imagePullSecrets:
       #   - name: ghcr-pull-secret
 
-      # Recommended: pin to an immutable tag (a sha or version) in production.
-      # `:main` is fine for dev/staging but moves on every push.
+      # Recommended: pin to an immutable tag (a :sha-<short> or :X.Y.Z version)
+      # in production. `:main` is fine for dev/staging but moves on every push.
+      # See ../../RELEASING.md for the tag scheme and rollback steps.
       containers:
         - name: app
           image: ghcr.io/openrobops/oro-app:main
