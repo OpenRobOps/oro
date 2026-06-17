@@ -70,16 +70,45 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=sha,prefix=sha-,format=short
 
-      - name: Build and push
+      # Build into the local daemon first; on PRs this is the whole job (no
+      # push). The layer cache is shared with the push step below.
+      - name: Build (load to local daemon)
         uses: docker/build-push-action@v7
         with:
           context: ingest
           file: ingest/Dockerfile
-          push: ${{ github.event_name != 'pull_request' }}
+          load: true
+          push: false
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      # Every tag is already in the local daemon from the build step above, so
+      # we just push them. Retry the push so a transient registry error
+      # (e.g. a GHCR 5xx/timeout) doesn't fail a release. Re-pushing an
+      # already-pushed tag is idempotent.
+      - name: Push to GHCR (retry on transient registry errors)
+        if: github.event_name != 'pull_request'
+        env:
+          TAGS: ${{ steps.meta.outputs.tags }}
+        run: |
+          push_all() {
+            while IFS= read -r tag; do
+              [ -n "$tag" ] || continue
+              docker push "$tag" || return 1
+            done <<< "$TAGS"
+          }
+          for attempt in 1 2 3; do
+            if push_all; then
+              echo "Pushed all tags on attempt $attempt."
+              exit 0
+            fi
+            echo "::warning::push attempt $attempt failed; retrying in 30s"
+            sleep 30
+          done
+          echo "::error::push failed after 3 attempts"
+          exit 1
 
       - name: Summary
         if: always()
