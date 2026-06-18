@@ -25,7 +25,49 @@ For each mapped robot, the module:
 1. Subscribes on the local broker to `r/{localRobotId}/#`.
 2. For each received message, drops it if its subtopic appears in the configured deny list (typically server→robot topics such as `in_cmd`), otherwise republishes it to the upstream broker as `r/{upstreamRobotId}/{subtopic}` with the original payload bytes, QoS, and retain flag preserved.
 
-v1 scope is **upstream-only**. Messages received from upstream are not yet routed back to local robots; that direction is planned as a follow-up.
+Forwarding is **primarily upstream** (robot telemetry → upstream). A limited,
+operator-configurable **allow-list** of server→robot commands is also delivered
+**downstream** (upstream → local robot): the module subscribes on the upstream
+broker to those command topics and republishes each onto the local broker as
+`r/{localRobotId}/{subtopic}`, so the robot receives them as if sent locally.
+See [Downstream commands](#downstream-commands) below.
+
+## Downstream commands
+
+Selected server→robot commands received from upstream are delivered down to the
+local robot. This is an **allow-list** (not a whole subtree) so that robot→server
+feedback that happens to share a namespace — e.g. `custom_command/script/status`
+— keeps flowing upstream and is never echoed back to the robot.
+
+The built-in default allow-list covers the common robot-operation commands:
+
+| Category | Subtopics |
+|----------|-----------|
+| Custom commands / scripts | `custom_command/ros`, `custom_command/script/command` |
+| Teleoperation | `ros/teleop/step`, `ros/teleop/go` |
+| Navigation & localization | `ros/loc/set_pose`, `ros/loc/nav_goal`, `ros/nav/goal_path`, `ros/nav/goal_to_current_pose`, `ros/loc/mapreq` |
+| Data capture uploads | `ros/rosbag/upload`, `ros/databag/upload` |
+| Agent control | `in_cmd` — **only** `restart` and `get_state` payloads |
+
+Two categories are **intentionally excluded** from the default because they would
+conflict with this ORO instance's own management of the robot, and should only be
+enabled when the operator owns both ends:
+
+- `modules/set_state` (reconfigures local modules), and
+- other `in_cmd` payloads such as `load_module` / `unload_module` / `update`.
+
+`in_cmd` sequence-number pings (`<seq>|`) are not commands; they are relayed to
+the real robot and their echoes returned upstream so the upstream server measures
+the actual robot's round-trip latency.
+
+Commands that arrive over the upstream link are recorded in the shared
+`event_log` collection with `source: 'upstream'` for `custom_command/ros`
+(PublishToTopic), `custom_command/script/command` (RunScript) and `in_cmd`
+`restart` (RestartAgent). High-frequency or non-action commands (e.g. teleop) are
+delivered but not event-logged.
+
+To override the allow-list, set `forwarding.downstreamCommands` (see below). An
+explicit empty array disables downstream command delivery entirely.
 
 ## Credentials
 
@@ -75,7 +117,12 @@ All operator-facing configuration lives under `modules.upstream` in `ingest/sett
       ],
       "forwarding": {
         "denyTopicSuffixes": ["in_cmd", "modules/set_state"],
-        "publishRetainedMessages": true
+        "publishRetainedMessages": true,
+        "downstreamCommands": [
+          { "subtopic": "custom_command/ros" },
+          { "subtopic": "ros/teleop/go" },
+          { "subtopic": "in_cmd", "acceptsPayloads": ["restart", "get_state"] }
+        ]
       },
       "credentialEncryptionKey": "<64-hex-char key>",
       "logging": false
@@ -91,8 +138,9 @@ All operator-facing configuration lives under `modules.upstream` in `ingest/sett
 | `api.apiKey` | Upstream-issued robot API key. Must be in the upstream's `robotApiKeys` settings. |
 | `brokerOptions` | MQTT client options not returned by `/mqtt_config`. `rejectUnauthorized` controls TLS verification for both MQTT and the HTTPS call to `/mqtt_config`. |
 | `robotMapping` | List of `{ localRobotId, upstreamRobotId }` pairs. Empty list = no forwarding. |
-| `forwarding.denyTopicSuffixes` | Subtopics to drop (exact match against the part after `r/{robotId}/`). |
+| `forwarding.denyTopicSuffixes` | Subtopics to drop when forwarding **upstream** (exact match against the part after `r/{robotId}/`). |
 | `forwarding.publishRetainedMessages` | Whether to preserve the retain flag when republishing. Default `true`. |
+| `forwarding.downstreamCommands` | Optional override of the **downstream** (upstream→robot) command allow-list. List of `{ subtopic, acceptsPayloads? }`; `acceptsPayloads` (optional) restricts delivery to those exact string payloads. Omit to use the built-in default; set to `[]` to disable downstream delivery. See [Downstream commands](#downstream-commands). |
 | `credentialEncryptionKey` | 64-character hex string used to AES-256-GCM-encrypt stored upstream passwords. Typically reuses the value from `mqtt.credentialEncryptionKey`. |
 | `logging` | Verbose per-message logging. Off by default. |
 

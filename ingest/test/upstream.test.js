@@ -25,7 +25,9 @@ import { UpstreamRobotClient } from '../src/server/modules/upstream';
 
 const noopLogger = { log: () => {}, warn: () => {}, error: () => {} };
 
-function makeClient({ publishRetained = true, oroMqtt, eventLogColl } = {}) {
+function makeClient({
+  publishRetained = true, oroMqtt, eventLogColl, downstreamCommands,
+} = {}) {
   return new UpstreamRobotClient({
     localRobotId: 'local1',
     upstreamRobotId: 'up1',
@@ -34,6 +36,7 @@ function makeClient({ publishRetained = true, oroMqtt, eventLogColl } = {}) {
     credentialEncryptionKey: 'x'.repeat(64),
     credsColl: {},
     denySubtopics: new Set(['in_cmd']),
+    downstreamCommands,
     publishRetained,
     localBrokerConfig: {},
     logging: false,
@@ -264,6 +267,114 @@ describe('UpstreamRobotClient downstream command delivery', () => {
     client._connected = true;
 
     client._forward('r/local1/in_cmd', Buffer.from('restart'), { retain: false, qos: 0 });
+
+    assert.strictEqual(fake.published.length, 0);
+  });
+});
+
+describe('UpstreamRobotClient downstream allow-list (defaults + config)', () => {
+  const DEFAULT_DELIVERED = [
+    'ros/teleop/step',
+    'ros/teleop/go',
+    'ros/loc/set_pose',
+    'ros/loc/nav_goal',
+    'ros/nav/goal_path',
+    'ros/nav/goal_to_current_pose',
+    'ros/loc/mapreq',
+    'ros/rosbag/upload',
+    'ros/databag/upload',
+  ];
+
+  it('delivers teleop, navigation, and upload commands downstream by default', () => {
+    const client = makeClient();
+    const fakeLocal = makeFakeUpstream();
+    client._localClient = fakeLocal;
+
+    for (const sub of DEFAULT_DELIVERED) {
+      client._handleUpstreamMessage(`r/up1/${sub}`, Buffer.from('x'), { qos: 0 });
+    }
+
+    assert.deepStrictEqual(
+      fakeLocal.published.map((p) => p.topic),
+      DEFAULT_DELIVERED.map((s) => `r/local1/${s}`)
+    );
+    // Commands are never retained on the local broker.
+    assert.ok(fakeLocal.published.every((p) => p.options.retain === false));
+  });
+
+  it('does not deliver modules/set_state downstream by default (intentional omission)', () => {
+    const client = makeClient();
+    const fakeLocal = makeFakeUpstream();
+    client._localClient = fakeLocal;
+
+    client._handleUpstreamMessage('r/up1/modules/set_state', Buffer.from('{}'), { qos: 0 });
+
+    assert.strictEqual(fakeLocal.published.length, 0);
+  });
+
+  it('restricts in_cmd to restart and get_state by default', () => {
+    const client = makeClient();
+    const fakeLocal = makeFakeUpstream();
+    client._localClient = fakeLocal;
+
+    client._handleUpstreamMessage('r/up1/in_cmd', Buffer.from('get_state'), { qos: 0 });
+    client._handleUpstreamMessage('r/up1/in_cmd', Buffer.from('load_module|foo|5'), { qos: 0 });
+
+    assert.strictEqual(fakeLocal.published.length, 1);
+    assert.strictEqual(fakeLocal.published[0].payload.toString(), 'get_state');
+  });
+
+  it('honors a config-provided downstreamCommands allow-list', () => {
+    const client = makeClient({
+      downstreamCommands: [
+        { subtopic: 'ros/teleop/go' },
+        { subtopic: 'modules/set_state' },
+      ],
+    });
+    const fakeLocal = makeFakeUpstream();
+    client._localClient = fakeLocal;
+
+    // Now opted in via config.
+    client._handleUpstreamMessage('r/up1/modules/set_state', Buffer.from('{}'), { qos: 0 });
+    // Not in the custom list anymore, so it must not be delivered.
+    client._handleUpstreamMessage('r/up1/custom_command/ros', Buffer.from('x'), { qos: 0 });
+
+    assert.strictEqual(fakeLocal.published.length, 1);
+    assert.strictEqual(fakeLocal.published[0].topic, 'r/local1/modules/set_state');
+  });
+
+  it('applies the acceptsPayloads filter from config', () => {
+    const client = makeClient({
+      downstreamCommands: [{ subtopic: 'in_cmd', acceptsPayloads: ['update'] }],
+    });
+    const fakeLocal = makeFakeUpstream();
+    client._localClient = fakeLocal;
+
+    client._handleUpstreamMessage('r/up1/in_cmd', Buffer.from('update'), { qos: 0 });
+    client._handleUpstreamMessage('r/up1/in_cmd', Buffer.from('restart'), { qos: 0 });
+
+    assert.strictEqual(fakeLocal.published.length, 1);
+    assert.strictEqual(fakeLocal.published[0].payload.toString(), 'update');
+  });
+
+  it('an explicit empty allow-list disables downstream command delivery', () => {
+    const client = makeClient({ downstreamCommands: [] });
+    const fakeLocal = makeFakeUpstream();
+    client._localClient = fakeLocal;
+
+    client._handleUpstreamMessage('r/up1/custom_command/ros', Buffer.from('x'), { qos: 0 });
+
+    assert.strictEqual(fakeLocal.published.length, 0);
+  });
+
+  it('still prevents downstream-injected commands from looping back upstream', () => {
+    const client = makeClient();
+    const fake = makeFakeUpstream();
+    client._upstreamClient = fake;
+    client._connected = true;
+
+    // A newly-allowed downstream command echoing off the local broker.
+    client._forward('r/local1/ros/teleop/go', Buffer.from('go'), { retain: false, qos: 0 });
 
     assert.strictEqual(fake.published.length, 0);
   });

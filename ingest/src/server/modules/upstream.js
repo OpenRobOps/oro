@@ -50,8 +50,15 @@ const DEFAULT_DENY_SUBTOPICS = ['in_cmd', 'modules/set_state'];
 // robot on in_cmd, so the robot's echo of it ('<seq>|upstream') can be told apart
 // from echoes of this ORO's own local pings and relayed back upstream.
 const UPSTREAM_ECHO_FLAG = 'upstream';
-// Server->robot commands delivered downstream (upstream -> local robot), each
-// republished onto the local broker under the local robot's topic.
+// Default server->robot commands delivered downstream (upstream -> local robot),
+// each republished onto the local broker under the local robot's topic.
+//
+// Operators can override this entirely via
+// `modules.upstream.forwarding.downstreamCommands` in settings (see
+// UpstreamRobotClient's `downstreamCommands` option). Each entry is
+// `{ subtopic, acceptsPayloads? }`, where `acceptsPayloads` (optional) is a list
+// of exact string payloads to allow on that subtopic; when omitted, every
+// payload on the subtopic is delivered.
 //
 // This is deliberately an allow-list, not a whole subtree:
 //  - `custom_command/` also carries robot->server feedback (e.g.
@@ -59,25 +66,37 @@ const UPSTREAM_ECHO_FLAG = 'upstream';
 //    not be echoed back to the robot, so only the actual command subtopics are
 //    listed.
 //  - `in_cmd` is a single topic carrying many server->robot commands plus
-//    echo/ping messages (sent as '<seq>|' by the callback mechanism). 
-//    For now this is partially handled:
-//       - get_state is forwarded downstream [TODO]
-//       - restart is forwarded downstream
-//       - sequence numbers (pings) are handled and responded from this service.
-//       - everything else is filtered out (e.g. load_module); they conflict with
-//         commands from this ORO instance. TODO fix this.
+//    echo/ping messages (sent as '<seq>|' by the callback mechanism). Only
+//    `restart` and `get_state` are delivered by default (via `acceptsPayloads`);
+//    sequence-number pings are relayed to the real robot (see
+//    _handleEchoRequest). Other in_cmd commands (e.g. load_module) are withheld
+//    by default because they would conflict with this ORO instance's own agent
+//    management — an operator that owns both ends can widen this via config.
+//  - `modules/set_state` is intentionally NOT in the default set for the same
+//    reason (it reconfigures local modules); add it via config to opt in.
 //
 // The robot never publishes these command topics, so anything seen on them by
 // the upstream forwarder is our own downstream injection echoing off the local
 // broker; the forwarder skips them to avoid a loop (and `in_cmd` is in the deny
 // list as well).
-const DOWNSTREAM_COMMANDS = [
+const DEFAULT_DOWNSTREAM_COMMANDS = [
+  // Custom commands / scripts
   { subtopic: 'custom_command/ros' },
   { subtopic: 'custom_command/script/command' },
-  { 
-    subtopic: 'in_cmd', 
-    acceptsPayload: (payload) => ['restart', 'get_state'].includes(payload.toString()) 
-  },
+  // Teleoperation
+  { subtopic: 'ros/teleop/step' },
+  { subtopic: 'ros/teleop/go' },
+  // Navigation & localization
+  { subtopic: 'ros/loc/set_pose' },
+  { subtopic: 'ros/loc/nav_goal' },
+  { subtopic: 'ros/nav/goal_path' },
+  { subtopic: 'ros/nav/goal_to_current_pose' },
+  { subtopic: 'ros/loc/mapreq' },
+  // Data capture uploads
+  { subtopic: 'ros/rosbag/upload' },
+  { subtopic: 'ros/databag/upload' },
+  // Agent control: only the non-conflicting commands by default.
+  { subtopic: 'in_cmd', acceptsPayloads: ['restart', 'get_state'] },
 ];
 
 // Action type/label values, mirroring app/imports/shared/actions.js ACTION_TYPES
@@ -151,6 +170,9 @@ export default class UpstreamModule {
     this._api = api;
     this._brokerOptions = brokerOptions;
     this._denySubtopics = new Set(forwarding.denyTopicSuffixes || DEFAULT_DENY_SUBTOPICS);
+    // Optional operator override for the downstream command allow-list; when
+    // absent each UpstreamRobotClient falls back to DEFAULT_DOWNSTREAM_COMMANDS.
+    this._downstreamCommands = forwarding.downstreamCommands;
     this._publishRetained = forwarding.publishRetainedMessages !== false;
     this._credentialEncryptionKey = credentialEncryptionKey;
     this._logging = logging;
@@ -182,6 +204,7 @@ export default class UpstreamModule {
         credentialEncryptionKey: this._credentialEncryptionKey,
         credsColl: this._credsColl,
         denySubtopics: this._denySubtopics,
+        downstreamCommands: this._downstreamCommands,
         publishRetained: this._publishRetained,
         localBrokerConfig: this._localBrokerConfig,
         logging: this._logging,
@@ -239,6 +262,7 @@ export class UpstreamRobotClient {
     credentialEncryptionKey,
     credsColl,
     denySubtopics,
+    downstreamCommands,
     publishRetained,
     localBrokerConfig,
     logging,
@@ -255,6 +279,10 @@ export class UpstreamRobotClient {
     this._credentialEncryptionKey = credentialEncryptionKey;
     this._credsColl = credsColl;
     this._denySubtopics = denySubtopics;
+    // Allow-list of server->robot commands to deliver downstream. Falls back to
+    // the built-in default when not provided via config (an explicit empty array
+    // disables downstream command delivery entirely).
+    this._downstreamCommands = downstreamCommands || DEFAULT_DOWNSTREAM_COMMANDS;
     this._publishRetained = publishRetained;
     this._localBrokerConfig = localBrokerConfig;
     this._logging = logging;
@@ -621,8 +649,7 @@ export class UpstreamRobotClient {
     });
   };
 
-  // eslint-disable-next-line class-methods-use-this
-  _downstreamCommandFor = (subtopic) => DOWNSTREAM_COMMANDS.find((c) => c.subtopic === subtopic);
+  _downstreamCommandFor = (subtopic) => this._downstreamCommands.find((c) => c.subtopic === subtopic);
 
   _isDownstreamCommandSubtopic = (subtopic) => !!this._downstreamCommandFor(subtopic);
 
@@ -632,7 +659,7 @@ export class UpstreamRobotClient {
    * not survive a reconnect with a fresh clientId/session).
    */
   _subscribeUpstreamCommands = () => {
-    const subtopics = [...new Set(DOWNSTREAM_COMMANDS.map((c) => c.subtopic))];
+    const subtopics = [...new Set(this._downstreamCommands.map((c) => c.subtopic))];
     for (const subtopic of subtopics) {
       const topic = `r/${this.upstreamRobotId}/${subtopic}`;
       // qos 1: commands matter; don't silently lose them on a flaky link.
@@ -649,7 +676,7 @@ export class UpstreamRobotClient {
   /**
    * Deliver a message received from upstream down to the local robot, by
    * republishing it onto the local broker under the local robot's topic.
-   * Only the allow-listed commands are delivered (see DOWNSTREAM_COMMANDS),
+   * Only the allow-listed commands are delivered (see this._downstreamCommands),
    * subject to each command's optional payload filter; everything else is
    * ignored. The one special case is in_cmd echo requests, which are relayed
    * to the real robot (see _handleEchoRequest) rather than being filtered out.
@@ -673,7 +700,7 @@ export class UpstreamRobotClient {
     }
     const command = this._downstreamCommandFor(subtopic);
     if (!command) return;
-    if (command.acceptsPayload && !command.acceptsPayload(payload)) return;
+    if (command.acceptsPayloads && !command.acceptsPayloads.includes(payload.toString())) return;
     if (!this._localClient) {
       this._logger.warn(
         `upstream-cmd-no-local-${this.localRobotId}`,
