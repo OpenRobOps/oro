@@ -56,6 +56,7 @@ import { bootstrapConfigData } from './bootstrapConfig';
 import { assertValidSettings } from '../imports/server/settingsValidation';
 import EventLog from '../imports/server/eventLog/eventLogger';
 import DbEventStore from '../imports/server/eventLog/meteorDbEventStore';
+import { VERSION } from '../imports/shared/version';
 
 // Register accounts hooks at module level — before any login attempt
 registerAccountsHooks();
@@ -72,6 +73,8 @@ const moduleInstances = {};
 // Ignore the `new SomeManager()` with side effects to init modules:
 /* eslint-disable no-new */
 const oroAppMain = async () => {
+  console.log(`App v${VERSION} starting`);
+
   // Validate critical settings before doing anything else. Throws (aborting
   // startup) if e.g. the credential encryption key is missing or malformed.
   assertValidSettings();

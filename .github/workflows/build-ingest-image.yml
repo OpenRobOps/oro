@@ -70,6 +70,21 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=sha,prefix=sha-,format=short
 
+      # On a version tag, ingest/package.json must match the tag — the image
+      # reports its version from package.json at runtime (src/lib/version.js).
+      # The Release workflow keeps them in sync automatically; this guards the
+      # manual `git tag` path (RELEASING.md Path B).
+      - name: Verify package.json matches release tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          tag_ver="${{ steps.meta.outputs.version }}"
+          pkg_ver="$(node -p "require('./ingest/package.json').version")"
+          if [ "$tag_ver" != "$pkg_ver" ]; then
+            echo "::error::ingest/package.json version ($pkg_ver) != release tag ($tag_ver). Bump package.json or cut the release via the Release workflow."
+            exit 1
+          fi
+          echo "ingest/package.json matches tag: $pkg_ver"
+
       # Build into the local daemon first; on PRs this is the whole job (no
       # push). The layer cache is shared with the push step below.
       - name: Build (load to local daemon)

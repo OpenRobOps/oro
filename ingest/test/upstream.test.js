@@ -22,6 +22,7 @@
 import assert from 'assert';
 
 import { UpstreamRobotClient } from '../src/server/modules/upstream';
+import { VERSION } from '../src/lib/version';
 
 const noopLogger = { log: () => {}, warn: () => {}, error: () => {} };
 
@@ -596,5 +597,63 @@ describe('UpstreamRobotClient _logUpstreamCommand', () => {
     const client = makeClient();
     await client._logUpstreamCommand('r/up1/in_cmd', Buffer.from('restart'));
     // No assertion needed; reaching here without throwing is the test.
+  });
+});
+
+describe('UpstreamRobotClient agent-version stamping', () => {
+  // Forward a state message on a connected client and return what was published.
+  function forwardConnectedState(client, payload) {
+    const fake = makeFakeUpstream();
+    client._upstreamClient = fake;
+    client._connected = true;
+    client._forward('r/local1/state', Buffer.from(payload), { retain: true, qos: 1 });
+    return fake.published;
+  }
+
+  it('appends +oro-<version> to the agent version in a forwarded state message', () => {
+    const published = forwardConnectedState(makeClient(), '1|apikey123|0.48.0|robot-host');
+    assert.strictEqual(published.length, 1);
+    assert.strictEqual(published[0].topic, 'r/up1/state');
+    assert.strictEqual(
+      published[0].payload.toString(),
+      `1|apikey123|0.48.0+oro-${VERSION}|robot-host`
+    );
+  });
+
+  it('stamps the version when there is no hostname field', () => {
+    const published = forwardConnectedState(makeClient(), '1|apikey123|0.48.0');
+    assert.strictEqual(published[0].payload.toString(), `1|apikey123|0.48.0+oro-${VERSION}`);
+  });
+
+  it('leaves a state message with no agent version untouched', () => {
+    const published = forwardConnectedState(makeClient(), '0');
+    assert.strictEqual(published[0].payload.toString(), '0');
+  });
+
+  it('leaves a state message with an empty agent version untouched', () => {
+    const published = forwardConnectedState(makeClient(), '1|apikey123||robot-host');
+    assert.strictEqual(published[0].payload.toString(), '1|apikey123||robot-host');
+  });
+
+  it('does not double-stamp an already-stamped version', () => {
+    const published = forwardConnectedState(makeClient(), '1|apikey123|0.48.0+oro-9.9.9|robot-host');
+    assert.strictEqual(published[0].payload.toString(), '1|apikey123|0.48.0+oro-9.9.9|robot-host');
+  });
+
+  it('buffers the stamped version when upstream is not connected', () => {
+    const client = makeClient();
+    client._forward('r/local1/state', Buffer.from('1|apikey123|0.48.0|robot-host'), { retain: true, qos: 1 });
+    const entry = client._retainedMessages.get('r/up1/state');
+    assert.ok(entry, 'expected a buffered retained entry');
+    assert.strictEqual(entry.payload.toString(), `1|apikey123|0.48.0+oro-${VERSION}|robot-host`);
+  });
+
+  it('does not stamp the version on non-state telemetry topics', () => {
+    const client = makeClient();
+    const fake = makeFakeUpstream();
+    client._upstreamClient = fake;
+    client._connected = true;
+    client._forward('r/local1/pose', Buffer.from('1|apikey123|0.48.0|x'), { retain: false, qos: 0 });
+    assert.strictEqual(fake.published[0].payload.toString(), '1|apikey123|0.48.0|x');
   });
 });
