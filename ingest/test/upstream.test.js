@@ -78,6 +78,32 @@ function makeFakeUpstream() {
   };
 }
 
+// A fake oroMqtt whose `oro.Echo` type round-trips through JSON, so tests can
+// build a robot echo and inspect the reconstructed echo the forwarder publishes.
+// `decode`/`encode` mirror protobufjs: `echo.payload` names the populated oneof
+// field, and `create({ stringPayload })` maps to that oneof.
+function makeEchoOroMqtt() {
+  const EchoType = {
+    decode: (buf) => {
+      const obj = JSON.parse(buf.toString());
+      return { ...obj, payload: 'stringPayload' };
+    },
+    create: ({ timeStamp, topic, stringPayload }) => ({ timeStamp, topic, stringPayload }),
+    encode: (msg) => ({ finish: () => Buffer.from(JSON.stringify(msg)) }),
+  };
+  return {
+    lookupType(name) {
+      if (name !== 'oro.Echo') throw new Error(`no such type ${name}`);
+      return EchoType;
+    },
+  };
+}
+
+// Build a robot-echo buffer the makeEchoOroMqtt decoder understands.
+function makeRobotEcho(stringPayload, timeStamp = 1000) {
+  return Buffer.from(JSON.stringify({ stringPayload, timeStamp }));
+}
+
 describe('UpstreamRobotClient retained-message buffering', () => {
   it('buffers retained messages received while upstream is not connected', () => {
     const client = makeClient();
@@ -234,20 +260,20 @@ describe('UpstreamRobotClient downstream command delivery', () => {
     assert.strictEqual(fakeLocal.published[0].payload.toString(), 'restart');
   });
 
-  it('relays upstream in_cmd echo/ping messages to the local robot, flagged', () => {
+  it('relays an upstream in_cmd ping to the robot, rewriting the seq to a negative value', () => {
     const client = makeClient();
     const fakeLocal = makeFakeUpstream();
     client._localClient = fakeLocal;
 
-    // Echo pings are sent as '<seq>|' by the callback mechanism. Rather than
-    // answering them here, we relay them to the real robot flagged as
-    // '<seq>|upstream' so the round-trip latency the upstream server measures
-    // reflects the actual robot (see _handleEchoRequest / _handleRobotEcho).
+    // Echo pings are sent as '<seq>|' by the callback mechanism. We rewrite the
+    // seq to a forwarder-local negative value (so the robot's echo can be routed
+    // back to the upstream server) and record the mapping (see _handleRobotEcho).
     client._handleUpstreamMessage('r/up1/in_cmd', Buffer.from('42|'), { qos: 0 });
 
     assert.strictEqual(fakeLocal.published.length, 1);
     assert.strictEqual(fakeLocal.published[0].topic, 'r/local1/in_cmd');
-    assert.strictEqual(fakeLocal.published[0].payload.toString(), '42|upstream');
+    assert.strictEqual(fakeLocal.published[0].payload.toString(), '-1|');
+    assert.deepStrictEqual(client._callbackTable.get('-1'), { upstreamSeq: '42', subtopic: 'in_cmd' });
   });
 
   it('ignores other upstream in_cmd commands (e.g. update)', () => {
@@ -377,6 +403,119 @@ describe('UpstreamRobotClient downstream allow-list (defaults + config)', () => 
     client._forward('r/local1/ros/teleop/go', Buffer.from('go'), { retain: false, qos: 0 });
 
     assert.strictEqual(fake.published.length, 0);
+  });
+});
+
+describe('UpstreamRobotClient command callback relay (seq translation)', () => {
+  it('rewrites an echo-awaiting command seq to a negative value and records the mapping', () => {
+    const client = makeClient();
+    const fakeLocal = makeFakeUpstream();
+    client._localClient = fakeLocal;
+
+    client._handleUpstreamMessage('r/up1/ros/loc/nav_goal', Buffer.from('42|1720|1.5|2.3|0.5'), { qos: 0 });
+
+    assert.strictEqual(fakeLocal.published.length, 1);
+    assert.strictEqual(fakeLocal.published[0].topic, 'r/local1/ros/loc/nav_goal');
+    assert.strictEqual(fakeLocal.published[0].payload.toString(), '-1|1720|1.5|2.3|0.5');
+    assert.deepStrictEqual(
+      client._callbackTable.get('-1'),
+      { upstreamSeq: '42', subtopic: 'ros/loc/nav_goal' }
+    );
+  });
+
+  it('translates the robot echo back to the upstream seq and publishes it upstream', () => {
+    const client = makeClient({ oroMqtt: makeEchoOroMqtt() });
+    const fakeLocal = makeFakeUpstream();
+    const fakeUpstream = makeFakeUpstream();
+    client._localClient = fakeLocal;
+    client._upstreamClient = fakeUpstream;
+    client._connected = true;
+
+    client._handleUpstreamMessage('r/up1/ros/loc/nav_goal', Buffer.from('42|1720|1.5|2.3|0.5'), { qos: 0 });
+    client._handleRobotEcho(makeRobotEcho('-1|1720|1.5|2.3|0.5', 999));
+
+    assert.strictEqual(fakeUpstream.published.length, 1);
+    const pub = fakeUpstream.published[0];
+    assert.strictEqual(pub.topic, 'r/up1/echo');
+    const echoed = JSON.parse(pub.payload.toString());
+    assert.strictEqual(echoed.stringPayload, '42|1720|1.5|2.3|0.5');
+    assert.strictEqual(echoed.topic, 'r/up1/ros/loc/nav_goal');
+    assert.strictEqual(echoed.timeStamp, 999); // robot's own timestamp preserved
+  });
+
+  it('round-trips an in_cmd ping (rewrite + echo translate)', () => {
+    const client = makeClient({ oroMqtt: makeEchoOroMqtt() });
+    const fakeLocal = makeFakeUpstream();
+    const fakeUpstream = makeFakeUpstream();
+    client._localClient = fakeLocal;
+    client._upstreamClient = fakeUpstream;
+    client._connected = true;
+
+    client._handleUpstreamMessage('r/up1/in_cmd', Buffer.from('55|'), { qos: 0 });
+    assert.strictEqual(fakeLocal.published[0].payload.toString(), '-1|');
+
+    client._handleRobotEcho(makeRobotEcho('-1|', 777));
+    assert.strictEqual(fakeUpstream.published.length, 1);
+    assert.strictEqual(
+      JSON.parse(fakeUpstream.published[0].payload.toString()).stringPayload,
+      '55|'
+    );
+  });
+
+  it('ignores a robot echo whose seq we did not forward (local-ORO command)', () => {
+    const client = makeClient({ oroMqtt: makeEchoOroMqtt() });
+    const fakeUpstream = makeFakeUpstream();
+    client._upstreamClient = fakeUpstream;
+    client._connected = true;
+
+    // Positive seq (a local-ORO-originated command) is never in our negative table.
+    client._handleRobotEcho(makeRobotEcho('7|some-result'));
+
+    assert.strictEqual(fakeUpstream.published.length, 0);
+  });
+
+  it('consumes the mapping so a duplicate/late echo is not relayed twice', () => {
+    const client = makeClient({ oroMqtt: makeEchoOroMqtt() });
+    const fakeLocal = makeFakeUpstream();
+    const fakeUpstream = makeFakeUpstream();
+    client._localClient = fakeLocal;
+    client._upstreamClient = fakeUpstream;
+    client._connected = true;
+
+    client._handleUpstreamMessage('r/up1/ros/loc/nav_goal', Buffer.from('42|x'), { qos: 0 });
+    client._handleRobotEcho(makeRobotEcho('-1|x'));
+    client._handleRobotEcho(makeRobotEcho('-1|x')); // duplicate / late echo
+
+    assert.strictEqual(fakeUpstream.published.length, 1);
+  });
+
+  it('forwards non-echo-awaiting commands verbatim with no mapping', () => {
+    const client = makeClient();
+    const fakeLocal = makeFakeUpstream();
+    client._localClient = fakeLocal;
+
+    client._handleUpstreamMessage('r/up1/custom_command/ros', Buffer.from('42|verbatim'), { qos: 0 });
+    client._handleUpstreamMessage('r/up1/ros/teleop/go', Buffer.from('binary'), { qos: 0 });
+
+    assert.strictEqual(fakeLocal.published.length, 2);
+    assert.strictEqual(fakeLocal.published[0].payload.toString(), '42|verbatim'); // unchanged
+    assert.strictEqual(fakeLocal.published[1].payload.toString(), 'binary');
+    assert.strictEqual(client._callbackTable.size(), 0);
+  });
+
+  it('does not relay an echo once its mapping is gone (expired/evicted)', () => {
+    const client = makeClient({ oroMqtt: makeEchoOroMqtt() });
+    const fakeLocal = makeFakeUpstream();
+    const fakeUpstream = makeFakeUpstream();
+    client._localClient = fakeLocal;
+    client._upstreamClient = fakeUpstream;
+    client._connected = true;
+
+    client._handleUpstreamMessage('r/up1/ros/loc/nav_goal', Buffer.from('42|x'), { qos: 0 });
+    client._callbackTable.unset('-1'); // simulate TTL expiry / eviction
+    client._handleRobotEcho(makeRobotEcho('-1|x'));
+
+    assert.strictEqual(fakeUpstream.published.length, 0);
   });
 });
 
