@@ -9,6 +9,14 @@ GitHub Container Registry (GHCR):
 Both are versioned **together** off a single git tag, so `oro-app:1.4.0` and
 `oro-ingest:1.4.0` always refer to the same release.
 
+`app/package.json` and `ingest/package.json` carry the same version and are the
+**runtime source of truth**: each component reads it at startup
+(`imports/shared/version.js`, `ingest/src/lib/version.js`), logs
+`App v1.4.0 starting` / `Ingest v1.4.0 starting`, and exposes it to the UI. The
+Release workflow keeps these files in lock-step with the tag automatically, and
+the image builds **fail on a version tag if `package.json` doesn't match the
+tag** (see [Cutting a release](#cutting-a-release)).
+
 ## When images are built
 
 | Event | Builds | Pushes | Tags produced |
@@ -51,23 +59,36 @@ ways to create it — pick either.
 5. Click **Run workflow**.
 
 The [`release.yml`](.github/workflows/release.yml) workflow validates the
-version, creates and pushes the `vX.Y.Z` tag, and publishes a GitHub Release
-with auto-generated notes. The tag push then triggers both image builds.
+version, **writes it into `app/package.json` and `ingest/package.json` and
+commits that to the release branch**, then creates and pushes the `vX.Y.Z` tag
+(pointing at the bump commit) and publishes a GitHub Release with auto-generated
+notes. The tag push then triggers both image builds.
 
-> **One-time setup:** the workflow pushes the tag with a `RELEASE_TOKEN` secret.
-> This is required because a tag pushed by the default `GITHUB_TOKEN` does **not**
+> **One-time setup:** the workflow pushes both the version-bump commit and the
+> tag with a `RELEASE_TOKEN` secret. A token (rather than the default
+> `GITHUB_TOKEN`) is required because a tag pushed by `GITHUB_TOKEN` does **not**
 > trigger other workflows (GitHub's recursion guard), so the image builds would
 > never run. Create a repo/org secret named `RELEASE_TOKEN` — a Personal Access
 > Token (or GitHub App token) with `contents:write` and `workflow` scope. If it
 > isn't set, the release is still tagged, but you'll have to kick the builds
 > yourself (e.g. re-run via `workflow_dispatch`, or use Path B).
+>
+> The bump commit is pushed directly to the release branch (usually `main`). If
+> that branch has protection rules that block direct pushes, allow the
+> `RELEASE_TOKEN` identity to bypass them, or bump `package.json` via a normal PR
+> first and release with Path B.
 
 ### Path B — git tag from the CLI
 
-From a clean checkout of the commit you want to release:
+This path does **not** bump `package.json` for you, so set the versions to match
+the tag first (the image builds fail otherwise):
 
 ```sh
 git checkout main && git pull
+( cd app && npm version 1.4.0 --no-git-tag-version --allow-same-version )
+( cd ingest && npm version 1.4.0 --no-git-tag-version --allow-same-version )
+git commit -am "chore(release): v1.4.0"
+git push origin main
 git tag -a v1.4.0 -m "Release v1.4.0"
 git push origin v1.4.0
 ```

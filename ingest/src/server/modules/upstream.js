@@ -44,8 +44,15 @@ import ThrottledLogger from '../../shared/throttledLogger';
 import Cache from '../../shared/simpleCache';
 import { COLLECTIONS } from '../../shared/constants';
 import { encryptPassword, decryptPassword } from '../../shared/mqttCredentialCrypto';
+import { VERSION } from '../../lib/version';
 
 const COLLECTION_NAME = 'upstream_mqtt_credentials';
+// Build-metadata suffix appended to a robot's agent version when its state is
+// forwarded upstream, so upstream can tell the telemetry was relayed through
+// this ORO instance (e.g. "0.48.0" -> "0.48.0+oro-1.2.3"). The '+oro-' marker
+// also makes the stamp idempotent (see _stampStateVersion).
+const AGENT_VERSION_ORO_MARKER = '+oro-';
+const AGENT_VERSION_SUFFIX = `${AGENT_VERSION_ORO_MARKER}${VERSION}`;
 const DEFAULT_DENY_SUBTOPICS = ['in_cmd', 'modules/set_state'];
 // Translation table (forwarder seq -> upstream seq) lifetime. Comfortably above
 // the server-side callback timeout (10s in app/imports/server/mqtt.js) so an
@@ -610,13 +617,15 @@ export class UpstreamRobotClient {
     const upstreamTopic = `r/${this.upstreamRobotId}/${subtopic}`;
     const qos = packet.qos || 0;
 
+    // Stamp the robot's online/state message with this forwarder's version.
+    const outPayload = subtopic === 'state' ? this._stampStateVersion(payload) : payload;
+
     if (!this._upstreamClient || !this._connected) {
       // Remember retained values so they survive an upstream that isn't connected
       // yet (or has reconnected); they are replayed in _flushRetainedMessages.
       if (packet.retain) {
-        if (payload && payload.length > 0) {
-          console.log("retained message", upstreamTopic, payload)
-          this._retainedMessages.set(upstreamTopic, { payload, qos });
+        if (outPayload && outPayload.length > 0) {
+          this._retainedMessages.set(upstreamTopic, { payload: outPayload, qos });
         } else {
           // An empty retained payload clears the retained value (MQTT semantics).
           this._retainedMessages.delete(upstreamTopic);
@@ -630,8 +639,26 @@ export class UpstreamRobotClient {
       }
       return;
     } else {
-      this._publishToUpstream(upstreamTopic, payload, qos, !!packet.retain);
+      this._publishToUpstream(upstreamTopic, outPayload, qos, !!packet.retain);
     }
+  };
+
+  /**
+   * Append a build-metadata suffix to the agent version inside a robot 'state'
+   * payload before it is forwarded upstream. The state payload is the
+   * pipe-delimited string "online|apiKey|agentVersion|hostname" (see
+   * BasicsModule.onState). Only the version field (index 2) is touched, and only
+   * when it is present, non-empty, and not already stamped — so empty/offline
+   * (LWT) states and retained replays pass through unchanged. Returns the
+   * original payload when there is nothing to stamp.
+   */
+  _stampStateVersion = (payload) => {
+    if (!payload || payload.length === 0) return payload;
+    const parts = payload.toString().split('|');
+    const version = parts[2];
+    if (!version || version.includes(AGENT_VERSION_ORO_MARKER)) return payload;
+    parts[2] = `${version}${AGENT_VERSION_SUFFIX}`;
+    return Buffer.from(parts.join('|'));
   };
 
   /**

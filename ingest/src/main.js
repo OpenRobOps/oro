@@ -33,6 +33,7 @@ import PeerClient from './server/peer';
 // import EventTracker from './shared/tracking';
 // import WorkerQueue from './server/messageQueue';
 import { anonymizeUri } from './lib/util';
+import { VERSION } from './lib/version';
 // import ObjectsManager from './server/objectsManager';
 import AttributesManager from './server/attributes';
 import InMemoryWorkerQueues from './server/queues/memoryWorkerQueue';
@@ -81,8 +82,8 @@ let upstreamModule;
 
 async function run() {
   console.log('---------------------------------------------------------');
+  console.log(`Ingest v${VERSION} starting`);
   console.log('Ingest service starting at ' + moment().format());
-  console.log('Current version is ' + process.env.npm_package_version);
 
   console.log('MQTT is ON at ' + settings.mqtt.hostname);
   console.log('MongoDB is ON: ' + anonymizeUri(settings.mongo.url));

@@ -1,6 +1,6 @@
 {
   "name": "oro-ingest",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "ORO ingest service",
   "type": "commonjs",
   "main": "src/main.js",

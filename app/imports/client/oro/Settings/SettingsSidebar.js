@@ -24,6 +24,7 @@ import GroupOutlinedIcon from '@mui/icons-material/GroupOutlined';
 import VpnKeyOutlinedIcon from '@mui/icons-material/VpnKeyOutlined';
 import { makeStyles } from 'tss-react/mui';
 import AvatarInitials from '../util/AvatarInitials';
+import { VERSION } from '../../../shared/version';
 
 export const SECTIONS = [
   { id: 'users', label: 'Users', Icon: GroupOutlinedIcon },
@@ -106,6 +107,13 @@ const useStyles = makeStyles()(theme => ({
   settingsSidebarIcon: {
     fontSize: 18,
   },
+  versionFooter: {
+    marginTop: 'auto',
+    padding: '10px 12px',
+    borderTop: `1px solid ${theme.palette.background.sidebarBorder}`,
+    fontSize: '12px',
+    color: theme.palette.text.muted,
+  },
 }));
 
 const SettingsSidebarItem = ({ id, label, Icon, isActive, onSelect }) => {
@@ -155,6 +163,9 @@ const SettingsSidebar = ({ user, active, onSelect }) => {
           />
         ))}
       </Box>
+      <Typography className={classes.versionFooter}>
+        v{VERSION}
+      </Typography>
     </Box>
   );
 };

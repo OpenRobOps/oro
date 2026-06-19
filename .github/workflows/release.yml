@@ -60,12 +60,36 @@ jobs:
             exit 1
           fi
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "version=$ver" >> "$GITHUB_OUTPUT"
           echo "Releasing $tag from ${{ github.sha }}"
+
+      # Keep app/package.json and ingest/package.json in lock-step with the
+      # release tag so each component reports the right version at runtime (see
+      # imports/shared/version.js, ingest/src/lib/version.js). The commit is
+      # pushed to the release branch and the tag below points at it, so the
+      # images are built from a tree whose package.json matches the tag.
+      - name: Sync package.json versions & commit
+        run: |
+          ver="${{ steps.ver.outputs.version }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          ( cd app && npm version "$ver" --no-git-tag-version --allow-same-version )
+          ( cd ingest && npm version "$ver" --no-git-tag-version --allow-same-version )
+          if git diff --quiet; then
+            echo "package.json files already at $ver; nothing to commit"
+          else
+            git add app/package.json app/package-lock.json \
+                    ingest/package.json ingest/package-lock.json
+            git commit -m "chore(release): v$ver"
+            git push origin "HEAD:${{ github.ref_name }}"
+          fi
 
       - name: Create & push annotated tag
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          # Tags HEAD — i.e. the version-bump commit above — so the tagged tree's
+          # package.json matches ${{ steps.ver.outputs.tag }}.
           git tag -a "${{ steps.ver.outputs.tag }}" -m "Release ${{ steps.ver.outputs.tag }}"
           git push origin "${{ steps.ver.outputs.tag }}"
 
@@ -84,7 +108,7 @@ jobs:
           {
             echo "## Release ${{ steps.ver.outputs.tag }}"
             echo ""
-            echo "Tag pushed from \`${{ github.sha }}\`."
+            echo "\`app/package.json\` and \`ingest/package.json\` set to \`${{ steps.ver.outputs.version }}\` and tagged."
             echo ""
             if [ -z "${{ secrets.RELEASE_TOKEN }}" ]; then
               echo "> ⚠️ RELEASE_TOKEN is not set — the tag was pushed with the default"

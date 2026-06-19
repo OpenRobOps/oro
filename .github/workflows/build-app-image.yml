@@ -57,6 +57,21 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=sha,prefix=sha-,format=short
 
+      # On a version tag, app/package.json must match the tag — the image reports
+      # its version from package.json at runtime (imports/shared/version.js). The
+      # Release workflow keeps them in sync automatically; this guards the manual
+      # `git tag` path (RELEASING.md Path B).
+      - name: Verify package.json matches release tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          tag_ver="${{ steps.meta.outputs.version }}"
+          pkg_ver="$(node -p "require('./app/package.json').version")"
+          if [ "$tag_ver" != "$pkg_ver" ]; then
+            echo "::error::app/package.json version ($pkg_ver) != release tag ($tag_ver). Bump package.json or cut the release via the Release workflow."
+            exit 1
+          fi
+          echo "app/package.json matches tag: $pkg_ver"
+
       # Build into the local daemon so the smoke test can run against it before
       # we publish anything. The layer cache is shared with the push step below.
       - name: Build (load to local daemon)
