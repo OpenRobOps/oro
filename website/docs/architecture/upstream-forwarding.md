@@ -56,9 +56,31 @@ enabled when the operator owns both ends:
 - `modules/set_state` (reconfigures local modules), and
 - other `in_cmd` payloads such as `load_module` / `unload_module` / `update`.
 
-`in_cmd` sequence-number pings (`<seq>|`) are not commands; they are relayed to
-the real robot and their echoes returned upstream so the upstream server measures
-the actual robot's round-trip latency.
+### Command callbacks (echo relay)
+
+Many server→robot commands use the callback mechanism: the server prefixes the
+payload with a sequence number (`<seq>|<rest>`), registers a callback, and waits
+(≈10s) for the robot to echo that seq back on `r/{robotId}/echo`. Because the
+robot is connected to *this* ORO, its echo arrives here, not at the upstream
+server — so without help the upstream server's callback would time out
+("Timeout waiting for callback").
+
+For commands marked `awaitsEcho` (and the `in_cmd` ping), the forwarder bridges
+the callback:
+
+1. **On the way down**, it rewrites the command's `<seq>|` prefix to a
+   forwarder-local **negative** seq (`-1, -2, …`) and records `negSeq →
+   upstreamSeq` in a short-lived (≈15s) per-robot translation table.
+2. **On the echo**, when the robot echoes a negative seq we issued, it is
+   translated back to the upstream server's original seq and re-published as an
+   `oro.Echo` on `r/{upstreamRobotId}/echo`, preserving the robot's timestamp.
+
+Negative seqs can never collide with the positive `_seq++` counters used by this
+ORO instance or the upstream server, so each side cleanly resolves only its own
+callbacks: the forwarder relays only seqs in its table, and the local ORO ignores
+the negative ones outright. Default `awaitsEcho` commands: `ros/loc/nav_goal`,
+`ros/loc/set_pose`, `ros/teleop/step` (plus the `in_cmd` ping). Fire-and-forget
+commands (protobuf ones, `restart`/`get_state`) are forwarded verbatim.
 
 Commands that arrive over the upstream link are recorded in the shared
 `event_log` collection with `source: 'upstream'` for `custom_command/ros`
@@ -121,6 +143,7 @@ All operator-facing configuration lives under `modules.upstream` in `ingest/sett
         "downstreamCommands": [
           { "subtopic": "custom_command/ros" },
           { "subtopic": "ros/teleop/go" },
+          { "subtopic": "ros/loc/nav_goal", "awaitsEcho": true },
           { "subtopic": "in_cmd", "acceptsPayloads": ["restart", "get_state"] }
         ]
       },
@@ -140,7 +163,7 @@ All operator-facing configuration lives under `modules.upstream` in `ingest/sett
 | `robotMapping` | List of `{ localRobotId, upstreamRobotId }` pairs. Empty list = no forwarding. |
 | `forwarding.denyTopicSuffixes` | Subtopics to drop when forwarding **upstream** (exact match against the part after `r/{robotId}/`). |
 | `forwarding.publishRetainedMessages` | Whether to preserve the retain flag when republishing. Default `true`. |
-| `forwarding.downstreamCommands` | Optional override of the **downstream** (upstream→robot) command allow-list. List of `{ subtopic, acceptsPayloads? }`; `acceptsPayloads` (optional) restricts delivery to those exact string payloads. Omit to use the built-in default; set to `[]` to disable downstream delivery. See [Downstream commands](#downstream-commands). |
+| `forwarding.downstreamCommands` | Optional override of the **downstream** (upstream→robot) command allow-list. List of `{ subtopic, acceptsPayloads?, awaitsEcho? }`; `acceptsPayloads` (optional) restricts delivery to those exact string payloads; `awaitsEcho: true` marks callback commands (`<seq>\|…`) whose robot echo must be relayed back upstream (see [Command callbacks](#command-callbacks-echo-relay)). Omit to use the built-in default; set to `[]` to disable downstream delivery. See [Downstream commands](#downstream-commands). |
 | `credentialEncryptionKey` | 64-character hex string used to AES-256-GCM-encrypt stored upstream passwords. Typically reuses the value from `mqtt.credentialEncryptionKey`. |
 | `logging` | Verbose per-message logging. Off by default. |
 
@@ -154,4 +177,5 @@ A local end-to-end check needs a second MQTT-capable upstream (another ORO insta
 2. Set the matching `modules.upstream` block on the local ingest, with at least one mapping, then restart ingest.
 3. Confirm a row appears in `upstream_mqtt_credentials` and an MQTT connection is established to the upstream (check ingest logs and the upstream's `r/{upstreamRobotId}/state` topic).
 4. Publish a synthetic message to the local broker on `r/{localRobotId}/state` and confirm it shows up upstream at `r/{upstreamRobotId}/state`.
-5. Publish on `r/{localRobotId}/in_cmd` and confirm it is **not** forwarded.
+5. Publish on `r/{localRobotId}/in_cmd` and confirm it is **not** forwarded upstream.
+6. From the upstream, send a callback command (e.g. a nav goal) to the mapped robot and confirm the robot receives it **and** the upstream command resolves (no "Timeout waiting for callback"). Issue the same command from the local ORO and confirm it still resolves locally — i.e. no cross-talk between the two servers' callbacks.

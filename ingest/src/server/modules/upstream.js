@@ -21,7 +21,7 @@
  *
  * Forwarding is primarily upstream (robot -> upstream telemetry). Downstream
  * delivery (upstream -> local robot) is currently limited to an allow-list of
- * commands (see DOWNSTREAM_COMMANDS), republished onto the local broker so the
+ * commands (see DEFAULT_DOWNSTREAM_COMMANDS), republished onto the local broker so the
  * robot receives them as if sent locally.
  *
  * Per-robot credentials are required by the upstream protocol today; the
@@ -41,24 +41,30 @@ import axios from 'axios';
 import https from 'https';
 import MongoManager from '../../mongo';
 import ThrottledLogger from '../../shared/throttledLogger';
+import Cache from '../../shared/simpleCache';
 import { COLLECTIONS } from '../../shared/constants';
 import { encryptPassword, decryptPassword } from '../../shared/mqttCredentialCrypto';
 
 const COLLECTION_NAME = 'upstream_mqtt_credentials';
 const DEFAULT_DENY_SUBTOPICS = ['in_cmd', 'modules/set_state'];
-// Flag appended to an upstream echo request ('<seq>|') before relaying it to the
-// robot on in_cmd, so the robot's echo of it ('<seq>|upstream') can be told apart
-// from echoes of this ORO's own local pings and relayed back upstream.
-const UPSTREAM_ECHO_FLAG = 'upstream';
+// Translation table (forwarder seq -> upstream seq) lifetime. Comfortably above
+// the server-side callback timeout (10s in app/imports/server/mqtt.js) so an
+// entry never expires before the robot's echo could plausibly arrive.
+const CALLBACK_TABLE_MAX_AGE_MS = 15 * 1000;
+const CALLBACK_TABLE_MAX_SIZE = 10000;
 // Default server->robot commands delivered downstream (upstream -> local robot),
 // each republished onto the local broker under the local robot's topic.
 //
 // Operators can override this entirely via
 // `modules.upstream.forwarding.downstreamCommands` in settings (see
 // UpstreamRobotClient's `downstreamCommands` option). Each entry is
-// `{ subtopic, acceptsPayloads? }`, where `acceptsPayloads` (optional) is a list
-// of exact string payloads to allow on that subtopic; when omitted, every
-// payload on the subtopic is delivered.
+// `{ subtopic, acceptsPayloads?, awaitsEcho? }`:
+//  - `acceptsPayloads` (optional) is a list of exact string payloads to allow on
+//    that subtopic; when omitted, every payload on the subtopic is delivered.
+//  - `awaitsEcho` (optional) marks commands sent with the server-side callback
+//    mechanism (payload prefixed `<seq>|`). For those the forwarder rewrites the
+//    seq and relays the robot's echo back upstream so the upstream server's
+//    callback resolves (see _rewriteSeqForDownstream / _handleRobotEcho).
 //
 // This is deliberately an allow-list, not a whole subtree:
 //  - `custom_command/` also carries robot->server feedback (e.g.
@@ -68,10 +74,11 @@ const UPSTREAM_ECHO_FLAG = 'upstream';
 //  - `in_cmd` is a single topic carrying many server->robot commands plus
 //    echo/ping messages (sent as '<seq>|' by the callback mechanism). Only
 //    `restart` and `get_state` are delivered by default (via `acceptsPayloads`);
-//    sequence-number pings are relayed to the real robot (see
-//    _handleEchoRequest). Other in_cmd commands (e.g. load_module) are withheld
-//    by default because they would conflict with this ORO instance's own agent
-//    management — an operator that owns both ends can widen this via config.
+//    sequence-number pings are recognized separately and relayed to the real
+//    robot through the same seq-rewrite path. Other in_cmd commands (e.g.
+//    load_module) are withheld by default because they would conflict with this
+//    ORO instance's own agent management — an operator that owns both ends can
+//    widen this via config.
 //  - `modules/set_state` is intentionally NOT in the default set for the same
 //    reason (it reconfigures local modules); add it via config to opt in.
 //
@@ -84,11 +91,11 @@ const DEFAULT_DOWNSTREAM_COMMANDS = [
   { subtopic: 'custom_command/ros' },
   { subtopic: 'custom_command/script/command' },
   // Teleoperation
-  { subtopic: 'ros/teleop/step' },
+  { subtopic: 'ros/teleop/step', awaitsEcho: true },
   { subtopic: 'ros/teleop/go' },
   // Navigation & localization
-  { subtopic: 'ros/loc/set_pose' },
-  { subtopic: 'ros/loc/nav_goal' },
+  { subtopic: 'ros/loc/set_pose', awaitsEcho: true },
+  { subtopic: 'ros/loc/nav_goal', awaitsEcho: true },
   { subtopic: 'ros/nav/goal_path' },
   { subtopic: 'ros/nav/goal_to_current_pose' },
   { subtopic: 'ros/loc/mapreq' },
@@ -301,6 +308,17 @@ export class UpstreamRobotClient {
     // replay them whenever the upstream client (re)connects. See _forward and
     // _flushRetainedMessages.
     this._retainedMessages = new Map();
+    // Callback seq translation for echo-awaiting commands forwarded downstream.
+    // Forwarder seqs are NEGATIVE and decrement from -1; this can never collide
+    // with the local ORO app's or the upstream server's positive `_seq++`
+    // registries, so robot echoes carrying our seq are unambiguously ours and
+    // everyone else's echoes are ignored. Entries expire (TTL) so a missing echo
+    // never leaks. Key: String(fwdSeq) -> { upstreamSeq, subtopic }.
+    this._fwdSeq = 0;
+    this._callbackTable = new Cache({
+      maxAge: CALLBACK_TABLE_MAX_AGE_MS,
+      maxSize: CALLBACK_TABLE_MAX_SIZE,
+    });
     this._lastAuthFetchTs = 0;
     this._authRefetchInFlight = false;
     this._shuttingDown = false;
@@ -571,8 +589,8 @@ export class UpstreamRobotClient {
     const subtopic = topic.substring(prefix.length);
     if (subtopic === 'echo') {
       // The robot's Echo responses are not telemetry to forward as-is; route them
-      // so we can relay upstream only the ones answering upstream echo requests
-      // (see _handleEchoRequest / _handleRobotEcho).
+      // so we can relay upstream only the ones answering commands we forwarded
+      // (see _handleRobotEcho).
       this._handleRobotEcho(payload);
       return;
     }
@@ -678,8 +696,12 @@ export class UpstreamRobotClient {
    * republishing it onto the local broker under the local robot's topic.
    * Only the allow-listed commands are delivered (see this._downstreamCommands),
    * subject to each command's optional payload filter; everything else is
-   * ignored. The one special case is in_cmd echo requests, which are relayed
-   * to the real robot (see _handleEchoRequest) rather than being filtered out.
+   * ignored.
+   *
+   * Echo-awaiting commands (`awaitsEcho` entries, plus the in_cmd ping) have their
+   * `<seq>|` prefix rewritten to a forwarder-local negative seq so the robot's
+   * echo can be routed back to the upstream server (see _rewriteSeqForDownstream
+   * and _handleRobotEcho). All other commands are forwarded verbatim.
    */
   _handleUpstreamMessage = (topic, payload, packet) => {
     if (this._logging && !topic.endsWith('/in_cmd')) {
@@ -688,19 +710,19 @@ export class UpstreamRobotClient {
     const prefix = `r/${this.upstreamRobotId}/`;
     if (!topic.startsWith(prefix)) return;
     const subtopic = topic.substring(prefix.length);
-    // in_cmd carries the upstream server's echo requests ('<seq>|') used to probe
-    // the robot it believes it owns. Rather than answering them here, relay them
-    // to the real robot (see _handleEchoRequest) so the round-trip latency the
-    // upstream server measures reflects the actual robot. The robot's reply comes
-    // back as an Echo, handled in _handleRobotEcho. This runs before the
-    // command/payload filtering below so echo requests (which are not
-    // restart/get_state) are still relayed.
-    if (subtopic === 'in_cmd') {
-      this._handleEchoRequest(payload);
-    }
+
     const command = this._downstreamCommandFor(subtopic);
     if (!command) return;
-    if (command.acceptsPayloads && !command.acceptsPayloads.includes(payload.toString())) return;
+
+    // The in_cmd ping is a bare '<seq>|' the upstream server uses to probe the
+    // robot's round-trip latency. It is delivered (rewritten) regardless of the
+    // in_cmd `acceptsPayloads` allow-list, which only governs literal commands
+    // like restart/get_state.
+    const isInCmdPing = subtopic === 'in_cmd' && /^\d+\|$/.test(payload.toString());
+    if (!isInCmdPing && command.acceptsPayloads
+        && !command.acceptsPayloads.includes(payload.toString())) {
+      return;
+    }
     if (!this._localClient) {
       this._logger.warn(
         `upstream-cmd-no-local-${this.localRobotId}`,
@@ -708,13 +730,20 @@ export class UpstreamRobotClient {
       );
       return;
     }
+
+    // Rewrite the callback seq for echo-awaiting commands (and the ping); forward
+    // everything else (protobuf commands, restart/get_state) verbatim.
+    const localPayload = (command.awaitsEcho || isInCmdPing)
+      ? this._rewriteSeqForDownstream(subtopic, payload)
+      : payload;
+
     const localTopic = `r/${this.localRobotId}/${subtopic}`;
     if (this._logging) {
       console.log(`[upstream] ${this.localRobotId}: delivering upstream command '${subtopic}' to robot`);
     }
     this._logUpstreamCommand(topic, payload);
     // Commands are transient: never retained on the local broker.
-    this._localClient.publish(localTopic, payload, { qos: packet.qos || 0, retain: false }, (err) => {
+    this._localClient.publish(localTopic, localPayload, { qos: packet.qos || 0, retain: false }, (err) => {
       if (err) {
         this._logger.warn(
           `upstream-cmd-publish-fail-${this.localRobotId}`,
@@ -724,57 +753,44 @@ export class UpstreamRobotClient {
     });
   };
 
-
   /**
-   * Handle an in_cmd message received from upstream.
+   * Rewrite the leading sequence number of an echo-awaiting command's payload
+   * into a forwarder-local NEGATIVE seq, recording `fwdSeq -> { upstreamSeq,
+   * subtopic }` in the translation table so the robot's echo can be routed back to
+   * the upstream server (see _handleRobotEcho).
    *
-   * The upstream server probes the robot it believes it owns by sending echo
-   * requests on in_cmd: a bare '<seq>|' (a sequence number followed by an empty
-   * payload). A real agent would echo it straight back; instead we relay the
-   * probe to the actual robot so the round-trip — and therefore the latency the
-   * upstream server measures — reflects the real robot, not just this forwarder.
+   * The upstream payload is the string '<upstreamSeq>|<rest>' (the upstream seq is
+   * always a positive integer). Negative forwarder seqs can never collide with the
+   * positive registries on either server, so the robot's echo of our seq is
+   * unambiguously ours. If the payload is not positive-seq-prefixed (defensive),
+   * it is returned unchanged so a mismarked command is still delivered verbatim.
    *
-   * The relayed probe is tagged with the 'upstream' flag ('<seq>|upstream') so
-   * that when the robot echoes it back (alongside echoes of this ORO's own local
-   * pings) _handleRobotEcho can recognize ours and relay it upstream.
-   *
-   * Non-echo in_cmd payloads (e.g. 'restart') are not echo requests and are left
-   * untouched for the command handling in _handleUpstreamMessage.
+   * @returns the (possibly rewritten) payload to publish to the robot.
    */
-  _handleEchoRequest = (payload) => {
+  _rewriteSeqForDownstream = (subtopic, payload) => {
     const text = payload.toString();
-    const [seq, ...rest] = text.split('|');
-    // An echo request is just a sequence number: '<seq>|', nothing after the pipe.
-    const isEchoRequest = rest.length === 1 && rest[0] === '' && /^\d+$/.test(seq);
-    if (!isEchoRequest) return;
-    if (!this._localClient) {
-      this._logger.warn(
-        `upstream-echo-no-local-${this.localRobotId}`,
-        `[upstream] ${this.localRobotId}: local client unavailable; dropping echo request '${text}'`
-      );
-      return;
+    const idx = text.indexOf('|');
+    if (idx <= 0 || !/^\d+$/.test(text.slice(0, idx))) {
+      // Not a positive seq-prefixed payload; nothing to map, forward as-is.
+      return payload;
     }
-    const flaggedPayload = `${seq}|${UPSTREAM_ECHO_FLAG}`;
-    const localTopic = `r/${this.localRobotId}/in_cmd`;
-    this._localClient.publish(localTopic, flaggedPayload, { qos: 0, retain: false }, (err) => {
-      if (err) {
-        this._logger.warn(
-          `upstream-echo-relay-fail-${this.localRobotId}`,
-          `[upstream] ${this.localRobotId}: relaying echo request to ${localTopic} failed: ${err.message}`
-        );
-      }
-    });
+    const upstreamSeq = text.slice(0, idx);
+    const rest = text.slice(idx + 1);
+    const fwdSeq = --this._fwdSeq; // -1, -2, -3, ...
+    this._callbackTable.set(String(fwdSeq), { upstreamSeq, subtopic });
+    return `${fwdSeq}|${rest}`;
   };
 
   /**
    * Handle an Echo published by the robot on the local broker.
    *
-   * The robot echoes every in_cmd message it receives — both this ORO's own local
-   * pings ('<seq>|') and the upstream echo requests we relayed flagged as
-   * '<seq>|upstream'. Only the latter are meant for the upstream server: strip the
-   * flag, rebuild the original '<seq>|' the upstream server sent, and publish a
-   * fresh Echo upstream so its callback registry resolves the sequence number.
-   * Unflagged echoes are responses to our own local pings and are ignored.
+   * The robot echoes back every command it receives, including the seq prefix
+   * verbatim. We forwarded echo-awaiting commands (and the in_cmd ping) downstream
+   * with a forwarder-local NEGATIVE seq recorded in the translation table; so an
+   * echo whose seq is in the table is one of ours: translate it back to the
+   * upstream server's original '<upstreamSeq>|<rest>' and publish a fresh Echo
+   * upstream so its callback registry resolves the sequence. Echoes carrying any
+   * other seq (this ORO instance's own positive-seq commands) are ignored.
    *
    * Best-effort: guarded against a missing protobuf lookup / disconnected
    * upstream, and any failure is logged (throttled) rather than thrown.
@@ -785,18 +801,23 @@ export class UpstreamRobotClient {
     try {
       const EchoType = this._oroMqtt.lookupType('oro.Echo');
       const echo = EchoType.decode(payload);
-      // The echoed in_cmd payload lives in the oneof; echo.payload holds the name
-      // of the populated field. Only string payloads can carry our flag.
+      // The echoed payload lives in the oneof; echo.payload holds the name of the
+      // populated field. Only string payloads carry the '<seq>|...' prefix.
       const echoed = echo[echo.payload];
       if (typeof echoed !== 'string') return;
-      const [seq, flag] = echoed.split('|');
-      if (flag !== UPSTREAM_ECHO_FLAG) return; // not one we relayed; ignore
-      // Rebuild the original '<seq>|' so the upstream server matches its sequence.
+      const idx = echoed.indexOf('|');
+      if (idx < 0) return;
+      const echoedSeq = echoed.slice(0, idx);
+      const entry = this._callbackTable.get(echoedSeq);
+      if (!entry) return; // not a seq we forwarded (e.g. local ORO's own); ignore
+      this._callbackTable.unset(echoedSeq);
+      const rest = echoed.slice(idx + 1);
+      // Rebuild '<upstreamSeq>|<rest>' so the upstream server matches its sequence.
       // Preserve the robot's own timestamp so upstream sees the real agent timing.
       const message = EchoType.create({
         timeStamp: echo.timeStamp,
-        topic: `r/${this.upstreamRobotId}/in_cmd`,
-        stringPayload: `${seq}|`,
+        topic: `r/${this.upstreamRobotId}/${entry.subtopic}`,
+        stringPayload: `${entry.upstreamSeq}|${rest}`,
       });
       const buffer = EchoType.encode(message).finish();
       const echoTopic = `r/${this.upstreamRobotId}/echo`;
