@@ -22,10 +22,7 @@ import MongoManager from '../../mongo';
 import { COLLECTIONS } from '../../shared/constants';
 import RateLimiter from '../rateLimiter';
 import AttributesManager from '../attributes';
-import { unzipKeyValueList } from '../../lib/util';
-// import WorkerQueue, { QUEUES } from '../messageQueue';
-
-const ROUTING_KEY = 'update-values-json';
+import { SOURCES } from '../../shared/attributes';
 
 export default class DiagnosticsModule {
   constructor(mqtt) {
@@ -52,6 +49,9 @@ export default class DiagnosticsModule {
   onMessageV2 = async (robotId, message) => {
     const status = { robotId };
     const sensorEvents = [];
+    // Diagnostics key-values flattened for the attributes pipeline. Each is matched to an
+    // attribute by its source node name (namespace) and key.
+    const attributeUpdates = [];
     // Decode the MQTT payload
     try {
       // Limit ROS Diagnostics message rate to once per minute
@@ -76,6 +76,9 @@ export default class DiagnosticsModule {
               ...acc,
               [kv.key]: kv.value
             }), {});
+            keyValuesArray.forEach((kv) => {
+              attributeUpdates.push({ value: kv.value, namespace: name, key: kv.key });
+            });
           }
           sensorEvents.push(event);
         }
@@ -85,19 +88,23 @@ export default class DiagnosticsModule {
     }
     status.statusList = sensorEvents;
 
-    // Update diagnostics information for this robot 
+    // Update diagnostics information for this robot
     await this.rosDiagnostics.updateOne(
       { _id: robotId },
       { $set: { ...omit(status, 'robotId') } },
       { upsert: true }
     );
 
-    // TODO pass this info attributes manager for processing as data-sources (implementation below is older, using queues)
-    //   await this.messageQueue.sendJson(
-    //     { data: status.statusList },
-    //     ROUTING_KEY,
-    //     { headers: { companyId, key: 'ros_diag', entityId: robotId, timestamp: status.stamp } }
-    //   );
+    // Map diagnostics key-values to attributes for robots that configured ros-diagnostics data
+    // sources. Unmapped key-values are ignored by saveAttributesFromMappings.
+    if (attributeUpdates.length > 0) {
+      await this.attrMgr.saveAttributesFromMappings({
+        robotId,
+        source: SOURCES.ROS_DIAGNOSTICS.value,
+        updates: attributeUpdates,
+        ts: status.ts,
+      });
+    }
   };
 
   /**

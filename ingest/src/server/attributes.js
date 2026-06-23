@@ -645,7 +645,7 @@ class RobotVitalsConfig {
    * Finds an attribute matching the given source (by type, namespace and key).
    * Note this is implemented by iterating a dictionary - not efficient.
    */
-  findAttributeIdMappedTo(sourceType, { key, mappingKey, type }) {
+  findAttributeIdMappedTo(sourceType, { key, mappingKey, type, namespace }) {
     const ret = Object.keys(this.attrsConfig).find((k) => {
       const { mapping: m } = this.attrsConfig[k] || {};
       return m && m.source == sourceType
@@ -655,6 +655,9 @@ class RobotVitalsConfig {
         // attributes. See https://inorbit.atlassian.net/browse/IO-2076
         && (mappingKey === undefined || m.mappingKey === undefined || m.mappingKey == mappingKey)
         && (key === undefined || m.key == key)
+        // ros-diagnostics maps a value by its node name (namespace) plus key, so two nodes
+        // exposing the same key resolve to different attributes.
+        && (namespace === undefined || m.namespace === undefined || m.namespace == namespace)
         && (type === undefined || m.type == type);
     });
     return ret;
