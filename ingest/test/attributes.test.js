@@ -442,3 +442,92 @@ describe('DerivedAttributesConfig', () => {
   });
 });
 
+/**
+ * Tests for ROS Diagnostics key-value mapping. Diagnostics values are matched to
+ * attributes by their source node name (namespace) plus key, so two nodes exposing
+ * the same key resolve to different attributes.
+ */
+describe('RobotVitalsConfig: ROS Diagnostics namespace mapping', () => {
+  const ROS_DIAG = SOURCES.ROS_DIAGNOSTICS.value;
+
+  // Two nodes ('nodeA', 'nodeB') both expose key 'rate'; a third attribute maps
+  // 'rate' with no namespace at all (legacy-style mapping).
+  const buildConfig = () => new RobotVitalsConfig('robot-1', {
+    attrRateA: { definition: {}, mapping: { source: ROS_DIAG, namespace: 'nodeA', key: 'rate' } },
+    attrRateB: { definition: {}, mapping: { source: ROS_DIAG, namespace: 'nodeB', key: 'rate' } },
+    attrOtherSource: { definition: {}, mapping: { source: SOURCES.KEY_VALUE.value, key: 'rate' } }
+  });
+
+  it('resolves the same key under different namespaces to different attributes', () => {
+    const config = buildConfig();
+    assert.equal(config.findAttributeIdMappedTo(ROS_DIAG, { namespace: 'nodeA', key: 'rate' }), 'attrRateA');
+    assert.equal(config.findAttributeIdMappedTo(ROS_DIAG, { namespace: 'nodeB', key: 'rate' }), 'attrRateB');
+  });
+
+  it('does not match a namespace that has no mapping', () => {
+    const config = buildConfig();
+    assert.equal(config.findAttributeIdMappedTo(ROS_DIAG, { namespace: 'nodeC', key: 'rate' }), undefined);
+  });
+
+  it('does not cross source types', () => {
+    const config = buildConfig();
+    // 'rate' exists under KEY_VALUE too, but a ROS_DIAGNOSTICS lookup must not return it.
+    assert.equal(config.findAttributeIdMappedTo(SOURCES.KEY_VALUE.value, { key: 'rate' }), 'attrOtherSource');
+    assert.equal(config.findAttributeIdMappedTo(ROS_DIAG, { namespace: 'nodeA', key: 'wrong' }), undefined);
+  });
+
+  it('matches a namespace-less mapping against any node (escape-hatch behavior)', () => {
+    // A mapping without a namespace matches the key from any node. This is the
+    // documented fallback; namespace disambiguation only applies when the mapping
+    // itself defines a namespace.
+    const config = new RobotVitalsConfig('robot-1', {
+      attrLegacy: { definition: {}, mapping: { source: ROS_DIAG, key: 'rate' } }
+    });
+    assert.equal(config.findAttributeIdMappedTo(ROS_DIAG, { namespace: 'anyNode', key: 'rate' }), 'attrLegacy');
+  });
+});
+
+/**
+ * Tests that saveAttributesFromMappings resolves ROS Diagnostics key-values
+ * (flattened as { value, namespace, key }) end-to-end against a real config.
+ */
+describe('AttributesManager: saveAttributesFromMappings for ROS Diagnostics', () => {
+  let sandbox;
+  beforeEach(() => { sandbox = sinon.createSandbox(); });
+  afterEach(() => { sandbox.restore(); });
+
+  it('maps namespaced diagnostics updates to the right attributes', async () => {
+    const ROS_DIAG = SOURCES.ROS_DIAGNOSTICS.value;
+    const mgr = new AttributesManager();
+    const ts = 987654;
+    // Real RobotVitalsConfig so findAttributeIdMappedTo runs for real.
+    const config = new RobotVitalsConfig('robot-1', {
+      attrBatteryPct: { definition: {}, mapping: { source: ROS_DIAG, namespace: 'battery', key: 'battery_percentage' } },
+      attrScanRate: { definition: {}, mapping: { source: ROS_DIAG, namespace: 'scan_freshness', key: 'scan_rate_hz' } }
+    });
+    sandbox.stub(mgr, 'getRobotVitalsConfig').callsFake(() => config);
+    sandbox.stub(mgr, 'saveAttributeValues');
+
+    await mgr.saveAttributesFromMappings({
+      robotId: 'robot-1',
+      source: ROS_DIAG,
+      updates: [
+        { value: '80.9', namespace: 'battery', key: 'battery_percentage' },
+        { value: '11', namespace: 'scan_freshness', key: 'scan_rate_hz' },
+        // Unmapped namespace+key pair: should be ignored, not throw.
+        { value: 'x', namespace: 'nav2_lifecycle', key: 'map_server' }
+      ],
+      ts
+    });
+
+    sandbox.assert.calledOnce(mgr.saveAttributeValues);
+    sandbox.assert.calledWith(mgr.saveAttributeValues, sinon.match({
+      attributeValues: {
+        attrBatteryPct: { value: '80.9' },
+        attrScanRate: { value: '11' }
+      },
+      ts
+    }));
+  });
+});
+

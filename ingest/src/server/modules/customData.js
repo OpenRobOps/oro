@@ -137,26 +137,6 @@ export default class CustomDataModule {
         );
       }
 
-    } else if (payloadType == 'diagnosticsPayload') {
-      // NOTE(herchu) The agent is still responsible for sending a `label` field back
-      //              with the custom data. This was originally sent as `name` in the mapping
-      //              definition.
-      // TODO(herchu) Don't use `name` or `field`. Just look for the attribute definition and
-      //              use the correct attribute on the robot name to place in
-      //              RobotCustomDataKeyValues to display in the widget.
-      const { label, value: diagValue } = decodedMsg[payloadType];
-
-      // Send the data to Vitals module to be processed
-      const attr = CustomDataModule.getAttributeKey({
-        sourceId: decodedMsg.customField,
-      });
-
-      // calculate mappingKey and use that in the next call
-      // TODO: Consider dropping handleDiagnosticsData and just using a generic
-      //                   attribute manager updates handlers.
-      this.attrMgr.handleDiagnosticsData({ robotId }, attr, diagValue, ts);
-      // Save these key-value in the 'last seen key-values' collection too
-      this.updateDataKeys(robotId, [{ key: label, value: diagValue }], ts);
     }
   };
 
