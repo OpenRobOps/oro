@@ -2,3 +2,4 @@
 website/.docusaurus
 website/node_modules
 .claude/
+.DS_Store
