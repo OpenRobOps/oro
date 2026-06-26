@@ -824,50 +824,7 @@ class AttributesManager {
           console.warn('setAttributeMapping: key or namespace missing in mapping', {
             attributeId, mapping
           });
-          break;
         }
-
-        // Logic in case we're updating a mapping within the same source
-        if (oldMapping.source == SOURCES.ROS_DIAGNOSTICS.value) {
-          if (mapping.sourceId === undefined) {
-            mapping.sourceId = oldMapping.sourceId;
-          }
-          if (mapping.sourceId != oldMapping.sourceId) {
-            await new CustomDataModule().suppressDataSource({
-              sourceId: mapping.sourceId
-            });
-          }
-        }
-
-        const methodArguments = {
-          params: {
-            // TODO use a constant from the module for type
-            type: 'diagnostics',
-            diagnostics_key: mapping.key,
-            diagnostics_name: mapping.namespace,
-            // NOTE(herchu) The agent needs a "name" field to be sent back
-            //              as the name (readable label) for the custom data
-            //              key/values widget.
-            //              The agent should be totally unaware of this value; but
-            //              we keep sending _something_ in this field (the same diagnostics_key!)
-            //              just for compatibility with old agents. This value is sent
-            //              back in a `label` key and is soon to be ignored in customData.js
-            // TODO(herchu) Remove this field once customData#onMessage and the agent are updated.
-            name: mapping.key
-          }
-        };
-
-        if (mapping.sourceId === undefined) {
-          mapping.sourceId = await new CustomDataModule().addDataSource(methodArguments);
-        } else {
-          methodArguments.sourceId = mapping.sourceId;
-          await new CustomDataModule().updateDataSource(methodArguments);
-        }
-
-        mapping.mappingKey = await CustomDataModule.getAttributeKey({
-          sourceId: mapping.sourceId
-        });
-
         break;
       }
       case SOURCES.DERIVED.value:

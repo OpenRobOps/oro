@@ -495,7 +495,7 @@ class AttributesManager {
    *
    * TODO(herchu) Migrate modules calling various other methods to persist attributes,
    * namely `handle*()`, to use this more generic method.
-   * This includes handleDiagnosticsData(), handleSystemUpdates(), handleEvents(),
+   * This includes handleSystemUpdates(), handleEvents(),
    * handleKeyValuePairs().
    * Some changes to this interface might be required; and serious testing (incl. new unit tests).
    */
@@ -527,27 +527,6 @@ class AttributesManager {
       });
     }
   };
-
-  /**
-   * Receives a ros-diagnostics message from the custom data agentlet, and if this
-   * {customFieldId,key} is mapped to a vital in the robot, saves its value to vitals.
-   */
-  async handleDiagnosticsData(robotId, attr, value, ts = Date.now()) {
-    // Identify the data source by its attr, which is saved in the mapping DB
-    // as mappingKey.
-
-    // Load attribute mappings for this robot
-    const robotConfig = await this.getRobotVitalsConfig(robotId);
-    const attributeId = robotConfig.findAttributeIdMappedTo(SOURCES.ROS_DIAGNOSTICS.value, {
-      mappingKey: attr
-    });
-    if (attributeId) {
-      const updated = { [attributeId]: { value } }; // updated a single attribute
-      this.saveAttributeValues({
-        robotId, attributeValues: updated, ts, config: robotConfig
-      });
-    } // else: ignore this diagnostics data
-  }
 
   /**
    * Receives a diagnostics status message from RosDiagnosticsAgentlet, and saves
@@ -645,7 +624,7 @@ class RobotVitalsConfig {
    * Finds an attribute matching the given source (by type, namespace and key).
    * Note this is implemented by iterating a dictionary - not efficient.
    */
-  findAttributeIdMappedTo(sourceType, { key, mappingKey, type }) {
+  findAttributeIdMappedTo(sourceType, { key, mappingKey, type, namespace }) {
     const ret = Object.keys(this.attrsConfig).find((k) => {
       const { mapping: m } = this.attrsConfig[k] || {};
       return m && m.source == sourceType
@@ -655,6 +634,9 @@ class RobotVitalsConfig {
         // attributes. See https://inorbit.atlassian.net/browse/IO-2076
         && (mappingKey === undefined || m.mappingKey === undefined || m.mappingKey == mappingKey)
         && (key === undefined || m.key == key)
+        // ros-diagnostics maps a value by its node name (namespace) plus key, so two nodes
+        // exposing the same key resolve to different attributes.
+        && (namespace === undefined || m.namespace === undefined || m.namespace == namespace)
         && (type === undefined || m.type == type);
     });
     return ret;

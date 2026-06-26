@@ -22,10 +22,7 @@ import MongoManager from '../../mongo';
 import { COLLECTIONS } from '../../shared/constants';
 import RateLimiter from '../rateLimiter';
 import AttributesManager from '../attributes';
-import { unzipKeyValueList } from '../../lib/util';
-// import WorkerQueue, { QUEUES } from '../messageQueue';
-
-const ROUTING_KEY = 'update-values-json';
+import { SOURCES } from '../../shared/attributes';
 
 export default class DiagnosticsModule {
   constructor(mqtt) {
@@ -52,6 +49,10 @@ export default class DiagnosticsModule {
   onMessageV2 = async (robotId, message) => {
     const status = { robotId };
     const sensorEvents = [];
+    // Key-values collected from every diagnostic status. Each one is turned into an attribute
+    // value only if it matches an attribute mapping (by node name and key); the rest are
+    // ignored.
+    const keyValueUpdates = [];
     // Decode the MQTT payload
     try {
       // Limit ROS Diagnostics message rate to once per minute
@@ -68,14 +69,17 @@ export default class DiagnosticsModule {
         // to indicate that level field is present on the message
         // (to avoid confusing default protobuf value with real 0 value).
         // Consider adding it to the checks here too once all agents report it.
-        if (field && field.name && isNumber(field.level)) {
+        if (field?.name && isNumber(field.level)) {
           const { name, level, msg, keyValues: keyValuesArray } = field;
           const event = { name, level, msg: msg !== undefined ? msg : '' };
-          if (keyValuesArray && keyValuesArray.length > 0) {
+          if (keyValuesArray?.length > 0) {
             event.keyValues = keyValuesArray.reduce((acc, kv) => ({
               ...acc,
               [kv.key]: kv.value
             }), {});
+            keyValuesArray.forEach((kv) => {
+              keyValueUpdates.push({ value: kv.value, namespace: name, key: kv.key });
+            });
           }
           sensorEvents.push(event);
         }
@@ -85,19 +89,23 @@ export default class DiagnosticsModule {
     }
     status.statusList = sensorEvents;
 
-    // Update diagnostics information for this robot 
+    // Update diagnostics information for this robot
     await this.rosDiagnostics.updateOne(
       { _id: robotId },
       { $set: { ...omit(status, 'robotId') } },
       { upsert: true }
     );
 
-    // TODO pass this info attributes manager for processing as data-sources (implementation below is older, using queues)
-    //   await this.messageQueue.sendJson(
-    //     { data: status.statusList },
-    //     ROUTING_KEY,
-    //     { headers: { companyId, key: 'ros_diag', entityId: robotId, timestamp: status.stamp } }
-    //   );
+    // Map diagnostics key-values to attributes for robots that configured ros-diagnostics data
+    // sources. Unmapped key-values are ignored by saveAttributesFromMappings.
+    if (keyValueUpdates.length > 0) {
+      await this.attrMgr.saveAttributesFromMappings({
+        robotId,
+        source: SOURCES.ROS_DIAGNOSTICS.value,
+        updates: keyValueUpdates,
+        ts: status.ts,
+      });
+    }
   };
 
   /**
