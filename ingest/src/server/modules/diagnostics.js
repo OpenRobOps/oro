@@ -49,9 +49,10 @@ export default class DiagnosticsModule {
   onMessageV2 = async (robotId, message) => {
     const status = { robotId };
     const sensorEvents = [];
-    // Diagnostics key-values flattened for the attributes pipeline. Each is matched to an
-    // attribute by its source node name (namespace) and key.
-    const attributeUpdates = [];
+    // Key-values collected from every diagnostic status. Each one is turned into an attribute
+    // value only if it matches an attribute mapping (by node name and key); the rest are
+    // ignored.
+    const keyValueUpdates = [];
     // Decode the MQTT payload
     try {
       // Limit ROS Diagnostics message rate to once per minute
@@ -68,16 +69,16 @@ export default class DiagnosticsModule {
         // to indicate that level field is present on the message
         // (to avoid confusing default protobuf value with real 0 value).
         // Consider adding it to the checks here too once all agents report it.
-        if (field && field.name && isNumber(field.level)) {
+        if (field?.name && isNumber(field.level)) {
           const { name, level, msg, keyValues: keyValuesArray } = field;
           const event = { name, level, msg: msg !== undefined ? msg : '' };
-          if (keyValuesArray && keyValuesArray.length > 0) {
+          if (keyValuesArray?.length > 0) {
             event.keyValues = keyValuesArray.reduce((acc, kv) => ({
               ...acc,
               [kv.key]: kv.value
             }), {});
             keyValuesArray.forEach((kv) => {
-              attributeUpdates.push({ value: kv.value, namespace: name, key: kv.key });
+              keyValueUpdates.push({ value: kv.value, namespace: name, key: kv.key });
             });
           }
           sensorEvents.push(event);
@@ -97,11 +98,11 @@ export default class DiagnosticsModule {
 
     // Map diagnostics key-values to attributes for robots that configured ros-diagnostics data
     // sources. Unmapped key-values are ignored by saveAttributesFromMappings.
-    if (attributeUpdates.length > 0) {
+    if (keyValueUpdates.length > 0) {
       await this.attrMgr.saveAttributesFromMappings({
         robotId,
         source: SOURCES.ROS_DIAGNOSTICS.value,
-        updates: attributeUpdates,
+        updates: keyValueUpdates,
         ts: status.ts,
       });
     }
