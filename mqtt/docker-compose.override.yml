@@ -1,0 +1,10 @@
+# macOS + Docker Desktop: host networking does not publish ports to localhost.
+# Use bridge networking with port mapping and host.docker.internal for MongoDB.
+services:
+  mosquitto:
+    network_mode: bridge
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./mosquitto/mosquitto.docker.conf:/etc/mosquitto/mosquitto.conf

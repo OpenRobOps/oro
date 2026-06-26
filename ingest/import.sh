@@ -10,7 +10,12 @@ mkdir -p src/shared
 # are the same.
 # NOTE Don't add more files here. We should stop this practice
 # and use proper package management instead.
-cp -u ../app/private/oro.proto \
+# NOTE: use `cp -u` when available (GNU cp) to avoid unnecessary nodemon restarts.
+CP=(cp)
+if cp --help 2>/dev/null | grep -q '\-u,.*update'; then
+  CP=(cp -u)
+fi
+${CP[@]} ../app/private/oro.proto \
   ../app/imports/shared/constants.js \
   ../app/imports/shared/attributes.js \
   ../app/imports/shared/geometry.js \
