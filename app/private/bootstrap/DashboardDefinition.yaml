@@ -1,6 +1,15 @@
 apiVersion: v0.1
 kind: DashboardDefinition
 metadata:
+  id: welcome
+spec:
+  label: Welcome
+  order: 0
+  sections: []
+---
+apiVersion: v0.1
+kind: DashboardDefinition
+metadata:
   id: fleet
 spec:
   label: Fleet

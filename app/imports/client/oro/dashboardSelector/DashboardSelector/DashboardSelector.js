@@ -39,6 +39,7 @@ import Loading from '../../util/Loading';
 import { useUrlContext } from '../../contexts/UrlContextContext';
 import { SECTION_SCOPES } from '../../../../shared/uiPreferences';
 import { countDashboardSectionsWithScopes } from '../../../../shared/dashboards';
+import WelcomePage from '../../fleetWidgets/WelcomePage/WelcomePage';
 // import { writeCtx } from '../../../../lib/context';
 
 const StyledTabs = styled(Tabs)(({ theme }) => ({
@@ -290,12 +291,16 @@ const DashboardSelector = (props) => {
                   <RobotOfflineBar context={context} />
                 )
               }
-              <Dashboard
-                dashboardSpec={dashboardSpec}
-                context={context}
-                setContext={setContext}
-                switchTo={switchTo}
-              />
+              {dashboardSpec._id === 'welcome' ? (
+                <WelcomePage />
+              ) : (
+                <Dashboard
+                  dashboardSpec={dashboardSpec}
+                  context={context}
+                  setContext={setContext}
+                  switchTo={switchTo}
+                />
+              )}
             </TabPanel>
           ))}
         </DashboardPanelsWrapper>
