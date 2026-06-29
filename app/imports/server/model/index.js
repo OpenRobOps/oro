@@ -17,3 +17,7 @@
 export {
   default as Robot
 } from './robot';
+
+export {
+  default as Incident
+} from './incident';
