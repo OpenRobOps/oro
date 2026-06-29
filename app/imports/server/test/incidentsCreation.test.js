@@ -42,8 +42,11 @@ const EVENT = {
   name: 'Battery', level: 'error', message: 'battery critical', attributeValue: 2, formattedValue: '2%'
 };
 
-const seedDefinition = async () => IncidentConfiguration.insertAsync({
-  _id: TRIGGER, triggerId: TRIGGER, label: 'Battery incident', error: { severity: ICM_SEV_1 }, warning: {}
+const seedDefinition = async (extra = {}) => IncidentConfiguration.insertAsync({
+  _id: TRIGGER, triggerId: TRIGGER, label: 'Battery incident',
+  error: { severity: ICM_SEV_1, ...(extra.error || {}) },
+  warning: {},
+  ok: { ...(extra.ok || {}) }
 });
 
 const wire = () => {
@@ -53,6 +56,13 @@ const wire = () => {
   const integration = new IncidentsFromAlertsIntegration();
   mgr.addAlertsListener((...args) => integration.handleAlertEvent(...args));
   return mgr;
+};
+
+// Replaces the real ActionsEngine on the AlertsManager singleton with a capturing fake.
+const fakeActions = () => {
+  const calls = [];
+  new AlertsManager()._actionsEngine = { runAction: async (a) => { calls.push(a); } };
+  return calls;
 };
 
 describe('incidents creation engine', () => {
@@ -129,6 +139,34 @@ describe('incidents creation engine', () => {
     expect(await Incidents.find({ robotId }).countAsync()).eq(1);
     const incident = await Incidents.findOneAsync({ robotId });
     expect(incident.status).eq(INCIDENT_STATUS_NEW);
+  });
+
+  it('runs error-level auto-actions when an incident is created', async () => {
+    await seedDefinition({ error: { severity: ICM_SEV_1, autoActions: ['DockAuto'] } });
+    const calls = fakeActions();
+    const mgr = wire();
+    await mgr.createAlert({ robotId, triggerId: TRIGGER, event: EVENT, source: 'status' });
+    expect(calls).to.have.length(1);
+    expect(calls[0].actionId).eq('DockAuto');
+    expect(calls[0].context).deep.eq({ robotId });
+    expect(calls[0].user._id).eq('oro');
+  });
+
+  it('runs ok-level auto-actions when an incident resolves', async () => {
+    await seedDefinition({ error: { severity: ICM_SEV_1 }, ok: { autoActions: ['BatteryCharge'] } });
+    const mgr = wire();
+    await mgr.createAlert({ robotId, triggerId: TRIGGER, event: EVENT, source: 'status' });
+    const calls = fakeActions(); // capture only the resolve-time actions
+    await mgr.resolveAlert({ robotId, triggerId: TRIGGER });
+    expect(calls.map((c) => c.actionId)).deep.eq(['BatteryCharge']);
+  });
+
+  it('runs no auto-actions when none are configured', async () => {
+    await seedDefinition();
+    const calls = fakeActions();
+    const mgr = wire();
+    await mgr.createAlert({ robotId, triggerId: TRIGGER, event: EVENT, source: 'status' });
+    expect(calls).to.have.length(0);
   });
 });
 

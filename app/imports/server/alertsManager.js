@@ -26,10 +26,12 @@
  * not handled here yet.
  */
 import Robot from './model/robot';
+import ActionsEngine from './actions';
+import { getSystemUser } from '../shared/roles';
 import {
   RobotAlerts, IncidentConfiguration, getSeverityForAlert, maxSeverity
 } from '../lib/alerts';
-import { ALERT_STATUS_NEW, ALERT_STATUS_RESOLVED } from '../shared/alerts';
+import { ALERT_STATUS_NEW, ALERT_STATUS_RESOLVED, SEV_OK } from '../shared/alerts';
 
 // Reopen window: if a problem clears and recurs within this window, the same alert
 // is reused instead of opening a new one. Hardcoded (not configurable for now).
@@ -43,6 +45,7 @@ export default class AlertsManager {
     if (instance === undefined) {
       instance = this;
       this._alertsListeners = [];
+      this._actionsEngine = new ActionsEngine();
     }
     return instance;
   }
@@ -101,6 +104,24 @@ export default class AlertsManager {
     return `${robotName} - ${label}${event.message === label ? '' : `: ${event.message}`}`;
   };
 
+  // Runs the auto-actions configured for the given level on the incident definition.
+  // Runs as the system user; failures are logged per action and do not block the alert.
+  _executeAutoActions = async ({ robotId, incidentDefinition, level }) => {
+    const actionIds = incidentDefinition?.[level]?.autoActions;
+    if (!actionIds?.length) {
+      return;
+    }
+    const user = getSystemUser();
+    for (const actionId of actionIds) {
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        await this._actionsEngine.runAction({ actionId, context: { robotId }, user });
+      } catch (e) {
+        console.warn(`Error running auto-action ${actionId} for robot ${robotId}`, e);
+      }
+    }
+  };
+
   createAlert = async ({ robotId, triggerId, event, source, alias, ts = Date.now() }) => {
     const incidentDefinition = await this.findIncidentDefinitionForTrigger(triggerId);
     // Stop if there's no definition, or it's not defined for this event's level.
@@ -125,6 +146,7 @@ export default class AlertsManager {
         });
       }
     }
+    await this._executeAutoActions({ robotId, incidentDefinition, level: event.level });
     return undefined;
   };
 
@@ -139,6 +161,9 @@ export default class AlertsManager {
     );
     const resolved = await RobotAlerts.findOneAsync({ _id: alert._id });
     await this._notifyAlertsListeners(resolved);
+    // Run any auto-actions configured for the OK (resolution) level.
+    const incidentDefinition = await this.findIncidentDefinitionForTrigger(alert.componentId);
+    await this._executeAutoActions({ robotId, incidentDefinition, level: SEV_OK });
   };
 
   _findOpenAlert = async ({ robotId, componentId, alias }) => {
