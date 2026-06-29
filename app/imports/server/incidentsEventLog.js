@@ -33,7 +33,7 @@ export default class IncidentsEventLog {
       return;
     }
     const robot = new Robot(incident.robotId);
-    const triggerId = incident.componentsIds && incident.componentsIds[0];
+    const triggerId = incident.componentsIds?.[0];
     // On resolution, log an OK-level event so the audit log reads "is now ok"
     // (the incident keeps its last real event in latestEvent).
     const event = incident.status === INCIDENT_STATUS_RESOLVED

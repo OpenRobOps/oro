@@ -88,7 +88,6 @@ export default class AlertsManager {
     let label = incidentDefinition.label ? String(incidentDefinition.label) : String(triggerId);
     if (incidentDefinition.labelTemplate) {
       // Minimal template support: substitute {{robotName}}.
-      // TODO: support attribute/custom-data variables in templates.
       label = String(incidentDefinition.labelTemplate)
         .replace(/\{\{\s*robotName\s*\}\}/g, robotName || '');
     }
@@ -97,7 +96,7 @@ export default class AlertsManager {
 
   _buildAlertMessage = (robotName, event, label) => {
     if (!robotName) {
-      return event && event.message;
+      return event?.message;
     }
     return `${robotName} - ${label}${event.message === label ? '' : `: ${event.message}`}`;
   };

@@ -23,7 +23,7 @@ import { RobotAlerts, getAlertMessage } from '../lib/alerts';
 import { ALERT_STATUS_RESOLVED, INCIDENT_STATUS_NEW } from '../shared/alerts';
 import Incident from './model/incident';
 
-const getFirstLinkedIncident = (alert) => alert.incidentsIds && alert.incidentsIds[0];
+const getFirstLinkedIncident = (alert) => alert.incidentsIds?.[0];
 
 export default class IncidentsFromAlertsIntegration {
   handleAlertEvent = async (alertMsg) => {
