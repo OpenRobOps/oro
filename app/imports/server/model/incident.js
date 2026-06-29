@@ -20,10 +20,10 @@
  * An incident represents a problem affecting a robot that needs attention.
  * Backed by the "incidents" collection.
  *
- * NOTE: Model objects hold logic only, no state. Data is always backed by the
- * collection and read/written every time it is used.
+ * NOTE:Data is always backed by the collection and read/written every time
+ * it is used.
  */
-import { isEmpty } from 'lodash';
+import { isArray, isEmpty } from 'lodash';
 import Model from './model';
 import { RobotAlerts, Incidents, maxSeverity } from '../../lib/alerts';
 import { INCIDENT_STATUS_NEW, INCIDENT_STATUS_RESOLVED } from '../../shared/alerts';
@@ -89,7 +89,7 @@ export default class Incident extends Model {
    *  @param {String} params.label incident label
    *  @param {String} params.message incident message
    *  @param {String} params.description incident description
-   *  @param {String} params.alias optional dedup/external-system reference; if
+   *  @param {String} params.alias optional deduplication/external-system reference; if
    *    absent it is computed from the components
    *  @param {Number} params.ts incident start timestamp (ms)
    * @return {Promise<Incident>} the newly created incident
@@ -100,7 +100,7 @@ export default class Incident extends Model {
     if (!alias) {
       // All incidents have an alias so they can be deduplicated. See the index
       // created in app/imports/lib/alerts.js
-      alias = Array.isArray(componentsIds) && componentsIds.join();
+      alias = isArray(componentsIds) && componentsIds.join();
     }
     const incidentDoc = {
       robotId,
