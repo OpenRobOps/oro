@@ -19,19 +19,27 @@
  * Used for in-app incident notifications; renders a severity chip, a message,
  * and one button per action provided. A `subtle` action renders as a text button.
  *
- * NOTE: colors are passed in via the `colors` prop (resolved by the caller from
- * the theme) rather than read from the style function's theme; the legacy
- * withStyles path does not reliably receive the app theme, so the caller resolves
- * palette values through useTheme and hands them down.
+ * NOTE: colors are hardcoded to the ORO dark-theme tokens rather than read from
+ * the style function's theme; the withStyles/makeStyles path here does not reliably
+ * receive the app theme, so we mirror the same approach the theme uses for its
+ * MuiMenu/MuiAutocomplete overrides. Tokens: background.paper #170E28,
+ * background.borderLight #3E3155, text.primary #FAF0F0, text.muted #AAAAAA,
+ * background.brightBlue #9E6FF3.
  */
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
-import { makeStyles } from 'tss-react/mui';
+import { withStyles } from 'tss-react/mui';
 import Collapse from '@mui/material/Collapse';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 
-const useStyles = makeStyles()({
+const COLOR_BACKGROUND = '#170E28';
+const COLOR_BORDER = '#3E3155';
+const COLOR_TEXT = '#FAF0F0';
+const COLOR_MUTED = '#AAAAAA';
+const COLOR_ACCENT = '#9E6FF3';
+
+const styles = {
   container: {
     display: 'flex',
     alignItems: 'center',
@@ -40,6 +48,8 @@ const useStyles = makeStyles()({
     padding: '8px 12px 8px 14px',
     margin: '8px 16px 0',
     borderRadius: '8px',
+    backgroundColor: COLOR_BACKGROUND,
+    border: `1px solid ${COLOR_BORDER}`,
   },
   statusAndMessage: {
     display: 'flex',
@@ -62,6 +72,7 @@ const useStyles = makeStyles()({
     whiteSpace: 'nowrap',
   },
   message: {
+    color: COLOR_TEXT,
     fontSize: '0.8125rem',
     fontWeight: 500,
     overflow: 'hidden',
@@ -74,62 +85,62 @@ const useStyles = makeStyles()({
     gap: '8px',
     flexShrink: 0,
   },
-});
-
-const Banner = ({
-  open, message, actions, statusColor, statusContent, colors,
-}) => {
-  const { classes } = useStyles();
-  return (
-    <Collapse in={open} timeout={400}>
-      <div
-        className={classes.container}
-        style={{
-          backgroundColor: colors.background,
-          border: `1px solid ${colors.border}`,
-          borderLeft: statusColor ? `4px solid ${statusColor}` : `1px solid ${colors.border}`,
-        }}
-      >
-        <div className={classes.statusAndMessage}>
-          {statusColor && statusContent && (
-            <span className={classes.badge} style={{ backgroundColor: statusColor }}>
-              {statusContent}
-            </span>
-          )}
-          <Typography
-            data-test="notifications-message"
-            className={classes.message}
-            style={{ color: colors.text }}
-          >
-            {message}
-          </Typography>
-        </div>
-        <div className={classes.actions}>
-          {actions.map((action) => (
-            <Button
-              key={action.label}
-              onClick={action.onClick}
-              disabled={action.disabled}
-              variant={action.subtle ? 'text' : 'outlined'}
-              size="small"
-              data-test={`notification-action-${action.label}`}
-              sx={action.subtle
-                ? { textTransform: 'none', color: colors.muted }
-                : {
-                  textTransform: 'none',
-                  color: colors.text,
-                  borderColor: colors.border,
-                  '&:hover': { borderColor: colors.accent, backgroundColor: 'transparent' },
-                }}
-            >
-              {action.label}
-            </Button>
-          ))}
-        </div>
-      </div>
-    </Collapse>
-  );
+  actionButton: {
+    textTransform: 'none',
+    color: COLOR_TEXT,
+    borderColor: COLOR_BORDER,
+    '&:hover': {
+      borderColor: COLOR_ACCENT,
+      backgroundColor: 'transparent',
+    },
+  },
+  subtleButton: {
+    textTransform: 'none',
+    color: COLOR_MUTED,
+  },
 };
+
+class Banner extends PureComponent {
+  render() {
+    const {
+      open, classes, message, actions, statusColor, statusContent,
+    } = this.props;
+    return (
+      <Collapse in={open} timeout={400}>
+        <div
+          className={classes.container}
+          style={statusColor ? { borderLeft: `4px solid ${statusColor}` } : undefined}
+        >
+          <div className={classes.statusAndMessage}>
+            {statusColor && statusContent && (
+              <span className={classes.badge} style={{ backgroundColor: statusColor }}>
+                {statusContent}
+              </span>
+            )}
+            <Typography data-test="notifications-message" className={classes.message}>
+              {message}
+            </Typography>
+          </div>
+          <div className={classes.actions}>
+            {actions.map((action) => (
+              <Button
+                key={action.label}
+                onClick={action.onClick}
+                disabled={action.disabled}
+                variant={action.subtle ? 'text' : 'outlined'}
+                size="small"
+                className={action.subtle ? classes.subtleButton : classes.actionButton}
+                data-test={`notification-action-${action.label}`}
+              >
+                {action.label}
+              </Button>
+            ))}
+          </div>
+        </div>
+      </Collapse>
+    );
+  }
+}
 
 Banner.propTypes = {
   open: PropTypes.bool.isRequired,
@@ -137,8 +148,7 @@ Banner.propTypes = {
   actions: PropTypes.array.isRequired,
   statusColor: PropTypes.string,
   statusContent: PropTypes.node,
-  // Resolved palette colors: { background, border, text, muted, accent }.
-  colors: PropTypes.object.isRequired,
+  classes: PropTypes.object,
 };
 
-export default Banner;
+export default withStyles(Banner, styles);

@@ -58,13 +58,6 @@ const NotificationsComponent = ({ notification }) => {
 
   const statusColor = theme.palette.severityColor
     && theme.palette.severityColor[notification.severity];
-  const colors = {
-    background: theme.palette.background.paper,
-    border: theme.palette.background.borderLight,
-    text: theme.palette.text.primary,
-    muted: theme.palette.text.muted,
-    accent: theme.palette.background.brightBlue,
-  };
   const message = error
     ? `${notification.message} (action failed: ${error})`
     : notification.message;
@@ -76,7 +69,6 @@ const NotificationsComponent = ({ notification }) => {
       actions={actions}
       statusColor={statusColor}
       statusContent={notification.severity}
-      colors={colors}
     />
   );
 };
