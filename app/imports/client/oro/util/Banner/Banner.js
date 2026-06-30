@@ -15,100 +15,115 @@
  */
 
 /**
- * Displays a banner across the top of the app, following ORO's design.
- * Used for in-app incident notifications; renders a message, a severity color
- * indicator, and one button per action provided.
+ * Displays a banner across the top of the app, following ORO's dark theme.
+ * Used for in-app incident notifications; renders a severity chip, a message,
+ * and one button per action provided. A `subtle` action renders as a text button.
  */
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from 'tss-react/mui';
 import Collapse from '@mui/material/Collapse';
-import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 
 const styles = (theme) => ({
   container: {
-    paddingLeft: '30px',
-    paddingRight: '35px',
-    borderRadius: '10px',
-    overflow: 'hidden',
-    boxShadow: `5px 5px 10px ${theme.palette.boxShadow.light}, -3px -3px 5px 1px ${theme.palette.boxShadow.white}`,
-    backgroundColor: theme.palette.background.white,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    [theme.breakpoints.down('1240')]: {
-      flexDirection: 'column'
-    }
+    gap: '16px',
+    padding: '8px 12px 8px 14px',
+    margin: '8px 16px 0',
+    borderRadius: '8px',
+    backgroundColor: theme.palette.background.paper,
+    border: `1px solid ${theme.palette.background.borderLight}`,
   },
   statusAndMessage: {
     display: 'flex',
-    alignItems: 'center'
-  },
-  status: {
-    textAlign: 'center',
-    padding: '4px',
-    minWidth: '35px',
-    height: '32px',
-    borderRadius: '6px',
-    display: 'flex',
     alignItems: 'center',
-    justifyContent: 'center'
+    gap: '12px',
+    minWidth: 0,
+  },
+  badge: {
+    flexShrink: 0,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '20px',
+    padding: '0 8px',
+    borderRadius: '5px',
+    fontSize: '0.625rem',
+    fontWeight: 600,
+    lineHeight: 1,
+    color: theme.palette.background.white,
+    whiteSpace: 'nowrap',
   },
   message: {
-    padding: theme.spacing(1),
-    fontWeight: 700,
-    fontSize: '14px'
+    color: theme.palette.text.primary,
+    fontSize: '0.8125rem',
+    fontWeight: 500,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
   },
   actions: {
     display: 'flex',
+    alignItems: 'center',
     gap: '8px',
-    alignItems: 'center'
+    flexShrink: 0,
   },
   actionButton: {
-    textTransform: 'none'
-  }
+    textTransform: 'none',
+    color: theme.palette.text.primary,
+    borderColor: theme.palette.background.borderLight,
+    '&:hover': {
+      borderColor: theme.palette.background.brightBlue,
+      backgroundColor: 'transparent',
+    },
+  },
+  subtleButton: {
+    textTransform: 'none',
+    color: theme.palette.text.muted,
+  },
 });
 
 class Banner extends PureComponent {
   render() {
     const {
-      open, classes, message, actions, statusColor, statusContent
+      open, classes, message, actions, statusColor, statusContent,
     } = this.props;
     return (
-      <Collapse in={open} timeout={500}>
-        <Grid
-          container
+      <Collapse in={open} timeout={400}>
+        <div
           className={classes.container}
-          style={{ borderBottom: statusColor ? `2px solid ${statusColor}` : undefined }}
+          style={{ borderLeft: statusColor ? `4px solid ${statusColor}` : undefined }}
         >
-          <Grid item className={classes.statusAndMessage}>
-            {statusColor && (
-              <Grid item className={classes.status} style={{ backgroundColor: statusColor }}>
+          <div className={classes.statusAndMessage}>
+            {statusColor && statusContent && (
+              <span className={classes.badge} style={{ backgroundColor: statusColor }}>
                 {statusContent}
-              </Grid>
+              </span>
             )}
             <Typography data-test="notifications-message" className={classes.message}>
               {message}
             </Typography>
-          </Grid>
-          <Grid item className={classes.actions}>
+          </div>
+          <div className={classes.actions}>
             {actions.map((action) => (
               <Button
                 key={action.label}
                 onClick={action.onClick}
                 disabled={action.disabled}
-                variant="outlined"
+                variant={action.subtle ? 'text' : 'outlined'}
                 size="small"
-                className={classes.actionButton}
+                className={action.subtle ? classes.subtleButton : classes.actionButton}
                 data-test={`notification-action-${action.label}`}
               >
                 {action.label}
               </Button>
             ))}
-          </Grid>
-        </Grid>
+          </div>
+        </div>
       </Collapse>
     );
   }
@@ -119,8 +134,8 @@ Banner.propTypes = {
   message: PropTypes.node.isRequired,
   actions: PropTypes.array.isRequired,
   statusColor: PropTypes.string,
-  statusContent: PropTypes.element,
-  classes: PropTypes.object
+  statusContent: PropTypes.node,
+  classes: PropTypes.object,
 };
 
 export default withStyles(Banner, styles, { withTheme: true });

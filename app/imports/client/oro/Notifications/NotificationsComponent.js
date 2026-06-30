@@ -54,7 +54,7 @@ const NotificationsComponent = ({ notification }) => {
     onClick: () => runAction(action.actionId),
     disabled: busy
   }));
-  actions.push({ label: 'Dismiss', onClick: dismiss, disabled: false });
+  actions.push({ label: 'Dismiss', onClick: dismiss, disabled: false, subtle: true });
 
   const statusColor = theme.palette.severityColor
     && theme.palette.severityColor[notification.severity];
@@ -68,6 +68,7 @@ const NotificationsComponent = ({ notification }) => {
       message={message}
       actions={actions}
       statusColor={statusColor}
+      statusContent={notification.severity}
     />
   );
 };
