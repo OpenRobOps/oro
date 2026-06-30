@@ -22,6 +22,7 @@ import {
   AppBar,
   Box,
   Divider,
+  IconButton,
   Menu,
   MenuItem,
   Toolbar,
@@ -29,13 +30,20 @@ import {
   useTheme,
 } from '@mui/material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import { Settings as SettingsIcon, LogOut as LogoutIcon } from 'lucide-react';
+import {
+  Bell as BellIcon,
+  BellOff as BellOffIcon,
+  Settings as SettingsIcon,
+  LogOut as LogoutIcon,
+} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
+import useNotificationsEnabled from './hooks/useNotificationsEnabled';
 import AvatarInitials from './util/AvatarInitials';
 
 const AppHeader = () => {
   const { user, logout } = useAuth();
+  const { enabled: notificationsEnabled, toggle: toggleNotifications } = useNotificationsEnabled();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState(null);
   const menuOpen = Boolean(anchorEl);
@@ -74,6 +82,15 @@ const AppHeader = () => {
           style={{ cursor: 'pointer' }}
         />
         <Box sx={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <IconButton
+            onClick={toggleNotifications}
+            size="small"
+            aria-label={notificationsEnabled ? 'hide notifications' : 'show notifications'}
+            data-test="notifications-bell"
+            sx={{ color: 'text.darkBlue' }}
+          >
+            {notificationsEnabled ? <BellIcon size={20} /> : <BellOffIcon size={20} />}
+          </IconButton>
           <Divider
             orientation="vertical"
             flexItem

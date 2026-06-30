@@ -26,24 +26,20 @@ import React, { useEffect, useCallback, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate, useLocation } from 'react-router';
 import {
-  Tabs, Tab, Box, IconButton
+  Tabs, Tab, Box
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { withStyles } from 'tss-react/mui';
 import { isObject } from 'lodash';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import HistoryIcon from '@mui/icons-material/History';
-import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
-import NotificationsOffIcon from '@mui/icons-material/NotificationsOff';
-import { Meteor } from 'meteor/meteor';
-import { useTracker } from 'meteor/react-meteor-data';
 // ORO modules
 import { DashboardUrl } from '../../../../lib/urlBuilder';
 import Loading from '../../util/Loading';
 import { useUrlContext } from '../../contexts/UrlContextContext';
 import { SECTION_SCOPES } from '../../../../shared/uiPreferences';
 import { countDashboardSectionsWithScopes } from '../../../../shared/dashboards';
-import { Preferences } from '../../../../lib/collections';
+import useNotificationsEnabled from '../../hooks/useNotificationsEnabled';
 // import { writeCtx } from '../../../../lib/context';
 
 const StyledTabs = styled(Tabs)(({ theme }) => ({
@@ -210,18 +206,9 @@ const DashboardSelector = (props) => {
   const [tabIndex, setTabIndex] = useState(0);
   const [context, setContext] = useUrlContext();
 
-  // Per-user toggle for showing the incident notifications banner. Defaults to on.
-  const notificationsEnabled = useTracker(() => {
-    const userId = Meteor.userId();
-    Meteor.subscribe('preferences', { keys: ['notificationsBell'] });
-    const pref = Preferences.findOne('notificationsBell');
-    const value = pref && userId ? pref[userId] : undefined;
-    return value === undefined ? true : value;
-  }, []);
-
-  const toggleNotifications = useCallback(() => {
-    Meteor.call('preferences.setNotificationsBell', !notificationsEnabled);
-  }, [notificationsEnabled]);
+  // Per-user toggle for showing the incident notifications banner; the bell control
+  // itself lives in the app header (see AppHeader).
+  const { enabled: notificationsEnabled } = useNotificationsEnabled();
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -286,14 +273,6 @@ const DashboardSelector = (props) => {
               ))
             }
           </StyledTabs>
-          <IconButton
-            onClick={toggleNotifications}
-            size="small"
-            aria-label="toggle notifications"
-            data-test="notifications-bell"
-          >
-            {notificationsEnabled ? <NotificationsActiveIcon /> : <NotificationsOffIcon />}
-          </IconButton>
         </TabsContainer>
       )}
       <ContentFlexContainer>
