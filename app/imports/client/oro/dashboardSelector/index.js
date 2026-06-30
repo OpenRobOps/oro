@@ -34,8 +34,7 @@ import { UIPreferences } from '../../../lib/collections';
 import { Dashboards } from '../../../lib/dashboards';
 import DashboardSelector from './DashboardSelector';
 import Dashboard from '../Dashboard';
-// import NotificationsClient from '../Notifications';
-const NotificationsClient = () => null;
+import NotificationsClient from '../Notifications';
 import { UrlContextProvider } from '../contexts/UrlContextContext';
 import RobotOfflineBar from '../util/RobotOfflineBar';
 
