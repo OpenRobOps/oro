@@ -15,21 +15,18 @@
  */
 
 /**
- * Subscribes to and returns the in-app notifications for a single robot,
- * newest first. Returns an empty list when no robot is in view.
+ * Subscribes to and returns the in-app notifications across the fleet, newest
+ * first. Notifications are shown fleet-wide, not scoped to a robot in view.
  */
 import { useTracker } from 'meteor/react-meteor-data';
 import { Meteor } from 'meteor/meteor';
 import { Notifications } from '../../../lib/notifications';
 
-const useNotifications = (robotId) => useTracker(() => {
-  if (!robotId) {
-    return { notifications: [], isLoading: false };
-  }
-  const handle = Meteor.subscribe('notifications', { robotId });
+const useNotifications = () => useTracker(() => {
+  const handle = Meteor.subscribe('notifications');
   const isLoading = !handle.ready();
-  const notifications = Notifications.find({ robotId }, { sort: { ts: -1 } }).fetch();
+  const notifications = Notifications.find({}, { sort: { ts: -1 } }).fetch();
   return { notifications, isLoading };
-}, [robotId]);
+}, []);
 
 export default useNotifications;

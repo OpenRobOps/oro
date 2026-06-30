@@ -17,19 +17,18 @@
 /**
  * Notifications container.
  *
- * Scopes to the robot currently in view (from the URL context) and renders the
- * newest in-app notification, when notifications are enabled by the user.
+ * Renders the newest in-app notification across the fleet, when notifications are
+ * enabled by the user. Not scoped to a robot in view; the notification message
+ * already names its robot.
  */
 import React from 'react';
 import PropTypes from 'prop-types';
 // ORO modules
-import { readRobotProp, CTX_PROPS } from '../../../lib/context';
 import useNotifications from '../hooks/useNotifications';
 import NotificationsComponent from './NotificationsComponent';
 
-const Notifications = ({ context, enabled }) => {
-  const robotId = readRobotProp({ ctx: context, prop: CTX_PROPS.ROBOT_ID });
-  const { notifications } = useNotifications(robotId);
+const Notifications = ({ enabled }) => {
+  const { notifications } = useNotifications();
   if (!enabled || !notifications.length) {
     return null;
   }
@@ -37,7 +36,6 @@ const Notifications = ({ context, enabled }) => {
 };
 
 Notifications.propTypes = {
-  context: PropTypes.object,
   enabled: PropTypes.bool
 };
 

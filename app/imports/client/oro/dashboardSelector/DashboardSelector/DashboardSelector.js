@@ -280,7 +280,7 @@ const DashboardSelector = (props) => {
         <DashboardPanelsWrapper>
           {!muteNotifications
             && NotificationsClient && (
-              <NotificationsClient context={context} enabled={notificationsEnabled} />
+              <NotificationsClient enabled={notificationsEnabled} />
           )}
           {dashboardSpecs.map((dashboardSpec, i) => (
             <TabPanel
