@@ -33,7 +33,7 @@ const Notifications = ({ context, enabled }) => {
   if (!enabled || !notifications.length) {
     return null;
   }
-  return <NotificationsComponent notification={notifications[0]} />;
+  return <NotificationsComponent key={notifications[0]._id} notification={notifications[0]} />;
 };
 
 Notifications.propTypes = {

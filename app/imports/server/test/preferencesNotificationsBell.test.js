@@ -19,10 +19,14 @@
  * 'notificationsBell' preferences document without clobbering other users.
  */
 import { Meteor } from 'meteor/meteor';
-import { expect } from 'chai';
+import chai from 'chai';
+import chaiAsPromised from 'chai-as-promised';
 // ORO modules
 import { resetDatabase } from './setup';
 import PreferencesManager from '../preferences';
+
+chai.use(chaiAsPromised);
+const { expect } = chai;
 
 if (!Meteor.isTest) {
   throw new Error('This is TEST code only');
@@ -40,5 +44,26 @@ describe('preferences: notifications bell flag', () => {
     const doc = await manager.getPreferences('notificationsBell');
     expect(doc.userOne).eq(false);
     expect(doc.userTwo).eq(true);
+  });
+
+  // Invoke the method handler directly with a fake context, matching the pattern
+  // used in other ORO method tests.
+  const callMethod = (userId, ...args) =>
+    Meteor.server.method_handlers['preferences.setNotificationsBell'].apply({ userId }, args);
+
+  it('method stores flag for one user and merges a second without clobbering the first', async () => {
+    await callMethod('userOne', true);
+    await callMethod('userTwo', false);
+    const doc = await new PreferencesManager().getPreferences('notificationsBell');
+    expect(doc.userOne).eq(true);
+    expect(doc.userTwo).eq(false);
+  });
+
+  it('method rejects when called with no userId', async () => {
+    await expect(callMethod(undefined, true)).to.be.rejected;
+  });
+
+  it('method rejects when called with a non-boolean argument', async () => {
+    await expect(callMethod('userOne', 'yes')).to.be.rejected;
   });
 });
