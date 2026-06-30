@@ -21,10 +21,10 @@
  */
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
-import { withStyles } from 'tss-react/mui';
 import Collapse from '@mui/material/Collapse';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
+import { legacyWithStyles } from '../withStyles';
 
 const styles = (theme) => ({
   container: {
@@ -138,4 +138,4 @@ Banner.propTypes = {
   classes: PropTypes.object,
 };
 
-export default withStyles(Banner, styles, { withTheme: true });
+export default legacyWithStyles(Banner, styles);
