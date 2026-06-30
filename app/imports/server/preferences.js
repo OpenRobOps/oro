@@ -18,6 +18,7 @@
  * DRAFT/STUB implementation for preferences manager. 
  */
 import { Meteor } from 'meteor/meteor';
+import { check } from 'meteor/check';
 import { isString, isObject, isEmpty } from 'lodash';
 import { Preferences } from '../lib/collections';
 import OroRoles from './roles';
@@ -97,6 +98,21 @@ Meteor.publish('preferences', async function ({ keys, fields = null }) {
         throw new Meteor.Error('keys must be an array');
     }
     return Preferences.find({ _id: { $in: keys } });
+});
+
+/**
+ * Sets the current user's in-app notifications bell flag (whether the incident
+ * notifications banner is shown). Stored under the shared 'notificationsBell'
+ * document, keyed by userId, so users do not overwrite each other.
+ */
+Meteor.methods({
+  'preferences.setNotificationsBell': async function setNotificationsBell(enabled) {
+    check(enabled, Boolean);
+    if (!this.userId) {
+      throw new Meteor.Error('Unauthorized');
+    }
+    return new PreferencesManager().setPreferences('notificationsBell', { [this.userId]: enabled });
+  }
 });
 
 export default PreferencesManager;
