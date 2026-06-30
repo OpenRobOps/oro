@@ -21,7 +21,7 @@
 import Validator from 'fastest-validator';
 import { isEmpty, isObject } from 'lodash';
 // ORO Modules
-// import IncidentsConfigAPIHandler from './incidentDefinitions';
+import IncidentsConfigAPIHandler from './incidentDefinitions';
 // import RobotCameraAPIHandler from './robotCamera';
 import DataSourcesConfigAPIHandler from './dataSourceDefinitions';
 import ActionConfigAPIHandler from './actionDefinitions';
@@ -98,7 +98,7 @@ export default class ConfigAPI {
       throw new Error('Bad arguments', moreArgs);
     }
     this._kindsHandlers = kindsHandlersMap || {
-      // [KIND_INCIDENT_DEFINITION]: new IncidentsConfigAPIHandler(this),
+      [KIND_INCIDENT_DEFINITION]: new IncidentsConfigAPIHandler(this),
       // [KIND_ROBOT_CAMERA]: new RobotCameraAPIHandler(this),
       [KIND_DATASOURCE_DEFINITION]: new DataSourcesConfigAPIHandler(this),
       [KIND_STATUS_DEFINITION]: new StatusConfigAPIHandler(this),
