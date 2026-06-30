@@ -24,6 +24,7 @@
 import SimpleSchema from 'simpl-schema';
 import { capitalizeString } from './util';
 import { ACTION_TYPES } from '../shared/actions';
+import { STATUS } from '../shared/status';
 
 // Api endpoint to receive events queries
 const EVENTS_API_PATH = '/api/v1/events';
@@ -394,7 +395,8 @@ const getEventRobotText = (event) => {
 };
 
 const incidentIsResolved = (event) => {
-  const { level } = event.eventData || event;
+  const eventData = event.eventData || event;
+  const { level } = eventData.event || eventData;
   return level === STATUS.OK.text;
 };
 

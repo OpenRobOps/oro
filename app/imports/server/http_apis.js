@@ -23,6 +23,7 @@ import { VALID_ID_REGEXP } from '../shared/constants';
 import { decryptPassword } from './mqttCredentialUtils';
 import { provisionRobotCredentials } from './mqttCredentialProvisioner';
 import AgentManager from './agentManager';
+import AlertsManager from './alertsManager';
 import Robot from './model/robot';
 
 function sendAndLogError(res, msg, endpoint, httpStatus) {
@@ -203,6 +204,48 @@ WebApp.connectHandlers.use('/peer/robot/command', Meteor.bindEnvironment(async (
         console.warn(`Unknown command received from robotId=${robotId} : ${command}`, { labels: { robotId } });
     }
 
+    res.writeHead(200);
+    res.end();
+  } catch (e) {
+    console.warn(e);
+    res.writeHead(400);
+    res.end();
+  }
+}));
+
+// Receives alert create/resolve requests from ingest (peer) and turns them into incidents.
+WebApp.connectHandlers.use('/peer/alerts', Meteor.bindEnvironment(async (req, res) => {
+  if (req.method != 'POST') {
+    console.warn('/peer/alerts, Unrecognized request method: ' + req.method);
+    res.writeHead(400);
+    res.end();
+    return;
+  }
+  const {
+    peerKey, resolve, robotId, triggerId, name, level, message,
+    attributeValue, formattedValue, source, alias, ts = Date.now()
+  } = req.body || {};
+
+  if (!(peerKey && robotId && ((name && message) || resolve))) {
+    console.warn('/peer/alerts, Missing parameter');
+    res.writeHead(400);
+    res.end();
+    return;
+  }
+  if (peerKey != Meteor.settings.peerKey) {
+    console.warn('/peer/alerts, Invalid peer key provided');
+    res.writeHead(400);
+    res.end();
+    return;
+  }
+
+  try {
+    if (resolve) {
+      await new AlertsManager().resolveAlert({ robotId, triggerId, alias, ts });
+    } else {
+      const event = { name, level, message, attributeValue, formattedValue };
+      await new AlertsManager().createAlert({ robotId, triggerId, event, source, alias, ts });
+    }
     res.writeHead(200);
     res.end();
   } catch (e) {

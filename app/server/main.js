@@ -53,6 +53,7 @@ import {
   Navigation2DModule,
 } from '../imports/server/modules';
 import { bootstrapConfigData } from './bootstrapConfig';
+import { initIncidentsManagement } from '../imports/server/incidentsManagementSubsystem';
 import { assertValidSettings } from '../imports/server/settingsValidation';
 import EventLog from '../imports/server/eventLog/eventLogger';
 import DbEventStore from '../imports/server/eventLog/meteorDbEventStore';
@@ -146,6 +147,9 @@ const oroAppMain = async () => {
 
   // Bootstrap default configuration data
   await bootstrapConfigData(configApi);
+
+  // Wire alerts -> incidents -> event log.
+  initIncidentsManagement();
 
   // Load and start modules
   // moduleInstances.RobotLocalizationModule.load();
