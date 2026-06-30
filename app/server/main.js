@@ -54,6 +54,7 @@ import {
 } from '../imports/server/modules';
 import { bootstrapConfigData } from './bootstrapConfig';
 import { initIncidentsManagement } from '../imports/server/incidentsManagementSubsystem';
+import '../imports/server/notifications';
 import { assertValidSettings } from '../imports/server/settingsValidation';
 import EventLog from '../imports/server/eventLog/eventLogger';
 import DbEventStore from '../imports/server/eventLog/meteorDbEventStore';
