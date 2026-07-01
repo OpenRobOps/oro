@@ -34,6 +34,8 @@ export default class NotificationsManager {
     this._actionsEngine = actionsEngine || new ActionsEngine();
   }
 
+  // Removing the notification is enough: the alerts listener only updates an
+  // existing notification on later events, so a dismissed one is not re-created.
   dismiss = async ({ notificationId }) => Notifications.removeAsync({ _id: notificationId });
 
   runManualAction = async ({ notificationId, actionId, user }) => {
@@ -53,10 +55,14 @@ export default class NotificationsManager {
     if (result?.errors) {
       throw new Meteor.Error('action-failed', JSON.stringify(result.errors));
     }
+    // The operator acted on the call-to-action: record it and remove the
+    // notification now (the incident stays open until it clears, but the
+    // notification's job is done; the listener won't re-create it on updates).
     await RobotAlerts.updateAsync(
       { _id: notification.alertId },
       { $push: { executedActions: { actionId, userId: user?._id, ts: Date.now() } } }
     );
+    await Notifications.removeAsync({ _id: notificationId });
     return result;
   };
 }

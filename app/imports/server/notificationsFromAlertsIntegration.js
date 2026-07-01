@@ -34,7 +34,7 @@ export default class NotificationsFromAlertsIntegration {
     this._actionsEngine = actionsEngine || new ActionsEngine();
   }
 
-  handleAlertEvent = async (alertMsg) => {
+  handleAlertEvent = async (alertMsg, options = {}) => {
     const alert = await RobotAlerts.findOneAsync({ _id: alertMsg?._id });
     if (!alert) {
       console.warn(`NotificationsFromAlertsIntegration could not find RobotAlert ${alertMsg?._id}`);
@@ -56,21 +56,24 @@ export default class NotificationsFromAlertsIntegration {
       actionId,
       label: definitionsById[actionId]?.label || actionId
     }));
-    await Notifications.upsertAsync(
-      { alertId: alert._id },
-      {
-        $set: {
-          robotId: alert.robotId,
-          alertId: alert._id,
-          componentId: alert.componentId,
-          origin: ORIGIN_ROBOT_ALERT,
-          severity: alert.severity,
-          message: alert.message,
-          label: alert.label,
-          actions,
-          ts: alert.ts
-        }
-      }
-    );
+    const fields = {
+      robotId: alert.robotId,
+      alertId: alert._id,
+      componentId: alert.componentId,
+      origin: ORIGIN_ROBOT_ALERT,
+      severity: alert.severity,
+      message: alert.message,
+      label: alert.label,
+      actions,
+      ts: alert.ts
+    };
+    // Create on the alert's first event; on later updates only modify an existing
+    // notification (never resurrect one the operator dismissed or already acted on).
+    // Mirrors inorbit's makeRobotAlertNotification (insert) vs updateRobotAlertNotification.
+    if (options.isUpdate) {
+      await Notifications.updateAsync({ alertId: alert._id }, { $set: fields });
+    } else {
+      await Notifications.upsertAsync({ alertId: alert._id }, { $set: fields });
+    }
   };
 }
