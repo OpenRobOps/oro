@@ -16,16 +16,15 @@
 
 /**
  * Renders a single incident notification as a banner, mapping its manual actions
- * to buttons that run via the notifications methods. Meteor-aware only through
- * Meteor.call for running and dismissing.
+ * to buttons. Presentational and Meteor-free: the run and dismiss methods are
+ * injected as props by the container (see index.js).
  */
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Meteor } from 'meteor/meteor';
 import { useTheme } from '@mui/material/styles';
 import Banner from '../util/Banner';
 
-const NotificationsComponent = ({ notification }) => {
+const NotificationsComponent = ({ notification, runManualAction, dismiss }) => {
   const theme = useTheme();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
@@ -33,20 +32,16 @@ const NotificationsComponent = ({ notification }) => {
   const runAction = (actionId) => {
     setBusy(true);
     setError(null);
-    Meteor.call(
-      'notifications.runManualAction',
-      { notificationId: notification._id, actionId },
-      (err) => {
+    runManualAction({ notificationId: notification._id, actionId })
+      .then(() => setBusy(false))
+      .catch((err) => {
         setBusy(false);
-        if (err) {
-          setError(err.reason || err.message);
-        }
-      }
-    );
+        setError(err.reason || err.message);
+      });
   };
 
-  const dismiss = () => {
-    Meteor.call('notifications.dismiss', { notificationId: notification._id });
+  const onDismiss = () => {
+    dismiss({ notificationId: notification._id });
   };
 
   const actions = (notification.actions || []).map((action) => ({
@@ -54,7 +49,7 @@ const NotificationsComponent = ({ notification }) => {
     onClick: () => runAction(action.actionId),
     disabled: busy
   }));
-  actions.push({ label: 'Dismiss', onClick: dismiss, disabled: false, subtle: true });
+  actions.push({ label: 'Dismiss', onClick: onDismiss, disabled: false, subtle: true });
 
   const statusColor = theme.palette.severityColor
     && theme.palette.severityColor[notification.severity];
@@ -74,7 +69,9 @@ const NotificationsComponent = ({ notification }) => {
 };
 
 NotificationsComponent.propTypes = {
-  notification: PropTypes.object.isRequired
+  notification: PropTypes.object.isRequired,
+  runManualAction: PropTypes.func.isRequired,
+  dismiss: PropTypes.func.isRequired
 };
 
 export default NotificationsComponent;

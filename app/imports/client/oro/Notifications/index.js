@@ -25,14 +25,24 @@ import React from 'react';
 import PropTypes from 'prop-types';
 // ORO modules
 import useNotifications from '../hooks/useNotifications';
+import { useMethod } from '../util/meteorUtils';
 import NotificationsComponent from './NotificationsComponent';
 
 const Notifications = ({ enabled }) => {
   const { notifications } = useNotifications();
+  const { call: runManualAction } = useMethod('notifications.runManualAction');
+  const { call: dismiss } = useMethod('notifications.dismiss');
   if (!enabled || !notifications.length) {
     return null;
   }
-  return <NotificationsComponent key={notifications[0]._id} notification={notifications[0]} />;
+  return (
+    <NotificationsComponent
+      key={notifications[0]._id}
+      notification={notifications[0]}
+      runManualAction={runManualAction}
+      dismiss={dismiss}
+    />
+  );
 };
 
 Notifications.propTypes = {
