@@ -17,7 +17,7 @@
 /**
  * In-app notifications.
  *
- * Robot-scoped (no company scope). Currently populated from open incidents that
+ * Currently populated from open incidents that
  * carry manual actions; see server/notificationsFromAlertsIntegration.js.
  */
 import { Mongo } from 'meteor/mongo';

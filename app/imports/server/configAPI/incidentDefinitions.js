@@ -42,8 +42,7 @@ import { ICM_SEV_ALL } from '../../shared/alerts';
 
 // Supports per-level severity, autoActions (run automatically) and manualActions
 // (ids of actions an operator runs by hand from an in-app notification).
-// Distributions are intentionally not part of this schema yet; the `ok` block has
-// no manual actions (a resolved incident has nothing to act on).
+// The `ok` block has no manual actions (a resolved incident has nothing to act on).
 const ACTION_IDS = {
   type: 'array', optional: true, items: { type: 'string', empty: false }
 };
