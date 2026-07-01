@@ -21,9 +21,6 @@
  * the global incident definition for the trigger, deduplicates / reopens alerts in
  * the RobotAlerts collection, and notifies listeners. Turning alerts into incidents
  * is done by listeners (see incidentsFromAlertsIntegration).
- *
- * NOTE: notifications (Slack/email/etc.) and auto/manual actions are intentionally
- * not handled here yet.
  */
 import Robot from './model/robot';
 import ActionsEngine from './actions';
