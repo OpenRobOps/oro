@@ -86,7 +86,6 @@ const AppHeader = () => {
             onClick={toggleNotifications}
             size="small"
             aria-label={notificationsEnabled ? 'hide notifications' : 'show notifications'}
-            data-test="notifications-bell"
             sx={{ color: 'text.darkBlue' }}
           >
             {notificationsEnabled ? <BellIcon size={20} /> : <BellOffIcon size={20} />}
