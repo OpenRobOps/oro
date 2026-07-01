@@ -23,8 +23,11 @@ import { useCallback } from 'react';
 import { useTracker } from 'meteor/react-meteor-data';
 import { Meteor } from 'meteor/meteor';
 import { Preferences } from '../../../lib/collections';
+import { useMethod } from '../util/meteorUtils';
 
 const useNotificationsEnabled = () => {
+  const { call: setNotificationsBell } = useMethod('preferences.setNotificationsBell');
+
   const enabled = useTracker(() => {
     const userId = Meteor.userId();
     Meteor.subscribe('preferences', { keys: ['notificationsBell'] });
@@ -34,8 +37,8 @@ const useNotificationsEnabled = () => {
   }, []);
 
   const toggle = useCallback(() => {
-    Meteor.call('preferences.setNotificationsBell', !enabled);
-  }, [enabled]);
+    setNotificationsBell(!enabled);
+  }, [enabled, setNotificationsBell]);
 
   return { enabled, toggle };
 };
