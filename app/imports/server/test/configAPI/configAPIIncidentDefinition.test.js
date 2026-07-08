@@ -133,6 +133,32 @@ describe('configAPI:IncidentDefinition', () => {
     expect(await IncidentConfiguration.findOneAsync({ _id: 'batteryLow' })).to.not.be.ok;
   });
 
+  it('apply: stores per-level autoActions', async () => {
+    const user = await createUser({ role: ROLE_ADMIN });
+    new ConfigAPI().init();
+    await new ConfigAPI().apply({
+      configObject: makeConfigObject('batteryLow', {
+        label: 'Battery incident',
+        error: { severity: ICM_SEV_1, autoActions: ['DockAuto'] },
+        ok: { autoActions: ['BatteryCharge'] }
+      }),
+      user
+    });
+    const doc = await IncidentConfiguration.findOneAsync({ _id: 'batteryLow' });
+    expect(doc.error.autoActions).deep.eq(['DockAuto']);
+    expect(doc.ok.autoActions).deep.eq(['BatteryCharge']);
+  });
+
+  it('apply: rejects autoActions that are not an array of strings', async () => {
+    const user = await createUser({ role: ROLE_ADMIN });
+    new ConfigAPI().init();
+    await expect(
+      new ConfigAPI().apply({
+        configObject: makeConfigObject('bad', { error: { autoActions: [123] } }), user
+      })
+    ).to.be.rejected;
+  });
+
   it('list: returns short and full formats', async () => {
     const user = await createUser({ role: ROLE_ADMIN });
     new ConfigAPI().init();

@@ -41,14 +41,19 @@ import { IncidentConfiguration } from '../../lib/alerts';
 import { ICM_SEV_ALL } from '../../shared/alerts';
 
 // IncidentDefinition spec used for Config as Code Apply.
-// Only label/labelTemplate and per-level severity are supported for now;
-// distributions and actions are intentionally not part of this schema yet.
+// Supports per-level severity and autoActions (ids of actions to run automatically).
+// Distributions and manualActions are intentionally not part of this schema yet.
+const AUTO_ACTIONS = {
+  type: 'array', optional: true, items: { type: 'string', empty: false }
+};
+
 const LEVEL_BLOCK = {
   type: 'object',
   optional: true,
   strict: true,
   props: {
-    severity: { type: 'enum', values: ICM_SEV_ALL, optional: true }
+    severity: { type: 'enum', values: ICM_SEV_ALL, optional: true },
+    autoActions: AUTO_ACTIONS
   }
 };
 
@@ -58,7 +63,7 @@ const IncidentDefinitionSpecApplySchema = {
   labelTemplate: { type: 'string', optional: true, empty: false },
   error: LEVEL_BLOCK,
   warning: LEVEL_BLOCK,
-  ok: { type: 'object', optional: true, strict: true, props: {} }
+  ok: { type: 'object', optional: true, strict: true, props: { autoActions: AUTO_ACTIONS } }
 };
 
 const incidentDefinitionSpecValidator = new Validator().compile(IncidentDefinitionSpecApplySchema);
