@@ -661,7 +661,7 @@ class IncidentListWidget extends React.Component {
         >
           {incident.status == INCIDENT_STATUS_NEW ? (
             <div className={classes.iconContainer}>
-              <CircleDot size={16} color={theme.palette.text.lightGray} />
+              <CircleDot size={16} color={theme.palette.incidents.error} />
               &nbsp;Open
             </div>
           ) : (
