@@ -14,14 +14,14 @@
  *    limitations under the License.
  */
 
-/**
- * Subscribes to and returns the in-app notifications across the fleet, newest
- * first. Notifications are shown fleet-wide, not scoped to a robot in view.
- */
 import { useTracker } from 'meteor/react-meteor-data';
 import { Meteor } from 'meteor/meteor';
 import { Notifications } from '../../../lib/notifications';
 
+/**
+ * Subscribes to and returns the in-app notifications across the fleet, newest
+ * first. Notifications are shown fleet-wide, not scoped to a robot in view.
+ */
 const useNotifications = () => useTracker(() => {
   const handle = Meteor.subscribe('notifications');
   const isLoading = !handle.ready();

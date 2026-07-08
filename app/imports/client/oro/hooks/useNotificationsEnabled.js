@@ -14,31 +14,41 @@
  *    limitations under the License.
  */
 
+import { useCallback, useSyncExternalStore } from 'react';
+
+const MUTE_KEY = 'muteNotifications';
+const CHANGE_EVENT = 'muteNotifications-change';
+
+const isEnabled = () => localStorage.getItem(MUTE_KEY) !== 'true';
+
+const subscribe = (onChange) => {
+  window.addEventListener(CHANGE_EVENT, onChange);
+  window.addEventListener('storage', onChange);
+  return () => {
+    window.removeEventListener(CHANGE_EVENT, onChange);
+    window.removeEventListener('storage', onChange);
+  };
+};
+
 /**
- * Reads and toggles the current user's in-app notifications bell flag (whether the
- * incident notifications banner is shown). Shared by the app header bell and the
- * dashboard notifications banner. Defaults to enabled when unset.
+ * Reads and toggles whether the in-app incident notifications banner is shown.
+ * Shared by the app header bell and the dashboard banner.
+ *
+ * The flag is client-side only, stored in localStorage under `muteNotifications`
+ * (the same key the dashboard selector already reads), mirroring how the main
+ * platform keeps this per-browser toggle. `enabled` is the inverse of muted;
+ * defaults to enabled when unset. useSyncExternalStore keeps every consumer in
+ * sync when the flag is toggled (same tab via a custom event, other tabs via the
+ * native `storage` event).
  */
-import { useCallback } from 'react';
-import { useTracker } from 'meteor/react-meteor-data';
-import { Meteor } from 'meteor/meteor';
-import { Preferences } from '../../../lib/collections';
-import { useMethod } from '../util/meteorUtils';
-
 const useNotificationsEnabled = () => {
-  const { call: setNotificationsBell } = useMethod('preferences.setNotificationsBell');
-
-  const enabled = useTracker(() => {
-    const userId = Meteor.userId();
-    Meteor.subscribe('preferences', { keys: ['notificationsBell'] });
-    const pref = Preferences.findOne('notificationsBell');
-    const value = pref && userId ? pref[userId] : undefined;
-    return value === undefined ? true : value;
-  }, []);
+  const enabled = useSyncExternalStore(subscribe, isEnabled, () => true);
 
   const toggle = useCallback(() => {
-    setNotificationsBell(!enabled);
-  }, [enabled, setNotificationsBell]);
+    // The new muted value is the current enabled value (we are flipping it).
+    localStorage.setItem(MUTE_KEY, String(isEnabled()));
+    window.dispatchEvent(new Event(CHANGE_EVENT));
+  }, []);
 
   return { enabled, toggle };
 };
