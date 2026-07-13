@@ -26,7 +26,7 @@ import React, { useEffect, useCallback, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate, useLocation } from 'react-router';
 import {
-  Tabs, Tab, Box, IconButton
+  Tabs, Tab, Box
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { withStyles } from 'tss-react/mui';
@@ -39,6 +39,7 @@ import Loading from '../../util/Loading';
 import { useUrlContext } from '../../contexts/UrlContextContext';
 import { SECTION_SCOPES } from '../../../../shared/uiPreferences';
 import { countDashboardSectionsWithScopes } from '../../../../shared/dashboards';
+import useNotificationsEnabled from '../../hooks/useNotificationsEnabled';
 // import { writeCtx } from '../../../../lib/context';
 
 const StyledTabs = styled(Tabs)(({ theme }) => ({
@@ -204,6 +205,11 @@ const DashboardSelector = (props) => {
 
   const [tabIndex, setTabIndex] = useState(0);
   const [context, setContext] = useUrlContext();
+
+  // Per-user toggle for showing the incident notifications banner; the bell control
+  // itself lives in the app header (see AppHeader).
+  const { enabled: notificationsEnabled } = useNotificationsEnabled();
+
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -274,7 +280,7 @@ const DashboardSelector = (props) => {
         <DashboardPanelsWrapper>
           {!muteNotifications
             && NotificationsClient && (
-              <NotificationsClient />
+              <NotificationsClient enabled={notificationsEnabled} />
           )}
           {dashboardSpecs.map((dashboardSpec, i) => (
             <TabPanel

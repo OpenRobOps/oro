@@ -26,7 +26,6 @@ import { check } from 'meteor/check';
 import { RobotAlerts } from '../lib/alerts';
 import { Notifications } from '../lib/notifications';
 import OroRoles from './roles';
-import { ACCESS_LEVEL_VIEW } from '../shared/roles';
 import ActionsEngine from './actions';
 
 export default class NotificationsManager {
@@ -67,16 +66,14 @@ export default class NotificationsManager {
   };
 }
 
-// Publishes the in-app notifications for a single robot, newest first.
-// The caller must be logged in and have view access to the robot.
-Meteor.publish('notifications', async function publishNotifications({ robotId } = {}) {
-  if (!this.userId) { // User must be logged in
+// Publishes the in-app notifications across the fleet, newest first. The caller
+// must be logged in and have a role; notifications are shown fleet-wide (like the
+// incident list), not scoped to a single robot in view.
+Meteor.publish('notifications', async function publishNotifications() {
+  if (!await new OroRoles().hasRole(this.userId)) {
     return this.ready();
   }
-  if (!await new OroRoles().canAccessRobot(this.userId, robotId, ACCESS_LEVEL_VIEW)) {
-    throw new Meteor.Error(`User not authorized to view robot's ${robotId} notifications`);
-  }
-  return Notifications.find({ robotId }, { sort: { ts: -1 } });
+  return Notifications.find({}, { sort: { ts: -1 } });
 });
 
 Meteor.methods({

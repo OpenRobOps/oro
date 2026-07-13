@@ -14,8 +14,9 @@
  *    limitations under the License.
  */
 
-body {
-  padding: 0;
-  margin: 0;
-  background-color: #1A0F2E;
-}
+/**
+ * Banner
+ */
+import Banner from './Banner';
+
+export default Banner;
