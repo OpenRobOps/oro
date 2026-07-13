@@ -107,3 +107,29 @@ describe('NotificationsManager', () => {
     expect(await Notifications.find({}).countAsync()).eq(0);
   });
 });
+
+describe('notifications methods (access control)', () => {
+  // A user id with no roles/robot access; the real OroRoles checks deny it.
+  const NO_ACCESS_USER = 'no-access-user';
+  const callMethod = (name, userId, arg) =>
+    Meteor.server.method_handlers[name].call({ userId }, arg);
+
+  beforeEach(async () => {
+    await resetDatabase();
+  });
+
+  it('dismiss rejects a user without a role and keeps the notification', async () => {
+    const { notificationId } = await seed({ actions: [{ actionId: 'DockManual', label: 'Dock' }] });
+    await expect(
+      callMethod('notifications.dismiss', NO_ACCESS_USER, { notificationId })
+    ).to.be.rejected;
+    expect(await Notifications.find({}).countAsync()).eq(1);
+  });
+
+  it('runManualAction rejects a user without operate access to the robot', async () => {
+    const { notificationId } = await seed({ actions: [{ actionId: 'DockManual', label: 'Dock' }] });
+    await expect(
+      callMethod('notifications.runManualAction', NO_ACCESS_USER, { notificationId, actionId: 'DockManual' })
+    ).to.be.rejected;
+  });
+});

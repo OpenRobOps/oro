@@ -26,6 +26,7 @@ import { check } from 'meteor/check';
 import { RobotAlerts } from '../lib/alerts';
 import { Notifications } from '../lib/notifications';
 import OroRoles from './roles';
+import { ACCESS_LEVEL_OPERATE } from '../shared/roles';
 import ActionsEngine from './actions';
 
 export default class NotificationsManager {
@@ -79,7 +80,8 @@ Meteor.publish('notifications', async function publishNotifications() {
 Meteor.methods({
   'notifications.dismiss': async function dismissNotification({ notificationId }) {
     check(notificationId, String);
-    if (!this.userId) {
+    // Notifications are fleet-wide; require a role to dismiss (matches the publication).
+    if (!await new OroRoles().hasRole(this.userId)) {
       throw new Meteor.Error('Unauthorized');
     }
     return new NotificationsManager().dismiss({ notificationId });
@@ -87,8 +89,13 @@ Meteor.methods({
   'notifications.runManualAction': async function runManualAction({ notificationId, actionId }) {
     check(notificationId, String);
     check(actionId, String);
-    if (!this.userId) {
-      throw new Meteor.Error('Unauthorized');
+    const notification = await Notifications.findOneAsync({ _id: notificationId });
+    if (!notification) {
+      throw new Meteor.Error('notification-not-found', `No notification ${notificationId}`);
+    }
+    // Running the action operates the robot; require operate access to it.
+    if (!await new OroRoles().canAccessRobot(this.userId, notification.robotId, ACCESS_LEVEL_OPERATE)) {
+      throw new Meteor.Error('Unauthorized', `Not authorized to run actions on robot ${notification.robotId}`);
     }
     const user = await Meteor.userAsync();
     return new NotificationsManager().runManualAction({ notificationId, actionId, user });
