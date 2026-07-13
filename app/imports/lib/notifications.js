@@ -14,8 +14,18 @@
  *    limitations under the License.
  */
 
-body {
-  padding: 0;
-  margin: 0;
-  background-color: #1A0F2E;
-}
+/**
+ * In-app notifications.
+ *
+ * Currently populated from open incidents that
+ * carry manual actions; see server/notificationsFromAlertsIntegration.js.
+ */
+import { Mongo } from 'meteor/mongo';
+import { COLLECTIONS } from '../shared/constants';
+
+// Notifications generated from a robot alert / incident.
+const ORIGIN_ROBOT_ALERT = 'robot_alert';
+
+const Notifications = new Mongo.Collection(COLLECTIONS.NOTIFICATIONS);
+
+export { Notifications, ORIGIN_ROBOT_ALERT };

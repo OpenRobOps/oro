@@ -33,7 +33,7 @@ import {
   TableSortLabel,
   TableFooter
 } from '@mui/material';
-import { FolderOpen, CircleCheckBig } from 'lucide-react';
+import { CircleDot, CircleCheckBig } from 'lucide-react';
 import { ChevronDown } from 'lucide-react';
 // ORO modules
 import {
@@ -661,7 +661,7 @@ class IncidentListWidget extends React.Component {
         >
           {incident.status == INCIDENT_STATUS_NEW ? (
             <div className={classes.iconContainer}>
-              <FolderOpen size={16} color={theme.palette.text.lightGray} />
+              <CircleDot size={16} color={theme.palette.incidents.error} />
               &nbsp;Open
             </div>
           ) : (

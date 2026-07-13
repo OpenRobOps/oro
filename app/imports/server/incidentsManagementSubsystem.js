@@ -20,6 +20,7 @@
  */
 import AlertsManager from './alertsManager';
 import IncidentsFromAlertsIntegration from './incidentsFromAlertsIntegration';
+import NotificationsFromAlertsIntegration from './notificationsFromAlertsIntegration';
 import IncidentsEventLog from './incidentsEventLog';
 import EventLog from './eventLog/eventLogger';
 import Incident from './model/incident';
@@ -29,6 +30,11 @@ export function initIncidentsManagement() {
   const incidentsFromAlertsIntegration = new IncidentsFromAlertsIntegration();
   new AlertsManager().addAlertsListener(
     (...args) => incidentsFromAlertsIntegration.handleAlertEvent(...args)
+  );
+  // Open incidents with manual actions surface as in-app notifications.
+  const notificationsFromAlertsIntegration = new NotificationsFromAlertsIntegration();
+  new AlertsManager().addAlertsListener(
+    (...args) => notificationsFromAlertsIntegration.handleAlertEvent(...args)
   );
   // Incident changes are logged to the event log.
   const incidentsEventLog = new IncidentsEventLog(new EventLog());

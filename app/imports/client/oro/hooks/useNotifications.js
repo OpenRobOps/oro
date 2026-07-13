@@ -14,8 +14,19 @@
  *    limitations under the License.
  */
 
-body {
-  padding: 0;
-  margin: 0;
-  background-color: #1A0F2E;
-}
+import { useTracker } from 'meteor/react-meteor-data';
+import { Meteor } from 'meteor/meteor';
+import { Notifications } from '../../../lib/notifications';
+
+/**
+ * Subscribes to and returns the in-app notifications across the fleet, newest
+ * first. Notifications are shown fleet-wide, not scoped to a robot in view.
+ */
+const useNotifications = () => useTracker(() => {
+  const handle = Meteor.subscribe('notifications');
+  const isLoading = !handle.ready();
+  const notifications = Notifications.find({}, { sort: { ts: -1 } }).fetch();
+  return { notifications, isLoading };
+}, []);
+
+export default useNotifications;

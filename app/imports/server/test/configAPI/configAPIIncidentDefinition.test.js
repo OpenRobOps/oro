@@ -159,6 +159,32 @@ describe('configAPI:IncidentDefinition', () => {
     ).to.be.rejected;
   });
 
+  it('apply: stores per-level manualActions', async () => {
+    const user = await createUser({ role: ROLE_ADMIN });
+    new ConfigAPI().init();
+    await new ConfigAPI().apply({
+      configObject: makeConfigObject('batteryLow', {
+        label: 'Battery incident',
+        error: { severity: ICM_SEV_1, manualActions: ['DockManual'] },
+        warning: { severity: ICM_SEV_2, manualActions: ['NotifyOps', 'Pause'] }
+      }),
+      user
+    });
+    const doc = await IncidentConfiguration.findOneAsync({ _id: 'batteryLow' });
+    expect(doc.error.manualActions).deep.eq(['DockManual']);
+    expect(doc.warning.manualActions).deep.eq(['NotifyOps', 'Pause']);
+  });
+
+  it('apply: rejects manualActions that are not an array of strings', async () => {
+    const user = await createUser({ role: ROLE_ADMIN });
+    new ConfigAPI().init();
+    await expect(
+      new ConfigAPI().apply({
+        configObject: makeConfigObject('bad', { error: { manualActions: [123] } }), user
+      })
+    ).to.be.rejected;
+  });
+
   it('list: returns short and full formats', async () => {
     const user = await createUser({ role: ROLE_ADMIN });
     new ConfigAPI().init();
