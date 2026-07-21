@@ -47,6 +47,13 @@ const ACTION_IDS = {
   type: 'array', optional: true, items: { type: 'string', empty: false }
 };
 
+// Ids of notification channels (see the NotificationChannel config kind) that alerts
+// at this level are distributed to. Resolved at dispatch time; a missing channel is
+// skipped, so no referential integrity is enforced here.
+const CHANNEL_IDS = {
+  type: 'array', optional: true, items: { type: 'string', empty: false }
+};
+
 const LEVEL_BLOCK = {
   type: 'object',
   optional: true,
@@ -54,7 +61,8 @@ const LEVEL_BLOCK = {
   props: {
     severity: { type: 'enum', values: ICM_SEV_ALL, optional: true },
     autoActions: ACTION_IDS,
-    manualActions: ACTION_IDS
+    manualActions: ACTION_IDS,
+    notificationChannels: CHANNEL_IDS
   }
 };
 
@@ -64,7 +72,12 @@ const IncidentDefinitionSpecApplySchema = {
   labelTemplate: { type: 'string', optional: true, empty: false },
   error: LEVEL_BLOCK,
   warning: LEVEL_BLOCK,
-  ok: { type: 'object', optional: true, strict: true, props: { autoActions: ACTION_IDS } }
+  ok: {
+    type: 'object',
+    optional: true,
+    strict: true,
+    props: { autoActions: ACTION_IDS, notificationChannels: CHANNEL_IDS }
+  }
 };
 
 const incidentDefinitionSpecValidator = new Validator().compile(IncidentDefinitionSpecApplySchema);
