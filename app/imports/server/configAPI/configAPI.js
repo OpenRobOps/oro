@@ -22,6 +22,7 @@ import Validator from 'fastest-validator';
 import { isEmpty, isObject } from 'lodash';
 // ORO Modules
 import IncidentsConfigAPIHandler from './incidentDefinitions';
+import NotificationChannelsConfigAPIHandler from './notificationChannels';
 // import RobotCameraAPIHandler from './robotCamera';
 import DataSourcesConfigAPIHandler from './dataSourceDefinitions';
 import ActionConfigAPIHandler from './actionDefinitions';
@@ -42,6 +43,7 @@ import {
   KIND_DATASOURCE_DEFINITION,
   KIND_ROBOT_CAMERA,
   KIND_INCIDENT_DEFINITION,
+  KIND_NOTIFICATION_CHANNEL,
   KIND_MISSION_TRACKING,
   KIND_ROBOT_FOOTPRINT,
   KIND_PREFERENCES,
@@ -99,6 +101,7 @@ export default class ConfigAPI {
     }
     this._kindsHandlers = kindsHandlersMap || {
       [KIND_INCIDENT_DEFINITION]: new IncidentsConfigAPIHandler(this),
+      [KIND_NOTIFICATION_CHANNEL]: new NotificationChannelsConfigAPIHandler(this),
       // [KIND_ROBOT_CAMERA]: new RobotCameraAPIHandler(this),
       [KIND_DATASOURCE_DEFINITION]: new DataSourcesConfigAPIHandler(this),
       [KIND_STATUS_DEFINITION]: new StatusConfigAPIHandler(this),

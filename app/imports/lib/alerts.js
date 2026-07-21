@@ -83,6 +83,10 @@ const Schemas = {};
 
 const IncidentConfiguration = new Mongo.Collection(COLLECTIONS.INCIDENT_DEFINITIONS);
 
+// Named notification channels (e.g. webhook endpoints) that incident definitions
+// route alerts to. Managed through the Config API (NotificationChannel kind).
+const NotificationChannels = new Mongo.Collection(COLLECTIONS.NOTIFICATION_CHANNELS);
+
 /**
  * Schema used for validation of an incident Definition, not of a full document!
  * this schema only shows what each Incident object will contain, the full document
@@ -440,5 +444,6 @@ export {
   AlertsConfig,
   RobotAlerts,
   IncidentConfiguration,
+  NotificationChannels,
   Incidents
 };
