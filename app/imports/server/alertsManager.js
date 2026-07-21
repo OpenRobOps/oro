@@ -214,7 +214,11 @@ export default class AlertsManager {
     }
     await RobotAlerts.updateAsync({ _id: alert._id }, { $set, $unset: { resolvedTs: true } });
     const updated = await RobotAlerts.findOneAsync({ _id: alert._id });
-    await this._notifyAlertsListeners(updated, { isUpdate: true });
+    // A distinct level-changed signal (e.g. warning -> error escalation) lets the
+    // distribution listener fire on escalations while ignoring same-level value
+    // ticks, without redefining `isUpdate` (which other listeners depend on).
+    const levelChanged = alert.event?.level !== event.level;
+    await this._notifyAlertsListeners(updated, { isUpdate: true, levelChanged });
   };
 
   _reopenAlert = async ({ alert, event, incidentDefinition, label, message, description, ts = Date.now() }) => {
