@@ -37,8 +37,7 @@ import {
 } from '../../shared/configAPI';
 import { NotificationChannels } from '../../lib/alerts';
 
-// Webhook is the only self-contained channel type this phase. Slack / OpsGenie /
-// Google Chat / email depend on an external integrations service and are deferred.
+// For now webhook is the only channel supported, but can add more channels here in the future.
 const CHANNEL_TYPE_WEBHOOK = 'webhook';
 const CHANNEL_TYPES = [CHANNEL_TYPE_WEBHOOK];
 
