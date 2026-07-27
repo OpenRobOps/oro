@@ -17,54 +17,30 @@
 /**
  * Configuration API implementation for Notification Channels.
  *
- * A notification channel is a named delivery endpoint (this phase: webhook only)
- * that incident definitions route alerts to via their `notificationChannels`
- * field. Channels are global and keyed by their metadata id, stored in the
- * NotificationChannels collection with _id === id.
+ * A notification channel is a named delivery endpoint that incident definitions
+ * route alerts to (via their per-level `notificationChannels`). The channel's
+ * `metadata.id` is the operator-chosen *name* used in those references
+ * (e.g. `ops-webhook`), while `spec.type` is the delivery mechanism — this phase,
+ * always `webhook`. So a definition says `notificationChannels: ['ops-webhook']`
+ * and this kind maps `ops-webhook` -> { type: webhook, url, secret }.
  *
- * This handler only manages channel configuration; delivering alerts to channels
- * is handled by the alerts distribution listener.
+ * Example:
+ *   kind: NotificationChannel
+ *   metadata: { id: ops-webhook }
+ *   spec: { type: webhook, url: https://hooks.example.com/x, secret: '{{SECRET}}' }
  */
-import Validator from 'fastest-validator';
 // ORO modules
 import OroRoles from '../roles';
 import {
   RESOURCE_SINGLETONS, ACCESS_LEVEL_CONFIGURE, isSystemUser
 } from '../../shared/roles';
 import {
-  SchemaError, ValidationError, AuthorizationError,
+  ValidationError, AuthorizationError,
   LIST_FORMAT_SHORT, LIST_FORMAT_FULL
 } from '../../shared/configAPI';
-import { NotificationChannels } from '../../lib/alerts';
-
-// For now webhook is the only channel supported, but can add more channels here in the future.
-const CHANNEL_TYPE_WEBHOOK = 'webhook';
-const CHANNEL_TYPES = [CHANNEL_TYPE_WEBHOOK];
-
-// Optional per-channel secret is sent as `Authorization: Bearer <secret>` by the
-// webhook client. The real value is kept out of committed YAML (env/secret
-// substitution at apply time) — that is operational, not part of this schema.
-const NotificationChannelSpecApplySchema = {
-  $$strict: true,
-  type: { type: 'enum', values: CHANNEL_TYPES },
-  url: { type: 'url' },
-  secret: { type: 'string', optional: true, empty: false }
-};
-
-const notificationChannelSpecValidator =
-  new Validator().compile(NotificationChannelSpecApplySchema);
-
-/**
- * Converts a config object into the stored channel document. Returns a full
- * replacement document (no $-operators) so that fields dropped on update — e.g. a
- * removed `secret` — are actually removed rather than left stale.
- */
-const configObjectToChannel = (configObject) => {
-  const { spec } = configObject;
-  const doc = { type: spec.type, url: spec.url };
-  if (spec.secret !== undefined) { doc.secret = spec.secret; }
-  return doc;
-};
+import NotificationChannelsManager, {
+  CHANNEL_TYPE_WEBHOOK, CHANNEL_TYPES
+} from '../notificationChannelsManager';
 
 /** Converts a stored channel into a LIST_FORMAT_SHORT list item. */
 const channelToListItem = (doc) => ({
@@ -85,11 +61,12 @@ const channelToConfigObject = (doc) => ({
 });
 
 export default class NotificationChannelsConfigAPIHandler {
-  constructor(configApi) {
+  constructor(configApi, notificationChannelsManager = new NotificationChannelsManager()) {
     if (!configApi) {
       throw new Error('reference to configApi must be received');
     }
     this._configApi = configApi;
+    this._manager = notificationChannelsManager;
   }
 
   // Channels are individual config elements (one per id), not a single global object.
@@ -109,15 +86,11 @@ export default class NotificationChannelsConfigAPIHandler {
     const { spec } = configObject;
     const id = configObject.metadata.id;
     if (spec) {
-      const validation = notificationChannelSpecValidator(spec);
-      if (validation !== true) {
-        throw new SchemaError((validation.length && validation[0].message) || 'Invalid schema');
-      }
-      const doc = configObjectToChannel(configObject);
-      await NotificationChannels.updateAsync({ _id: id }, doc, { upsert: true });
+      // Manager validates the channel spec (throws SchemaError) and persists it.
+      await this._manager.upsertChannel({ id, spec });
     } else {
       // Null spec means suppress: remove the channel.
-      await NotificationChannels.removeAsync({ _id: id });
+      await this._manager.removeChannel(id);
     }
   };
 
@@ -131,16 +104,14 @@ export default class NotificationChannelsConfigAPIHandler {
       ACCESS_LEVEL_CONFIGURE)) {
       throw new AuthorizationError('Unauthorized');
     }
-    await NotificationChannels.removeAsync({ _id: configObject.metadata.id });
+    await this._manager.removeChannel(configObject.metadata.id);
   };
 
   list = async ({ id, user, format = LIST_FORMAT_SHORT }) => {
     if (!isSystemUser(user) && !await new OroRoles().hasRole(user._id)) {
       throw new AuthorizationError('Unauthorized');
     }
-    const docs = id
-      ? [await NotificationChannels.findOneAsync({ _id: id })].filter(Boolean)
-      : await NotificationChannels.find({}).fetchAsync();
+    const docs = await this._manager.listChannels({ id });
     if (format === LIST_FORMAT_SHORT) {
       return docs.map(channelToListItem);
     } else if (format === LIST_FORMAT_FULL) {
@@ -153,7 +124,6 @@ export default class NotificationChannelsConfigAPIHandler {
 export {
   CHANNEL_TYPE_WEBHOOK,
   CHANNEL_TYPES,
-  configObjectToChannel,
   channelToListItem,
   channelToConfigObject
 };
