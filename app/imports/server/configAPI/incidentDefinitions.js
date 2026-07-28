@@ -43,18 +43,26 @@ import { ICM_SEV_ALL } from '../../shared/alerts';
 // Supports per-level severity, autoActions (run automatically) and manualActions
 // (ids of actions an operator runs by hand from an in-app notification).
 // The `ok` block has no manual actions (a resolved incident has nothing to act on).
-const ACTION_IDS = {
+const ACTION_IDS_SCHEMA = {
   type: 'array', optional: true, items: { type: 'string', empty: false }
 };
 
-const LEVEL_BLOCK = {
+// Ids of notification channels (see the NotificationChannel config kind) that alerts
+// at this level are distributed to. Resolved at dispatch time; a missing channel is
+// skipped, so no referential integrity is enforced here.
+const CHANNEL_IDS_SCHEMA = {
+  type: 'array', optional: true, items: { type: 'string', empty: false }
+};
+
+const LEVEL_BLOCK_SCHEMA = {
   type: 'object',
   optional: true,
   strict: true,
   props: {
     severity: { type: 'enum', values: ICM_SEV_ALL, optional: true },
-    autoActions: ACTION_IDS,
-    manualActions: ACTION_IDS
+    autoActions: ACTION_IDS_SCHEMA,
+    manualActions: ACTION_IDS_SCHEMA,
+    notificationChannels: CHANNEL_IDS_SCHEMA
   }
 };
 
@@ -62,9 +70,17 @@ const IncidentDefinitionSpecApplySchema = {
   $$strict: true,
   label: { type: 'string', optional: true, empty: false },
   labelTemplate: { type: 'string', optional: true, empty: false },
-  error: LEVEL_BLOCK,
-  warning: LEVEL_BLOCK,
-  ok: { type: 'object', optional: true, strict: true, props: { autoActions: ACTION_IDS } }
+  error: LEVEL_BLOCK_SCHEMA,
+  warning: LEVEL_BLOCK_SCHEMA,
+  // `ok` is the resolved state, not an active alert level: it has no `severity`
+  // and no `manualActions` (nothing to act on once cleared). It only carries
+  // resolution auto-actions and the channels to notify on resolve.
+  ok: {
+    type: 'object',
+    optional: true,
+    strict: true,
+    props: { autoActions: ACTION_IDS_SCHEMA, notificationChannels: CHANNEL_IDS_SCHEMA }
+  }
 };
 
 const incidentDefinitionSpecValidator = new Validator().compile(IncidentDefinitionSpecApplySchema);
