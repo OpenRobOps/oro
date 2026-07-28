@@ -21,6 +21,7 @@
 import AlertsManager from './alertsManager';
 import IncidentsFromAlertsIntegration from './incidentsFromAlertsIntegration';
 import NotificationsFromAlertsIntegration from './notificationsFromAlertsIntegration';
+import AlertsDistribution from './alertsDistribution';
 import IncidentsEventLog from './incidentsEventLog';
 import EventLog from './eventLog/eventLogger';
 import Incident from './model/incident';
@@ -35,6 +36,11 @@ export function initIncidentsManagement() {
   const notificationsFromAlertsIntegration = new NotificationsFromAlertsIntegration();
   new AlertsManager().addAlertsListener(
     (...args) => notificationsFromAlertsIntegration.handleAlertEvent(...args)
+  );
+  // Alerts are distributed to their configured notification channels (webhooks).
+  const alertsDistribution = new AlertsDistribution();
+  new AlertsManager().addAlertsListener(
+    (...args) => alertsDistribution.handleAlertEvent(...args)
   );
   // Incident changes are logged to the event log.
   const incidentsEventLog = new IncidentsEventLog(new EventLog());
