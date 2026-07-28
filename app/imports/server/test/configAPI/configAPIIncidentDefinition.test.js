@@ -201,4 +201,50 @@ describe('configAPI:IncidentDefinition', () => {
     expect(full[0].spec.label).eq('Battery incident');
     expect(full[0].spec.error.severity).eq(ICM_SEV_1);
   });
+
+  it('apply: stores per-level notificationChannels', async () => {
+    const user = await createUser({ role: ROLE_ADMIN });
+    new ConfigAPI().init();
+    await new ConfigAPI().apply({
+      configObject: makeConfigObject('batteryLow', {
+        label: 'Battery incident',
+        error: { severity: ICM_SEV_1, notificationChannels: ['ops-webhook'] },
+        warning: { severity: ICM_SEV_2, notificationChannels: ['ops-webhook', 'dev-webhook'] },
+        ok: { notificationChannels: ['ops-webhook'] }
+      }),
+      user
+    });
+    const doc = await IncidentConfiguration.findOneAsync({ _id: 'batteryLow' });
+    expect(doc.error.notificationChannels).deep.eq(['ops-webhook']);
+    expect(doc.warning.notificationChannels).deep.eq(['ops-webhook', 'dev-webhook']);
+    expect(doc.ok.notificationChannels).deep.eq(['ops-webhook']);
+  });
+
+  it('apply: rejects notificationChannels that are not an array of strings', async () => {
+    const user = await createUser({ role: ROLE_ADMIN });
+    new ConfigAPI().init();
+    await expect(
+      new ConfigAPI().apply({
+        configObject: makeConfigObject('bad', { error: { notificationChannels: [123] } }), user
+      })
+    ).to.be.rejected;
+  });
+
+  it('list: round-trips per-level notificationChannels in FULL format', async () => {
+    const user = await createUser({ role: ROLE_ADMIN });
+    new ConfigAPI().init();
+    await new ConfigAPI().apply({
+      configObject: makeConfigObject('batteryLow', {
+        label: 'Battery incident',
+        error: { severity: ICM_SEV_1, notificationChannels: ['ops-webhook'] },
+        ok: { notificationChannels: ['ops-webhook'] }
+      }),
+      user
+    });
+    const full = await new ConfigAPI().list({
+      kind: KIND_INCIDENT_DEFINITION, id: 'batteryLow', user, format: LIST_FORMAT_FULL
+    });
+    expect(full[0].spec.error.notificationChannels).deep.eq(['ops-webhook']);
+    expect(full[0].spec.ok.notificationChannels).deep.eq(['ops-webhook']);
+  });
 });
