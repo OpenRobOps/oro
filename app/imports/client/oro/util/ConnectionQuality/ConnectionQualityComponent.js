@@ -43,7 +43,7 @@ const useStyles = makeStyles()(theme => ({
   value: {
     display: 'flex',
     fontSize: '0.875rem',
-    color: '#3f93ff',
+    color: theme.palette.incidents.ok,
     fontWeight: theme.fontWeight?.bold,
     alignItems: 'center',
     marginLeft: '5px'
@@ -51,7 +51,7 @@ const useStyles = makeStyles()(theme => ({
   unit: {
     display: 'flex',
     fontSize: '0.875rem',
-    color: '#3f93ff',
+    color: theme.palette.incidents.ok,
     fontWeight: theme.fontWeight?.light,
     alignItems: 'center',
     marginLeft: '5px'

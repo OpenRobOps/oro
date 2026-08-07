@@ -25,6 +25,7 @@
 import React from 'react';
 import { CircularProgress } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
+import { alpha } from '@mui/material/styles';
 import PropTypes from 'prop-types';
 import { isNumber } from 'lodash';
 // ORO Modules
@@ -45,7 +46,7 @@ const signedStyleOverride = {
 
 const GAUGE_SIZE = 110; // px — diameter of the circular gauge
 
-const useStyles = makeStyles()(() => ({
+const useStyles = makeStyles()(theme => ({
   // Outer wrapper: centers the ring + overlays the text
   wrapper: {
     position: 'relative',
@@ -72,13 +73,13 @@ const useStyles = makeStyles()(() => ({
     position: 'absolute',
   },
   foregroundRing: {
-    color: '#3f93ff',
+    color: theme.palette.incidents.ok,
     position: 'absolute',
     boxShadow: 'inset 3px -4px 5px rgba(0,0,0,0.3)',
     borderRadius: '50%',
   },
   foregroundRingZeroData: {
-    color: 'rgba(63,147,255,0.45)',
+    color: alpha(theme.palette.incidents.ok, 0.45),
   },
   // Text overlay — centered, not rotated
   textOverlay: {

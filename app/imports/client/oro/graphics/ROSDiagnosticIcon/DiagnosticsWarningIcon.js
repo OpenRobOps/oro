@@ -18,6 +18,7 @@
  * Represents the warning level
  */
 import * as React from 'react';
+import theme from '../../../Styles';
 
 const DiagnosticsWarningIcon = props => (
   <svg
@@ -27,7 +28,7 @@ const DiagnosticsWarningIcon = props => (
     fill="none"
     {...props}
   >
-    <circle cx={9} cy={9} r={9} fill="#FFBB32" />
+    <circle cx={9} cy={9} r={9} fill={theme.palette.diagnostics.warning} />
     <path
       fill="#000"
       d="M9.747 11.656H7.99l-.249-7.39h2.256l-.249 7.39Zm-.879 1.157c.357 0 .642.105.857.315.22.21.33.478.33.806 0 .322-.11.588-.33.798-.215.21-.5.315-.857.315-.351 0-.637-.105-.857-.315a1.069 1.069 0 0 1-.322-.798c0-.323.107-.589.322-.799.22-.215.506-.322.857-.322Z"

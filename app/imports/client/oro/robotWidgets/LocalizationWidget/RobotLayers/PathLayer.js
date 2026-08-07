@@ -27,6 +27,7 @@ import LineString from 'ol/geom/LineString';
 import Point from 'ol/geom/Point';
 import VectorSource from 'ol/source/Vector';
 // Modules
+import theme from '../../../../Styles';
 import ReactVectorLayer from './ReactVectorLayer';
 import { pathStyle, pointStyle } from '../Map/Styles';
 import {
@@ -40,8 +41,8 @@ import {
 // it has the grey default color
 // and the last one is for dashed path
 const DEFAULT_PALLETE = {
-  POINT_COLOR: '#2A3C98',
-  LINE_COLOR: '#2A3C98',
+  POINT_COLOR: theme.palette.teleop.completedPath,
+  LINE_COLOR: theme.palette.teleop.completedPath,
   LINE_WIDTH: 0.02,
   POINT_WIDTH: 0.04
 };

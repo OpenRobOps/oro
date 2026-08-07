@@ -21,6 +21,8 @@ import { asArray as colorAsArray, asString as colorAsString, fromString as color
 import Projection from 'ol/proj/Projection';
 import ImageStatic from 'ol/source/ImageStatic';
 import { addCoordinateTransforms } from 'ol/proj';
+// ORO Modules
+import theme from '../../../../Styles';
 
 /**
  * OpenLayers Utils library
@@ -29,32 +31,10 @@ import { addCoordinateTransforms } from 'ol/proj';
 
 // TODO: Replace with use of ui preferences and defaults
 // get colors from ui preference
-// until we can get the colors from UIPreferences, we will move the palette
-// to the utils library to use this from anywhere
+// until we can get the colors from UIPreferences, we take the palette
+// from the theme to use this from anywhere
 
-const PALETTE = {
-  point: '#8080FFE6',
-  pointOutline: '#404080',
-  selected: '#71BAE1',
-  relocalizeDrag: {
-    color: '#5ECFA84D',
-    stroke: '#5ECFA8',
-    strokeWidth: '5',
-  },
-  relocalizeRotate: {
-    color: '#5ECFA8',
-    stroke: '#5ECFA8',
-    strokeWidth: '3',
-  },
-  relocalizeInnerFrame: '#BE9AFF',
-  selectedOutline: '#8080FF',
-  robotPoseNormalPrimary: '#BE9AFF',
-  robotPoseNormalSecondary: '#3E3155',
-  robotPoseNormalOutline: '#BE9AFF',
-  robotPoseSelectedPrimary: '#BE9AFF',
-  robotPoseSelectedSecondary: '#3E3155',
-  robotPoseSelectedArrow: '#BE9AFF'
-};
+const PALETTE = theme.palette.map;
 const CURRENT_DATA_MS = 1000 * 15; // 15sec, fresh and current data
 const RECENT_DATA_MS = 1000 * 60; // 1min, relatively recent data
 const STALE_DATA_MS = 1000 * 60 * 60; //  1hr, still drawn: path the robot just followed

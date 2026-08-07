@@ -15,19 +15,46 @@
  */
 
 /**
- * ORO Styles module — Deep Navy theme.
+ * ORO Styles module.
  *
- * We use this module file to create and export all top level
- * theme and style information for easier re-use.
+ * Builds the MUI theme from a design-token set (see ./themes/). The token set
+ * is chosen once at load time from the `theme` URL parameter
+ * (e.g. http://.../?theme=monokai) and defaults to the ORO theme, so both the
+ * ThemeProvider in App.jsx and modules importing this theme object directly
+ * see the same, static theme for the whole page lifetime.
  */
 import React from 'react';
 import { createTheme, responsiveFontSizes } from '@mui/material/styles';
 import { ChevronDown } from 'lucide-react';
+import oro from './themes/oro';
+import monokai from './themes/monokai';
+
+const THEMES = { oro, monokai };
+
+const requestedTheme = typeof window !== 'undefined'
+  ? new URLSearchParams(window.location.search).get('theme')
+  : null;
+const tokens = THEMES[requestedTheme] || oro;
 
 const theme = createTheme({
   components: {
     MuiCssBaseline: {
       styleOverrides: {
+        // Keep the CSS custom properties in styles.css in sync with the theme.
+        // Doubled :root wins over the static fallbacks in styles.css regardless
+        // of stylesheet order (StyledEngineProvider injectFirst puts these first).
+        ':root:root': {
+          '--color-background': tokens.background.default,
+          '--color-foreground': tokens.text.primary,
+          '--color-card': tokens.background.paper,
+          '--color-primary': tokens.secondary.main,
+          '--color-primary-hover': tokens.background.selected,
+          '--color-muted': tokens.text.secondary,
+          '--color-border': tokens.background.borderLight,
+          '--color-border-gray': tokens.background.borderGray,
+          '--color-nav-dark': tokens.background.navDark,
+          '--color-button-text': tokens.text.buttonText,
+        },
         '& *': {
           // to avoid boxSizing inherit making most of our components smaller
           boxSizing: 'content-box',
@@ -37,7 +64,7 @@ const theme = createTheme({
             width: '12px'
           },
           '&::-webkit-scrollbar-thumb': {
-            background: '#BEAEDD',
+            background: tokens.text.secondary,
             borderRadius: '6px',
             // padding-box causes the border of the element to be cut off
             // (along with the background color under it), so by setting the border to a fully
@@ -63,7 +90,7 @@ const theme = createTheme({
       },
       styleOverrides: {
         icon: {
-          color: '#9E6FF3',
+          color: tokens.secondary.main,
         },
       },
     },
@@ -95,7 +122,7 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           fontFamily: 'Inter, Helvetica, Arial, sans-serif',
-          color: '#FFFFFF',
+          color: tokens.text.bright,
           letterSpacing: '0.01em',
           fontOpticalSizing: 'auto'
         }
@@ -104,7 +131,7 @@ const theme = createTheme({
         {
           props: { variant: 'errorMessage' },
           style: {
-            color: '#C2C2C2',
+            color: tokens.text.content,
             fontWeight: 400,
             lineHeight: '1.2',
             textAlign: 'center',
@@ -113,7 +140,7 @@ const theme = createTheme({
         {
           props: { variant: 'errorMessageBold' },
           style: {
-            color: '#C2C2C2',
+            color: tokens.text.content,
             lineHeight: '1.2',
             textAlign: 'center',
             fontWeight: 500,
@@ -124,21 +151,21 @@ const theme = createTheme({
     MuiPaper: {
       styleOverrides: {
         root: {
-          backgroundColor: '#170E28',
-          color: '#FAF0F0',
+          backgroundColor: tokens.background.paper,
+          color: tokens.text.primary,
         },
       },
     },
     MuiMenu: {
       styleOverrides: {
         paper: {
-          backgroundColor: '#170E28',
-          border: '1px solid #3E3155',
-          color: '#FAF0F0',
+          backgroundColor: tokens.background.paper,
+          border: `1px solid ${tokens.background.borderLight}`,
+          color: tokens.text.primary,
         },
         // Targets .MuiMenu-list (the <ul> inside the menu).
         list: {
-          backgroundColor: '#170E28',
+          backgroundColor: tokens.background.paper,
         },
       },
     },
@@ -146,7 +173,7 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           '&:hover': {
-            backgroundColor: '#251A38',
+            backgroundColor: tokens.background.onHoverGray,
           },
         },
       },
@@ -157,39 +184,39 @@ const theme = createTheme({
       },
       styleOverrides: {
         paper: {
-          backgroundColor: '#170E28',
-          border: '1px solid #3E3155',
-          color: '#FAF0F0',
+          backgroundColor: tokens.background.paper,
+          border: `1px solid ${tokens.background.borderLight}`,
+          color: tokens.text.primary,
         },
         listbox: {
-          backgroundColor: '#170E28',
+          backgroundColor: tokens.background.paper,
         },
         popper: {
           zIndex: 1300,
         },
         option: {
           fontSize: '14px',
-          backgroundColor: '#170E28',
+          backgroundColor: tokens.background.paper,
           '&:hover': {
-            backgroundColor: '#251A38 !important',
+            backgroundColor: `${tokens.background.onHoverGray} !important`,
           },
           '&[aria-selected="true"]': {
-            backgroundColor: '#3A285A !important',
+            backgroundColor: `${tokens.background.chip} !important`,
           },
         },
         popupIndicator: {
-          color: '#9E6FF3',
+          color: tokens.secondary.main,
         },
         clearIndicator: {
-          color: '#BEAEDD',
+          color: tokens.text.secondary,
         },
       },
     },
     MuiTableCell: {
       styleOverrides: {
         root: {
-          color: '#FFFFFF',
-          borderBottomColor: '#3E3155',
+          color: tokens.text.bright,
+          borderBottomColor: tokens.background.borderLight,
         },
       },
     },
@@ -197,13 +224,13 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           '&:hover': {
-            color: '#FFFFFF',
+            color: tokens.text.bright,
           },
           '&.Mui-active': {
-            color: '#FFFFFF',
+            color: tokens.text.bright,
           },
           '&.Mui-active .MuiTableSortLabel-icon': {
-            color: '#FFFFFF',
+            color: tokens.text.bright,
           },
         },
       },
@@ -224,200 +251,7 @@ const theme = createTheme({
     ui: 'Inter, Helvetica, Arial, sans-serif',
     mono: 'DM Mono, monospace',
   },
-  palette: {
-    mode: 'dark',
-    text: {
-      // MUI reads these for Typography color="text.primary" / "text.secondary"
-      primary: '#FAF0F0',
-      secondary: '#BEAEDD',
-      icon: '#BEAEDD',
-      notesLight: '#BEAEDD',
-      title: '#D6CCE8',
-      notesMedium: '#BEAEDD',
-      notesDark: '#FAF0F0',
-      content: '#C2C2C2',
-      contrastText: '#FAF0F0',
-      darkBlue: '#9E6FF3',
-      robotAvatar: '#BE9AFF',
-      statusError: '#FB7188',
-      lightGray: '#C2C2C2',
-      mediumDarkGray: '#BEAEDD',
-      muted: '#AAAAAA',
-      mutedDark: '#585858',
-      subtle: '#D0D0D0',
-      buttonText: '#D9D9D9',
-      inactive: '#9488AA',
-      inputLabel: '#757575',
-      detailsLabel: '#CAC4D6',
-      detailsValue: '#E6E1EE',
-      pendingDot: '#EFB8C8',
-      onApprove: '#1A004A',
-      heading: '#E2D8F0',
-      subheading: '#A898C4',
-      black: '#000000',
-    },
-    background: {
-      default: '#1A0F2E',
-      paper: '#170E28',
-      blueLightBackground: '#1A0F2E',
-      lightBackground: '#1A0F2E',
-      tabSelected: '#9E6FF3',
-      titleBar: '#170E28',
-      spaceIntelligence: '#251A38',
-      navLight: '#1A0F2E',
-      navMedium: '#170E28',
-      navDark: '#0E0918',
-      white: '#FFFFFF',
-      surface: '#170E28',
-      mintAccent: '#5ECFA8',
-      mintAccentDim: '#1D4942',
-      orangeAccent: '#F4935A',
-      orangeAccentDim: '#5F3021',
-      lightBlue: '#1A0F2E',
-      veryLightGray: '#1A0F2E',
-      lightGray: '#251A38',
-      gray: '#251A38',
-      darkGray: '#251A38',
-      black: '#0E0918',
-      brightBlue: '#9E6FF3',
-      devMagenta: '#9E6FF3',
-      loadingBarGray: '#251A38',
-      loadingBarTransparentGray: '#251A3800',
-      onHoverGray: '#251A38',
-      zeroData: '#251A38',
-      robOpsCopilotTable: '#1A0F2E',
-      softGray: '#1A0F2E',
-      borderGray: '#251A38',
-      borderLight: '#3E3155',
-      borderMedium: '#4A3570',
-      chip: '#3A285A',
-      selected: '#5C35A8',
-      offlineBar: '#F4935A',
-      zoneDefaultColor: '#FFCD87',
-      accentPurpleHover: '#A78BFA',
-      sidebar: '#201533',
-      sidebarBorder: '#382B51',
-      userCardBg: '#1D1231',
-      detailsBorder: '#4A4557',
-      pendingBg: 'rgba(99, 59, 72, 0.3)',
-      rejectBorder: '#938E9F',
-      approveBtn: '#9E6FF3',
-      selectedNav: '#341F5A',
-    },
-    modes: {
-      mission: '#5ECFA8',
-      idle: '#A139C3',
-      error: '#B41270',
-      charging: '#BA8A27',
-      others: '#BCBCBC',
-      modeBrown: '#BB8900',
-      modeBlue: '#507CCF'
-    },
-    incidents: {
-      ok: '#3F93FF',
-      resolved: '#4CAF50',
-      warning: '#FFBB32',
-      error: '#FB7188',
-      inactive: '#BCBCBC',
-      staleOk: '#B2D3FF',
-      staleWarning: '#FFE3AD',
-      staleError: '#EAAD9A',
-      staleInactive: '#E4E4E4',
-      // Used for disabling data sources according to mode.
-      disabled: '#f3f3f3',
-      disabledSelected: '#2b2e82',
-      selectedBorder: '#2A3C98',
-    },
-    teleop: {
-      actionButton: '#F05523',
-      hoverActionButton: '#C14821',
-      planedPath: '#88BF2D',
-      wayPoint: '#006B00',
-      completedPath: '#2A3C98',
-      openTeleop: '#F05523',
-      waypointAvatar: '#CFFAEC'
-    },
-    severityColor: {
-      'SEV 0': '#700893',
-      'SEV 1': '#A335C8',
-      'SEV 2': '#DA80F9',
-      'SEV 3': '#F1CAFF',
-    },
-    tags: {
-      skyBlue: '#63B1DC',
-      greenBlue: '#66C2A5',
-      poloBlue: '#8DA0CB',
-      lightOrange: '#FC8D62',
-      yellow: '#FFD92F',
-      pink: '#E78AC3',
-      lightBeige: '#E5C494'
-    },
-    shadowColor: {
-      gray: '#00000080',
-      white: '#FAF0F01A',
-      darkGrayWithOpacity: '#0E09184D'
-    },
-    teleopArrows: {
-      darkBackground: '#2B2B2B',
-      lightBackground: '#ECECEC',
-      baseArrow: '#B9B9B9',
-      darkModeArrow: '#696969',
-      stepwise: '#88BF2D',
-      teleop: '#F4935A'
-    },
-    cameras: {
-      delayTime: '#FFBB32'
-    },
-    icons: {
-      lightGray: '#BEAEDD',
-      bigIcon: '60px',
-      mediumIcon: '40px',
-      smallIcon: '20px'
-    },
-    primary: {
-      lighter: '#1A0F2E',
-      light: '#251A38',
-      main: '#170E28',
-      dark: '#0E0918',
-      contrastDefaultColor: 'light',
-      contrastText: '#FAF0F0'
-    },
-    secondary: {
-      main: '#9E6FF3',
-    },
-    laserPoints: {
-      primary: '#3993FFCC',
-      secondary: '#B41270CC',
-      tertiary: '#BB8900CC'
-    },
-    zeroData: {
-      softBlue: '#9AC2F7',
-      gray: '#E1E1E1',
-      softPink: '#DB90C0',
-      softOrange: '#FDC6B0',
-      darkBlue: '#2678B2',
-      lightBlue: '#C3C4E0',
-      orangeLighter: '#F7D69B'
-    },
-    boxShadow: {
-      light: '#0000007f',
-      white: '#faf0f019'
-    },
-    zone: {
-      defaultColor: '#FFCD87'
-    },
-    snackbar: {
-      success: '#43A047',
-      error: '#e53935',
-      info: '#1E88E5',
-      warning: '#FFA000',
-    },
-    copilotContextChips: {
-      color: '#9E6FF3',
-      bg: '#9E6FF314',
-      hoverBg: '#9E6FF329',
-    }
-  },
+  palette: tokens,
   fontWeight: {
     bold: 700,
     medium: 500,

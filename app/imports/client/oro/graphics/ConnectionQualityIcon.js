@@ -17,6 +17,9 @@
 import React from 'react';
 import SvgIcon from '@mui/material/SvgIcon';
 import PropTypes from 'prop-types';
+import theme from '../../Styles';
+
+const BAR_FILL = theme.palette.incidents.ok;
 
 const Bar0 = () => (
   <SvgIcon
@@ -26,7 +29,7 @@ const Bar0 = () => (
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
   >
-    <rect y="0.1875" width="2.22078" height="9.62338" fill="#3F93FF" />
+    <rect y="0.1875" width="2.22078" height="9.62338" fill={BAR_FILL} />
   </SvgIcon>
 );
 
@@ -38,13 +41,13 @@ const Bar1 = () => (
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
   >
-    <rect y="0.1875" width="2.22078" height="9.62338" fill="#3F93FF" />
+    <rect y="0.1875" width="2.22078" height="9.62338" fill={BAR_FILL} />
     <rect
       x="3.70142"
       y="0.1875"
       width="2.22078"
       height="9.62338"
-      fill="#3F93FF"
+      fill={BAR_FILL}
     />
   </SvgIcon>
 );
@@ -57,20 +60,20 @@ const Bar2 = () => (
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
   >
-    <rect y="0.1875" width="2.22078" height="9.62338" fill="#3F93FF" />
+    <rect y="0.1875" width="2.22078" height="9.62338" fill={BAR_FILL} />
     <rect
       x="3.70142"
       y="0.1875"
       width="2.22078"
       height="9.62338"
-      fill="#3F93FF"
+      fill={BAR_FILL}
     />
     <rect
       x="7.40259"
       y="0.1875"
       width="2.22078"
       height="9.62338"
-      fill="#3F93FF"
+      fill={BAR_FILL}
     />
   </SvgIcon>
 );
@@ -83,27 +86,27 @@ const Bar3 = () => (
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
   >
-    <rect y="0.1875" width="2.22078" height="9.62338" fill="#3F93FF" />
+    <rect y="0.1875" width="2.22078" height="9.62338" fill={BAR_FILL} />
     <rect
       x="3.70142"
       y="0.1875"
       width="2.22078"
       height="9.62338"
-      fill="#3F93FF"
+      fill={BAR_FILL}
     />
     <rect
       x="7.40259"
       y="0.1875"
       width="2.22078"
       height="9.62338"
-      fill="#3F93FF"
+      fill={BAR_FILL}
     />
     <rect
       x="11.104"
       y="0.1875"
       width="2.22078"
       height="9.62338"
-      fill="#3F93FF"
+      fill={BAR_FILL}
     />
   </SvgIcon>
 );
@@ -116,34 +119,34 @@ const Bar4 = () => (
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
   >
-    <rect y="0.1875" width="2.22078" height="9.62338" fill="#3F93FF" />
+    <rect y="0.1875" width="2.22078" height="9.62338" fill={BAR_FILL} />
     <rect
       x="3.70142"
       y="0.1875"
       width="2.22078"
       height="9.62338"
-      fill="#3F93FF"
+      fill={BAR_FILL}
     />
     <rect
       x="7.40259"
       y="0.1875"
       width="2.22078"
       height="9.62338"
-      fill="#3F93FF"
+      fill={BAR_FILL}
     />
     <rect
       x="11.104"
       y="0.1875"
       width="2.22078"
       height="9.62338"
-      fill="#3F93FF"
+      fill={BAR_FILL}
     />
     <rect
       x="14.8052"
       y="0.1875"
       width="2.22078"
       height="9.62338"
-      fill="#3F93FF"
+      fill={BAR_FILL}
     />
   </SvgIcon>
 );
