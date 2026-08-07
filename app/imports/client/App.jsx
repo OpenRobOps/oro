@@ -18,11 +18,14 @@
  * This is the client-side entry point for the webapp.
  */
 import React from 'react';
+import { Meteor } from 'meteor/meteor';
+import { useTracker } from 'meteor/react-meteor-data';
 import { CssBaseline } from '@mui/material';
 import { ThemeProvider, StyledEngineProvider } from '@mui/material/styles';
 import { BrowserRouter } from 'react-router-dom';
 // ORO modules
-import theme from './Styles';
+import { useOroTheme, setTheme, urlThemeOverride, DEFAULT_THEME } from './Styles';
+import { Preferences } from '../lib/collections';
 import Routes from './oro/Routes';
 import AppHeader from './oro/AppHeader';
 import ErrorBoundary from './oro/ErrorBoundary';
@@ -48,11 +51,32 @@ const FUTURE_FLAG = {
   v7_startTransition: true
 };
 
+/**
+ * Applies the theme stored in the user's preferences once they are available.
+ * The ?theme= URL override wins over the stored preference.
+ */
+const ThemePreference = () => {
+  useTracker(() => {
+    const userId = Meteor.userId();
+    if (urlThemeOverride || !userId) {
+      return;
+    }
+    const handle = Meteor.subscribe('userPreferences');
+    if (!handle.ready()) {
+      return;
+    }
+    const prefs = Preferences.findOne({ entityType: 'user', entityId: userId });
+    setTheme(prefs?.ui?.theme || DEFAULT_THEME);
+  });
+  return null;
+};
+
 const App = () => (
   <ErrorBoundary>
     <BrowserRouter future={FUTURE_FLAG}>
       <AuthProvider>
         <AuthGuard>
+          <ThemePreference />
           <div style={appLayoutStyle}>
             <AppHeader />
             <div style={appContentStyle}>
@@ -65,13 +89,19 @@ const App = () => (
   </ErrorBoundary>
 );
 
-const AppContainer = () => (
-  <StyledEngineProvider injectFirst>
-    <ThemeProvider theme={theme}>
-      <CssBaseline enableColorScheme />
-      <App />
-    </ThemeProvider>
-  </StyledEngineProvider>
-);
+const AppContainer = () => {
+  // Re-renders on setTheme(); MUI/emotion restyle everything live. Widgets
+  // that paint imperatively (OpenLayers maps) pick the new colors up when
+  // they remount, i.e. on the next route navigation.
+  const theme = useOroTheme();
+  return (
+    <StyledEngineProvider injectFirst>
+      <ThemeProvider theme={theme}>
+        <CssBaseline enableColorScheme />
+        <App />
+      </ThemeProvider>
+    </StyledEngineProvider>
+  );
+};
 
 export default AppContainer;

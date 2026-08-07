@@ -28,6 +28,7 @@ import { ALL_ROLE_DOCS } from '../../../shared/roles';
 import SettingsSidebar, { SECTIONS } from './SettingsSidebar';
 import Users from './Users';
 import ApiKeys from './ApiKeys';
+import Appearance from './Appearance';
 
 const roleLabel = (roleId) => {
   const doc = ALL_ROLE_DOCS.find(r => r._id === roleId);
@@ -37,6 +38,7 @@ const roleLabel = (roleId) => {
 const SECTION_COMPONENTS = {
   users: Users,
   apiKeys: ApiKeys,
+  appearance: Appearance,
 };
 
 const useStyles = makeStyles()(theme => ({

@@ -800,6 +800,11 @@ Schemas.preferences = new SimpleSchema({
   //   autoCreateUIElements: Bool
   // }
   dataSources: { type: Object, blackbox: true, optional: true },
+  // ui: per-user UI preferences (docs with entityType 'user'), e.g.:
+  // ui: {
+  //   theme: string // theme name, see imports/client/themes
+  // }
+  ui: { type: Object, blackbox: true, optional: true },
 }, { requiredByDefault: false });
 
 const SpatialAnnotations = new Mongo.Collection(COLLECTIONS.SPATIAL_ANNOTATIONS);

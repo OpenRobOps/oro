@@ -17,26 +17,30 @@
 /**
  * ORO Styles module.
  *
- * Builds the MUI theme from a design-token set (see ./themes/). The token set
- * is chosen once at load time from the `theme` URL parameter
- * (e.g. http://.../?theme=monokai) and defaults to the ORO theme, so both the
- * ThemeProvider in App.jsx and modules importing this theme object directly
- * see the same, static theme for the whole page lifetime.
+ * Builds the MUI theme from a design-token set (see ./themes/). The initial
+ * theme comes from the `theme` URL parameter (e.g. http://.../?theme=monokai,
+ * which also overrides the stored user preference) and defaults to the ORO
+ * theme. Themes can be hot-applied without reloading via setTheme():
+ * App.jsx re-renders through useOroTheme(), and modules importing this
+ * module's default export get a live view of the current theme — because of
+ * that, never capture nested theme values in module-level constants.
  */
-import React from 'react';
+import React, { useSyncExternalStore } from 'react';
+import { Meteor } from 'meteor/meteor';
 import { createTheme, responsiveFontSizes } from '@mui/material/styles';
 import { ChevronDown } from 'lucide-react';
 import oro from './themes/oro';
 import monokai from './themes/monokai';
 
 const THEMES = { oro, monokai };
+export const THEME_NAMES = Object.keys(THEMES);
 
-const requestedTheme = typeof window !== 'undefined'
-  ? new URLSearchParams(window.location.search).get('theme')
-  : null;
-const tokens = THEMES[requestedTheme] || oro;
+// Optional deployment-wide default, from settings.json:
+//   { "public": { "defaultTheme": "monokai" } }
+const configuredDefault = Meteor.settings?.public?.defaultTheme;
+export const DEFAULT_THEME = THEMES[configuredDefault] ? configuredDefault : 'oro';
 
-const theme = createTheme({
+const buildTheme = (tokens) => responsiveFontSizes(createTheme({
   components: {
     MuiCssBaseline: {
       styleOverrides: {
@@ -259,6 +263,48 @@ const theme = createTheme({
     lightPlus: 400,
     light: 200
   }
-});
+}));
 
-export default responsiveFontSizes(theme);
+// URL override: handy for testing and sharing links; wins over the stored
+// user preference (see ThemePreference in App.jsx)
+const requestedTheme = typeof window !== 'undefined'
+  ? new URLSearchParams(window.location.search).get('theme')
+  : null;
+export const urlThemeOverride = THEMES[requestedTheme] ? requestedTheme : null;
+
+let currentName = urlThemeOverride || DEFAULT_THEME;
+let currentTheme = buildTheme(THEMES[currentName]);
+const listeners = new Set();
+
+export const getThemeName = () => currentName;
+
+// Hot-applies a theme: rebuilds the MUI theme and notifies subscribers
+export const setTheme = (name) => {
+  if (!THEMES[name] || name === currentName) {
+    return;
+  }
+  currentName = name;
+  currentTheme = buildTheme(THEMES[name]);
+  listeners.forEach((listener) => listener());
+};
+
+// React subscription to the current theme; App.jsx re-renders (and MUI
+// restyles everything) when setTheme() is called
+export const useOroTheme = () => useSyncExternalStore(
+  (callback) => {
+    listeners.add(callback);
+    return () => listeners.delete(callback);
+  },
+  () => currentTheme
+);
+
+// Live view of the current theme, for non-React modules that import the theme
+// directly (OpenLayers map layers, svg icon modules). Property reads always
+// see the active theme. Do NOT capture nested values in module-level
+// constants — they would freeze the initial theme's colors.
+export default new Proxy({}, {
+  get: (_, prop) => currentTheme[prop],
+  has: (_, prop) => prop in currentTheme,
+  ownKeys: () => Reflect.ownKeys(currentTheme),
+  getOwnPropertyDescriptor: (_, prop) => Object.getOwnPropertyDescriptor(currentTheme, prop),
+});
