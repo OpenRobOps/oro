@@ -35,6 +35,8 @@ import tokyoNight from './themes/tokyoNight';
 import tokyoDay from './themes/tokyoDay';
 import catppuccinMocha from './themes/catppuccinMocha';
 import catppuccinLatte from './themes/catppuccinLatte';
+import rosePineMoon from './themes/rosePineMoon';
+import rosePineDawn from './themes/rosePineDawn';
 
 const THEMES = {
   oro,
@@ -43,13 +45,25 @@ const THEMES = {
   'tokyo-day': tokyoDay,
   'catppuccin-mocha': catppuccinMocha,
   'catppuccin-latte': catppuccinLatte,
+  'rose-pine-moon': rosePineMoon,
+  'rose-pine-dawn': rosePineDawn,
 };
 export const THEME_NAMES = Object.keys(THEMES);
+export const themeMode = (name) => THEMES[name]?.mode || 'dark';
 
-// Optional deployment-wide default, from settings.json:
-//   { "public": { "defaultTheme": "monokai" } }
-const configuredDefault = Meteor.settings?.public?.defaultTheme;
-export const DEFAULT_THEME = THEMES[configuredDefault] ? configuredDefault : 'oro';
+// 'auto' follows the browser's light/dark preference using the per-mode
+// defaults below, optionally overridden deployment-wide in settings.json:
+//   { "public": { "defaultTheme": "monokai", "defaultLightTheme": "tokyo-day" } }
+export const AUTO_THEME = 'auto';
+const configuredDark = Meteor.settings?.public?.defaultTheme;
+const configuredLight = Meteor.settings?.public?.defaultLightTheme;
+export const DEFAULT_DARK = THEMES[configuredDark] ? configuredDark : 'oro';
+export const DEFAULT_LIGHT = THEMES[configuredLight] ? configuredLight : 'rose-pine-dawn';
+
+const prefersLight = typeof window !== 'undefined' && window.matchMedia
+  ? window.matchMedia('(prefers-color-scheme: light)')
+  : null;
+export const getAutoThemeName = () => (prefersLight?.matches ? DEFAULT_LIGHT : DEFAULT_DARK);
 
 const buildTheme = (tokens) => responsiveFontSizes(createTheme({
   components: {
@@ -304,31 +318,53 @@ export const getThemeInstance = (name) => {
   return builtThemes.get(name);
 };
 
-let currentName = urlThemeOverride || DEFAULT_THEME;
+// The user's selection ('auto' or a theme name) and the concrete theme it
+// resolves to right now
+let currentSelection = urlThemeOverride || AUTO_THEME;
+let currentName = urlThemeOverride || getAutoThemeName();
 let currentTheme = getThemeInstance(currentName);
 const listeners = new Set();
 
 export const getThemeName = () => currentName;
+export const getThemeSelection = () => currentSelection;
 
-// Hot-applies a theme and notifies subscribers
+// Hot-applies a selection ('auto' or a theme name) and notifies subscribers
 export const setTheme = (name) => {
-  if (!THEMES[name] || name === currentName) {
+  if (name !== AUTO_THEME && !THEMES[name]) {
     return;
   }
-  currentName = name;
-  currentTheme = getThemeInstance(name);
+  const resolved = name === AUTO_THEME ? getAutoThemeName() : name;
+  if (name === currentSelection && resolved === currentName) {
+    return;
+  }
+  currentSelection = name;
+  currentName = resolved;
+  currentTheme = getThemeInstance(resolved);
   listeners.forEach((listener) => listener());
+};
+
+// Follow the browser's light/dark preference live while on 'auto'
+prefersLight?.addEventListener?.('change', () => {
+  if (currentSelection === AUTO_THEME) {
+    currentName = getAutoThemeName();
+    currentTheme = getThemeInstance(currentName);
+    listeners.forEach((listener) => listener());
+  }
+});
+
+const subscribe = (callback) => {
+  listeners.add(callback);
+  return () => listeners.delete(callback);
 };
 
 // React subscription to the current theme; App.jsx re-renders (and MUI
 // restyles everything) when setTheme() is called
-export const useOroTheme = () => useSyncExternalStore(
-  (callback) => {
-    listeners.add(callback);
-    return () => listeners.delete(callback);
-  },
-  () => currentTheme
-);
+export const useOroTheme = () => useSyncExternalStore(subscribe, () => currentTheme);
+
+// React subscription to the selection ('auto' or a theme name); re-renders
+// even when the resolved theme doesn't change (e.g. pinning the theme that
+// auto already resolved to)
+export const useThemeSelection = () => useSyncExternalStore(subscribe, () => currentSelection);
 
 // Live view of the current theme, for non-React modules that import the theme
 // directly (OpenLayers map layers, svg icon modules). Property reads always

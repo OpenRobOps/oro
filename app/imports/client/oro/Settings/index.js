@@ -19,8 +19,8 @@
  * Clicking a sidebar entry scrolls
  * the matching section into view.
  */
-import React, { useCallback, useMemo, useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useCallback, useMemo } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Box, Typography } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
 import { useAuth } from '../contexts/AuthContext';
@@ -81,10 +81,11 @@ const useStyles = makeStyles()(theme => ({
 const Settings = () => {
   const { classes } = useStyles();
   const { section: routeSection } = useParams();
+  const navigate = useNavigate();
   const { user } = useAuth();
 
-  const initialSection = SECTIONS.find(s => s.id === routeSection)?.id || SECTIONS[0].id;
-  const [activeSection, setActiveSection] = useState(initialSection);
+  // The URL is the source of truth: /configuration/users, /configuration/apiKeys, ...
+  const activeSection = SECTIONS.find(s => s.id === routeSection)?.id || SECTIONS[0].id;
 
   const profile = user?.profile || {};
   const firstRoleId = user?.userRoles?.[0];
@@ -95,14 +96,8 @@ const Settings = () => {
   }), [profile.name, profile.avatar, firstRoleId]);
 
   const handleSelect = useCallback((id) => {
-    setActiveSection(id);
-  }, []);
-
-  useEffect(() => {
-    if (routeSection && SECTIONS.some(s => s.id === routeSection)) {
-      setActiveSection(routeSection);
-    }
-  }, [routeSection]);
+    navigate(`/configuration/${id}`);
+  }, [navigate]);
 
   // Render only the section selected in the sidebar (one at a time).
   const ActiveSection = SECTION_COMPONENTS[activeSection];

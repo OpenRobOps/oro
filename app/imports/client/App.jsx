@@ -24,7 +24,7 @@ import { CssBaseline } from '@mui/material';
 import { ThemeProvider, StyledEngineProvider } from '@mui/material/styles';
 import { BrowserRouter } from 'react-router-dom';
 // ORO modules
-import { useOroTheme, setTheme, urlThemeOverride, DEFAULT_THEME } from './Styles';
+import { useOroTheme, setTheme, urlThemeOverride, AUTO_THEME } from './Styles';
 import { Preferences } from '../lib/collections';
 import Routes from './oro/Routes';
 import AppHeader from './oro/AppHeader';
@@ -66,7 +66,7 @@ const ThemePreference = () => {
       return;
     }
     const prefs = Preferences.findOne({ entityType: 'user', entityId: userId });
-    setTheme(prefs?.ui?.theme || DEFAULT_THEME);
+    setTheme(prefs?.ui?.theme || AUTO_THEME);
   });
   return null;
 };
