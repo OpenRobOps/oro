@@ -291,19 +291,32 @@ const requestedTheme = typeof window !== 'undefined'
   : null;
 export const urlThemeOverride = THEMES[requestedTheme] ? requestedTheme : null;
 
+// Built MUI themes, one per token set, created on demand (also used to
+// preview themes other than the active one, via nested ThemeProvider)
+const builtThemes = new Map();
+export const getThemeInstance = (name) => {
+  if (!THEMES[name]) {
+    return null;
+  }
+  if (!builtThemes.has(name)) {
+    builtThemes.set(name, buildTheme(THEMES[name]));
+  }
+  return builtThemes.get(name);
+};
+
 let currentName = urlThemeOverride || DEFAULT_THEME;
-let currentTheme = buildTheme(THEMES[currentName]);
+let currentTheme = getThemeInstance(currentName);
 const listeners = new Set();
 
 export const getThemeName = () => currentName;
 
-// Hot-applies a theme: rebuilds the MUI theme and notifies subscribers
+// Hot-applies a theme and notifies subscribers
 export const setTheme = (name) => {
   if (!THEMES[name] || name === currentName) {
     return;
   }
   currentName = name;
-  currentTheme = buildTheme(THEMES[name]);
+  currentTheme = getThemeInstance(name);
   listeners.forEach((listener) => listener());
 };
 

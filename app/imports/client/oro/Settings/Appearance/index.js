@@ -15,14 +15,21 @@
  */
 
 /**
- * Appearance settings: theme selection, hot-applied and persisted per user.
+ * Appearance settings: visual theme selection (a grid of live previews, each
+ * rendered under its own theme via nested ThemeProvider), hot-applied and
+ * persisted per user.
  */
 import React, { useCallback } from 'react';
-import { Box, Typography, Select, MenuItem } from '@mui/material';
+import { Box, Typography } from '@mui/material';
+import { ThemeProvider } from '@mui/material/styles';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { makeStyles } from 'tss-react/mui';
 import { capitalize } from 'lodash';
-import { THEME_NAMES, DEFAULT_THEME, getThemeName, setTheme, useOroTheme } from '../../../Styles';
+import {
+  THEME_NAMES, DEFAULT_THEME, getThemeInstance, getThemeName, setTheme, useOroTheme,
+} from '../../../Styles';
 import { useMethod } from '../../util/meteorUtils';
+import SampleThemeWidget from './SampleThemeWidget';
 
 const useStyles = makeStyles()(theme => ({
   title: {
@@ -43,8 +50,28 @@ const useStyles = makeStyles()(theme => ({
     color: theme.palette.text.detailsLabel,
     marginBottom: '8px',
   },
-  select: {
-    minWidth: 220,
+  grid: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '16px',
+  },
+  card: {
+    width: 240,
+    borderRadius: '8px',
+    overflow: 'hidden',
+    cursor: 'pointer',
+    // Same footprint as the selected border so cards don't shift on selection
+    border: `2px solid ${theme.palette.background.borderLight}`,
+    '&:hover': {
+      borderColor: theme.palette.text.secondary,
+    },
+    '&:focus-visible': {
+      outline: `2px solid ${theme.palette.secondary.main}`,
+      outlineOffset: '2px',
+    },
+  },
+  cardSelected: {
+    border: `2px solid ${theme.palette.secondary.main} !important`,
   },
 }));
 
@@ -54,12 +81,12 @@ const themeLabel = (name) => {
 };
 
 const Appearance = () => {
-  const { classes } = useStyles();
+  const { classes, cx } = useStyles();
   useOroTheme(); // re-render when the theme changes (e.g. stored preference arriving)
+  const themeName = getThemeName();
   const { call: setUserUi } = useMethod('preferences.setUserUi');
 
-  const handleChange = useCallback(async (event) => {
-    const name = event.target.value;
+  const handleSelect = useCallback(async (name) => {
     setTheme(name); // hot-apply, no reload
     try {
       await setUserUi({ theme: name });
@@ -67,6 +94,24 @@ const Appearance = () => {
       console.error('Could not save theme preference:', err);
     }
   }, [setUserUi]);
+
+  // Standard radiogroup keyboard behavior: arrows move focus AND selection
+  // (roving tabindex; ARIA radios don't get this from the browser)
+  const handleKeyDown = useCallback((event, name, index) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      handleSelect(name);
+      return;
+    }
+    const direction = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[event.key];
+    if (!direction) {
+      return;
+    }
+    event.preventDefault();
+    const next = (index + direction + THEME_NAMES.length) % THEME_NAMES.length;
+    handleSelect(THEME_NAMES[next]);
+    event.currentTarget.parentElement.children[next]?.focus();
+  }, [handleSelect]);
 
   return (
     <Box>
@@ -76,15 +121,43 @@ const Appearance = () => {
         to your profile.
       </Typography>
       <Typography className={classes.fieldLabel}>Theme</Typography>
-      <Select
-        className={classes.select}
-        value={getThemeName()}
-        onChange={handleChange}
-      >
-        {THEME_NAMES.map((name) => (
-          <MenuItem key={name} value={name}>{themeLabel(name)}</MenuItem>
-        ))}
-      </Select>
+      <Box className={classes.grid} role="radiogroup" aria-label="Theme">
+        {THEME_NAMES.map((name, index) => {
+          const selected = name === themeName;
+          return (
+            <Box
+              key={name}
+              className={cx(classes.card, selected && classes.cardSelected)}
+              role="radio"
+              aria-checked={selected}
+              tabIndex={selected ? 0 : -1}
+              onClick={() => handleSelect(name)}
+              onKeyDown={(e) => handleKeyDown(e, name, index)}
+            >
+              <ThemeProvider theme={getThemeInstance(name)}>
+                <SampleThemeWidget />
+                <Box
+                  sx={(t) => ({
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '8px 12px',
+                    backgroundColor: t.palette.background.paper,
+                    borderTop: `1px solid ${t.palette.background.borderLight}`,
+                  })}
+                >
+                  <Typography sx={{ fontSize: '13px', color: 'text.primary' }}>
+                    {themeLabel(name)}
+                  </Typography>
+                  {selected && (
+                    <CheckCircleIcon sx={{ fontSize: '16px', color: 'secondary.main' }} />
+                  )}
+                </Box>
+              </ThemeProvider>
+            </Box>
+          );
+        })}
+      </Box>
     </Box>
   );
 };
