@@ -69,7 +69,7 @@ const useStyles = makeStyles()(theme => ({
     justifyContent: 'center',
   },
   backgroundRing: {
-    color: 'rgba(255,255,255,0.12)',
+    color: alpha(theme.palette.text.primary, 0.12),
     position: 'absolute',
   },
   foregroundRing: {
@@ -94,22 +94,22 @@ const useStyles = makeStyles()(theme => ({
     fontWeight: 600,
     fontSize: '1.4rem',
     lineHeight: 1.1,
-    color: '#ffffff',
+    color: theme.palette.text.primary,
     letterSpacing: '-0.01em',
   },
   units: {
     fontSize: '0.6rem',
     fontWeight: 300,
-    color: 'rgba(255,255,255,0.55)',
+    color: alpha(theme.palette.text.primary, 0.55),
     textAlign: 'center',
     lineHeight: 1.2,
     whiteSpace: 'nowrap',
   },
   offline: {
-    color: 'rgba(255,255,255,0.3)',
+    color: alpha(theme.palette.text.primary, 0.3),
   },
   zeroData: {
-    color: 'rgba(255,255,255,0.45)',
+    color: alpha(theme.palette.text.primary, 0.45),
   },
 }));
 

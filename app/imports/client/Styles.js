@@ -31,8 +31,19 @@ import { createTheme, responsiveFontSizes } from '@mui/material/styles';
 import { ChevronDown } from 'lucide-react';
 import oro from './themes/oro';
 import monokai from './themes/monokai';
+import tokyoNight from './themes/tokyoNight';
+import tokyoDay from './themes/tokyoDay';
+import catppuccinMocha from './themes/catppuccinMocha';
+import catppuccinLatte from './themes/catppuccinLatte';
 
-const THEMES = { oro, monokai };
+const THEMES = {
+  oro,
+  monokai,
+  'tokyo-night': tokyoNight,
+  'tokyo-day': tokyoDay,
+  'catppuccin-mocha': catppuccinMocha,
+  'catppuccin-latte': catppuccinLatte,
+};
 export const THEME_NAMES = Object.keys(THEMES);
 
 // Optional deployment-wide default, from settings.json:
@@ -178,6 +189,14 @@ const buildTheme = (tokens) => responsiveFontSizes(createTheme({
         root: {
           '&:hover': {
             backgroundColor: tokens.background.onHoverGray,
+          },
+          // Same selected background as Autocomplete options; MUI's default
+          // (action.selected) is nearly invisible on light themes
+          '&.Mui-selected': {
+            backgroundColor: tokens.background.chip,
+          },
+          '&.Mui-selected:hover': {
+            backgroundColor: tokens.background.chip,
           },
         },
       },

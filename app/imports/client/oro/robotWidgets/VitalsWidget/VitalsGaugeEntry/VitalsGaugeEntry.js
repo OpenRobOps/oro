@@ -43,7 +43,7 @@ const styles = theme => ({
     position: 'absolute',
     display: 'block',
     fontWeight: theme.fontWeight.medium,
-    color: theme.palette.common.white,
+    color: theme.palette.text.primary,
     fontSize: '35px'
   },
   valueDisabled: {
@@ -63,7 +63,7 @@ const styles = theme => ({
     color: theme.palette.background.spaceIntelligence
   },
   foregroundRing: {
-    color: theme.palette.common.white,
+    color: theme.palette.text.primary,
     position: 'absolute',
     borderRadius: '50%'
   },

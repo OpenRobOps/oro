@@ -49,7 +49,7 @@ const useStyles = makeStyles()(theme => ({
 }));
 
 const themeLabel = (name) => {
-  const label = name === 'oro' ? 'ORO' : capitalize(name);
+  const label = name === 'oro' ? 'ORO' : name.split('-').map(capitalize).join(' ');
   return name === DEFAULT_THEME ? `${label} (default)` : label;
 };
 

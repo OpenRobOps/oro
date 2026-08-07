@@ -220,7 +220,8 @@ const IncidentTimelineWidget = ({
     }
 
     return { items: itemsAccumulator, groups: groupsAccumulator };
-  }, [incidents, robotsById, selectedIncident, nowTs]);
+    // theme is a dep so item colors refresh on hot theme switch
+  }, [incidents, robotsById, selectedIncident, nowTs, theme]);
 
   const boundTimeValues = useCallback((start, end) => {
     const minTime = moment().add(-6, 'months').valueOf();
@@ -267,7 +268,8 @@ const IncidentTimelineWidget = ({
         <Typography className={classes.groupItemText}>{group.title}</Typography>
       </Grid>
     </Grid>
-  ), []);
+    // classes is a dep so the renderer refreshes on hot theme switch
+  ), [classes]);
 
   const getHorizontalLinesClassNames = useCallback((group) => {
     const lineClasses = [group.robotName ? classes.horizontalLine : classes.horizontalDashedLine];
@@ -275,9 +277,9 @@ const IncidentTimelineWidget = ({
       lineClasses.push(classes.isSelectedIncident);
     }
     return lineClasses;
-  }, []);
+  }, [classes]);
 
-  const getVerticalLineClassNames = useCallback(() => [classes.vertical], []);
+  const getVerticalLineClassNames = useCallback(() => [classes.vertical], [classes]);
 
   const itemRenderer = useCallback(({ item, itemContext, getItemProps }) => {
     // Pull `key` and `ref` out: React 18+ requires `key` as a direct prop and
@@ -299,7 +301,8 @@ const IncidentTimelineWidget = ({
         </div>
       </div>
     );
-  }, []);
+    // theme is a dep so the selected border refreshes on hot theme switch
+  }, [theme]);
 
   const renderPrimaryHeader = useCallback(({ getIntervalProps, intervalContext }) => {
     // Destructure `key` — react-calendar-timeline includes it in getIntervalProps()
@@ -310,7 +313,7 @@ const IncidentTimelineWidget = ({
         {intervalContext.intervalText}
       </Typography>
     );
-  }, []);
+  }, [classes]);
 
   const renderSecondaryHeader = useCallback(({ getIntervalProps, intervalContext }) => {
     const { key, ...intervalProps } = getIntervalProps();
@@ -320,7 +323,7 @@ const IncidentTimelineWidget = ({
         {intervalContext.intervalText}
       </Typography>
     );
-  }, []);
+  }, [classes]);
 
   // Enforce a minimum time range to prevent react-calendar-timeline from crashing
   // See: https://github.com/namespace-ee/react-calendar-timeline/issues/707
