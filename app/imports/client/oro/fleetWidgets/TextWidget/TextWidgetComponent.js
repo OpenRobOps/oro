@@ -44,6 +44,17 @@ const useStyles = makeStyles()(theme => ({
         a: {
             color: theme.palette.text.darkBlue,
         }
+    },
+    // Single-color svg glyphs rendered as a mask so they take the text color
+    svgIcon: {
+        display: 'inline-block',
+        width: '24px',
+        height: '24px',
+        verticalAlign: 'middle',
+        backgroundColor: 'currentColor',
+        maskSize: 'contain',
+        maskRepeat: 'no-repeat',
+        maskPosition: 'center',
     }
 }));
 
@@ -75,9 +86,27 @@ const TextWidgetComponent = ({ config }) => {
         return <a href={href} {...rest} target="_blank">{children}</a>;
     }, []);
     
+    // Local .svg images are single-color glyphs (e.g. /images/bot.svg); render
+    // them as a CSS mask colored by currentColor so they follow the theme.
+    // Note this flattens multi-color svgs — don't embed those from markdown.
+    const Image = useCallback(({ src, alt, ...rest }) => {
+        if (isString(src) && src.startsWith('/images/') && src.endsWith('.svg')) {
+            return (
+                <span
+                    className={classes.svgIcon}
+                    style={{ maskImage: `url(${src})`, WebkitMaskImage: `url(${src})` }}
+                    role="img"
+                    aria-label={alt}
+                />
+            );
+        }
+        return <img src={src} alt={alt} {...rest} />;
+    }, [classes]);
+
     const components = useMemo(() => ({
         'a': Link,
-    }), []);
+        'img': Image,
+    }), [Image]);
 
 
     if (!config?.text) {

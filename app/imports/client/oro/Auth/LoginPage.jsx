@@ -32,6 +32,7 @@ import {
   Alert,
   CircularProgress,
 } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import GoogleIcon from '@mui/icons-material/Google';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import { isArray } from 'lodash';
@@ -194,7 +195,7 @@ const LoginPage = () => {
                   htmlInput: { sx: { color: 'text.primary' } },
                 }}
                 sx={{
-                  '& .MuiInput-underline:before': { borderColor: 'rgba(190, 174, 221, 0.4)' },
+                  '& .MuiInput-underline:before': { borderColor: (theme) => alpha(theme.palette.text.secondary, 0.4) },
                   '& .MuiInput-underline:hover:not(.Mui-disabled):before': { borderColor: 'text.secondary' },
                   '& .MuiInput-underline:after': { borderColor: 'secondary.main' },
                 }}
@@ -228,7 +229,7 @@ const LoginPage = () => {
                   htmlInput: { sx: { color: 'text.primary' } },
                 }}
                 sx={{
-                  '& .MuiInput-underline:before': { borderColor: 'rgba(190, 174, 221, 0.4)' },
+                  '& .MuiInput-underline:before': { borderColor: (theme) => alpha(theme.palette.text.secondary, 0.4) },
                   '& .MuiInput-underline:hover:not(.Mui-disabled):before': { borderColor: 'text.secondary' },
                   '& .MuiInput-underline:after': { borderColor: 'secondary.main' },
                 }}

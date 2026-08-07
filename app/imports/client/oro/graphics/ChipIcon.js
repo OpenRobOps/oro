@@ -24,7 +24,7 @@ import classnames from 'classnames';
 import PropTypes from 'prop-types';
 import { makeStyles } from 'tss-react/mui';
 
-const useStyles = makeStyles()(() => ({
+const useStyles = makeStyles()((theme) => ({
   chipContent: {
     gap: '8px' // Space between elements inside the chip
   },
@@ -32,7 +32,7 @@ const useStyles = makeStyles()(() => ({
     height: 'fit-content' // Make the border height fit the content
   },
   activeChip: {
-    border: '2px solid #2A3C98 !important' // Style for the active chip
+    border: `2px solid ${theme.palette.incidents.selectedBorder} !important` // Style for the active chip
   }
 }));
 

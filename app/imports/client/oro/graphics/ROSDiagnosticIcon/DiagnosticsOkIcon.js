@@ -18,6 +18,7 @@
  * Represents the OK level
  */
 import * as React from 'react';
+import theme from '../../../Styles';
 
 const DiagnosticsOkIcon = props => (
   <svg
@@ -27,7 +28,7 @@ const DiagnosticsOkIcon = props => (
     fill="none"
     {...props}
   >
-    <circle cx={9} cy={9} r={9} fill="#3F93FF" />
+    <circle cx={9} cy={9} r={9} fill={theme.palette.diagnostics.ok} />
     <path
       fill="#fff"
       d="m5.711 8.533-1.09 1.065L7.696 12.6l1.09-1.065-3.075-3.003Z"

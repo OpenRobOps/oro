@@ -18,6 +18,7 @@
  * Represents the error level
  */
 import * as React from 'react';
+import theme from '../../../Styles';
 
 const DiagnosticsErrorIcon = props => (
   <svg
@@ -27,7 +28,7 @@ const DiagnosticsErrorIcon = props => (
     fill="none"
     {...props}
   >
-    <circle cx={9} cy={9} r={9} fill="#CB3303" />
+    <circle cx={9} cy={9} r={9} fill={theme.palette.diagnostics.error} />
     <g clipPath="url(#errorIcon_svg__a)">
       <path fill="#fff" d="M3.61 10.185v-2.4h10.8v2.4H3.61Z" />
     </g>

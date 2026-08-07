@@ -193,7 +193,7 @@ const createJoystickStyle = (joystickUi, props = {}) => {
   let frontBorder = 'initial';
   if (stepwiseMode && !stepByStep) frontBorder = `2px solid ${theme.palette.teleopArrows.stepwise}`;
   if (teleopMode) frontBorder = `2px solid ${theme.palette.teleopArrows.teleop}`;
-  const lightGradient = 'radial-gradient(113.54% 113.54% at 40.33% 15.25%, #FFFFFF 0%, #FAFAFA 26.38%, #ECECEC 57.1%, #D5D5D5 89.86%, #CCCCCC 100%)';
+  const lightGradient = theme.palette.joystick.light;
   setStylesOnElement(front, {
     display: 'flex',
     alignItems: 'center',
@@ -209,8 +209,8 @@ const createJoystickStyle = (joystickUi, props = {}) => {
 
   // Teleop mode inner gradient, light and dark mode
   const frontDecoratorChild = front.childNodes[0] ? front.childNodes[0] : document.createElement('div');
-  const darkInnerGradient = 'radial-gradient(113.31% 113.31% at 59.66% 84.68%, #1A1230 0%, #150E26 21.38%, #110B1F 40.82%, #0E0918 59.53%, #0E0918 100%)';
-  const lightInnerGradient = 'radial-gradient(113.31% 113.31% at 59.66% 84.68%, #FFFFFF 0%, #FBFBFB 21.38%, #F0F0F0 40.82%, #DEDEDE 59.53%, #C4C4C4 77.77%, #A3A3A3 95.52%, #999999 100%)';
+  const darkInnerGradient = theme.palette.joystick.darkInner;
+  const lightInnerGradient = theme.palette.joystick.lightInner;
   setStylesOnElement(frontDecoratorChild, {
     height: 'calc(100% - 10px)',
     width: 'calc(100% - 10px)',

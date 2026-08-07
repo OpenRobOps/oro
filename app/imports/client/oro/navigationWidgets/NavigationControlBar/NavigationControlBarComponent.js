@@ -35,6 +35,7 @@ import React, { useState, useRef, useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { Collapse, Grid } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
+import { alpha } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import classNames from 'classnames';
 // ORO modules
@@ -78,11 +79,11 @@ const useStyles = makeStyles()(theme => ({
   },
   backgroundTeleop: {
     background:
-      'repeating-linear-gradient(-45deg, #F5834E, #F5834E 15px, rgb(240, 85, 35) 15px, rgb(240, 85, 35) 30px)'
+      `repeating-linear-gradient(-45deg, ${theme.palette.teleop.actionButtonLight}, ${theme.palette.teleop.actionButtonLight} 15px, ${theme.palette.teleop.actionButton} 15px, ${theme.palette.teleop.actionButton} 30px)`
   },
   backgroundWaypoint: {
     background:
-      'repeating-linear-gradient(-45deg, #88BF2D, #88BF2D 15px, rgb(0,107,0, 70%) 15px, rgb(0,107,0, 70%) 30px)'
+      `repeating-linear-gradient(-45deg, ${theme.palette.teleop.planedPath}, ${theme.palette.teleop.planedPath} 15px, ${alpha(theme.palette.teleop.wayPoint, 0.7)} 15px, ${alpha(theme.palette.teleop.wayPoint, 0.7)} 30px)`
   },
   colorTeleop: {
     color: theme.palette.text.content

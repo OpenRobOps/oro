@@ -59,7 +59,7 @@ const createPoseFeatures = ({ posePreferences = {} }) => {
   ];
   const feature = createFeature(new Point([0, 0]), 'waypointPin', 0);
   feature.setId('translateFeature');
-  feature.setStyle(pinIconStyle('#CFFAEC', scale ? 32 * scale : 32));
+  feature.setStyle(pinIconStyle(theme.palette.teleop.waypointAvatar, scale ? 32 * scale : 32));
   translateFeatures.push(feature);
 
   const center = createFeature(new Point([0, 0]), 'center', 0);
