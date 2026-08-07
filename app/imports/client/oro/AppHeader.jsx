@@ -75,7 +75,7 @@ const AppHeader = () => {
     >
       <Toolbar sx={{ justifyContent: 'space-between' }}>
         <img
-          src="/images/oro-logo.svg"
+          src={theme.palette.mode === 'light' ? '/images/oro-logo-light.svg' : '/images/oro-logo.svg'}
           alt="ORO:go to dashboards"
           height="22"
           onClick={handleLogoClick}
@@ -108,7 +108,7 @@ const AppHeader = () => {
           >
           <AvatarInitials name={name} src={avatar} size={22} />
           <Box sx={{ display: 'flex', flexDirection: 'column', lineHeight: 1 }}>
-            <Typography sx={{ fontSize: '10px', color: 'common.white', lineHeight: 'normal', textTransform: 'capitalize' }}>
+            <Typography sx={{ fontSize: '10px', color: 'text.primary', lineHeight: 'normal', textTransform: 'capitalize' }}>
               {name?.split(' ')[0] || 'User'}
             </Typography>
             <Typography sx={{ fontSize: '10px', color: 'text.muted', lineHeight: 'normal' }}>

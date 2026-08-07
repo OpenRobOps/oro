@@ -32,7 +32,7 @@ import {
   Alert,
   CircularProgress,
 } from '@mui/material';
-import { alpha } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
 import GoogleIcon from '@mui/icons-material/Google';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import { isArray } from 'lodash';
@@ -66,6 +66,7 @@ const ENABLED_OAUTH_PROVIDERS = isArray(Meteor.settings.public.oauthProviders)
   : [];
 
 const LoginPage = () => {
+  const theme = useTheme();
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
@@ -158,7 +159,7 @@ const LoginPage = () => {
         >
           <Box
             component="img"
-            src="/images/oro-logo.svg"
+            src={theme.palette.mode === 'light' ? '/images/oro-logo-light.svg' : '/images/oro-logo.svg'}
             alt="ORO"
             sx={{
               height: 44,

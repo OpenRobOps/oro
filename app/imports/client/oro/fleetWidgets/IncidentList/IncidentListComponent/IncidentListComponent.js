@@ -40,8 +40,6 @@ import {
   sortIncidentsByRobotStatus,
   INCIDENT_STATUS_NEW,
   getIncidentMessage,
-  ICM_SEV_0,
-  ICM_SEV_1,
   ICM_SEV_2,
   ICM_SEV_ALL
 } from '../../../../../shared/alerts';
@@ -642,9 +640,10 @@ class IncidentListWidget extends React.Component {
             className={classes.severityBadge}
             style={{
               backgroundColor: theme.palette.severityColor[incident.highestSeverity || ICM_SEV_2],
-              color: incident.highestSeverity === ICM_SEV_0
-                || incident.highestSeverity === ICM_SEV_1
-                ? theme.palette.background.white : '',
+              // Black or white, whichever contrasts the chip color in the active theme
+              color: theme.palette.getContrastText(
+                theme.palette.severityColor[incident.highestSeverity || ICM_SEV_2]
+              ),
             }}
           >
             {incident.highestSeverity || ICM_SEV_2}

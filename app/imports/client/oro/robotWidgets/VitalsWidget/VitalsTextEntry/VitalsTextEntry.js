@@ -41,7 +41,7 @@ const styles = theme => ({
   },
   value: {
     fontSize: '36px',
-    color: theme.palette.common.white,
+    color: theme.palette.text.primary,
     fontWeight: theme.fontWeight.medium,
     maxWidth: '100%',
     display: 'flex',
@@ -59,7 +59,7 @@ const styles = theme => ({
     fontWeight: theme.fontWeight.medium,
     fontSize: '24px',
     textAlign: 'center',
-    color: theme.palette.common.white,
+    color: theme.palette.text.primary,
     height: '120px',
     display: 'flex',
     alignItems: 'center'

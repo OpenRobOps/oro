@@ -23,6 +23,7 @@ import { toNumber } from 'lodash';
 import PropTypes from 'prop-types';
 import { Typography } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
+import { alpha } from '@mui/material/styles';
 // ORO Modules
 import SpeedGauge from './SpeedGauge';
 import ConnectionQuality from '../../util/ConnectionQuality/index.js';
@@ -31,7 +32,7 @@ import ConnectionQuality from '../../util/ConnectionQuality/index.js';
 const speedLinearZeroData = 0.28;
 const speedAngularZeroData = -0.28;
 
-const useStyles = makeStyles()(() => ({
+const useStyles = makeStyles()(theme => ({
   controlsContainer: {
     height: '100%',
     width: '100%',
@@ -57,7 +58,7 @@ const useStyles = makeStyles()(() => ({
   label: {
     fontSize: '0.65rem',
     fontWeight: 400,
-    color: 'rgba(255,255,255,0.6)',
+    color: alpha(theme.palette.text.primary, 0.6),
     letterSpacing: '0.08em',
     textTransform: 'uppercase',
   },
