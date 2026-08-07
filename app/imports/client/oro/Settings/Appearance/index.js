@@ -19,14 +19,15 @@
  * rendered under its own theme via nested ThemeProvider), hot-applied and
  * persisted per user.
  */
-import React, { useCallback } from 'react';
+import React, { useCallback, useRef } from 'react';
 import { Box, Typography } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { makeStyles } from 'tss-react/mui';
 import { capitalize } from 'lodash';
 import {
-  THEME_NAMES, DEFAULT_THEME, getThemeInstance, getThemeName, setTheme, useOroTheme,
+  THEME_NAMES, AUTO_THEME, themeMode, getAutoThemeName, getThemeInstance, setTheme,
+  useOroTheme, useThemeSelection,
 } from '../../../Styles';
 import { useMethod } from '../../util/meteorUtils';
 import SampleThemeWidget from './SampleThemeWidget';
@@ -76,15 +77,28 @@ const useStyles = makeStyles()(theme => ({
 }));
 
 const themeLabel = (name) => {
-  const label = name === 'oro' ? 'ORO' : name.split('-').map(capitalize).join(' ');
-  return name === DEFAULT_THEME ? `${label} (default)` : label;
+  if (name === AUTO_THEME) {
+    return 'Auto (match browser)';
+  }
+  if (name === 'oro') {
+    return 'ORO';
+  }
+  return name.split('-').map(capitalize).join(' ').replace(/^Rose Pine/, 'Rosé Pine');
 };
+
+// One radiogroup spanning all rows: Auto first, then dark, then light
+const ALL_OPTIONS = [
+  AUTO_THEME,
+  ...THEME_NAMES.filter((name) => themeMode(name) === 'dark'),
+  ...THEME_NAMES.filter((name) => themeMode(name) === 'light'),
+];
 
 const Appearance = () => {
   const { classes, cx } = useStyles();
   useOroTheme(); // re-render when the theme changes (e.g. stored preference arriving)
-  const themeName = getThemeName();
+  const selection = useThemeSelection();
   const { call: setUserUi } = useMethod('preferences.setUserUi');
+  const cardRefs = useRef({});
 
   const handleSelect = useCallback(async (name) => {
     setTheme(name); // hot-apply, no reload
@@ -97,7 +111,7 @@ const Appearance = () => {
 
   // Standard radiogroup keyboard behavior: arrows move focus AND selection
   // (roving tabindex; ARIA radios don't get this from the browser)
-  const handleKeyDown = useCallback((event, name, index) => {
+  const handleKeyDown = useCallback((event, name) => {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
       handleSelect(name);
@@ -108,10 +122,50 @@ const Appearance = () => {
       return;
     }
     event.preventDefault();
-    const next = (index + direction + THEME_NAMES.length) % THEME_NAMES.length;
-    handleSelect(THEME_NAMES[next]);
-    event.currentTarget.parentElement.children[next]?.focus();
+    const index = ALL_OPTIONS.indexOf(name);
+    const next = ALL_OPTIONS[(index + direction + ALL_OPTIONS.length) % ALL_OPTIONS.length];
+    handleSelect(next);
+    cardRefs.current[next]?.focus();
   }, [handleSelect]);
+
+  const renderCard = (name) => {
+    const selected = name === selection;
+    // The Auto card previews whatever the browser preference resolves to
+    const previewTheme = getThemeInstance(name === AUTO_THEME ? getAutoThemeName() : name);
+    return (
+      <Box
+        key={name}
+        ref={(el) => { cardRefs.current[name] = el; }}
+        className={cx(classes.card, selected && classes.cardSelected)}
+        role="radio"
+        aria-checked={selected}
+        tabIndex={selected ? 0 : -1}
+        onClick={() => handleSelect(name)}
+        onKeyDown={(e) => handleKeyDown(e, name)}
+      >
+        <ThemeProvider theme={previewTheme}>
+          <SampleThemeWidget />
+          <Box
+            sx={(t) => ({
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '8px 12px',
+              backgroundColor: t.palette.background.paper,
+              borderTop: `1px solid ${t.palette.background.borderLight}`,
+            })}
+          >
+            <Typography sx={{ fontSize: '13px', color: 'text.primary' }}>
+              {themeLabel(name)}
+            </Typography>
+            {selected && (
+              <CheckCircleIcon sx={{ fontSize: '16px', color: 'secondary.main' }} />
+            )}
+          </Box>
+        </ThemeProvider>
+      </Box>
+    );
+  };
 
   return (
     <Box>
@@ -120,43 +174,25 @@ const Appearance = () => {
         Personalize how the app looks. Changes apply immediately and are saved
         to your profile.
       </Typography>
-      <Typography className={classes.fieldLabel}>Theme</Typography>
-      <Box className={classes.grid} role="radiogroup" aria-label="Theme">
-        {THEME_NAMES.map((name, index) => {
-          const selected = name === themeName;
-          return (
-            <Box
-              key={name}
-              className={cx(classes.card, selected && classes.cardSelected)}
-              role="radio"
-              aria-checked={selected}
-              tabIndex={selected ? 0 : -1}
-              onClick={() => handleSelect(name)}
-              onKeyDown={(e) => handleKeyDown(e, name, index)}
-            >
-              <ThemeProvider theme={getThemeInstance(name)}>
-                <SampleThemeWidget />
-                <Box
-                  sx={(t) => ({
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '8px 12px',
-                    backgroundColor: t.palette.background.paper,
-                    borderTop: `1px solid ${t.palette.background.borderLight}`,
-                  })}
-                >
-                  <Typography sx={{ fontSize: '13px', color: 'text.primary' }}>
-                    {themeLabel(name)}
-                  </Typography>
-                  {selected && (
-                    <CheckCircleIcon sx={{ fontSize: '16px', color: 'secondary.main' }} />
-                  )}
-                </Box>
-              </ThemeProvider>
-            </Box>
-          );
-        })}
+      <Box role="radiogroup" aria-label="Theme">
+        <Typography className={classes.fieldLabel}>Theme</Typography>
+        <Box className={classes.grid}>
+          {renderCard(AUTO_THEME)}
+        </Box>
+        <Typography className={classes.fieldLabel} sx={{ marginTop: '20px' }}>
+          Dark themes
+        </Typography>
+        <Box className={classes.grid}>
+          {ALL_OPTIONS.filter((name) => name !== AUTO_THEME && themeMode(name) === 'dark')
+            .map(renderCard)}
+        </Box>
+        <Typography className={classes.fieldLabel} sx={{ marginTop: '20px' }}>
+          Light themes
+        </Typography>
+        <Box className={classes.grid}>
+          {ALL_OPTIONS.filter((name) => name !== AUTO_THEME && themeMode(name) === 'light')
+            .map(renderCard)}
+        </Box>
       </Box>
     </Box>
   );

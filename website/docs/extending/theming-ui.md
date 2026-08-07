@@ -18,13 +18,17 @@ user, and switching applies live — no page reload.
 | **Tokyo Day** | light | Tokyo Night's day style |
 | **Catppuccin Mocha** | dark | [catppuccin/palette](https://github.com/catppuccin/palette) |
 | **Catppuccin Latte** | light | Catppuccin's light flavor |
+| **Rosé Pine Moon** | dark | [rose-pine/palette](https://github.com/rose-pine/palette) |
+| **Rosé Pine Dawn** | light | Rosé Pine's light variant |
 
 ## Selecting a theme
 
-Themes are selected in **Settings → Appearance**, which shows a live preview
-card per theme (rendered with that theme's real component styles). Clicking a
-card applies the theme immediately and saves it to the user's profile; the
-grid is keyboard-accessible (arrow keys move and select, like a radio group).
+Themes are selected in **Settings → Appearance**, which shows an **Auto
+(match browser)** card followed by live preview cards grouped into **Dark
+themes** and **Light themes** rows (each rendered with that theme's real
+component styles). Clicking a card applies the theme immediately and saves it
+to the user's profile; the grid is keyboard-accessible (arrow keys move and
+select, like a radio group).
 
 The theme is resolved with the following precedence:
 
@@ -35,19 +39,24 @@ The theme is resolved with the following precedence:
    `preferences.setUserUi` method) and applied automatically after login —
    including in other open tabs, which pick the change up live through the
    `userPreferences` subscription.
-3. **Deployment default** — optional, in `settings.json`:
+3. **Auto** — the default when the user hasn't picked a theme (or picked
+   "Auto"): the browser's `prefers-color-scheme` chooses between the dark and
+   light defaults, live (changing the OS scheme re-themes the app). The
+   defaults are `oro` (dark) and `rose-pine-dawn` (light), optionally
+   overridden per deployment in `settings.json`:
 
    ```json
    {
-     "public": { "defaultTheme": "catppuccin-mocha" }
+     "public": {
+       "defaultTheme": "catppuccin-mocha",
+       "defaultLightTheme": "catppuccin-latte"
+     }
    }
    ```
 
-4. **`oro`** — the fallback when none of the above apply.
-
 Valid theme names are the keys of the `THEMES` registry in
 `app/imports/client/Styles.js`: `oro`, `monokai`, `tokyo-night`, `tokyo-day`,
-`catppuccin-mocha`, `catppuccin-latte`.
+`catppuccin-mocha`, `catppuccin-latte`, `rose-pine-moon`, `rose-pine-dawn`.
 
 ## How theming works
 
