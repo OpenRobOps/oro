@@ -23,6 +23,7 @@ import PropTypes from 'prop-types';
 import moment from 'moment';
 import { CTX_PROPS, readRobotProp } from '../../../../lib/context';
 import { useRobotData } from '../hooks';
+import { useNowTimeContext } from '../timeUtils/NowTimeContext';
 import RobotOfflineBarComponent from './RobotOfflineBarComponent';
 
 const RobotOfflineBar = (props) => {
@@ -34,8 +35,10 @@ const RobotOfflineBar = (props) => {
   // Get data from robot selected
   const robotId = getRobotId(context);
   const { data: robot, isLoading } = useRobotData(robotId);
-  // Get the last update of the robot
-  const lastUpdate = moment(robot?.updateStamp).fromNow();
+  // Subscribe to the shared "now" timestamp so the label refreshes every minute
+  const nowTs = useNowTimeContext();
+  // Get the last update of the robot, relative to the shared now
+  const lastUpdate = moment(robot?.updateStamp).from(nowTs);
   // Check if the robots is online or offline
   const robotOnline = robot?.status?.agentOnline;
 
