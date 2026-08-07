@@ -24,6 +24,9 @@ import OroRoles from './roles';
 
 let instance;
 
+// Key of the preferences document owned by a user
+const userPreferencesKey = (userId) => `user:${userId}`;
+
 class PreferencesManager {
     constructor() {
         if (instance === undefined) {
@@ -73,7 +76,54 @@ class PreferencesManager {
         }
         return await Preferences.upsertAsync({ _id: key }, update);
     }
+
+    getUserPreferences = async (userId) => {
+        if (!isString(userId) || !userId) {
+            throw new Error('userId must be a non-empty string');
+        }
+        return await this.getPreferences(userPreferencesKey(userId));
+    }
+
+    setUserPreferences = async (userId, value) => {
+        if (!isString(userId) || !userId) {
+            throw new Error('userId must be a non-empty string');
+        }
+        // entityId/entityType let clients find the document without knowing
+        // the key scheme
+        return await this.setPreferences(userPreferencesKey(userId), {
+            ...value,
+            entityId: userId,
+            entityType: 'user',
+        });
+    }
 };
+
+Meteor.methods({
+    /**
+     * Sets UI preferences for the logged-in user, e.g. { theme: 'monokai' }.
+     * Only known fields are stored.
+     */
+    'preferences.setUserUi': async function (ui) {
+        if (!this.userId || !await new OroRoles().hasRole(this.userId)) {
+            throw new Meteor.Error('Unauthorized');
+        }
+        if (!isObject(ui) || !isString(ui.theme)) {
+            throw new Meteor.Error('ui must be an object with a string `theme`');
+        }
+        await new PreferencesManager().setUserPreferences(this.userId, { ui: { theme: ui.theme } });
+    },
+});
+
+/**
+ * Publishes the logged-in user's own preferences document.
+ */
+Meteor.publish('userPreferences', async function () {
+    if (!this.userId || !await new OroRoles().hasRole(this.userId)) {
+        console.warn(`Unauthorized (userPreferences): userId: ${this.userId}`);
+        return this.error(new Meteor.Error('Unauthorized'));
+    }
+    return Preferences.find({ _id: userPreferencesKey(this.userId) });
+});
 
 /**
  * Publishes system wide preferences.

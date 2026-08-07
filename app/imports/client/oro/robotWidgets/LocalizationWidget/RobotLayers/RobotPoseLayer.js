@@ -38,7 +38,8 @@ import theme from '../../../../Styles';
 import { PALETTE } from '../utils/utils';
 
 // Default styles
-const ARROW_COLOR = theme.palette.text.robotAvatar;
+// Function, not a const: reads the active theme at call time (hot theme switch)
+const arrowColor = () => theme.palette.text.robotAvatar;
 const ARROW_RADIUS_RATIO = 0.6;
 
 /**
@@ -46,7 +47,7 @@ const ARROW_RADIUS_RATIO = 0.6;
  */
 const createArrowFeature = (params = {}) => {
   const {
-    color = ARROW_COLOR, strokeColor = ARROW_COLOR, width = 3, zIndex, radius, selected
+    color = arrowColor(), strokeColor = arrowColor(), width = 3, zIndex, radius, selected
   } = params;
   const feature = new Feature(createAvatarArrowPolygon(radius));
   feature.setStyle(new Style({
@@ -69,7 +70,7 @@ const createArrowFeature = (params = {}) => {
  */
 const createRotateIndicatorFeatures = (params = {}) => {
   const {
-    strokeColor = ARROW_COLOR, width = 2, zIndex, radius, selected
+    strokeColor = arrowColor(), width = 2, zIndex, radius, selected
   } = params;
   const [arcs, heads] = createRotationIndicatorPolygons(radius);
   const arcFeature = new Feature(arcs);

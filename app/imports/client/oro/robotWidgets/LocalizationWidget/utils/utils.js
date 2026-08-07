@@ -34,7 +34,9 @@ import theme from '../../../../Styles';
 // until we can get the colors from UIPreferences, we take the palette
 // from the theme to use this from anywhere
 
-const PALETTE = theme.palette.map;
+// Live view over the active theme's map palette (supports hot theme switch);
+// property reads always see the current colors
+const PALETTE = new Proxy({}, { get: (_, prop) => theme.palette.map[prop] });
 const CURRENT_DATA_MS = 1000 * 15; // 15sec, fresh and current data
 const RECENT_DATA_MS = 1000 * 60; // 1min, relatively recent data
 const STALE_DATA_MS = 1000 * 60 * 60; //  1hr, still drawn: path the robot just followed
