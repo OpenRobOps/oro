@@ -51,7 +51,7 @@ import {
   CustomDataModule,
 //   RosMonitorModule,
   CustomCommandsModule,
-//   RobotEventsModule,
+  RobotEventsModule,
 //   ImagesModule,
 //   GpsModule,
   UpstreamModule,
@@ -142,6 +142,7 @@ async function run() {
   new BasicsModule(mqtt).load();
   new SystemModule(mqtt).load();
   new CustomDataModule({ mqtt, mongo }).load();
+  new RobotEventsModule({ mqtt, mongo }).load();
   new DiagnosticsModule(mqtt).load(moduleSettings.diagnostics);
   new CustomCommandsModule(mqtt).load();
 
@@ -156,7 +157,6 @@ async function run() {
   // new RosoutModule(mqtt).load();
   // new RosMonitorModule(mqtt).load();
   // new CustomCommandsModule(mqtt).load();
-  // new RobotEventsModule(mqtt).load();
   // new GpsModule(mqtt).load();
 
   // if (moduleSettings.images && moduleSettings.images.enabled) {
