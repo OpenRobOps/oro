@@ -464,6 +464,8 @@ message CustomDataMessage {
     DiagnosticsMessage diagnostics_payload = 5;
     TextFileMessage text_file_payload_2 = 6;
   }
+  // Custom data message timestamp
+  int64 ts = 7;
 }
 
 //
