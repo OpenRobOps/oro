@@ -65,6 +65,9 @@ const prefersLight = typeof window !== 'undefined' && window.matchMedia
   : null;
 export const getAutoThemeName = () => (prefersLight?.matches ? DEFAULT_LIGHT : DEFAULT_DARK);
 
+const FONT_UI = 'Inter, Helvetica, Arial, sans-serif';
+const FONT_MONO = 'DM Mono, monospace';
+
 const buildTheme = (tokens) => responsiveFontSizes(createTheme({
   components: {
     MuiCssBaseline: {
@@ -150,7 +153,7 @@ const buildTheme = (tokens) => responsiveFontSizes(createTheme({
     MuiTypography: {
       styleOverrides: {
         root: {
-          fontFamily: 'Inter, Helvetica, Arial, sans-serif',
+          fontFamily: FONT_UI,
           color: tokens.text.bright,
           letterSpacing: '0.01em',
           fontOpticalSizing: 'auto'
@@ -285,8 +288,8 @@ const buildTheme = (tokens) => responsiveFontSizes(createTheme({
   },
   spacing: 8,
   fontFamily: {
-    ui: 'Inter, Helvetica, Arial, sans-serif',
-    mono: 'DM Mono, monospace',
+    ui: FONT_UI,
+    mono: FONT_MONO,
   },
   palette: tokens,
   fontWeight: {

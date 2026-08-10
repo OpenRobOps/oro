@@ -50,7 +50,7 @@ const useStyles = makeStyles()(theme => ({
   },
   placeholder: {
     fontSize: '13px',
-    fontFamily: '"Inter", sans-serif',
+    fontFamily: theme.fontFamily.ui,
     color: theme.palette.text.inactive,
     lineHeight: 'normal',
     whiteSpace: 'nowrap',
@@ -75,7 +75,7 @@ const useStyles = makeStyles()(theme => ({
   },
   valueChipLabel: {
     fontSize: '13px',
-    fontFamily: '"Inter", sans-serif',
+    fontFamily: theme.fontFamily.ui,
     color: theme.palette.text.buttonText,
     lineHeight: 'normal',
     whiteSpace: 'nowrap',
@@ -102,7 +102,7 @@ const useStyles = makeStyles()(theme => ({
   },
   menuItem: {
     fontSize: '13px',
-    fontFamily: '"Inter", sans-serif',
+    fontFamily: theme.fontFamily.ui,
     color: theme.palette.text.buttonText,
     display: 'flex',
     alignItems: 'center',

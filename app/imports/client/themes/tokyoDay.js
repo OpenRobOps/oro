@@ -82,6 +82,7 @@ const tokyoDay = merge(cloneDeep(oro), {
     pendingDot: RED,
     // White on the blue approve button
     onApprove: '#FFFFFF',
+    onAccent: '#FFFFFF',
     heading: TEXT_BRIGHT,
     subheading: DARK5,
   },
@@ -130,6 +131,9 @@ const tokyoDay = merge(cloneDeep(oro), {
     pendingBg: 'rgba(245, 42, 101, 0.1)',
     rejectBorder: DARK5,
     approveBtn: BLUE,
+    // FG, not BLUE: white on BLUE is 4.02:1 (fails AA), white on FG is 5.85:1.
+    // accentPurpleHover #1A5CD0 is darker still (6.02:1) — correct direction.
+    accentSolid: FG,
     selectedNav: BG_DARK1,
   },
   modes: {

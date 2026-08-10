@@ -50,7 +50,7 @@ const StyledTabs = styled(Tabs)(({ theme }) => ({
     flex: 1,
   },
   '& .MuiTab-root': {
-    fontFamily: 'Inter, Helvetica, Arial, sans-serif',
+    fontFamily: theme.fontFamily.ui,
     fontSize: '16px',
     minHeight: '44px',
     color: theme.palette.text.muted,

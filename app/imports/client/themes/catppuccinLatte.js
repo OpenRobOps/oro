@@ -87,6 +87,7 @@ const catppuccinLatte = merge(cloneDeep(oro), {
     pendingDot: PINK,
     // Approve button is mauve; light base text contrasts it
     onApprove: BASE,
+    onAccent: BASE,
     heading: TEXT,
     subheading: SUBTEXT0,
   },
@@ -138,6 +139,7 @@ const catppuccinLatte = merge(cloneDeep(oro), {
     pendingBg: 'rgba(234, 118, 203, 0.12)',
     rejectBorder: OVERLAY1,
     approveBtn: MAUVE,
+    accentSolid: MAUVE,
     selectedNav: SURFACE1,
   },
   modes: {

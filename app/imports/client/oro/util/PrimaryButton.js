@@ -15,8 +15,13 @@
  */
 
 /**
- * PrimaryButton: Solid purple action button. Used for Approve / Save Changes
+ * PrimaryButton: solid accent action button. Used for Approve / Save Changes
  * and other primary affirmative actions.
+ *
+ * Fill and ink come from background.accentSolid / text.onAccent, which are
+ * guaranteed to pass WCAG AA together in every theme. Do not substitute
+ * secondary.main for the fill — it is the graphic accent and is too light
+ * behind text in some themes.
  */
 import React from 'react';
 import PropTypes from 'prop-types';
@@ -31,8 +36,8 @@ const useStyles = makeStyles()(theme => ({
     letterSpacing: '0.6px',
     lineHeight: '16px',
     textTransform: 'none',
-    color: theme.palette.text.onApprove,
-    backgroundColor: theme.palette.background.approveBtn,
+    color: theme.palette.text.onAccent,
+    backgroundColor: theme.palette.background.accentSolid,
     padding: '8px 16px',
     borderRadius: '8px',
     boxShadow: '0px 1px 1px rgba(0,0,0,0.05)',

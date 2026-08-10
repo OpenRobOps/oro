@@ -40,6 +40,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
 import useNotificationsEnabled from './hooks/useNotificationsEnabled';
 import AvatarInitials from './util/AvatarInitials';
+import OroLogo from './util/OroLogo';
 
 const AppHeader = () => {
   const { user, logout } = useAuth();
@@ -74,10 +75,9 @@ const AppHeader = () => {
       sx={{ bgcolor: 'background.paper' }}
     >
       <Toolbar sx={{ justifyContent: 'space-between' }}>
-        <img
-          src={theme.palette.mode === 'light' ? '/images/oro-logo-light.svg' : '/images/oro-logo.svg'}
-          alt="ORO:go to dashboards"
-          height="22"
+        <OroLogo
+          height={22}
+          title="ORO: go to dashboards"
           onClick={handleLogoClick}
           style={{ cursor: 'pointer' }}
         />

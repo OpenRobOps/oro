@@ -47,6 +47,9 @@ const ROSE_LIGHT = '#e3a9a6';
 const PINE = '#286983';
 const FOAM = '#56949f';
 const IRIS = '#907aa9';
+// Rosé Pine (main) base — this palette has no dark of its own, and light
+// accent fills need dark ink. See onAccent below.
+const INK = '#21202e';
 
 const rosePineDawn = merge(cloneDeep(oro), {
   mode: 'light',
@@ -76,7 +79,9 @@ const rosePineDawn = merge(cloneDeep(oro), {
     detailsValue: TEXT,
     pendingDot: LOVE,
     // White on the rose approve button
-    onApprove: '#FFFFFF',
+    onApprove: INK,
+    // White on ROSE is 2.6:1 and fails AA. INK on ROSE is 5.63:1.
+    onAccent: INK,
     heading: TEXT_BRIGHT,
     subheading: SUBTLE,
   },
@@ -118,7 +123,9 @@ const rosePineDawn = merge(cloneDeep(oro), {
     selected: ROSE_LIGHT,
     offlineBar: GOLD,
     zoneDefaultColor: GOLD,
-    accentPurpleHover: '#B96560',
+    // Lighter on hover, not darker: the ink is dark here, so INK on the old
+    // #B96560 was 3.89:1. INK on ROSE_LIGHT is 8.0:1.
+    accentPurpleHover: ROSE_LIGHT,
     sidebar: OVERLAY,
     sidebarBorder: HIGHLIGHT_HIGH,
     userCardBg: OVERLAY,
@@ -126,6 +133,7 @@ const rosePineDawn = merge(cloneDeep(oro), {
     pendingBg: 'rgba(180, 99, 122, 0.1)',
     rejectBorder: SUBTLE,
     approveBtn: ROSE,
+    accentSolid: ROSE,
     selectedNav: HIGHLIGHT_HIGH,
   },
   modes: {

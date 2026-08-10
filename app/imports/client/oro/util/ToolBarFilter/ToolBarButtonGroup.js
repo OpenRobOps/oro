@@ -27,7 +27,7 @@ import { ToggleButtonGroup, ToggleButton } from '@mui/material';
 
 const StyledButtonGroup = styled(ToggleButton)(({ theme }) => ({
   '&.MuiToggleButton-root': {
-    fontFamily: 'Inter',
+    fontFamily: theme.fontFamily.ui,
     fontWeight: 500,
     width: 'fit-content',
     textTransform: 'capitalize',

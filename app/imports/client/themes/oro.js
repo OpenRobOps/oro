@@ -51,6 +51,10 @@ const oro = {
     detailsValue: '#E6E1EE',
     pendingDot: '#EFB8C8',
     onApprove: '#1A004A',
+    // Ink for text/icons on background.accentSolid. Every theme must define this
+    // explicitly: it is not derivable from the accent (a light theme needs light
+    // ink on a saturated fill, a pastel-accent dark theme needs dark ink).
+    onAccent: '#1A004A',
     heading: '#E2D8F0',
     subheading: '#A898C4',
     black: '#000000',
@@ -101,6 +105,11 @@ const oro = {
     pendingBg: 'rgba(99, 59, 72, 0.3)',
     rejectBorder: '#938E9F',
     approveBtn: '#9E6FF3',
+    // Fill for accent surfaces that carry text. Usually === secondary.main;
+    // overridden where the graphic accent is too light to pass AA behind text
+    // (see tokyoDay). NOT for strokes, icons or the logo wedge — those use
+    // secondary.main, which stays at full brightness.
+    accentSolid: '#9E6FF3',
     selectedNav: '#341F5A',
   },
   modes: {

@@ -72,6 +72,7 @@ const monokai = merge(cloneDeep(oro), {
     detailsValue: '#E8E5D8',
     pendingDot: YELLOW,
     onApprove: BG_DARKER,
+    onAccent: BG_DARKER,
     heading: '#EAE7DA',
     subheading: GRAY_TEXT,
   },
@@ -120,6 +121,7 @@ const monokai = merge(cloneDeep(oro), {
     pendingBg: 'rgba(117, 113, 94, 0.3)',
     rejectBorder: COMMENT,
     approveBtn: GREEN,
+    accentSolid: GREEN,
     selectedNav: BG_LIGHTER,
   },
   modes: {
