@@ -47,6 +47,15 @@ Notes:
   --oro-color-white: #FFFFFF;
   --oro-color-hover-bg: rgba(255, 255, 255, 0.05);
   --ifm-color-primary: var(--oro-color-accent);
+  /* Illustration ramp (homepage feature SVGs), lightest to darkest.
+     Unlike the accent scale this is lightness-ordered on every theme:
+     illustrations shade the same way on light and dark pages. */
+  --oro-illo-pale: #EAE4F9;
+  --oro-illo-tint: #D4BBFF;
+  --oro-illo-accent: #9E6FF3;
+  --oro-illo-shade: #5C34A8;
+  --oro-illo-dark: #3C1F7A;
+  --oro-illo-ink: #0E0918;
 }
 
 html[data-oro-theme='monokai'] {
@@ -63,6 +72,12 @@ html[data-oro-theme='monokai'] {
   --oro-color-text-muted: #C8C4B7;
   --oro-color-text-faint: #A59F85;
   --oro-color-cream: #F8F8F2;
+  --oro-illo-pale: #ECF7C8;
+  --oro-illo-tint: #CDEC75;
+  --oro-illo-accent: #A6E22E;
+  --oro-illo-shade: #78A621;
+  --oro-illo-dark: #4A6714;
+  --oro-illo-ink: #171812;
 }
 
 html[data-oro-theme='rose-pine-moon'] {
@@ -79,6 +94,12 @@ html[data-oro-theme='rose-pine-moon'] {
   --oro-color-text-muted: #908caa;
   --oro-color-text-faint: #6e6a86;
   --oro-color-cream: #e0def4;
+  --oro-illo-pale: #F8DEDD;
+  --oro-illo-tint: #F2BCBA;
+  --oro-illo-accent: #ea9a97;
+  --oro-illo-shade: #C97A77;
+  --oro-illo-dark: #7E4341;
+  --oro-illo-ink: #191724;
 }
 
 /* Light theme: pairs with data-theme='light' (the picker sets both). */
@@ -99,6 +120,12 @@ html[data-oro-theme='rose-pine-dawn'] {
   --oro-color-cream: #464261;
   --oro-color-white: #21202e;
   --oro-color-hover-bg: rgba(0, 0, 0, 0.05);
+  --oro-illo-pale: #F3D5D3;
+  --oro-illo-tint: #E3A9A6;
+  --oro-illo-accent: #d7827e;
+  --oro-illo-shade: #B05F5B;
+  --oro-illo-dark: #7E403D;
+  --oro-illo-ink: #21202e;
 }
 
 
