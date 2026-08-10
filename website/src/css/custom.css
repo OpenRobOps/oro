@@ -17,6 +17,14 @@ Notes:
   - See also Infima classes: https://docusaurus.community/knowledge/design/css/variables/ or https://gist.github.com/n4bb12/05cb485e2ac83b482ebcadee68e4ffaa
 */
 
+/* ===== THEMES =====
+   Default (no attribute) is ORO. `data-oro-theme` on <html> selects an
+   alternate palette; it is set pre-paint by the inline script injected from
+   docusaurus.config.ts and toggled by the navbar OroThemePicker.
+   Palettes mirror app/imports/client/themes/<name>.js.
+   The accent scale runs toward MORE contrast against the void: lighter steps
+   on dark themes, darker steps on the light one (rose-pine-dawn). */
+
 :root {
   /* Backgrounds */
   --oro-color-void: #1A0F2E;
@@ -26,10 +34,10 @@ Notes:
   --oro-color-border: #251A38;
   --oro-color-border-strong: #444950;
   --oro-color-border-muted: #606770;
-  /* Lilac scale */
-  --oro-color-lilac: #9E6FF3;
-  --oro-color-lilac-300: #B896FF;
-  --oro-color-lilac-200: #D4BBFF;
+  /* Accent scale (ORO lilac) */
+  --oro-color-accent: #9E6FF3;
+  --oro-color-accent-soft: #B896FF;
+  --oro-color-accent-softer: #D4BBFF;
   /* Text */
   --oro-color-text: #E3E3E3;
   --oro-color-text-muted: #DADDE1;
@@ -38,7 +46,59 @@ Notes:
   /* Interactive */
   --oro-color-white: #FFFFFF;
   --oro-color-hover-bg: rgba(255, 255, 255, 0.05);
-  --ifm-color-primary: var(--oro-color-lilac);
+  --ifm-color-primary: var(--oro-color-accent);
+}
+
+html[data-oro-theme='monokai'] {
+  --oro-color-void: #272822;
+  --oro-color-surface: #1E1F1C;
+  --oro-color-raised: #171812;
+  --oro-color-border: #3E3D32;
+  --oro-color-border-strong: #49483E;
+  --oro-color-border-muted: #75715E;
+  --oro-color-accent: #A6E22E;
+  --oro-color-accent-soft: #C1E85C;
+  --oro-color-accent-softer: #D9F191;
+  --oro-color-text: #F8F8F2;
+  --oro-color-text-muted: #C8C4B7;
+  --oro-color-text-faint: #A59F85;
+  --oro-color-cream: #F8F8F2;
+}
+
+html[data-oro-theme='rose-pine-moon'] {
+  --oro-color-void: #232136;
+  --oro-color-surface: #2a273f;
+  --oro-color-raised: #191724;
+  --oro-color-border: #393552;
+  --oro-color-border-strong: #44415a;
+  --oro-color-border-muted: #56526e;
+  --oro-color-accent: #ea9a97;
+  --oro-color-accent-soft: #f2b8b6;
+  --oro-color-accent-softer: #f8d4d3;
+  --oro-color-text: #e0def4;
+  --oro-color-text-muted: #908caa;
+  --oro-color-text-faint: #6e6a86;
+  --oro-color-cream: #e0def4;
+}
+
+/* Light theme: pairs with data-theme='light' (the picker sets both). */
+html[data-oro-theme='rose-pine-dawn'] {
+  --oro-color-void: #faf4ed;
+  --oro-color-surface: #fffaf3;
+  --oro-color-raised: #f2e9e1;
+  --oro-color-border: #dfdad9;
+  --oro-color-border-strong: #cecacd;
+  --oro-color-border-muted: #9893a5;
+  /* Accent steps darken here: light text on light bg fails contrast. */
+  --oro-color-accent: #d7827e;
+  --oro-color-accent-soft: #b4637a;
+  --oro-color-accent-softer: #964d63;
+  --oro-color-text: #575279;
+  --oro-color-text-muted: #797593;
+  --oro-color-text-faint: #9893a5;
+  --oro-color-cream: #464261;
+  --oro-color-white: #21202e;
+  --oro-color-hover-bg: rgba(0, 0, 0, 0.05);
 }
 
 
@@ -70,7 +130,8 @@ code {
   /*font-family: "DM Mono"; Not real monospace (bad for diagrams). TODO use it for code, but not diagrams */
 }
 
-[data-theme='dark'] {
+/* Both color modes route through the theme vars above. */
+html {
   --ifm-background-color: var(--oro-color-void);
   --ifm-heading-color: var(--oro-color-text);
   --ifm-font-color-base: var(--oro-color-text);
@@ -81,15 +142,32 @@ code {
   }
 }
 
+/* ===== THEME PICKER (navbar) ===== */
+
+.oro-theme-picker {
+  font-family: inherit;
+  font-size: 0.875rem;
+  color: var(--oro-color-text);
+  background-color: transparent;
+  border: 1px solid var(--oro-color-border-strong);
+  border-radius: 6px;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+.oro-theme-picker option {
+  background-color: var(--oro-color-surface);
+}
+
 /* ===== NAVBAR ===== */
 
 .navbar__brand .navbar__title {
-  color: var(--oro-color-lilac-300);
+  color: var(--oro-color-accent-soft);
 }
 
 /* Active navbar item */
 .navbar__link--active {
-  color: var(--oro-color-lilac-300);
+  color: var(--oro-color-accent-soft);
 }
 
 .navbar__logo {
@@ -127,14 +205,14 @@ h1 a, h2 a, h3 a, h4 a, h5 a, h6 a {
 }
 
 h1 a:hover, h2 a:hover, h3 a:hover, h4 a:hover, h5 a:hover, h6 a:hover {
-  color: var(--oro-color-lilac-200);
+  color: var(--oro-color-accent-softer);
   text-decoration: none;
 }
 
 /* Author names */
 .avatar__name a,
 .avatar__name {
-  color: var(--oro-color-lilac-200);
+  color: var(--oro-color-accent-softer);
 }
 
 /* Post metadata (date, read time) */
@@ -149,7 +227,7 @@ a[aria-label^="Read more"] {
 }
 
 a[aria-label^="Read more"]:hover {
-  color: var(--oro-color-lilac-200) !important;
+  color: var(--oro-color-accent-softer) !important;
 }
 
 /* Tags */
@@ -157,8 +235,8 @@ a[aria-label^="Read more"]:hover {
 .tag,
 a[href^="/blog/tags/"],
 .badge {
-  color: var(--oro-color-lilac-300) !important;
-  border-color: var(--oro-color-lilac-300) !important;
+  color: var(--oro-color-accent-soft) !important;
+  border-color: var(--oro-color-accent-soft) !important;
   background-color: transparent !important;
 }
 
@@ -166,15 +244,15 @@ a[href^="/blog/tags/"],
 .tag:hover,
 a[href^="/blog/tags/"]:hover,
 .badge:hover {
-  color: var(--oro-color-lilac-200) !important;
-  border-color: var(--oro-color-lilac-200) !important;
+  color: var(--oro-color-accent-softer) !important;
+  border-color: var(--oro-color-accent-softer) !important;
   background-color: var(--oro-color-hover-bg) !important;
 }
 
 /* Blog sidebar links */
 .blog-recent-posts__title,
 .sidebar_re4s a {
-  color: var(--oro-color-lilac-200);
+  color: var(--oro-color-accent-softer);
 }
 
 /* ===== DOCS PAGE ===== */
@@ -198,7 +276,7 @@ a[href^="/blog/tags/"]:hover,
 /* Sidebar active link — lilac + subtle bg */
 .menu__link--active,
 .menu__link--active:hover {
-  color: var(--oro-color-lilac-200);
+  color: var(--oro-color-accent-softer);
   background-color: var(--oro-color-hover-bg);
 }
 
@@ -214,13 +292,13 @@ a[href^="/blog/tags/"]:hover,
 
 .breadcrumbs__item--active .breadcrumbs__link {
   background-color: var(--oro-color-hover-bg);
-  color: var(--oro-color-lilac-200);
+  color: var(--oro-color-accent-softer);
   border-radius: 24px;
 }
 
 /* Heading anchor links */
 .hash-link {
-  color: var(--oro-color-lilac-200);
+  color: var(--oro-color-accent-softer);
 }
 
 /* Table of contents (right sidebar) */
@@ -234,7 +312,7 @@ a[href^="/blog/tags/"]:hover,
 
 .table-of-contents__link:hover,
 .table-of-contents__link--active {
-  color: var(--oro-color-lilac-200);
+  color: var(--oro-color-accent-softer);
 }
 
 /* Pagination nav */
@@ -247,5 +325,5 @@ a[href^="/blog/tags/"]:hover,
 }
 
 .pagination-nav__label {
-  color: var(--oro-color-lilac-200);
+  color: var(--oro-color-accent-softer);
 }
