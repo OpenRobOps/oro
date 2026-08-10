@@ -75,6 +75,7 @@ const rosePineMoon = merge(cloneDeep(oro), {
     detailsValue: TEXT,
     pendingDot: LOVE,
     onApprove: SHADOW,
+    onAccent: SHADOW,
     heading: TEXT,
     subheading: SUBTLE,
   },
@@ -123,6 +124,7 @@ const rosePineMoon = merge(cloneDeep(oro), {
     pendingBg: 'rgba(68, 65, 90, 0.3)',
     rejectBorder: SUBTLE,
     approveBtn: ROSE,
+    accentSolid: ROSE,
     selectedNav: OVERLAY,
   },
   modes: {

@@ -78,7 +78,7 @@ const useStyles = makeStyles()(theme => ({
   valueChipLabel: {
     fontSize: '13px',
     fontWeight: 400,
-    fontFamily: '"Inter", sans-serif',
+    fontFamily: theme.fontFamily.ui,
     color: theme.palette.text.buttonText,
     lineHeight: 'normal',
     whiteSpace: 'nowrap',
@@ -105,7 +105,7 @@ const useStyles = makeStyles()(theme => ({
   },
   menuItem: {
     fontSize: '13px',
-    fontFamily: '"Inter", sans-serif',
+    fontFamily: theme.fontFamily.ui,
     color: theme.palette.text.buttonText,
     '&:hover': {
       background: theme.palette.background.borderLight,

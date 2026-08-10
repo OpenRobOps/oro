@@ -79,6 +79,7 @@ const tokyoNight = merge(cloneDeep(oro), {
     detailsValue: FG,
     pendingDot: RED,
     onApprove: BG_DARK1,
+    onAccent: BG_DARK1,
     heading: FG,
     subheading: DARK5,
   },
@@ -127,6 +128,7 @@ const tokyoNight = merge(cloneDeep(oro), {
     pendingBg: 'rgba(59, 66, 97, 0.3)',
     rejectBorder: DARK5,
     approveBtn: BLUE,
+    accentSolid: BLUE,
     selectedNav: BG_HIGHLIGHT,
   },
   modes: {

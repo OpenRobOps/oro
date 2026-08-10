@@ -66,7 +66,7 @@ const useStyles = makeStyles()(theme => ({
     paddingBottom: '12px'
   },
   widgetLabel: {
-    fontFamily: 'Inter, Helvetica, Arial, sans-serif',
+    fontFamily: theme.fontFamily.ui,
     fontWeight: '300',
     fontSize: '1.125rem',
     display: 'flex',

@@ -73,7 +73,7 @@ const useStyles = makeStyles()(theme => ({
     '& .MuiChip-label': {
       padding: '4px 8px',
       textTransform: 'capitalize',
-      fontFamily: 'Inter',
+      fontFamily: theme.fontFamily.ui,
       fontWeight: 500,
       color: theme.palette.text.darkBlue,
     },

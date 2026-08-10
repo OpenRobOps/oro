@@ -36,6 +36,7 @@ import { alpha, useTheme } from '@mui/material/styles';
 import GoogleIcon from '@mui/icons-material/Google';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import { isArray } from 'lodash';
+import OroLogo from '../util/OroLogo';
 
 // ---- Extension point for OAuth providers ----
 const OAUTH_PROVIDERS = [
@@ -157,17 +158,7 @@ const LoginPage = () => {
             lineHeight: 0,
           }}
         >
-          <Box
-            component="img"
-            src={theme.palette.mode === 'light' ? '/images/oro-logo-light.svg' : '/images/oro-logo.svg'}
-            alt="ORO"
-            sx={{
-              height: 44,
-              width: 'auto',
-              display: 'block',
-              maxWidth: '100%',
-            }}
-          />
+          <OroLogo height={44} title="ORO" style={{ display: 'block', maxWidth: '100%' }} />
         </Box>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
           Sign in to continue

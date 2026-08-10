@@ -73,7 +73,7 @@ const useStyles = makeStyles()(theme => ({
     minWidth: 0,
   },
   sectionLabel: {
-    fontFamily: '"DM Mono", monospace',
+    fontFamily: theme.fontFamily.mono,
     fontSize: '11px',
     fontWeight: 400,
     color: theme.palette.text.buttonText,
@@ -112,7 +112,7 @@ const useStyles = makeStyles()(theme => ({
   pillLabel: {
     fontSize: '12px',
     fontWeight: 400,
-    fontFamily: '"Inter", sans-serif',
+    fontFamily: theme.fontFamily.ui,
     lineHeight: 'normal',
     whiteSpace: 'nowrap',
     color: theme.palette.text.inactive,

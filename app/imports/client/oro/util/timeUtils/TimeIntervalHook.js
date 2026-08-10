@@ -64,7 +64,7 @@ const useStyles = makeStyles()(theme => ({
     padding: '2px 8px',
     color: theme.palette.text.buttonText,
     fontSize: '0.8125rem',
-    fontFamily: 'Inter, Helvetica, Arial, sans-serif',
+    fontFamily: theme.fontFamily.ui,
     fontWeight: 500,
     textTransform: 'capitalize',
     border: `1px solid ${theme.palette.background.borderLight}`,

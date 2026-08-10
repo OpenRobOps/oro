@@ -84,6 +84,7 @@ const catppuccinMocha = merge(cloneDeep(oro), {
     detailsValue: SUBTEXT1,
     pendingDot: PINK,
     onApprove: CRUST,
+    onAccent: CRUST,
     heading: TEXT,
     subheading: SUBTEXT0,
   },
@@ -132,6 +133,7 @@ const catppuccinMocha = merge(cloneDeep(oro), {
     pendingBg: 'rgba(243, 139, 168, 0.15)',
     rejectBorder: OVERLAY1,
     approveBtn: MAUVE,
+    accentSolid: MAUVE,
     selectedNav: SURFACE1,
   },
   modes: {
