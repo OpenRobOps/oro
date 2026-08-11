@@ -74,6 +74,16 @@ jobs:
 
       # Build into the local daemon so the smoke test can run against it before
       # we publish anything. The layer cache is shared with the push step below.
+      #
+      # Layer cache lives in GHCR (:buildcache tag), not in the Actions cache:
+      # the builder stage is ~2GB per image, which blew through the repo's 10GB
+      # Actions-cache quota — entries were evicted before the next build could
+      # use them (0% hit rate) while the gha exporter still re-uploaded every
+      # layer on every run (~5 min/build). The registry backend skips blobs it
+      # already has, so cache export is near-free once primed. Lowercase ref on
+      # purpose: registry refs reject the mixed-case repository_owner.
+      # cache-to is empty on PRs — fork PR tokens can't push to GHCR (reads
+      # still work; the packages are public).
       - name: Build (load to local daemon)
         uses: docker/build-push-action@v7
         with:
@@ -83,8 +93,8 @@ jobs:
           push: false
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=registry,ref=ghcr.io/openrobops/oro-app:buildcache
+          cache-to: ${{ github.event_name != 'pull_request' && 'type=registry,ref=ghcr.io/openrobops/oro-app:buildcache,mode=max,image-manifest=true' || '' }}
 
       - name: Smoke test
         run: |

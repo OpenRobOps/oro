@@ -87,6 +87,10 @@ jobs:
 
       # Build into the local daemon first; on PRs this is the whole job (no
       # push). The layer cache is shared with the push step below.
+      #
+      # Layer cache lives in GHCR (:buildcache tag), not in the Actions cache —
+      # see the identical block in build-app-image.yml for the full rationale
+      # (10GB Actions-cache quota thrash, 0% hit rate, ~5 min gha export tax).
       - name: Build (load to local daemon)
         uses: docker/build-push-action@v7
         with:
@@ -96,8 +100,8 @@ jobs:
           push: false
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=registry,ref=ghcr.io/openrobops/oro-ingest:buildcache
+          cache-to: ${{ github.event_name != 'pull_request' && 'type=registry,ref=ghcr.io/openrobops/oro-ingest:buildcache,mode=max,image-manifest=true' || '' }}
 
       # Every tag is already in the local daemon from the build step above, so
       # we just push them. Retry the push so a transient registry error
