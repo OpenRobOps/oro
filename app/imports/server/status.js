@@ -83,7 +83,12 @@ export default class RobotStatusManager {
 
     const robotCollHandle = await RobotsWithStatus.find(
       {},
-      { pollingIntervalMs: 3000 }
+      // This cursor is over a MongoDB *view*: writes happen to the underlying
+      // robots/robot_status collections, so the view itself never produces
+      // oplog entries and the oplog observe driver never sees a change (initial
+      // results work, live updates never arrive). Force the poll-and-diff
+      // driver; pollingIntervalMs only applies to it anyway.
+      { disableOplog: true, pollingIntervalMs: 3000 }
     ).observeChangesAsync({
       added: (id, doc) => {
         const aggStatusValue = calculateAggregatedStatusValue(doc.statuses);
