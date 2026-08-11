@@ -148,6 +148,11 @@ const styles = theme => ({
     overflowY: 'auto',
     // Reserve space for scrollbar to ensure consistent alignment
     scrollbarGutter: 'stable',
+  },
+  footer: {
+    textAlign: 'center',
+    padding: theme.spacing(1),
+    color: theme.palette.text.secondary,
   }
 });
 
@@ -205,6 +210,9 @@ const Dashboard = (props) => {
             Dashboard has no sections
           </Typography>
         )}
+        <Typography variant="caption" component="footer" className={classes.footer}>
+          Powered by OpenRobOps
+        </Typography>
       </div>
     </ErrorBoundary>
   );
