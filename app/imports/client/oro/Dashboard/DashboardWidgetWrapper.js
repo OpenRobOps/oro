@@ -45,8 +45,12 @@ const useStyles = makeStyles()(theme => ({
     borderRadius: '10px',
     padding: '12px'
   },
+  // Modifiers of `widget` use '&&' (doubled class specificity) so they beat it
+  // regardless of CSS injection order: on a hot theme switch emotion re-inserts
+  // only theme-dependent rules (like widget's), which would otherwise win the
+  // specificity tie and, e.g., restore widget's 12px padding.
   controlWidget: {
-    padding: '3px 3px'
+    '&&': { padding: '3px 3px' }
   },
   controlWidgetContainer: {
     padding: '3px 0px'
@@ -78,9 +82,11 @@ const useStyles = makeStyles()(theme => ({
     flex: '1'
   },
   withoutBackground: {
-    background: 'transparent',
-    boxShadow: 'none',
-    padding: '0'
+    '&&': {
+      background: 'transparent',
+      boxShadow: 'none',
+      padding: '0'
+    }
   },
   widgetContentContainer: {
     '& *': {

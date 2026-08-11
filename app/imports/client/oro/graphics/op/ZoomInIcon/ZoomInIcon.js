@@ -29,11 +29,11 @@ const ZoomInIcon = () => {
     >
       <path
         d="M24.3418 19.0729L24.3418 16.5391L11.2918 16.5391L11.2918 19.0729L24.3418 19.0729Z"
-        fill="#FFFFFF"
+        fill="currentColor"
       />
       <path
         d="M19.0837 11.2812H16.5498V24.3312H19.0837V11.2812Z"
-        fill="#FFFFFF"
+        fill="currentColor"
       />
       <defs>
         <clipPath id="clip0">
