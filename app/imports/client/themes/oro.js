@@ -198,11 +198,6 @@ const oro = {
     pink: '#E78AC3',
     lightBeige: '#E5C494'
   },
-  shadowColor: {
-    gray: '#00000080',
-    white: '#FAF0F01A',
-    darkGrayWithOpacity: '#0E09184D'
-  },
   teleopArrows: {
     darkBackground: '#2B2B2B',
     lightBackground: '#ECECEC',

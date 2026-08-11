@@ -192,9 +192,6 @@ const monokai = merge(cloneDeep(oro), {
     'SEV 2': YELLOW,
     'SEV 3': GREEN,
   },
-  shadowColor: {
-    white: `${FG}1A`,
-  },
   teleopArrows: {
     stepwise: GREEN,
     teleop: ORANGE,

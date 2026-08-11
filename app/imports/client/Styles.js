@@ -86,6 +86,11 @@ const buildTheme = (tokens) => responsiveFontSizes(createTheme({
           '--color-border-gray': tokens.background.borderGray,
           '--color-nav-dark': tokens.background.navDark,
           '--color-button-text': tokens.text.buttonText,
+          // Robot maps arrive white-free/black-occupied; invert them only on
+          // dark themes so light themes show the map as reported (see map.css)
+          '--map-image-filter': tokens.mode === 'light'
+            ? 'opacity(0.85)'
+            : 'invert(0.9) opacity(0.85)',
         },
         '& *': {
           // to avoid boxSizing inherit making most of our components smaller

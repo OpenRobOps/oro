@@ -210,9 +210,6 @@ const rosePineDawn = merge(cloneDeep(oro), {
     yellow: '#B27A28',
     lightBeige: '#9C7E58',
   },
-  shadowColor: {
-    white: '#57527914',
-  },
   teleopArrows: {
     stepwise: PINE,
     teleop: GOLD,
