@@ -17,5 +17,8 @@
 body {
   padding: 0;
   margin: 0;
-  background-color: #1A0F2E;
+  /* Themed via the :root:root override in Styles.js; the static fallback
+     lives in styles.css. A literal here would override the theme (the merged
+     stylesheet loads after emotion's) and freeze the app backdrop. */
+  background-color: var(--color-background);
 }
