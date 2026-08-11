@@ -28,10 +28,6 @@ import { alpha } from '@mui/material/styles';
 import SpeedGauge from './SpeedGauge';
 import ConnectionQuality from '../../util/ConnectionQuality/index.js';
 
-// Zero data placeholder values for speed gauges
-const speedLinearZeroData = 0.28;
-const speedAngularZeroData = -0.28;
-
 const useStyles = makeStyles()(theme => ({
   controlsContainer: {
     height: '100%',
@@ -77,13 +73,10 @@ const TeleopGauges = (props) => {
     maxLinearVel, speedLinearObj = {}, offline,
     robotId, networkStatus, maxAngularVel, speedAngularObj = {},
     handleNetworkStatus,
-    angularGaugePrefs, linearGaugePrefs, isZeroData
+    angularGaugePrefs, linearGaugePrefs
   } = props;
 
   const { classes } = useStyles();
-
-  // Default to 'signed' variant for angular gauge
-  const angularGaugeVariant = 'signed';
 
   return (
     <div className={classes.controlsContainer}>
@@ -93,23 +86,21 @@ const TeleopGauges = (props) => {
           <SpeedGauge
             minValue={linearGaugePrefs?.minValue || 0}
             maxValue={linearGaugePrefs?.maxValue || maxLinearVel}
-            value={isZeroData ? speedLinearZeroData : toNumber(speedLinearObj.value)}
+            value={toNumber(speedLinearObj.value)}
             ts={speedLinearObj.ts}
             unit={linearGaugePrefs?.unit || 'm/sec'}
-            offline={offline && !isZeroData}
-            isZeroData={isZeroData}
+            offline={offline}
           />
         </div>
         <div className={classes.speedGaugeContainer}>
           <Typography className={classes.label}>Rotation</Typography>
           <SpeedGauge
             maxValue={angularGaugePrefs?.maxValue || maxAngularVel}
-            value={isZeroData ? speedAngularZeroData : toNumber(speedAngularObj.value)}
+            value={toNumber(speedAngularObj.value)}
             ts={speedLinearObj.ts}
             unit={angularGaugePrefs?.unit || 'rad/sec'}
-            offline={offline && !isZeroData}
-            variant={isZeroData ? 'signed' : angularGaugeVariant}
-            isZeroData={isZeroData}
+            offline={offline}
+            variant="signed"
           />
         </div>
       </div>
@@ -119,7 +110,6 @@ const TeleopGauges = (props) => {
           offline={offline}
           onNetworkStatus={handleNetworkStatus}
           networkStatus={networkStatus}
-          isZeroData={isZeroData}
         />
       </div>
     </div>
@@ -137,7 +127,6 @@ TeleopGauges.propTypes = {
   handleNetworkStatus: PropTypes.func,
   angularGaugePrefs: PropTypes.object,
   linearGaugePrefs: PropTypes.object,
-  isZeroData: PropTypes.bool,
 };
 
 export default TeleopGauges;
