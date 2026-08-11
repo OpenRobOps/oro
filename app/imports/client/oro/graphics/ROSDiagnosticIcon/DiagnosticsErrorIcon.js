@@ -30,7 +30,10 @@ const DiagnosticsErrorIcon = props => (
   >
     <circle cx={9} cy={9} r={9} fill={theme.palette.diagnostics.error} />
     <g clipPath="url(#errorIcon_svg__a)">
-      <path fill="#fff" d="M3.61 10.185v-2.4h10.8v2.4H3.61Z" />
+      <path
+        fill={theme.palette.getContrastText(theme.palette.diagnostics.error)}
+        d="M3.61 10.185v-2.4h10.8v2.4H3.61Z"
+      />
     </g>
     <defs>
       <clipPath id="errorIcon_svg__a">

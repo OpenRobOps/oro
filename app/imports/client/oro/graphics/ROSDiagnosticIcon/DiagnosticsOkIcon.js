@@ -30,11 +30,11 @@ const DiagnosticsOkIcon = props => (
   >
     <circle cx={9} cy={9} r={9} fill={theme.palette.diagnostics.ok} />
     <path
-      fill="#fff"
+      fill={theme.palette.getContrastText(theme.palette.diagnostics.ok)}
       d="m5.711 8.533-1.09 1.065L7.696 12.6l1.09-1.065-3.075-3.003Z"
     />
     <path
-      fill="#fff"
+      fill={theme.palette.getContrastText(theme.palette.diagnostics.ok)}
       d="m6.61 11.537 1.09 1.065 6.28-6.134-1.09-1.065-6.28 6.134Z"
     />
   </svg>
