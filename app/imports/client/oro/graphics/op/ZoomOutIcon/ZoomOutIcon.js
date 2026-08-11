@@ -29,7 +29,7 @@ const ZoomOutIcon = () => {
     >
       <path
         d="M24.792 19.28L24.792 16.7461L11.742 16.7461L11.742 19.28L24.792 19.28Z"
-        fill="#FFFFFF"
+        fill="currentColor"
       />
       <defs>
         <clipPath id="clip0">

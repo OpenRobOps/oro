@@ -30,11 +30,11 @@ const CompassIcon = () => {
       <g clipPath="url(#clip0)">
         <path
           d="M17.8579 7.64844L13.9502 17.3861H22.0502L17.8579 7.64844Z"
-          fill="#FFFFFF"
+          fill="currentColor"
         />
         <path
           d="M17.8579 27.8978L13.9502 18.1602H22.0502L17.8579 27.8978Z"
-          fill="rgba(255,255,255,0.6)"
+          fill="currentColor" fillOpacity="0.6"
         />
       </g>
       <defs>

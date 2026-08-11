@@ -140,10 +140,6 @@ const buildTheme = (tokens) => responsiveFontSizes(createTheme({
       styleOverrides: {
         // Breakpoint-specific styles here
         root: {
-          // To avoid showing a border when hovering the button
-          '&:hover': {
-            border: '0 !important'
-          },
           '@media (max-width: 900px)': {
             padding: '10px',
           }

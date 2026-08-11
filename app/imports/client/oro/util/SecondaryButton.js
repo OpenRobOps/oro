@@ -35,10 +35,8 @@ const useStyles = makeStyles()(theme => ({
     border: `1px solid ${theme.palette.background.rejectBorder}`,
     padding: '9px 17px',
     borderRadius: '8px',
-    // The global MuiButtonBase override sets `border: 0 !important` on hover;
-    // restate the border with !important so the button doesn't shift width.
     '&:hover': {
-      border: `1px solid ${theme.palette.background.rejectBorder} !important`,
+      border: `1px solid ${theme.palette.background.rejectBorder}`,
       backgroundColor: theme.palette.background.onHoverGray,
     },
   },
