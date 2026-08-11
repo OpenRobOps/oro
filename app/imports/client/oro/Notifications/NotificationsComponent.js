@@ -22,6 +22,7 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { useTheme } from '@mui/material/styles';
+import { ICM_SEV_0, ICM_SEV_1 } from '../../../shared/alerts';
 import Banner from '../util/Banner';
 
 const NotificationsComponent = ({ notification, runManualAction, dismiss }) => {
@@ -59,10 +60,13 @@ const NotificationsComponent = ({ notification, runManualAction, dismiss }) => {
     return list;
   }, [notification.actions, busy, runAction, onDismiss]);
 
-  const statusColor = useMemo(
-    () => theme.palette.severityColor?.[notification.severity],
-    [notification.severity]
-  );
+  // No useMemo for theme-derived values: it would go stale on hot theme switch
+  const statusColor = theme.palette.severityColor?.[notification.severity];
+  // SEV 0/1 map to error-level incidents, lower severities to warnings
+  // (mirrors the level-to-severity defaults in lib/alerts.js)
+  const accentColor = [ICM_SEV_0, ICM_SEV_1].includes(notification.severity)
+    ? theme.palette.incidents.error
+    : theme.palette.incidents.warning;
 
   const message = useMemo(
     () => (error
@@ -77,6 +81,7 @@ const NotificationsComponent = ({ notification, runManualAction, dismiss }) => {
       message={message}
       actions={actions}
       statusColor={statusColor}
+      accentColor={accentColor}
       statusContent={notification.severity}
     />
   );

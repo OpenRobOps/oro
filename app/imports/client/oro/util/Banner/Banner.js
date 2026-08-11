@@ -22,6 +22,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { makeStyles } from 'tss-react/mui';
+import { alpha, useTheme } from '@mui/material/styles';
 import Collapse from '@mui/material/Collapse';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -55,7 +56,6 @@ const useStyles = makeStyles()((theme) => ({
     fontSize: '0.625rem',
     fontWeight: 600,
     lineHeight: 1,
-    color: theme.palette.text.contrastText,
     whiteSpace: 'nowrap',
   },
   message: {
@@ -75,31 +75,55 @@ const useStyles = makeStyles()((theme) => ({
   actionButton: {
     textTransform: 'none',
     color: theme.palette.text.primary,
-    borderColor: theme.palette.background.borderLight,
+    // borderLight is tuned for the paper background; on the tinted banner
+    // it disappears, so derive the border from the text color instead
+    borderColor: alpha(theme.palette.text.primary, 0.5),
     '&:hover': {
       borderColor: theme.palette.background.brightBlue,
       backgroundColor: 'transparent',
     },
   },
+  // Outlined like the action buttons (so hover can show the same border
+  // without layout shift) but with no resting border and dimmer text
   subtleButton: {
     textTransform: 'none',
-    color: theme.palette.text.muted,
+    color: alpha(theme.palette.text.primary, 0.75),
+    borderColor: 'transparent',
+    '&:hover': {
+      borderColor: theme.palette.background.brightBlue,
+      backgroundColor: 'transparent',
+    },
   },
 }));
 
 const Banner = ({
-  open, message, actions, statusColor, statusContent,
+  open, message, actions, statusColor, accentColor, statusContent,
 }) => {
   const { classes } = useStyles();
+  const theme = useTheme();
+  const borderColor = accentColor || statusColor;
   return (
     <Collapse in={open} timeout={400}>
       <div
         className={classes.container}
-        style={statusColor ? { borderLeft: `4px solid ${statusColor}` } : undefined}
+        style={borderColor ? {
+          borderLeft: `4px solid ${borderColor}`,
+          // Tint the banner with the accent color so it stands out from
+          // the paper background the dashboard widgets use; dark themes
+          // need a stronger tint to be noticeable
+          backgroundColor: alpha(borderColor, theme.palette.mode === 'light' ? 0.12 : 0.24),
+        } : undefined}
       >
         <div className={classes.statusAndMessage}>
           {statusColor && statusContent && (
-            <span className={classes.badge} style={{ backgroundColor: statusColor }}>
+            <span
+              className={classes.badge}
+              style={{
+                backgroundColor: statusColor,
+                // Black or white, whichever contrasts the chip color in the active theme
+                color: theme.palette.getContrastText(statusColor),
+              }}
+            >
               {statusContent}
             </span>
           )}
@@ -113,7 +137,7 @@ const Banner = ({
               key={action.label}
               onClick={action.onClick}
               disabled={action.disabled}
-              variant={action.subtle ? 'text' : 'outlined'}
+              variant="outlined"
               size="small"
               className={action.subtle ? classes.subtleButton : classes.actionButton}
               data-test={`notification-action-${action.label}`}
@@ -132,6 +156,7 @@ Banner.propTypes = {
   message: PropTypes.node.isRequired,
   actions: PropTypes.array.isRequired,
   statusColor: PropTypes.string,
+  accentColor: PropTypes.string,
   statusContent: PropTypes.node,
 };
 
