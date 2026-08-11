@@ -151,7 +151,7 @@ const styles = theme => ({
   },
   footer: {
     textAlign: 'center',
-    padding: theme.spacing(1),
+    paddingBottom: theme.spacing(0.5),
     color: theme.palette.text.secondary,
   }
 });

@@ -38,9 +38,14 @@ const ARC_SIZE = 70;
 // 126deg = 360 * (35/100), where 35 = ARC_SIZE/2
 const ROOT_ROTATION = -126;
 
-// Signed variant overrides: arc center is at bottom, grows left or right
+// Signed variant overrides: zero at the top (North), grows right for positive
+// and left for negative values.
+// This inline transform REPLACES MUI's internal rotate(-90deg) on determinate
+// CircularProgress, so the arc starts at SVG 0deg (East, 3 o'clock). Combined
+// with the ringWrapper rotation (ROOT_ROTATION), the start lands at North when
+// East(+90) + ROOT_ROTATION + own = 0  =>  own = -90 - ROOT_ROTATION.
 const signedStyleOverride = {
-  transform: `rotate(${ROOT_ROTATION + 90}deg)`,
+  transform: `rotate(${-90 - ROOT_ROTATION}deg)`,
   boxShadow: 'inset -5px 0px 4px rgba(0,0,0,0.3)',
 };
 

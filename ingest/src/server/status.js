@@ -229,7 +229,6 @@ export default class RobotStatusManager {
    * @arg newValues is an object with attributeId: { value: x } pairs
    */
   evaluateStatus = async (robotId, newValues) => {
-    console.log(`evaluating status for robot ${robotId}: ${Object.keys(newValues)}`);
     // Store time for attributes metrics calculation.
     const t0 = Date.now();
 
@@ -303,6 +302,7 @@ export default class RobotStatusManager {
           || (attrStatus.attributeValue != newValues[attributeId].value
               && newStatus.value != STATUS.OK.value
           ) || (newStatus.value == STATUS.OK.value && attrStatus.hasOpenAlert)) {
+          console.log(`status changed for attribute ${attributeId} of robot ${robotId}: ${newStatus.value} - ${newStatus.message}`); 
           attrStatus.lastChangeTs = now;
           updatedAttributes.push(attributeId);
         }

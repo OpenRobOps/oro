@@ -116,7 +116,6 @@ export default class DiagnosticsModule {
     // Decode the MQTT payload
     try {
       const statusV2 = this.RosDiagnosticsStatusMessage.decode(message);
-    console.log("Diagnostics: onStatusMessage" , statusV2)
       if (statusV2 && statusV2.hasStatus) {
         const status = statusV2.status || 0;
         // Save to vitals and propagate updates.
