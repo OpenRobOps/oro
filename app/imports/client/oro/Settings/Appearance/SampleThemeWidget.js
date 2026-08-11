@@ -27,7 +27,10 @@ import React from 'react';
 import { Box, Paper, Typography, TextField, Button } from '@mui/material';
 import { ICM_SEV_ALL } from '../../../../shared/alerts';
 
-const STATUS_KEYS = ['ok', 'warning', 'error', 'resolved'];
+// Same palette.incidents tokens the Fleet Status chips show (see lib/status.js)
+const FLEET_STATUS = [['Err', 'error'], ['Warn', 'warning'], ['OK', 'ok'], ['--', 'inactive']];
+// Open / resolved incident colors, as used in the incident list
+const INCIDENT_KEYS = ['error', 'resolved'];
 
 const SampleThemeWidget = () => (
   <Box sx={{ bgcolor: 'background.default', p: 1.5, pointerEvents: 'none' }}>
@@ -50,6 +53,40 @@ const SampleThemeWidget = () => (
           4 robots · 2 on mission
         </Typography>
       </Box>
+      <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center' }}>
+        {FLEET_STATUS.map(([label, key]) => (
+          <Box
+            key={key}
+            component="span"
+            sx={(theme) => ({
+              backgroundColor: theme.palette.incidents[key],
+              color: theme.palette.getContrastText(theme.palette.incidents[key]),
+              fontSize: '9px',
+              fontWeight: 500,
+              borderRadius: '2px',
+              padding: '3px 5px',
+              lineHeight: 1,
+              display: 'inline-flex',
+              alignItems: 'center',
+            })}
+          >
+            {label}
+          </Box>
+        ))}
+        <Box sx={{ display: 'flex', gap: 0.75, alignItems: 'center', marginLeft: 'auto' }}>
+          {INCIDENT_KEYS.map((key) => (
+            <Box
+              key={key}
+              sx={(theme) => ({
+                width: 10,
+                height: 10,
+                borderRadius: '50%',
+                backgroundColor: theme.palette.incidents[key],
+              })}
+            />
+          ))}
+        </Box>
+      </Box>
       <Box sx={{ display: 'flex', gap: 0.5 }}>
         {ICM_SEV_ALL.map((sev) => (
           <Box
@@ -68,22 +105,6 @@ const SampleThemeWidget = () => (
             {sev}
           </Box>
         ))}
-      </Box>
-      <Box sx={{ display: 'flex', gap: 0.75, alignItems: 'center' }}>
-        {STATUS_KEYS.map((key) => (
-          <Box
-            key={key}
-            sx={(theme) => ({
-              width: 10,
-              height: 10,
-              borderRadius: '50%',
-              backgroundColor: theme.palette.incidents[key],
-            })}
-          />
-        ))}
-        <Typography sx={{ fontSize: '11px', color: 'text.content' }}>
-          Incidents
-        </Typography>
       </Box>
       <TextField
         type="date"

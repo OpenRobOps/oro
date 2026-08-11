@@ -20,7 +20,7 @@
  * persisted per user.
  */
 import React, { useCallback, useRef } from 'react';
-import { Box, Typography } from '@mui/material';
+import { Box, Link, Tooltip, Typography } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { makeStyles } from 'tss-react/mui';
@@ -86,6 +86,48 @@ const themeLabel = (name) => {
   return name.split('-').map(capitalize).join(' ').replace(/^Rose Pine/, 'Rosé Pine');
 };
 
+// Taglines from each theme's own project; links go to the original source
+const THEME_INFO = {
+  oro: {
+    phrase: 'The ORO default: a deep navy control-room look.',
+  },
+  monokai: {
+    phrase: 'The classic warm editor palette by Wimer Hazenberg.',
+    url: 'https://monokai.pro',
+    site: 'monokai.pro',
+  },
+  'tokyo-night': {
+    phrase: 'A clean theme celebrating the lights of Downtown Tokyo at night.',
+    url: 'https://github.com/folke/tokyonight.nvim',
+    site: 'folke/tokyonight.nvim',
+  },
+  'tokyo-day': {
+    phrase: 'Tokyo Night’s light "day" variant.',
+    url: 'https://github.com/folke/tokyonight.nvim',
+    site: 'folke/tokyonight.nvim',
+  },
+  'catppuccin-mocha': {
+    phrase: 'Soothing pastel theme for the high-spirited!',
+    url: 'https://catppuccin.com',
+    site: 'catppuccin.com',
+  },
+  'catppuccin-latte': {
+    phrase: 'The lightest of the soothing pastel Catppuccin flavors.',
+    url: 'https://catppuccin.com',
+    site: 'catppuccin.com',
+  },
+  'rose-pine-moon': {
+    phrase: 'All natural pine, faux fur and a bit of soho vibes.',
+    url: 'https://rosepinetheme.com',
+    site: 'rosepinetheme.com',
+  },
+  'rose-pine-dawn': {
+    phrase: 'Pine, faux fur and soho vibes for the classy minimalist.',
+    url: 'https://rosepinetheme.com',
+    site: 'rosepinetheme.com',
+  },
+};
+
 // One radiogroup spanning all rows: Auto first, then dark, then light
 const ALL_OPTIONS = [
   AUTO_THEME,
@@ -132,7 +174,8 @@ const Appearance = () => {
     const selected = name === selection;
     // The Auto card previews whatever the browser preference resolves to
     const previewTheme = getThemeInstance(name === AUTO_THEME ? getAutoThemeName() : name);
-    return (
+    const info = THEME_INFO[name];
+    const card = (
       <Box
         key={name}
         ref={(el) => { cardRefs.current[name] = el; }}
@@ -164,6 +207,36 @@ const Appearance = () => {
           </Box>
         </ThemeProvider>
       </Box>
+    );
+    if (!info) {
+      return card;
+    }
+    return (
+      <Tooltip
+        key={name}
+        enterDelay={400}
+        title={(
+          <>
+            {info.phrase}
+            {info.url && (
+              <>
+                {' '}
+                <Link
+                  href={info.url}
+                  target="_blank"
+                  rel="noopener"
+                  color="inherit"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {info.site}
+                </Link>
+              </>
+            )}
+          </>
+        )}
+      >
+        {card}
+      </Tooltip>
     );
   };
 
