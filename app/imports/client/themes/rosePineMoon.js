@@ -195,9 +195,6 @@ const rosePineMoon = merge(cloneDeep(oro), {
     'SEV 2': '#DBC9F1',
     'SEV 3': '#EFE7F9',
   },
-  shadowColor: {
-    white: `${TEXT}1A`,
-  },
   teleopArrows: {
     stepwise: PINE,
     teleop: GOLD,

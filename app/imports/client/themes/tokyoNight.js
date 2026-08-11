@@ -199,9 +199,6 @@ const tokyoNight = merge(cloneDeep(oro), {
     'SEV 2': '#D7C4FB',
     'SEV 3': '#EEE3FF',
   },
-  shadowColor: {
-    white: `${FG}1A`,
-  },
   teleopArrows: {
     stepwise: GREEN,
     teleop: ORANGE,

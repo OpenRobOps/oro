@@ -209,9 +209,6 @@ const tokyoDay = merge(cloneDeep(oro), {
     yellow: YELLOW,
     lightBeige: '#A98A63',
   },
-  shadowColor: {
-    white: '#2e3c6414',
-  },
   teleopArrows: {
     stepwise: GREEN,
     teleop: ORANGE,

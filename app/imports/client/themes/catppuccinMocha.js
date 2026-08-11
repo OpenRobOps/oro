@@ -204,9 +204,6 @@ const catppuccinMocha = merge(cloneDeep(oro), {
     'SEV 2': PINK,
     'SEV 3': '#FBE4F4',
   },
-  shadowColor: {
-    white: `${TEXT}1A`,
-  },
   teleopArrows: {
     stepwise: GREEN,
     teleop: PEACH,

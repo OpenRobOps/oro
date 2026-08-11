@@ -218,9 +218,6 @@ const catppuccinLatte = merge(cloneDeep(oro), {
     pink: PINK,
     lightBeige: ROSEWATER,
   },
-  shadowColor: {
-    white: '#4C4F6914',
-  },
   teleopArrows: {
     stepwise: GREEN,
     teleop: PEACH,
