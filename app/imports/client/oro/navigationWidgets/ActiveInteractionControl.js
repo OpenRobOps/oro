@@ -94,7 +94,7 @@ const useStyles = makeStyles()(theme => ({
     '& .MuiSvgIcon-root': { fontSize: '24px' },
     '&:hover': {
       backgroundColor: theme.palette.background.navDark,
-      color: theme.palette.text.primary,
+      color: theme.palette.secondary.main,
     },
     '&.active-mint': {
       backgroundColor: theme.palette.background.surface,

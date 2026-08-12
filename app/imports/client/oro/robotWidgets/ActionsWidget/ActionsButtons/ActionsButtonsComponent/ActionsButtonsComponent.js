@@ -244,7 +244,7 @@ const ActionsButtons = ({
             sm: bigButtons ? 12 : undefined,
             md: bigButtons ? 6 : undefined
           }}
-          classes={{ root: classes.actionButton }}
+          className={classes.actionButton}
           key={action._id || ix}
         >
           {renderActionButton(action, action._id || ix)}

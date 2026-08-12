@@ -88,6 +88,17 @@ const styles = theme => ({
   },
   rowButton: {
     color: theme.palette.text.lightGray
+  },
+  accentOnHover: {
+    '&:hover': {
+      color: theme.palette.secondary.main,
+      backgroundColor: theme.palette.background.onHoverGray,
+      // The lucide icon sets its stroke as an SVG attribute; a CSS rule
+      // is needed to win over it on hover
+      '& svg': {
+        stroke: theme.palette.secondary.main
+      }
+    }
   }
 });
 // Remove robot button timer: It allows deleting a robot after 5min of inactivity
@@ -354,6 +365,7 @@ class RobotInfoButtons extends React.Component {
             data-test="navigation-button"
             onClick={onNavigationDetail}
             classes={{ text: classes.lowerCaseButton }}
+            className={classes.accentOnHover}
           >
             <Navigation2 size={20} color={theme.palette.text.lightGray} style={{ marginRight: '4px' }} />
             <Box sx={LG_BREAKPOINT}>

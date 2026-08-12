@@ -157,7 +157,7 @@ const IncidentTimelineWidget = ({
       if (componentId.startsWith('RosDiag:')) {
         return; // skip noisy diagnostics
       }
-      const robotId = incident.entityId;
+      const robotId = incident.robotId;
       if (!robotIncidents[robotId]) {
         robotIncidents[robotId] = { robot: robotsById[robotId], components: {} };
       }
