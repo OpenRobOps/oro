@@ -70,6 +70,11 @@ const StyledTab = styled(props => (
   <Tab disableRipple {...props} />
 ))(({ theme }) => ({
   position: 'relative',
+  // Before .Mui-selected so the active tab keeps its color on hover
+  // (equal specificity; the later rule wins)
+  '&:hover': {
+    color: theme.palette.secondary.main,
+  },
   '&.Mui-selected': {
     color: theme.palette.text.contrastText,
   },
