@@ -151,6 +151,32 @@ const buildTheme = (tokens) => responsiveFontSizes(createTheme({
         }
       }
     },
+    // On dark themes MUI's default hover colors are invisible: contained
+    // hovers to primary.dark (≈ primary.main when main is already near-black)
+    // and outlined hovers to a faint primary-tinted overlay. Hover toward the
+    // lighter surface tokens instead. Light themes keep the MUI defaults.
+    MuiButton: {
+      styleOverrides: tokens.mode === 'dark' ? {
+        containedPrimary: {
+          '&:hover': {
+            backgroundColor: tokens.primary.light,
+            // Accent the label too; it's a nested Typography that carries its
+            // own color, so plain `color` on the button wouldn't reach it
+            '& .MuiTypography-root': {
+              color: tokens.secondary.main,
+            },
+          },
+        },
+        outlinedPrimary: {
+          '&:hover': {
+            backgroundColor: tokens.background.onHoverGray,
+            '& .MuiTypography-root': {
+              color: tokens.secondary.main,
+            },
+          },
+        },
+      } : {},
+    },
     MuiTypography: {
       styleOverrides: {
         root: {

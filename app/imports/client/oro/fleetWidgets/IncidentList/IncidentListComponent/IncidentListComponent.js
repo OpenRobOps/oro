@@ -320,9 +320,9 @@ class IncidentListWidget extends React.Component {
    */
   sortByRobot = compFn => (a, b) => {
     const { robotsMap } = this.props;
-    const robotA = robotsMap[a.entityId] && robotsMap[a.entityId].name;
+    const robotA = robotsMap[a.robotId] && robotsMap[a.robotId].name;
     const robotAName = robotA && robotA.toLowerCase();
-    const robotB = robotsMap[b.entityId] && robotsMap[b.entityId].name;
+    const robotB = robotsMap[b.robotId] && robotsMap[b.robotId].name;
     const robotBName = robotB && robotB.toLowerCase();
     return compFn(robotAName, robotBName) || this.sortByTime(compFn)(a, b);
   }

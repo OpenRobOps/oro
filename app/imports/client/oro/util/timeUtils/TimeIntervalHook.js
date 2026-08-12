@@ -72,6 +72,7 @@ const useStyles = makeStyles()(theme => ({
     '&:hover': {
       backgroundColor: theme.palette.background.spaceIntelligence,
       border: `1px solid ${theme.palette.background.borderLight} !important`,
+      color: theme.palette.secondary.main,
       opacity: 0.7,
     },
     '&.Mui-disabled': {

@@ -30,6 +30,16 @@ import { CloseFullscreenIcon } from '../graphics/customNavigationIcons';
 const useStyles = makeStyles()(theme => ({
   button: {
     color: theme.palette.text.title
+  },
+  accentOnHover: {
+    '&:hover': {
+      backgroundColor: theme.palette.background.onHoverGray,
+      // The control bar passes the icon color as an inline style;
+      // !important is needed for the hover to win over it
+      '& svg': {
+        color: `${theme.palette.secondary.main} !important`
+      }
+    }
   }
 }));
 
@@ -44,6 +54,7 @@ const FullscreenButton = ({ fullscreen, onClick, dataTest, style }) => {
       aria-label="exit-fullscreen"
       onClick={onClick}
       data-test={`${dataTest}close`}
+      className={classes.accentOnHover}
       size="large">
       <MoveDiagonal
         width={20}
@@ -57,6 +68,7 @@ const FullscreenButton = ({ fullscreen, onClick, dataTest, style }) => {
       aria-label="fullscreen"
       onClick={onClick}
       data-test={`${dataTest}open`}
+      className={classes.accentOnHover}
       size="large">
       <CloseFullscreenIcon
         classes={renderFullscreenIcon}
