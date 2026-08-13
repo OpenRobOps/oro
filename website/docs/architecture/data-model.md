@@ -16,6 +16,22 @@ OpenRobOps uses a single MongoDB database (`meteor`) shared across all component
 | `module_states` | Web App | Web App, API | Agent module (agentlet) run states |
 | `mqtt_credentials` | Web App | MQTT Broker | Robot MQTT login credentials |
 | `users` | Meteor Accounts | Web App, API | User accounts and roles |
+| `robot_status` | Ingest | Web App | Per-robot computed status entries |
+| `robot_vitals` | Ingest, Web App | Web App | System vitals (CPU, RAM, disk, RTT) |
+| `robot_key_values` | Ingest | Web App | Last-seen custom data / event keys per robot |
+| `custom_data` | Ingest | Web App | Custom text/image payloads |
+| `custom_script` | Ingest | Web App | Command execution feedback |
+| `diagnostics` | Ingest | Web App | ROS diagnostics snapshots |
+| `timeseries` | Ingest | Web App | Attribute history for timeline charts |
+| `robot_agent_files` | Ingest | Web App | Agent log file metadata |
+| `robot_alerts` | Web App | Web App | Alerts raised from attribute statuses |
+| `incidents` | Web App | Web App | Incidents derived from alerts |
+| `notifications` | Web App | Web App | In-app notifications (one per open alert) |
+| `event_log` | Web App, Ingest | Web App | Audit log of actions and incident changes |
+| `upstream_mqtt_credentials` | Ingest | Ingest | Encrypted upstream broker credentials |
+
+The web app also defines a MongoDB **view**, `view_robots_with_status`, which
+joins robots with their status entries for the fleet list.
 
 There is no single "configuration" collection: each Config API kind handler
 owns its own collection — `attr_defs` (DataSourceDefinition), `status_config`

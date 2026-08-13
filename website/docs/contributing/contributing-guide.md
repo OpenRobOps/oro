@@ -40,8 +40,7 @@ cd app && npm install
 cd ../ingest && npm install
 cd ..
 
-# Start all services (planned helper — for now run each service in its own
-# terminal as shown in the Quick Start)
+# Start all services (tmux session with one tab per service)
 ./scripts/start-local-env.sh
 ```
 
@@ -49,7 +48,7 @@ See the [Quick Start](../getting-started/quick-start.md) for detailed instructio
 
 ## Coding Standards
 
-- **ESLint with Airbnb configuration** — run the linter before submitting changes
+- **ESLint with Airbnb configuration** (configured for `app/`; run with `npx eslint`) — lint before submitting changes
 - Follow existing patterns and conventions in the codebase
 - Keep changes focused — avoid unrelated refactors in the same PR
 

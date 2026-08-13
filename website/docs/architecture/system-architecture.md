@@ -14,11 +14,11 @@ This diagram describes the scenario where the robot runs the ORO Agent.
 ┌──────────────────────────────────────────────────────────────┐
 │                     Robot (on-device)                        │
 │  ┌──────────────────────────────────────────────────────┐    │
-│  │  Agent                                               │    │
-│  │  ├── BasicsAgentlet                                  │    │
+│  │  Agent (agentlets, e.g.)                             │    │
 │  │  ├── SystemAgentlet     (CPU, RAM, disk, network)    │    │
-│  │  ├── LocalizationAgentlet  (pose, map, laser, path)  │    │
-│  │  └── CustomDataAgentlet    (key-value, text, images) │    │
+│  │  ├── RosLocalizationAgentlet (pose, map, laser, path)│    │
+│  │  ├── CustomDataAgentlet    (key-value, text, images) │    │
+│  │  └── RosDiagnostics, RosOdometry, RosTeleop, ...     │    │
 │  └──────────────────────┬───────────────────────────────┘    │
 │                         │ MQTT (protobuf)                    │
 └─────────────────────────┼────────────────────────────────────┘
@@ -116,8 +116,10 @@ React 18 SPA with Material UI. Connects to the Meteor server via WebSocket (DDP)
 |------|------|----------|
 | Robot → Cloud | Agent → MQTT broker → Ingest → MongoDB | MQTT + protobuf |
 | Cloud → Browser | MongoDB → Meteor pub/sub → Browser | DDP (WebSocket) |
+| Cloud → Robot | Web app → MQTT broker → Agent (commands, with echo callbacks) | MQTT |
 | API access | Client → Meteor REST API → MongoDB | HTTP + JSON |
 | Config changes | Client → ConfigAPI → MongoDB → Meteor pub/sub → Browser | HTTP + DDP |
+| Upstream | Ingest UpstreamModule → upstream ORO/InOrbit broker | MQTT (see [Upstream Forwarding](./upstream-forwarding.md)) |
 | Direct telemetry | MQTT broker → Browser | MQTT over WebSocket |
 
 ## Next Steps

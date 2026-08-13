@@ -23,7 +23,7 @@ local robots → Mosquitto → ingest
 For each mapped robot, the module:
 
 1. Subscribes on the local broker to `r/{localRobotId}/#`.
-2. For each received message, drops it if its subtopic appears in the configured deny list (typically server→robot topics such as `in_cmd`), otherwise republishes it to the upstream broker as `r/{upstreamRobotId}/{subtopic}` with the original payload bytes, QoS, and retain flag preserved.
+2. For each received message, drops it if its subtopic appears in the configured deny list (typically server→robot topics such as `in_cmd`), otherwise republishes it to the upstream broker as `r/{upstreamRobotId}/{subtopic}` with the original payload bytes, QoS, and retain flag preserved. The one exception is the `state` topic: the agent-version field of its `online|apiKey|agentVersion|hostname` payload is stamped with a `+oro-<version>` semver build-metadata suffix, so upstream operators can tell the telemetry was relayed through an ORO instance. The stamp is idempotent (never applied twice).
 
 Forwarding is **primarily upstream** (robot telemetry → upstream). A limited,
 operator-configurable **allow-list** of server→robot commands is also delivered

@@ -104,7 +104,10 @@ i.e. on the next route navigation.
    above: define named consts for the source palette, `merge` over `oro`, and
    override at least the `text`, `background`, status (`modes`, `incidents`,
    `diagnostics`, `snackbar`), accent (`secondary.main` and friends) and
-   `severityColor` groups.
+   `severityColor` groups. Every theme **must** also explicitly define the
+   accent contract pair: `text.onAccent` (ink for text/icons sitting on an
+   accent fill — never for strokes or the logo) and `background.accentSolid`
+   (the solid accent fill it sits on).
 2. Register it in the `THEMES` object in `app/imports/client/Styles.js`. The
    key becomes the URL/preference name; the Settings selector labels it by
    capitalizing hyphenated words (`tokyo-night` → "Tokyo Night") and shows a
@@ -113,8 +116,9 @@ i.e. on the next route navigation.
 For **light themes**, override everything that assumes a dark background —
 all `text` slots, surfaces/borders, `shadowColor.white` (use a dark tint),
 and any pastel `tags`/`zeroData` colors that would wash out. Set
-`mode: 'light'` so MUI and mode-dependent assets (like the app logo, which has
-a dark-glyph variant picked by `theme.palette.mode`) follow along.
+`mode: 'light'` so MUI components follow along. The app logo needs no per-mode
+asset: `OroLogo` draws its ink from `text.primary` and its wedge from
+`secondary.main`, so it adapts to any theme automatically.
 
 ## Rules for themable UI code
 
@@ -135,8 +139,9 @@ a dark-glyph variant picked by `theme.palette.mode`) follow along.
   `alpha(theme.palette.text.primary, x)` dim of it), never `common.white` /
   `rgba(255,255,255,…)` — those break on light themes.
 - **Plain CSS files** should use the theme-synced custom properties
-  (`--color-background`, `--color-card`, `--color-border`, …) that `Styles.js`
-  injects on `:root`, as `IncidentTimeline.css` does.
+  (`--color-background`, `--color-card`, `--color-border`, and
+  `--map-image-filter` for theme-aware map inversion) that `Styles.js`
+  injects on `:root`, as `app/imports/client/lib/IncidentTimeline.css` does.
 
 ## Styling reference
 

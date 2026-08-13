@@ -57,14 +57,16 @@ Data is encoded using the `SystemStatsMessage` protobuf type.
 
 Processes spatial data from the robot:
 
-| Data Type | Description |
-|-----------|-------------|
-| **Pose** | Robot position (x, y) and orientation (yaw) in a map frame |
-| **Map** | PNG-encoded occupancy grid or costmap |
-| **Laser scans** | 2D laser range data (runs + values encoding) |
-| **Paths** | Planned or executed paths as sequences of points |
+| Data Type | Topic | Description |
+|-----------|-------|-------------|
+| **Pose** | `ros/loc/data2`, `ros/loc/pose` | Robot position (x, y) and orientation (yaw) in a map frame |
+| **Map** | `ros/loc/map2` | PNG-encoded occupancy grid |
+| **Costmap** | `ros/loc/costmap` | PNG-encoded costmap overlay |
+| **Laser scans** | (in `ros/loc/data2`) | 2D laser range data (runs + values encoding) |
+| **Paths** | `ros/loc/path` | Planned or executed paths as sequences of points |
+| **Config** | `ros/loc/config/0..2` | Localization configuration (pipe-delimited text) |
 
-Uses `LocationAndPoseMessage`, `MapMessage`, and `PathDataMessage` protobuf types.
+Uses `LocationAndPoseMessage`, `PoseMessage`, `MapMessage`, and `PathDataMessage` protobuf types.
 
 ### CustomDataModule
 
@@ -91,7 +93,7 @@ new keys can be discovered when defining data sources.
 
 ### DiagnosticsModule
 
-Processes ROS-style hardware diagnostics published by the robot agent: per-component status (OK / Warn / Error / Stale), human-readable messages, and structured key-value detail. Severity is fed back into the robot's attributes so it can drive fleet-level health indicators.
+Processes ROS-style hardware diagnostics published by the robot agent: per-component status (OK / Warn / Error / Stale), human-readable messages, and structured key-value detail. Severity is fed back into the robot's attributes so it can drive fleet-level health indicators. Each status's key-values — plus its level and message via the reserved `__level__` and `__msg__` keys — can be mapped to attributes with `rosDiagnostics` data sources (see [Config API Kinds](../api/configapikinds.md#datasourcedefinition)).
 
 Subscribes to `r/<robot_id>/ros/diagnostics2` and `r/<robot_id>/ros/diagnostics/status`. Uses the `RosDiagnosticsMessage` protobuf type. Writes to the `diagnostics` collection.
 
@@ -100,6 +102,22 @@ Subscribes to `r/<robot_id>/ros/diagnostics2` and `r/<robot_id>/ros/diagnostics/
 Captures the execution feedback of remote commands and actions — exit codes, stdout, stderr, and progress updates — so the UI can show whether a triggered action succeeded.
 
 Subscribes to `r/<robot_id>/custom_command/script/status`. Uses the `CustomScriptStatusMessage` protobuf type. Writes to the `custom_script` collection.
+
+### UpstreamModule
+
+Optional module (off by default) that forwards local robot telemetry to an
+upstream ORO or InOrbit instance and relays allowed commands back down. See
+[Upstream Forwarding](../architecture/upstream-forwarding.md).
+
+### Odometry
+
+Odometry is handled directly by the MQTT dispatcher rather than a module:
+when `mqtt.odometryEnabled` is true (the default), ingest subscribes to
+`r/<robot_id>/ros/odometry/+` and produces the `speedLinear`, `speedAngular`,
+and distance attributes that feed the navigation dashboard's speed/rotation
+gauges and distance vitals. Distance updates are throttled to one write every
+10 seconds. Set `"odometryEnabled": false` under `mqtt` in `ingest/settings.json`
+to drop the subscription.
 
 ## Protobuf Messages
 
@@ -152,6 +170,8 @@ The following modules exist in the codebase but are not yet enabled:
 - **RosoutModule** — ROS log forwarding
 - **RosMonitorModule** — ROS topic/node/param monitoring
 - **ImagesModule** — camera image handling
+- **DataBagsModule** — timeseries data bags
+- **GpsModule** — GPS position ingestion
 
 These modules are being ported and will be available in future releases. See the [Roadmap](../contributing/roadmap.md) for details.
 

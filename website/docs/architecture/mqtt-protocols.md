@@ -26,7 +26,8 @@ Robot MQTT credentials are stored in the `mqtt_credentials` MongoDB collection:
 | Field | Description |
 |-------|-------------|
 | `username` | Unique MQTT username |
-| `encryptedPassword` | Password encrypted with a configured key |
+| `password` | PBKDF2 hash checked by the broker's auth plugin |
+| `encryptedPassword` | AES-GCM-encrypted copy, used to re-issue the password to clients |
 | `robotId` | Associated robot ID |
 | `superuser` | Whether the client has superuser privileges |
 | `acls` | Access control list (topic permissions) |
@@ -34,7 +35,7 @@ Robot MQTT credentials are stored in the `mqtt_credentials` MongoDB collection:
 
 Passwords are hashed using **PBKDF2** with SHA-512, 100,000 iterations, and a 16-byte salt.
 
-The ingest service connects as a **master** user with its own credentials (configured in `settings.json`), allowing it to subscribe to all robot topics.
+The ingest service connects as a **master** user with its own credentials (configured in `settings.json`), allowing it to subscribe to all robot topics. The web app also provisions **transient multi-robot credentials** for browser sessions (scoped by `robotIds` and expiring via a TTL index on `expiresAt`).
 
 ## Topic Structure
 
@@ -45,6 +46,28 @@ r/<robot_id>/<message_type>
 ```
 
 Where `<robot_id>` is the unique robot identifier and `<message_type>` indicates the data being sent.
+
+Two other topic families exist: `system/<subtopic>` for system-wide (non-robot)
+messages, and server→robot publishes on the same `r/<robot_id>/...` tree (for
+example `ros/loc/mapreq` map requests and command topics).
+
+### Subscriptions
+
+Subtopics the ingest service subscribes to today (`r/+/` prefix implied):
+
+| Subtopic | Handler | Payload |
+|----------|---------|---------|
+| `state` | BasicsModule | Pipe-delimited text (`online\|apiKey\|version\|hostname`) |
+| `out_cmd` | BasicsModule | Robot-originated commands |
+| `system/stats` | SystemModule | `SystemStatsMessage` |
+| `custom` | CustomDataModule | `CustomDataMessage` |
+| `events` | RobotEventsModule | `CustomDataMessage` |
+| `ros/diagnostics2`, `ros/diagnostics/status` | DiagnosticsModule | ROS diagnostics |
+| `custom_command/script/status` | CustomCommandsModule | `CustomScriptStatusMessage` |
+| `ros/loc/data2`, `ros/loc/pose`, `ros/loc/map2`, `ros/loc/costmap`, `ros/loc/path`, `ros/loc/config/0..2` | RobotLocalizationModule | Localization messages |
+| `ros/odometry/+` | OroMqtt (built-in, if `odometryEnabled`) | `OdometryDataMessage` |
+| `echo` | OroMqtt (built-in) | Command callbacks |
+| `logfiles_update` | OroMqtt (built-in) | `RobotFilesUpdateMessage` |
 
 ## Protocol Buffers
 
