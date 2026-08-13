@@ -50,11 +50,13 @@ curl -X POST \
   http://localhost:3000/api/configuration/apply \
   -d '{
     "kind": "DataSourceDefinition",
+    "apiVersion": "v0.1",
     "metadata": {
       "id": "my-custom-source"
     },
     "spec": {
-      // Data source specification
+      "label": "Battery",
+      "source": { "keyValue": { "key": "battery" } }
     }
   }'
 ```

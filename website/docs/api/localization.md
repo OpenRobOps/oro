@@ -20,7 +20,7 @@ Returns the robot's current position and orientation.
 {
   "x": 12.5,
   "y": 3.2,
-  "yaw": 1.57,
+  "theta": 1.57,
   "frameId": "map",
   "ts": 1710000000000,
   "mapId": "warehouse-floor-1",
@@ -36,13 +36,13 @@ Returns the robot's current position and orientation.
 |-------|------|-------------|
 | `x` | number | X position in meters (map frame) |
 | `y` | number | Y position in meters (map frame) |
-| `yaw` | number | Orientation in radians |
+| `theta` | number | Orientation in radians |
 | `frameId` | string | Coordinate frame ID |
 | `ts` | number | Pose timestamp (epoch milliseconds) |
 | `mapId` | string | Current map identifier |
-| `xPixels` | number | X position in pixels (when map data available) |
-| `yPixels` | number | Y position in pixels (when map data available) |
-| `mapDataHash` | string | Hash of the current map data |
+| `xPixels` | number | X position in pixels — only present when the robot's current map is loaded and matches `mapId` |
+| `yPixels` | number | Y position in pixels — same condition as `xPixels` |
+| `mapDataHash` | string | Hash of the current map data — same condition as `xPixels` |
 
 ### Errors
 
@@ -90,7 +90,7 @@ Returns comprehensive localization data including pose, laser scans, paths, and 
   "pose": {
     "x": 12.5,
     "y": 3.2,
-    "yaw": 1.57,
+    "theta": 1.57,
     "frameId": "map",
     "ts": 1710000000000,
     "mapId": "warehouse-floor-1"
@@ -116,6 +116,11 @@ Returns comprehensive localization data including pose, laser scans, paths, and 
   "costmap": { }
 }
 ```
+
+Sections that are unavailable for the robot — or not requested via `include` —
+are **omitted** from the response entirely rather than returned as empty
+objects. `costmap` is returned as stored (position, dimensions, resolution,
+timestamp, and base64 PNG data).
 
 ### Examples
 

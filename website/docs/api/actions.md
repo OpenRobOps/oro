@@ -6,8 +6,8 @@ sidebar_position: 2.1
 
 Execute actions on a robot and check execution status. Actions are defined with
 ConfigAPI `ActionDefinition` objects (see
-[Config API Kinds](./configapikinds.md#actiondefinition)); the action types exposed
-over the REST API are `RunScript`, `PublishToTopic` and `DispatchMission`.
+[Config API Kinds](./configapikinds.md#actiondefinition)); any defined action —
+whatever its type — can be executed through this API.
 
 ## Execute Action
 
@@ -49,13 +49,15 @@ on the robot.
 }
 ```
 
+`status` is always the literal `"started"`. `executionId` is only present for
+`RunScript` actions — other action types return the remaining fields only.
+
 ### Errors
 
 | Status | Condition |
 |--------|-----------|
-| 400 | Invalid body, or the action could not be started (response may include a `validations` array) |
+| 400 | Invalid body, or the action could not be started — including "Action not found", "Unknown robot", and per-action permission failures ("User not authorized to run action"); the response may include a `validations` array |
 | 403 | User lacks operate access to this robot |
-| 404 | No action found for `actionId` |
 
 ### Example
 
@@ -96,6 +98,9 @@ Execution status is currently only tracked for `RunScript` actions.
   "stdout": "service restarted\n"
 }
 ```
+
+`status` starts as `Executed on robot` (set by the server), then reflects the
+agent's reports: `to be started`, `running`, `finished`, or `aborted`.
 
 ### Errors
 
