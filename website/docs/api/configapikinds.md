@@ -608,8 +608,114 @@ spec:
 
 ---
 
+## IncidentDefinition
+
+Defines how alerts raised for an attribute's status become incidents: severity,
+automatic and manual actions, and notification channels per level. The
+`metadata.id` is the **attribute (trigger) id** the definition applies to.
+See the [Incidents & Alerts guide](../guides/incidents-alerts.md) for the full
+pipeline.
+
+### Schema
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `spec.label` | string | No | Fixed incident title |
+| `spec.labelTemplate` | string | No | Title template; supports `{{robotName}}` |
+| `spec.error` / `spec.warning` | object | No | Per-level blocks (see below) |
+| `spec.<level>.severity` | enum | No | `SEV 0`, `SEV 1`, `SEV 2`, or `SEV 3` |
+| `spec.<level>.autoActions` | array | No | `ActionDefinition` ids executed automatically at this level (run as the system user) |
+| `spec.<level>.manualActions` | array | No | Action ids offered as buttons on the in-app notification |
+| `spec.<level>.notificationChannels` | array | No | `NotificationChannel` ids notified at this level (missing channels are skipped) |
+| `spec.ok` | object | No | Resolution block — only `autoActions` and `notificationChannels` (no `severity`/`manualActions`); runs on resolve |
+
+### Example
+
+```yaml
+apiVersion: v0.1
+kind: IncidentDefinition
+metadata:
+  id: battery_level
+spec:
+  labelTemplate: "Battery problem on {{robotName}}"
+  error:
+    severity: SEV 1
+    autoActions: [pause_robot]
+    manualActions: [restart_agent]
+    notificationChannels: [ops-webhook]
+  ok:
+    notificationChannels: [ops-webhook]
+```
+
+---
+
+## NotificationChannel
+
+Named delivery endpoints referenced by `IncidentDefinition`
+`notificationChannels` lists. Webhook is the only supported type today.
+
+### Schema
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `spec.type` | enum | Yes | Only `webhook` |
+| `spec.url` | url | Yes | Endpoint that receives JSON `POST`s |
+| `spec.secret` | string | No | Sent as `Authorization: Bearer <secret>` on each delivery |
+
+The `metadata.id` is the name referenced from incident definitions. Deliveries
+fire on incident open, escalation, and resolve; best-effort, no retries. See
+the [Incidents & Alerts guide](../guides/incidents-alerts.md#notification-channels)
+for the payload format.
+
+### Example
+
+```yaml
+apiVersion: v0.1
+kind: NotificationChannel
+metadata:
+  id: ops-webhook
+spec:
+  type: webhook
+  url: https://ops.example.com/hooks/oro
+  secret: my-shared-secret
+```
+
+---
+
+## ModuleState
+
+Singleton state documents for **agent modules** (agentlets), keyed by module
+name. Used to persist per-module configuration such as the minimum run level
+at which a module starts.
+
+### Schema
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `spec.state` | object | Yes | Opaque state blob; contents are not validated |
+
+Applying **replaces** the whole stored state document — include every field you
+want kept, not just the one you're changing. `metadata.id` is the module
+(agentlet) name, e.g. `RosLocalizationAgentlet`. Requires fleet configure
+access.
+
+### Example
+
+```yaml
+apiVersion: v0.1
+kind: ModuleState
+metadata:
+  id: RosLocalizationAgentlet
+spec:
+  state:
+    minRunlevel: 2
+```
+
+---
+
 ## See Also
 
 - [Config API](./configapi.md) -- API endpoints for apply, clear, and list operations
 - [Attributes & Status](../guides/attributes-status.md) -- practical guide to using DataSourceDefinitions and StatusDefinitions
+- [Incidents & Alerts](../guides/incidents-alerts.md) -- the alert → incident pipeline
 - [Custom Data Sources](../extending/custom-data-sources.md) -- advanced data source configuration

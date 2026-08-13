@@ -49,7 +49,7 @@ Telemetry flows through MQTT as protobuf-encoded messages and is processed by th
 
 ## Alerts & Incidents
 
-When an attribute's status rule fires, the ingest service raises an **alert**. If an `IncidentDefinition` exists for that attribute and level, the alert becomes an **Incident** — with a severity (SEV 0–3), optional automatic actions, manual actions offered to operators, and notification channels (webhooks). Incidents appear in the IncidentTimeline and IncidentList widgets; open incidents also surface as in-app **notifications** with action buttons.
+When an attribute's status rule fires, the ingest service raises an **alert**. If an `IncidentDefinition` exists for that attribute and level, the alert becomes an **Incident** — with a severity (SEV 0–3), optional automatic actions, manual actions offered to operators, and notification channels (webhooks). Incidents appear in the IncidentTimeline and IncidentList widgets; open incidents also surface as in-app **notifications** with action buttons. See the [Incidents & Alerts guide](../guides/incidents-alerts.md).
 
 ## Locks
 
