@@ -8,7 +8,7 @@ sidebar_position: 2
 This page describes the ORO protocol. Other communication standards are currently work-in-progress and will be added soon to these guides.
 :::
 
-OpenRobOps uses MQTT as its primary communication protocol between robot agents and the cloud platform. All telemetry messages are serialized with Protocol Buffers.
+OpenRobOps uses MQTT as its primary communication protocol between robot agents and the cloud platform. Most telemetry messages are serialized with Protocol Buffers; a few legacy topics (such as `state` and `ros/loc/config/N`) carry pipe-delimited text instead.
 
 ## MQTT Broker
 
@@ -48,83 +48,128 @@ Where `<robot_id>` is the unique robot identifier and `<message_type>` indicates
 
 ## Protocol Buffers
 
-All telemetry messages use protobuf serialization, defined in `ingest/src/shared/oro.proto`. Key message types:
+Telemetry messages use protobuf serialization. The source of truth is
+`app/private/oro.proto` (copied into `ingest/src/shared/` by `ingest/import.sh`
+on each ingest start). Key message types, as defined there:
 
 ### SystemStatsMessage
 
-System resource metrics from the robot:
+System resource metrics from the robot (`r/+/system/stats`):
 
 ```protobuf
 message SystemStatsMessage {
-  float cpuLoad = 1;
-  float ramPercentage = 2;
-  float diskPercentage = 3;
-  repeated DiskInfo diskDetails = 4;
-  NetworkStats network = 5;
+  int64 timestamp = 1;              // Client capture time (ms)
+  float elapsed_seconds = 2;        // Duration of the reported period
+
+  float cpu_load_percentage = 3;    // Period average, [0.0, 1.0]
+
+  // Network transfers since last report
+  string network_interface = 4;
+  int64 total_tx = 5;
+  int64 total_rx = 6;
+  int64 agent_tx = 7;
+  int64 agent_rx = 8;
+
+  // Disk usage
+  float hdd_usage_percentage = 9;         // [0.0, 1.0]
+  float agent_hdd_usage_mb = 10;
+  float agent_hdd_usage_percentage = 11;
+
+  repeated DiskUsageMessage optional_disks_data = 15;
+  repeated NetworkStatsMessage optional_network_interfaces_data = 16;
+
+  float ram_usage_percentage = 17;  // [0.0, 1.0]
 }
 ```
 
 ### LocationAndPoseMessage
 
-Robot position and spatial data:
+Robot pose plus laser scans (`r/+/ros/loc/data2`):
 
 ```protobuf
 message LocationAndPoseMessage {
-  float x = 1;
-  float y = 2;
-  float yaw = 3;
-  string frameId = 4;
-  // Laser range data included inline
+  int64 ts = 1;                     // Timestamp (ms)
+
+  // Robot pose
+  float pos_x = 2;
+  float pos_y = 3;
+  float yaw = 4;
+
+  repeated LaserMessage lasers = 5;
 }
 ```
 
 ### MapMessage
 
-Occupancy grid or costmap data:
+Map or costmap data, PNG-encoded (`r/+/ros/loc/map2` and `r/+/ros/loc/costmap`):
 
 ```protobuf
 message MapMessage {
-  bytes data = 1;        // PNG-encoded map image
-  float resolution = 2;
-  float x = 3;           // Origin x
-  float y = 4;           // Origin y
-  string mapId = 5;
+  uint32 width = 1;         // Pixels
+  uint32 height = 2;        // Pixels
+  bytes pixels = 3;         // PNG-encoded
+  float x = 4;
+  float y = 5;
+  float theta = 6;          // Orientation, radians
+  float resolution = 7;     // m/cell
+  int64 ts = 8;
+  string label = 9;         // Topic/identifier (deprecated by map_id)
+  int64 data_hash = 10;     // Hash of the occupancy grid data
+  string frame_id = 11;
+  string map_id = 12;
+  bool is_update = 13;      // Set on map_id/frame_id updates
+  int32 formatVersion = 14;
 }
 ```
 
 ### PathDataMessage
 
-Robot paths (planned or executed):
+Robot paths (`r/+/ros/loc/path`):
 
 ```protobuf
 message PathDataMessage {
-  repeated Point points = 1;
-  string pathId = 2;
+  repeated PathPoint points = 1;   // Deprecated for agent >= 1.20.0
+  int64 ts = 2;
+  repeated RobotPath paths = 3;    // Each with points, ts, path_id
 }
 ```
 
+Path point coordinates may be delta-integer encoded on the wire; the ingest
+localization module decodes them before storage.
+
 ### CustomDataMessage
 
-Arbitrary key-value data, text, or images:
+Arbitrary key-value data, text files, or images (`r/+/custom` and `r/+/events`):
 
 ```protobuf
 message CustomDataMessage {
-  repeated Value values = 1;    // Key-value pairs
-  // Also supports diagnostics, images, text
+  string custom_field = 1;    // ID of the custom data element
+
+  oneof payload {
+    KeyValuePairs key_value_payload = 2;
+    bytes image_payload = 3;
+    bytes text_file_payload = 4;              // Deprecated (agent > 1.5.0)
+    DiagnosticsMessage diagnostics_payload = 5;
+    TextFileMessage text_file_payload_2 = 6;
+  }
+  int64 ts = 7;
 }
 ```
 
 ### Other Message Types
 
+Ingested today:
+
 | Message | Description |
 |---------|-------------|
 | `OdometryDataMessage` | Linear/angular distance and speed |
-| `CameraMessage` | JPEG-encoded camera images |
-| `AlertMessage` | Robot alerts with severity level |
-| `RosDiagnosticsMessage` | ROS diagnostics data |
-| `TopicMonitorMessage` | ROS topic monitoring |
-| `RosOutMessage` | ROS log messages (compressed) |
-| `CustomScriptCommandMessage` | Remote script execution |
+| `RosDiagnosticsStatusMessage` | ROS diagnostics data |
+| `CustomScriptStatusMessage` | Remote script execution status |
+| `PoseMessage` | Robot pose updates (alternative to `LocationAndPoseMessage`) |
+| `Echo` | Command callback/acknowledgement resolution |
+
+Defined in the protocol but **not currently ingested** (their ingest modules are
+disabled): `AlertMessage`, `RosOutMessage`, `TopicMonitorMessage`, `CameraMessage`.
 
 ## Agent Module System (Agentlets)
 

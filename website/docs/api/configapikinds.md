@@ -236,7 +236,7 @@ Configures actions that can be executed on robots. Actions appear in the UI and 
 
 | Field | Type | Required | Default | Description |
 |-------|------|----------|---------|-------------|
-| `spec.type` | string | Yes | | Action type identifier (max 255 chars) |
+| `spec.type` | enum | Yes | | Action type. One of: `RestartAgent`, `RunScript`, `PublishToTopic`, `Url`, `MapSwitch`, `NavigatePath`, `Relocalize`, `NavigateTo`, `CancelNavGoal`, `Teleop`, `UpdateAgent`, `CameraToggle` — applying any other value fails |
 | `spec.label` | string | No | `""` | Display label (max 255 chars) |
 | `spec.description` | string | No | `""` | Description text (max 255 chars) |
 | `spec.lock` | boolean | No | `false` | Whether the action locks the robot during execution |
@@ -257,25 +257,33 @@ Configures actions that can be executed on robots. Actions appear in the UI and 
 | `spec.arguments[].input.values[].label` | string | Yes | | Display label for the option |
 | `spec.arguments[].input.values[].value` | string | Yes | | Value for the option |
 
+:::note[Required arguments per type]
+Some action types require specific arguments, and apply fails with
+`Missing action argument: ...` without them: `RunScript` requires `filename`,
+`PublishToTopic` requires `message`, `CameraToggle` requires `cameraId`, and
+`MapSwitch` requires `label`.
+:::
+
 ### Examples
 
-A simple action with no arguments:
+A simple agent-restart action with no arguments:
 
 ```yaml
 apiVersion: v0.1
 kind: ActionDefinition
 metadata:
-  id: restart_service
+  id: restart_agent
 spec:
-  type: restartService
-  label: Restart Service
-  description: Restarts the main robot service
+  type: RestartAgent
+  label: Restart Agent
+  description: Restarts the robot agent
   lock: true
   confirmation:
     required: true
 ```
 
-An action with arguments and a dropdown selector:
+A script action with a dropdown-selected extra argument (`filename` is
+required for `RunScript`):
 
 ```yaml
 apiVersion: v0.1
@@ -283,11 +291,14 @@ kind: ActionDefinition
 metadata:
   id: set_speed
 spec:
-  type: setSpeed
+  type: RunScript
   label: Set Speed
   description: Sets the maximum robot speed
   group: Motion Control
   arguments:
+    - name: filename
+      type: string
+      value: set_speed.sh
     - name: speed_mode
       type: string
       input:
@@ -301,23 +312,23 @@ spec:
             value: "2.0"
 ```
 
-An action embedded in the navigation widget:
+A topic-publish action embedded in the navigation widget (`message` is
+required for `PublishToTopic`):
 
 ```yaml
 apiVersion: v0.1
 kind: ActionDefinition
 metadata:
-  id: send_waypoint
+  id: announce_arrival
 spec:
-  type: sendWaypoint
-  label: Send Waypoint
+  type: PublishToTopic
+  label: Announce Arrival
   widgets:
     - navigation
   arguments:
-    - name: x
-      type: number
-    - name: "y"
-      type: number
+    - name: message
+      type: string
+      value: arrived
 ```
 
 ---

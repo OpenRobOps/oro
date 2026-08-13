@@ -14,12 +14,15 @@ The service starts in `ingest/src/main.js`, which initializes core managers and 
 Ingest Service Startup
 ├── MongoManager.init()       → Connect to MongoDB
 ├── PeerClient.init()         → Connect to web app Peer API
+├── UpstreamModule            → (if enabled) loaded before OroMqtt.run() so
+│                                retained state messages forward on connect
 ├── OroMqtt.run()             → Connect to MQTT broker
 ├── DerivedAttributesService  → Worker queue for derived attributes
 └── Load modules:
     ├── BasicsModule
     ├── SystemModule
     ├── CustomDataModule
+    ├── RobotEventsModule
     ├── DiagnosticsModule
     ├── CustomCommandsModule
     └── RobotLocalizationModule
@@ -37,11 +40,10 @@ MQTT client wrapper that connects to the broker as the ingest master user. Provi
 
 ### PeerClient
 
-HTTP client for communicating with the web app's internal Peer API. Used for operations like:
+HTTP client for communicating with the web app's internal Peer API. Used for:
 
-- Requesting module resends (`resend_modules`)
-- Triggering module updates (`update_modules`)
-- Forwarding commands to robots
+- Creating and resolving alerts from attribute status changes (`createAlert`, `resolveAlert` → `POST /peer/alerts`)
+- Relaying robot commands received on `out_cmd` (`robotCommand` → `POST /peer/robot/command`)
 
 ## Module Architecture
 
@@ -55,12 +57,12 @@ class MyModule {
   }
 
   load(settings) {
-    // Subscribe to MQTT topics
-    // Register message handlers
-    this.mqtt.subscribe('r/+/my_topic', this.handleMessage);
+    // Register a listener for a subtopic; OroMqtt subscribes to
+    // r/+/<subtopic> and routes matching messages here
+    this.mqtt.registerListener('my_topic', this.handleMessage);
   }
 
-  handleMessage(robotId, message) {
+  handleMessage(robotId, message, packet) {
     // 1. Decode protobuf message
     // 2. Transform/validate data
     // 3. Write to MongoDB
@@ -82,8 +84,10 @@ class MyModule {
 | **SystemModule** | `system/stats` | `attr_values` | CPU, RAM, disk, network metrics (via AttributesManager) |
 | **CustomDataModule** | `custom` | `custom_data`, `robot_key_values` | Key-value pairs, text, images |
 | **DiagnosticsModule** | `ros/diagnostics2`, `ros/diagnostics/status` | `diagnostics` | ROS hardware diagnostics, severity-based status |
+| **RobotEventsModule** | `events` | `attr_values`, `robot_key_values` | Sampled key-value events mapped to attributes |
 | **CustomCommandsModule** | `custom_command/script/status` | `custom_script` | Command/action execution feedback |
-| **RobotLocalizationModule** | `ros/loc/*` (pose, map, path, costmap, ...) | `localization`, `spatial_annotations`, `module_states` | Pose, maps, lasers, paths, costmaps |
+| **RobotLocalizationModule** | `ros/loc/*` (pose, map, path, costmap, ...) | `localization`, `spatial_annotations` | Pose, maps, lasers, paths, costmaps |
+| **UpstreamModule** | all robot topics (when enabled) | `upstream_mqtt_credentials`, `event_log` | Forwards telemetry to an upstream ORO/InOrbit — see [Upstream Forwarding](./upstream-forwarding.md) |
 
 ### Module Settings
 
@@ -101,7 +105,7 @@ Per-module configuration can be provided via the `modules` key in `ingest/settin
 
 ### Derived Attributes Service
 
-In addition to MQTT-driven modules, the ingest service runs a `DerivedAttributesService` worker that periodically computes new attributes from existing ones. Derived attributes are configured via the ConfigAPI; see [ConfigAPI](../api/configapi.md).
+In addition to MQTT-driven modules, the ingest service runs a `DerivedAttributesService` worker that recomputes derived attributes on every source attribute update (event-driven via an in-memory work queue). Derived attributes are configured via the ConfigAPI; see [ConfigAPI](../api/configapi.md).
 
 ## Data Processing Flow
 

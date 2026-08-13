@@ -33,14 +33,18 @@ This diagram describes the scenario where the robot runs the ORO Agent.
            │                              │
            │ Subscribe                    │ Subscribe (browser)
            ▼                              │
-┌──────────────────────┐                  │
-│  Ingest Service      │                  │
-│  ├── OroMqtt         │                  │
-│  ├── BasicsModule    │                  │
-│  ├── SystemModule    │                  │
-│  ├── LocalizationModule                 │
-│  ├── CustomDataModule│                  │
-└──────────┬───────────┘                  │
+┌──────────────────────────────┐          │
+│  Ingest Service              │          │
+│  ├── OroMqtt                 │          │
+│  ├── BasicsModule            │          │
+│  ├── SystemModule            │          │
+│  ├── CustomDataModule        │          │
+│  ├── RobotEventsModule       │          │
+│  ├── DiagnosticsModule       │          │
+│  ├── CustomCommandsModule    │          │
+│  ├── RobotLocalizationModule │          │
+│  └── UpstreamModule (opt.)   │          │
+└──────────┬───────────────────┘          │
            │ Write                        │
            ▼                              │
 ┌──────────────────────────────────────┐  │
@@ -49,8 +53,9 @@ This diagram describes the scenario where the robot runs the ORO Agent.
 │  ├── localization                    │  │
 │  ├── attr_values                     │  │
 │  ├── module_states                   │  │
-│  ├── ...                             |  |
-│  └── configuration (ConfigAPI)       │  │
+│  ├── incidents / notifications      │  │
+│  └── per-kind config (attr_defs, …) │  │
+└──────────┬───────────────────────────┘  │
            │ Reactive queries             │
            ▼                              │
 ┌──────────────────────────────────────┐  │
@@ -86,7 +91,7 @@ Central message bus. Routes telemetry from robots to the ingest service and brow
 
 A Node.js process that subscribes to MQTT topics and processes incoming telemetry. Uses a pluggable module architecture — each module handles a specific message type (system stats, localization, custom data, etc.). Writes processed data to MongoDB.
 
-The ingest service also communicates with the web app via a **Peer API** (`x-auth-peer-key`) for operations like triggering module reloads or forwarding commands.
+The ingest service also communicates with the web app via a **Peer API** (`/peer/*` endpoints) for creating alerts and relaying robot commands. Peer calls authenticate with a `peerKey` field inside the JSON body; the `x-auth-peer-key` HTTP header is a separate mechanism used by internal callers of the REST `/api` surface.
 
 ### MongoDB
 

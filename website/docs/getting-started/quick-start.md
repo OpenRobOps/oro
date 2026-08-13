@@ -33,14 +33,20 @@ cd oro
 OpenRobOps uses Terraform to generate settings files with randomized credentials for inter-service communication.
 
 ```bash
-# Preview what will be generated
-./scripts/generate-settings.sh
+# Preview what will be generated (optional)
+./scripts/generate-settings.sh --plan
 
 # Generate and write settings files
-./scripts/generate-settings.sh --apply
+./scripts/generate-settings.sh
 ```
 
 This creates `app/settings.json` and `ingest/settings.json` with MQTT credentials, encryption keys, and service URLs.
+
+Secrets are Terraform `random_*` resources persisted in state, so the script is
+safe to re-run: it preserves the existing MQTT master password, encryption keys,
+peer key, and robot API key. To force-rotate all secrets run
+`./scripts/generate-settings.sh --clean` — note this invalidates credentials
+already handed out to connected robots.
 
 ### Optional: Configure OAuth
 
@@ -65,7 +71,7 @@ To enable Google or GitHub login, create `terraform/local.tfvars`:
 # admin_emails = ["you@example.com"]
 ```
 
-Then re-run `./scripts/generate-settings.sh --apply`.
+Then re-run `./scripts/generate-settings.sh`.
 
 Set `admin_emails` to your own address so your first sign-in is an administrator
 with no extra steps.
@@ -77,6 +83,10 @@ cd app && npm install
 cd ../ingest && npm install
 cd ..
 ```
+
+Note: on every start, `ingest/run.sh` syncs shared files (`oro.proto` and
+shared JavaScript) from `app/` into `ingest/src/shared/` via `ingest/import.sh`,
+so the `app/` directory must be present alongside `ingest/`.
 
 ## 4. Start All Services
 

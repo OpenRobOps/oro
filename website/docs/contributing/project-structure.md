@@ -16,7 +16,7 @@ oro/
 ├── terraform/       # Settings generation (Terraform)
 ├── scripts/         # Utility scripts
 ├── website/         # Docusaurus documentation site
-├── docs/            # Top-level repo docs (separate from website/)
+├── docs/            # Design specs & implementation plans (not user docs)
 ├── k8s/             # Kubernetes manifests
 ├── README.md        # Project overview
 ├── README-dev.md    # Development environment setup
@@ -71,7 +71,7 @@ app/
 │   │   │   ├── validators.js
 │   │   │   └── utils.js
 │   │   ├── oauthConfig.js           # OAuth provider setup
-│   │   ├── model.js                 # Robot model
+│   │   ├── model/                   # Models (robot, incident, ...)
 │   │   ├── roles.js                 # RBAC implementation
 │   │   └── attributes.js            # Attributes manager
 │   ├── lib/
@@ -80,7 +80,7 @@ app/
 │       ├── configAPI.js             # Shared ConfigAPI constants
 │       └── roles.js                 # Shared role definitions
 ├── private/
-│   └── oro.proto                    # Protobuf definitions (client copy)
+│   └── oro.proto                    # Protobuf definitions (source of truth, git-tracked)
 ├── tests/
 │   └── main.js                      # Test entry point
 ├── .meteor/
@@ -111,7 +111,7 @@ ingest/
 │   │       ├── diagnostics.js       # DiagnosticsModule
 │   │       └── customCommands.js    # CustomCommandsModule
 │   ├── shared/
-│   │   └── oro.proto                # Protobuf definitions (source of truth)
+│   │   └── oro.proto                # Copied from app/private/ by import.sh (generated — do not edit)
 │   └── lib/
 │       └── util.js                  # Utility functions
 ├── settings.json                    # Service configuration (generated)
