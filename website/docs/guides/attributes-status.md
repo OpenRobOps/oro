@@ -41,7 +41,8 @@ Response:
 ### Defining a Key-Value Attribute
 
 A `DataSourceDefinition` whose `source.keyValue.key` matches a key the agent publishes
-maps that telemetry into a named attribute:
+maps that telemetry into a named attribute (an optional `topic` field scopes
+the key to one custom-data topic):
 
 ```bash
 curl -X POST \

@@ -19,6 +19,9 @@ Started by [InOrbit.AI](https://www.inorbit.ai), OpenRobOps brings the same prod
 
 - **Real-time fleet monitoring** — live telemetry from multiple robots
 - **Customizable dashboards** — user-defined layouts and widgets
+- **Incidents & alerts** — status-rule-driven incidents with severities, automatic/manual actions, in-app notifications, and webhook channels
+- **Themeable UI** — eight built-in color themes with per-user persistence and automatic light/dark selection
+- **Upstream forwarding** — relay a fleet's telemetry and commands to another ORO or InOrbit instance
 - **Pluggable module system** — extensible ingest pipeline (system stats, custom data, localization, and more)
 - **Role-based access control** — with predefined roles for read-only usage, operation, configuration
 - **Vendor-agnostic support** — MQTT messaging layer and standard protocols to connect any robot

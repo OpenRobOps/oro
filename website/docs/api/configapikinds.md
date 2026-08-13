@@ -33,6 +33,7 @@ Defines custom data sources and attribute mappings for robots. Data sources repr
 | `spec.scale` | number | No | Scale factor applied to the value |
 | `spec.precision` | number | No | Number of decimal places for display |
 | `spec.source` | object | No | Data source mapping (exactly one key allowed) |
+| `spec.timeline` | object | No | Timeseries options: `disabled` (boolean) turns off history recording; `fieldType` (`string` \| `number` \| `boolean`) overrides the stored value type. `timeline: {}` enables history with defaults |
 
 #### Source types
 
@@ -47,7 +48,7 @@ The `source` field must contain exactly one of the following keys:
 | `imageFile` | `path` (required) | Image read from a file on the robot |
 | `diskUsage` | `partition` (required) | Disk usage for a specific partition |
 | `networkUsage` | `interface` (required) | Network usage for a specific interface |
-| `rosDiagnostics` | `namespace` (required), `key` (required) | Value from ROS diagnostics |
+| `rosDiagnostics` | `namespace` (required), `key` (required) | Value from ROS diagnostics. `namespace` is the diagnostic status' full name as published by the node (e.g. `/Other/amcl: Standard deviation`); `key` is one of its key-values. Two reserved keys are always available for every status: `__level__` (numeric diagnostic level) and `__msg__` (status message) — the only bindable diagnostics values on agents older than 4.19.0, which don't forward diagnostics key-values |
 
 ### Examples
 
@@ -124,6 +125,22 @@ spec:
     rosDiagnostics:
       namespace: /motors/left
       key: temperature
+```
+
+Binding a diagnostic's message via the reserved `__msg__` key (works even when
+the agent forwards no key-values):
+
+```yaml
+apiVersion: v0.1
+kind: DataSourceDefinition
+metadata:
+  id: amcl_std_dev
+spec:
+  label: AMCL standard deviation
+  source:
+    rosDiagnostics:
+      namespace: '/Other/amcl: Standard deviation'
+      key: __msg__
 ```
 
 ---
@@ -362,7 +379,7 @@ Defines custom dashboards with sections and widgets. Dashboards organize robot a
 | `label` | string | Yes | Widget display name |
 | `type` | enum | Yes | Widget type (see supported types below) |
 | `layout` | object | No | Layout configuration |
-| `layout.grid` | number/string | No | Width in grid columns (1-12) or CSS value |
+| `layout.grid` | number/string | No | Width in grid columns (conventionally 1-12, not validated) or CSS value |
 | `layout.height` | number/string | No | Height in rows or CSS value |
 | `layout.chroma` | boolean | No | Enable color theming |
 | `layout.withoutBackground` | boolean | No | Render without background |
@@ -374,7 +391,7 @@ Defines custom dashboards with sections and widgets. Dashboards organize robot a
 | Type | Config fields | Description |
 |------|---------------|-------------|
 | `vitals` | `dataSources[]` with `id`, `label`, `unit`, `type` (`text` or `gauge`) | Real-time vital metrics display |
-| `chart` | `chartType` (`linechart` or `areachart`), `min`, `max`, `dataSources[]` with `id`, `label`, `precision`, `scale`, `op` | Time-series chart |
+| `chart` | `chartType` (`linechart` or `areachart`, **required** when `config` is present), `min`, `max`, `dataSources[]` with `id`, `label`, `precision`, `scale`, `op` (`average`, `count`, `maximum`, `minimum`, `sum`, `last`). `dataSources[].id` values must be unique within the widget | Time-series chart |
 | `history` | `dataSources[]` with `id`, `label`, `type` | Historical data table |
 | `listData` | `dataSources[]` with `id`, `label`, `precision`, `type`, `unit` | Data list display |
 | `actionsWidget` | `bigButtons`, `expanded`, `actionIds[]` | Robot actions panel |
@@ -393,6 +410,15 @@ Defines custom dashboards with sections and widgets. Dashboards organize robot a
 | `logsWidget` | (none) | Logs viewer |
 | `customDataImage` | (none) | Custom data image |
 | `customDataText` | (none) | Custom data text |
+| `text` | `text` (Markdown string) | Markdown panel |
+
+The enum also accepts `robotSearch`, `fleetControl`, `image`,
+`robotControlBar`, `navigationControlBar`, `missionTracker`,
+`fleetMissionTracker`, and `missionControlBar`, but these have no config
+converter — any `config` passed is silently dropped. Note that some accepted
+types (`localization`, `dataBags`, `logsWidget`, `image`, `robotSearch`,
+`history`, and the mission widgets) currently have no client renderer and
+display "Unknown widget type" on dashboards.
 
 ### Examples
 

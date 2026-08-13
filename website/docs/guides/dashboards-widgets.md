@@ -24,29 +24,32 @@ Clicking on a robot opens its detail dashboard, showing robot-specific widgets w
 
 ### Fleet Widgets
 
-| Widget | Description |
-|--------|-------------|
-| **Fleet Status** | Fleet-wide status grid with configurable attribute columns and color coding |
-| **Fleet Control** | Filter, sort, and group robots by status or attribute |
-| **IncidentTimeline** | Calendar timeline of incidents across robots (uses `react-calendar-timeline`) |
-| **IncidentList** | Sortable list of active and recent incidents |
-| **Fleet Log (Audit)** | Fleet-wide audit log of action executions and events |
-| **Text** | Markdown panel (`config.text`) used for welcome pages and informational content; added via Config API only |
+| Widget | Config API `type` | Description |
+|--------|-------------------|-------------|
+| **Fleet Status** | `fleetStatus` | Fleet-wide status grid with configurable attribute columns and color coding |
+| **Fleet Control** | `fleetControl` | Filter, sort, and group robots by status or attribute |
+| **IncidentTimeline** | `incidentTimeline` | Calendar timeline of incidents across robots (uses `react-calendar-timeline`) |
+| **IncidentList** | `incidentList` | Sortable list of active and recent incidents |
+| **Fleet Log (Audit)** | `auditLogFleet` | Fleet-wide audit log of action executions and events |
+| **Text** | `text` | Markdown panel (`config.text`) used for welcome pages and informational content; added via Config API only |
+
+The `type` value is what `DashboardDefinition` widgets reference — see
+[Config API Kinds](../api/configapikinds.md#dashboarddefinition).
 
 ### Robot Widgets
 
-| Widget | Description |
-|--------|-------------|
-| **Vitals** | Real-time system vitals: CPU, memory, disk, network RTT |
-| **Timeline (Timeseries)** | Line/area chart of any attribute over time, with avg / min / max / sum / count / last aggregations |
-| **ROS Diagnostics** | Hardware diagnostic statuses by component, with severity filtering |
-| **Key-value Sources** | Table of key-value pairs from a configured data source |
-| **Log files (Text)** | Text-file content published by the agent |
-| **Custom Image** | Images published by the agent |
-| **Camera** | Live camera feed (see note below on `cameraId`) |
-| **Actions** | Robot action buttons; can be embedded inline or shown as a dedicated widget (with `expanded`, `bigButtons`, and `actionIds` config) |
-| **Robot Control Bar** | Strip of common controls (search, restart agent, update agent, lock/unlock, robot info) |
-| **Robot Log (Audit)** | Per-robot audit log of action executions and events |
+| Widget | Config API `type` | Description |
+|--------|-------------------|-------------|
+| **Vitals** | `vitals` | Real-time system vitals: CPU, memory, disk, network RTT |
+| **Timeline (Timeseries)** | `chart` | Line/area chart of any attribute over time; config: `chartType` (`areachart`/`linechart`, required), `min`/`max`, per-source `op` (avg / min / max / sum / count / last), `precision`, `scale` |
+| **ROS Diagnostics** | `diagnostics` | Hardware diagnostic statuses by component, with severity filtering |
+| **Key-value Sources** | `keyValues` | Table of key-value pairs from a configured data source |
+| **Log files (Text)** | `customDataText` | Text-file content published by the agent |
+| **Custom Image** | `customDataImage` | Images published by the agent |
+| **Camera** | `cameraWidget` | Live camera feed (see note below on `cameraId`) |
+| **Actions** | `actionsWidget` | Robot action buttons; can be embedded inline or shown as a dedicated widget (with `expanded`, `bigButtons`, and `actionIds` config) |
+| **Robot Control Bar** | `robotControlBar` | Strip of common controls (search, restart agent, update agent, lock/unlock, robot info) |
+| **Robot Log (Audit)** | `auditLog` | Per-robot audit log of action executions and events |
 
 :::note[Maps]
 The 2D map view (robot pose, costmap, laser scans, paths) currently renders
@@ -62,13 +65,25 @@ is derived — it is not a topic name.
 
 The Navigation dashboard layers teleoperation on top of the standard map view:
 
-| Widget | Description |
-|--------|-------------|
-| **Navigation Detail** | Combined view with map, teleop controls, teleop gauges, and a camera grid |
-| **Navigation Control Bar** | Robot selection and navigation-specific actions |
-| **Camera Grid** | Multi-camera layout (sub-component of Navigation Detail) |
-| **Teleop Controls** | Joystick and velocity command interface |
-| **Teleop Gauges** | Speed and rotation feedback gauges |
+| Widget | Config API `type` | Description |
+|--------|-------------------|-------------|
+| **Navigation Detail** | `navigation` | Combined view with map, teleop controls, teleop gauges, and a camera grid |
+| **Navigation Control Bar** | `navigationControlBar` | Robot selection and navigation-specific actions |
+| **Camera Grid** | — | Multi-camera layout (sub-component of Navigation Detail) |
+| **Teleop Controls** | — | Joystick and velocity command interface (sub-component) |
+| **Teleop Gauges** | — | Speed and rotation feedback gauges (sub-component) |
+
+The speed/rotation gauges are fed by odometry ingestion
+(`mqtt.odometryEnabled`, on by default) — see
+[Robot Telemetry](./robot-telemetry.md).
+
+:::note[Defined but not enabled]
+These widget type ids exist in the schema but their renderers are currently
+disabled — dashboards referencing them show "Unknown widget type":
+`localization` (standalone map), `dataBags`, `logsWidget`, `image`,
+`robotSearch`, `history`, `missionTracker`, `fleetMissionTracker`,
+`missionControlBar`.
+:::
 
 ### Widget Toolbars
 

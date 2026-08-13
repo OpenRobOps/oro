@@ -12,13 +12,14 @@ Endpoints for listing and retrieving robot information.
 GET /api/robots
 ```
 
-Returns all robots visible to the authenticated user.
+Returns all robots in the fleet. Requires the viewer role; note this endpoint
+applies no per-robot filtering.
 
 ### Query Parameters
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `isOnline` | boolean | — | Filter by online status (`true` or `false`) |
+| `isOnline` | boolean | — | Filter by online status; accepts `true`/`false`, `1`/`0`, or a bare flag (= true). Other values return 400 |
 | `withLocalization` | boolean | `false` | Include localization data (pose) in response |
 
 ### Response
@@ -107,8 +108,8 @@ Returns a single robot by ID.
 
 | Status | Condition |
 |--------|-----------|
-| 403 | User lacks view access to this robot |
-| 404 | Robot not found |
+| 403 | User lacks the viewer role (`{"error": "User not authorized to access robots"}` on the list endpoint) |
+| 404 | Robot not found (body is the bare JSON string `"Not found"`) |
 
 ### Example
 
