@@ -4,9 +4,9 @@ sidebar_position: 5
 
 # Deployment
 
-:::warning
-This guide covers running the stack locally / on a single host. Helper configuration
-and scripts for cloud-based deployments are still in progress.
+:::note
+This guide covers single-host deployment in detail; for cluster deployments see
+[Containers & Kubernetes](#containers--kubernetes) below.
 :::
 
 This guide covers deploying OpenRobOps for production use.
@@ -131,6 +131,56 @@ cd ingest && ./run.sh
 - **Web app logs** — stdout from the Meteor process
 - **Ingest logs** — stdout from the Node.js process, includes MQTT connection status
 - **MQTT broker logs** — Docker container logs (`docker compose logs -f`)
+
+### Settings Validation
+
+The web app validates `settings.json` on startup and **refuses to start** if
+anything is invalid, reporting every problem at once
+(`Invalid application settings — refusing to start: ...`). The checked
+invariants:
+
+- the `mqtt` settings object is present
+- `mqtt.credentialEncryptionKey` is exactly 64 hex characters (an AES-256-GCM key)
+- `mqtt.brokers` is non-empty
+- `mqtt.defaultBrokerId` names one of the brokers
+
+Terraform-generated settings always satisfy these — a validation failure
+usually means a hand-edited file. Note the ingest service is not covered by
+this check; it logs and continues instead.
+
+### Versions & Releases
+
+The app and ingest are versioned and released together from a git tag (see
+`RELEASING.md` in the repo). The running version appears in the startup log
+and in the Settings sidebar footer. Telemetry relayed upstream carries an
+`agentVersion` stamped with a `+oro-<version>` suffix (see
+[Upstream Forwarding](../architecture/upstream-forwarding.md)).
+
+## Containers & Kubernetes
+
+CI builds and publishes container images to GHCR on `main` and release tags:
+`ghcr.io/openrobops/oro-app` and `ghcr.io/openrobops/oro-ingest` (build cache
+also lives in GHCR). Local equivalents: `scripts/build-app-image.sh`,
+`scripts/build-ingest-image.sh`, and `scripts/smoke-test-app-image.sh`.
+
+Kubernetes manifests ship in `k8s/` (namespaces, deployments, services,
+ingress) for the app, ingest, and Mosquitto:
+
+```bash
+kubectl apply -f k8s/app/ -f k8s/ingest/ -f k8s/mosquitto/
+```
+
+Configuration differs from the single-host layout:
+
+| Component | Config source |
+|-----------|--------------|
+| App | `METEOR_SETTINGS` env (the `settings.json` JSON) from a Secret; `ROOT_URL` from a ConfigMap |
+| Ingest | Secret mounted as `/app/settings.json` |
+| Mosquitto | Config from its manifest/secret |
+
+Copy each `secret.example.yaml` to a real Secret with your generated values
+before applying. Container images run the same code as the local processes, so
+the settings content itself is unchanged.
 
 ### Security Considerations
 

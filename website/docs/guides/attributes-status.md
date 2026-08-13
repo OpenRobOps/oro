@@ -155,6 +155,7 @@ the widget's `dataSources` config in the DashboardDefinition).
 
 ## Next Steps
 
+- [Incidents & Alerts](./incidents-alerts.md) — turn status changes into incidents and notifications
 - [ConfigAPI Reference](../api/configapi.md) — full details on DataSourceDefinition and StatusDefinition
 - [Custom Data Sources](../extending/custom-data-sources.md) — define your own data sources
 - [Dashboards & Widgets](./dashboards-widgets.md) — how attributes and status appear in the UI

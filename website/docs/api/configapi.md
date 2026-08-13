@@ -40,9 +40,9 @@ Request bodies are validated strictly: unknown fields are rejected.
 | [`StatusDefinition`](./configapikinds.md#statusdefinition) | Robot status computation rules |
 | [`ActionDefinition`](./configapikinds.md#actiondefinition) | Robot action definitions |
 | [`DashboardDefinition`](./configapikinds.md#dashboarddefinition) | Custom dashboard layouts with widgets |
-| `IncidentDefinition` | Incident rules per attribute status: severity, auto/manual actions, notification channels |
-| `NotificationChannel` | Delivery channels (webhooks) referenced by incident definitions |
-| **`ModuleState`** | Singleton state document for a configurable agent module — used to persist per-module configuration applied via the ConfigAPI |
+| [`IncidentDefinition`](./configapikinds.md#incidentdefinition) | Incident rules per attribute status: severity, auto/manual actions, notification channels |
+| [`NotificationChannel`](./configapikinds.md#notificationchannel) | Delivery channels (webhooks) referenced by incident definitions |
+| [`ModuleState`](./configapikinds.md#modulestate) | Singleton state document for a configurable agent module — used to persist per-module configuration applied via the ConfigAPI |
 
 For detailed schemas and examples of each kind, see [Config API Kinds](./configapikinds.md).
 
