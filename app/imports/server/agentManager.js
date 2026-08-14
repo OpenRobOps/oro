@@ -618,7 +618,11 @@ export default class AgentManager {
    * (irrespective of robotId being a proxy or not)
    */
   _doRequestMore = async (robotId, moduleName, runlevel) => {
-    // Record new number of watchers
+    // Record new number of watchers.
+    // forceSend: requests leaked by dead servers (cleaned up only after a couple of
+    // hours) can pin the expected runlevel so it never "changes" here, while the agent
+    // does not actually have the module loaded. Since load_module is idempotent on the
+    // agent, always (re)send it when someone requests the module.
     await this._runlevelComparator(
       robotId,
       moduleName,
@@ -626,7 +630,8 @@ export default class AgentManager {
       async () => await AgentModuleRequests.upsertAsync(
         { robotId, moduleName, runlevel, serverId: this.serverId },
         { $inc: { value: 1 }, $set: { ts: Date.now() } },
-      )
+      ),
+      true // forceSend
     );
   }
 
@@ -656,9 +661,12 @@ export default class AgentManager {
 
   /**
    * Compares a given runlevel to the one that is expected in AgentModuleRequests
-   * Then decides whether to send a load or unload command to the agent
+   * Then decides whether to send a load or unload command to the agent.
+   *
+   * When forceSend is true, the (idempotent) load command and state are sent to the
+   * agent even if the expected runlevel did not change.
    */
-  _runlevelComparator = async (robotId, moduleName, newRunlevel, dbUpdateFunc) => {
+  _runlevelComparator = async (robotId, moduleName, newRunlevel, dbUpdateFunc, forceSend = false) => {
     const beforeRunlevel = await this.getModuleLevels(robotId, moduleName);
 
     await dbUpdateFunc();
@@ -666,7 +674,7 @@ export default class AgentManager {
     // Query for the maximum requested runlevel now (new necessary update)
     const expectedRunlevel = await this.getModuleLevels(robotId, moduleName);
 
-    if (expectedRunlevel != beforeRunlevel) {
+    if (expectedRunlevel != beforeRunlevel || forceSend) {
       try {
         // When the runlevel changes, we execute the callback for the module, if it exists
         const runlevelChangedCallback = this.runlevelChangeCallbacks[moduleName];

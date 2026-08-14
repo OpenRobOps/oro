@@ -423,6 +423,12 @@ class MqttWrapper {
 const useDirectClientMulti = ({ robotIds, subtopic, typeString, decodeFunc }) => {
   const [data, setData] = useState({});
 
+  // The MQTT listener below is registered once per (robotIds, subtopic) but decodeFunc
+  // typically closes over caller state (e.g. CameraView's cameraId, undefined on first
+  // render). Read it through a ref so the listener always uses the latest one.
+  const decodeFuncRef = React.useRef(decodeFunc);
+  decodeFuncRef.current = decodeFunc;
+
   useEffect(() => {
     // We need these two variables in this scope so that we can also have them
     // accessible in the start and stop functions
@@ -453,7 +459,7 @@ const useDirectClientMulti = ({ robotIds, subtopic, typeString, decodeFunc }) =>
           // but do not decode it, pass it just as received it
           decodedMsg = msg.toString();
         }
-        const update = decodeFunc(decodedMsg, robotId);
+        const update = decodeFuncRef.current(decodedMsg, robotId);
         if (!update) {
           // Ignore - filtered out by the decodeFunc
         } else if (!isObject(update) || isArray(update)) {
