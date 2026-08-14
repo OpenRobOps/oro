@@ -22,7 +22,6 @@
  * Meteor-agnostic component.
  */
 import React from 'react';
-import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import moment from 'moment';
 import { isEmpty, isEqual, find } from 'lodash';
@@ -197,9 +196,9 @@ const IncidentListWidget = (props) => {
     prevSelectedIncidentRef.current = selectedIncident;
     if (selectedIncident && selectedIncident != prevSelectedIncident) {
       if (tableRef.current) { // if already mounted and ref is ready
-        // HACK(herchu) Using findDOMNode is deprecated; but I don't know a better way to
-        // get a reference to the DOM node of a component (<TableRow>)
-        const node = ReactDOM.findDOMNode(tableRef.current);
+        // StyledTableBody is MUI's TableBody, which forwards its ref to the
+        // underlying <tbody> element, so the ref already holds the DOM node
+        const node = tableRef.current;
         // Find the child node we want to scroll to, using the attribute data-id
         if (node) {
           const child = node && find(
