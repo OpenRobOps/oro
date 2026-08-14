@@ -146,7 +146,7 @@ const apiGetRobotPose = async ({ robot }) => {
     include: [API_LOCALIZATION_FIELD_POSE]
   });
   if (!pose) {
-    return notFoundApiError('Pose data does no exist for this robot');
+    return notFoundApiError('Pose data does not exist for this robot');
   }
   return [pose];
 }

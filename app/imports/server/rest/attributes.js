@@ -34,7 +34,7 @@ async function apiGetRobotAttribute({ robot, attributeId }) {
   const doc = await new AttributesManager()
     .getRobotAttributeValues(robot._id, [attributeId]);
   if (!(attributeId in doc)) {
-    return notFoundApiError('Attribute does no exist for this robot');
+    return notFoundApiError('Attribute does not exist for this robot');
   } else {
     const { value, ts } = doc[attributeId] || {}; // it could be null; ie. no value reported
     return [{ attribute: attributeId, value, ts }];
