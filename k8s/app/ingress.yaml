@@ -2,6 +2,21 @@
 # cluster uses (nginx, traefik, GKE GCLB, AWS ALB, etc.). The annotations
 # below assume nginx + cert-manager — remove/replace as needed.
 #
+# IMPORTANT (websockets): the app serves Meteor DDP over long-lived
+# websockets, so the proxy/LB in front of it must allow long-running
+# connections (the proxy-read/send-timeout annotations below do this for
+# nginx). On GKE with a GCE-class ingress, nginx.ingress.* annotations are
+# silently ignored and the LB kills every connection after its 30s default —
+# clients then reconnect/resubscribe in a loop. Use a BackendConfig instead:
+#
+#   apiVersion: cloud.google.com/v1
+#   kind: BackendConfig
+#   metadata: { name: oro-app, namespace: oro }
+#   spec: { timeoutSec: 3600 }
+#
+# attached via the Service annotation:
+#   cloud.google.com/backend-config: '{"default": "oro-app"}'
+#
 # If you're not using Ingress (e.g. you front the cluster with something
 # else), delete this file and expose the Service directly via LoadBalancer.
 apiVersion: networking.k8s.io/v1
