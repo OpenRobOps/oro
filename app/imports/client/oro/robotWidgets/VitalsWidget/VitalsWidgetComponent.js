@@ -20,7 +20,7 @@
  * This component displays some of the robot information inside Ground Control. It is a container
  * for VitalsTextEntry and VitalsGaugeEntry components.
  */
-import React, { Component } from 'react';
+import React, { useRef } from 'react';
 import { withStyles } from 'tss-react/mui';
 import { Grid } from '@mui/material';
 import PropTypes from 'prop-types';
@@ -42,31 +42,28 @@ const styles = () => ({
   }
 });
 
-class VitalsWidgetComponent extends Component {
-  constructor(props) {
-    super(props);
-    // Flag to indicate usage tracking was already sent for complex attributes
-    this.complexAttributesTracked = false;
+/**
+ * Formats a number before display.
+ * Removes unnecessary extra precision.
+ *
+ * TODO(herchu) Remove this yet-another-formatting function!
+ */
+const formatNumber = (total) => {
+  if (total === undefined) {
+    return '--';
   }
+  // Use ints for large values (>10) or two decimal points otherwise
+  return total > 10 ? Math.round(total) : Math.round(total * 10) / 10;
+};
 
-  /**
-   * Formats a number before display.
-   * Removes unnecessary extra precision.
-   *
-   * TODO(herchu) Remove this yet-another-formatting function!
-   */
-  formatNumber = (total) => {
-    if (total === undefined) {
-      return '--';
-    }
-    // Use ints for large values (>10) or two decimal points otherwise
-    return total > 10 ? Math.round(total) : Math.round(total * 10) / 10;
-  }
+function VitalsWidgetComponent(props) {
+  // Flag to indicate usage tracking was already sent for complex attributes
+  const complexAttributesTracked = useRef(false);
 
   /**
    * Renders a vital entry from values and configuration.
    */
-  renderVital = (attributeId, ix) => {
+  const renderVital = (attributeId, ix) => {
     const {
       classes,
       attributeValues = {},
@@ -74,22 +71,22 @@ class VitalsWidgetComponent extends Component {
       robotId,
       trackEvent,
       isZeroData
-    } = this.props;
+    } = props;
     const { status, modes } = robot;
     const offline = !(status && status.agentOnline);
-    const config = this.props.config
-      && this.props.config.elementValues
-      && this.props.config.elementValues[attributeId];
+    const config = props.config
+      && props.config.elementValues
+      && props.config.elementValues[attributeId];
     if (!config) {
       return null;
     }
 
-    if (config.isComplex && attributeValues[attributeId] && !this.complexAttributesTracked
+    if (config.isComplex && attributeValues[attributeId] && !complexAttributesTracked.current
       // Get time 24hrs ago and only report to pendo if attribute has been
       // published within that time.
       && attributeValues[attributeId].ts > Date.now() - 1000 * 60 * 60 * 24) {
       trackEvent('complex-attrs-used', { robotId, label: config.label });
-      this.complexAttributesTracked = true;
+      complexAttributesTracked.current = true;
     }
 
     let value = attributeValues[attributeId] && attributeValues[attributeId].value;
@@ -106,7 +103,7 @@ class VitalsWidgetComponent extends Component {
     } else if (config.type == VITAL_ELEMENT_GAUGE) {
       if (config.unit == '%') {
         // Percentage values are assumed to be normalized in [0..1] range
-        value = this.formatNumber(value * 100);
+        value = formatNumber(value * 100);
       }
       return (
         <Grid container key={ix} className={classes.vital} size={6}>
@@ -145,22 +142,20 @@ class VitalsWidgetComponent extends Component {
         </Grid>
       );
     }
-  }
+  };
 
-  render() {
-    const { classes, config } = this.props;
-    const elements = (config && config.elementList) || [];
-    return (
-      <Grid
-        container
-        spacing={2}
-        direction="row"
-        className={classes.container}
-      >
-        {elements.map((attributeId, ix) => this.renderVital(attributeId, ix))}
-      </Grid>
-    );
-  }
+  const { classes, config } = props;
+  const elements = (config && config.elementList) || [];
+  return (
+    <Grid
+      container
+      spacing={2}
+      direction="row"
+      className={classes.container}
+    >
+      {elements.map((attributeId, ix) => renderVital(attributeId, ix))}
+    </Grid>
+  );
 }
 
 VitalsWidgetComponent.propTypes = {
