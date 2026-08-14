@@ -473,18 +473,14 @@ export default class RobotLocalizationModule {
         return;
       }
       const poseUpdates = {
-        x: pose.posX + (pose.offsetX || 0),
-        y: pose.posY + (pose.offsetY || 0),
+        x: pose.posX,
+        y: pose.posY,
         theta: pose.yaw,
         ts
       };
-      if (pose.frameId) {
-        poseUpdates.frameId = pose.frameId;
-      }
-      // Gets frameId from updates
-      const { frameId } = poseUpdates;
-      // Creates an UTM Map if it doesn't exist for the given robot
-      await this._createUtmMapIfNeeded({ robotId, frameId });
+      // NOTE: PoseMessageData does not currently define a frameId field (see oro.proto),
+      // so this call is a no-op until one is added to the protocol.
+      await this._createUtmMapIfNeeded({ robotId, frameId: undefined });
       await this._doUpdatePose(robotId, poseUpdates, ts);
     }
   };
