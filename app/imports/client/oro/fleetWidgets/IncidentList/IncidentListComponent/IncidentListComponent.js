@@ -126,42 +126,50 @@ const SORT_COMP = 'component';
 const SORT_PRIO = 'fleet_priority';
 const SORT_SEV = 'severity';
 
-class IncidentListWidget extends React.Component {
-  state = {
-    sortBy: SORT_STATUS,
-    sortAsc: true,
-    sortedRows: null
-  }
+const IncidentListWidget = (props) => {
+  const { classes, theme, incidents, robotsMap, selectedIncident, isZeroData } = props;
+
+  const [sortBy, setSortBy] = React.useState(SORT_STATUS);
+  const [sortAsc, setSortAsc] = React.useState(true);
+  const [sortedRows, setSortedRows] = React.useState(null);
+
+  // Receive global user grants as context (kept for parity with the class'
+  // contextType subscription; the value itself is not used here)
+  React.useContext(OnFeedbackContext);
 
   // Reference to the <Table> component so we can scroll into rows when selected
-  tableRef = React.createRef();
+  const tableRef = React.useRef(null);
 
   // Caches for table row click event handlers, memoized by incidentId
-  tableRowClickHandlers = {};
-
-  /**
-   * Generate and/or return an onChanged event handler, given a unique identifier
-   * (userId, collectionId).
-   */
-  getTableRowClickHandler(incidentId) {
-    // If no click handler exists for this id, create one.
-    if (!(incidentId in this.tableRowClickHandlers)) {
-      this.tableRowClickHandlers[incidentId] =
-        event => this.handleIncidentClicked(incidentId, event);
-    }
-    return this.tableRowClickHandlers[incidentId];
-  }
+  const tableRowClickHandlers = React.useRef({});
 
   /**
    * Called when an item was clicked. Takes care of marking item as selected,
    * and triggers the callback function with its id (or null if deselected)
    */
-  handleIncidentClicked = (id) => {
-    const { selectedIncident, onSelectedIncidentChange } = this.props;
+  const handleIncidentClicked = (id) => {
+    const { selectedIncident, onSelectedIncidentChange } = props;
     // If already selected, and clicked, then deselect it
     const nextSelected = selectedIncident == id ? null : id;
     onSelectedIncidentChange && onSelectedIncidentChange(nextSelected);
-  }
+  };
+  // Cached row handlers must always call the latest handleIncidentClicked
+  // (which closes over the current props), so route them through a ref.
+  const handleIncidentClickedRef = React.useRef();
+  handleIncidentClickedRef.current = handleIncidentClicked;
+
+  /**
+   * Generate and/or return an onChanged event handler, given a unique identifier
+   * (userId, collectionId).
+   */
+  const getTableRowClickHandler = (incidentId) => {
+    // If no click handler exists for this id, create one.
+    if (!(incidentId in tableRowClickHandlers.current)) {
+      tableRowClickHandlers.current[incidentId] =
+        event => handleIncidentClickedRef.current(incidentId, event);
+    }
+    return tableRowClickHandlers.current[incidentId];
+  };
 
   /**
    * Takes sortBy and sortAsc from the state and depending on the sort criteria,
@@ -169,29 +177,29 @@ class IncidentListWidget extends React.Component {
    * sortedRows with it. As we want to have the list always sorted, it's called
    * when the component it's mounted and updated.
    */
-  sortRows = () => {
-    const { incidents } = this.props;
-    const { sortBy, sortAsc } = this.state;
-    const sortedRows = [...incidents]; // clones the array
-    this.sortIncidents(sortedRows, sortBy, sortAsc);
-    this.setState({ sortedRows });
-  }
+  const sortRows = () => {
+    const newSortedRows = [...incidents]; // clones the array
+    sortIncidents(newSortedRows, sortBy, sortAsc);
+    setSortedRows(newSortedRows);
+  };
 
-  componentDidMount() {
-    this.sortRows();
-  }
+  // Previous values, to replicate the class' prevProps comparisons in
+  // componentDidUpdate (these effects run after every render, like didUpdate)
+  const prevSelectedIncidentRef = React.useRef(selectedIncident);
+  const prevIncidentsRef = React.useRef(incidents);
+  const mountedRef = React.useRef(false);
 
   /**
    * When the selected incident changes, scroll into it to display it.
    */
-  componentDidUpdate(prevProps) {
-    const { selectedIncident, incidents } = this.props;
-    const { sortedRows } = this.state;
-    if (selectedIncident && selectedIncident != prevProps.selectedIncident) {
-      if (this.tableRef.current) { // if already mounted and ref is ready
+  React.useEffect(() => {
+    const prevSelectedIncident = prevSelectedIncidentRef.current;
+    prevSelectedIncidentRef.current = selectedIncident;
+    if (selectedIncident && selectedIncident != prevSelectedIncident) {
+      if (tableRef.current) { // if already mounted and ref is ready
         // HACK(herchu) Using findDOMNode is deprecated; but I don't know a better way to
         // get a reference to the DOM node of a component (<TableRow>)
-        const node = ReactDOM.findDOMNode(this.tableRef.current);
+        const node = ReactDOM.findDOMNode(tableRef.current);
         // Find the child node we want to scroll to, using the attribute data-id
         if (node) {
           const child = node && find(
@@ -223,135 +231,141 @@ class IncidentListWidget extends React.Component {
         }
       }
     }
+  });
+
+  React.useEffect(() => {
+    if (!mountedRef.current) {
+      // componentDidMount: always build the initial sorted list
+      mountedRef.current = true;
+      prevIncidentsRef.current = incidents;
+      sortRows();
+      return;
+    }
+    const prevIncidents = prevIncidentsRef.current;
+    prevIncidentsRef.current = incidents;
     if (
       (isEmpty(sortedRows) && !isEmpty(incidents))
-      || !isEqual(prevProps.incidents, incidents)
+      || !isEqual(prevIncidents, incidents)
     ) {
       // invalidate cached sorted list
-      this.sortRows();
+      sortRows();
     }
-  }
+  });
 
   /**
    * Click handler to sort by priority - simply calls handleSortChange()
    */
-  handleSortByPriority = () => {
-    this.handleSortChange(SORT_PRIO);
-  }
+  const handleSortByPriority = () => { // eslint-disable-line no-unused-vars
+    handleSortChange(SORT_PRIO);
+  };
 
   /**
    * Click handler to sort by robot - simply calls handleSortChange()
    */
-  handleSortByRobot = () => {
-    this.handleSortChange(SORT_ROBOT);
-  }
+  const handleSortByRobot = () => {
+    handleSortChange(SORT_ROBOT);
+  };
 
   /**
    * Click handler to sort by time - simply calls handleSortChange()
    */
-  handleSortByTime = () => {
-    this.handleSortChange(SORT_TIME);
-  }
+  const handleSortByTime = () => {
+    handleSortChange(SORT_TIME);
+  };
 
   /**
    * Click handler to sort by status - simply calls handleSortChange()
    */
-  handleSortByStatus = () => {
-    this.handleSortChange(SORT_STATUS);
-  }
+  const handleSortByStatus = () => {
+    handleSortChange(SORT_STATUS);
+  };
 
   /**
    * Click handler to sort by component - simply calls handleSortChange()
    */
-  handleSortByComponent = () => {
-    this.handleSortChange(SORT_COMP);
-  }
+  const handleSortByComponent = () => {
+    handleSortChange(SORT_COMP);
+  };
 
   /**
    * Click handler to sort by severity - simply calls handleSortChange()
    */
-  handleSortBySeverity = () => {
-    this.handleSortChange(SORT_SEV);
-  }
+  const handleSortBySeverity = () => {
+    handleSortChange(SORT_SEV);
+  };
 
   /*
     Changes what sorting will be done in sortIncidents, either by changing which
     variable will be checked in the sort or by
    */
-  handleSortChange = (newSortBy) => {
-    const { sortBy, sortAsc, sortedRows } = this.state;
+  const handleSortChange = (newSortBy) => {
     if (sortBy === newSortBy) {
-      this.sortIncidents(sortedRows, newSortBy, !sortAsc); // sorts this.state.sortedRows in place
-      this.setState({
-        sortAsc: !sortAsc
-      });
+      sortIncidents(sortedRows, newSortBy, !sortAsc); // sorts sortedRows state in place
+      setSortAsc(!sortAsc);
     } else {
-      this.sortIncidents(sortedRows, newSortBy, true); // sorts this.state.sortedRows in place
-      this.setState({
-        sortBy: newSortBy,
-        sortAsc: true
-      });
+      sortIncidents(sortedRows, newSortBy, true); // sorts sortedRows state in place
+      setSortBy(newSortBy);
+      setSortAsc(true);
     }
-  }
+  };
 
   /*
     Sort incidents by severity
   */
-  sortBySeverity = compFn => (a, b) => {
+  const sortBySeverity = compFn => (a, b) => {
     const robotASev = a.highestSeverity;
     const robotBSev = b.highestSeverity;
-    return compFn(robotASev, robotBSev) || this.sortByRobot(compFn)(a, b);
-  }
+    return compFn(robotASev, robotBSev) || sortByRobot(compFn)(a, b);
+  };
 
   /*
     Sort incidents by the component name or component id
   */
-  sortByComponent = compFn => (a, b) => {
+  const sortByComponent = compFn => (a, b) => {
     const robotAComp = (a.latestEvent && a.latestEvent.name)
       || (a.componentsIds && a.componentsIds[0]);
     const robotBComp = (b.latestEvent && b.latestEvent.name)
       || (b.componentsIds && b.componentsIds[0]);
     // For same components, compare by robot, then by time
-    return compFn(robotAComp, robotBComp) || this.sortByRobot(compFn)(a, b);
-  }
+    return compFn(robotAComp, robotBComp) || sortByRobot(compFn)(a, b);
+  };
 
   /*
     Handle sorting of incidents by robot name
    */
-  sortByRobot = compFn => (a, b) => {
-    const { robotsMap } = this.props;
+  const sortByRobot = compFn => (a, b) => {
     const robotA = robotsMap[a.robotId] && robotsMap[a.robotId].name;
     const robotAName = robotA && robotA.toLowerCase();
     const robotB = robotsMap[b.robotId] && robotsMap[b.robotId].name;
     const robotBName = robotB && robotB.toLowerCase();
-    return compFn(robotAName, robotBName) || this.sortByTime(compFn)(a, b);
-  }
+    return compFn(robotAName, robotBName) || sortByTime(compFn)(a, b);
+  };
 
   /*
     Handle sorting of incidents by time last updated stamps
    */
-  sortByTime = compFn => (a, b) => {
+  const sortByTime = compFn => (a, b) => {
     const robotAts = a.resolvedAt || a.updatedAt || a.createdAt;
     const robotBts = b.resolvedAt || b.updatedAt || b.createdAt;
     return compFn(robotBts, robotAts);
-  }
+  };
 
   /*
     Handle sorting of incidents by status
    */
-  sortByStatus = compFn => (a, b) => {
+  const sortByStatus = compFn => (a, b) => {
     if (a.status == b.status) {
       const tA = a.resolvedAt || a.updatedAt || a.createdAt;
       const tB = b.resolvedAt || b.updatedAt || b.createdAt;
       return tA < tB ? 1 : -1;
     }
     return compFn(a.status, b.status);
-  }
+  };
 
   /*
     Compares two variables, returns values for the array sort function
    */
-  _sorter = asc => (_a, _b) => {
+  const _sorter = asc => (_a, _b) => {
     if (asc) {
       if (_a > _b) return 1;
       if (_a < _b) return -1;
@@ -361,7 +375,7 @@ class IncidentListWidget extends React.Component {
       if (_a < _b) return 1;
       return 0;
     }
-  }
+  };
 
   /*
    * Sorts an incidents list.
@@ -371,164 +385,43 @@ class IncidentListWidget extends React.Component {
    * an array already part of state, make sure some state change is performed
    * outside this function to force a re-render.
    */
-  sortIncidents = (incidents, sortBy, sortAsc) => {
-    if (!incidents) {
+  const sortIncidents = (incidentsToSort, newSortBy, newSortAsc) => {
+    if (!incidentsToSort) {
       return;
     }
-    const compFn = this._sorter(sortAsc); // compare function, asc or desc
-    switch (sortBy) {
+    const compFn = _sorter(newSortAsc); // compare function, asc or desc
+    switch (newSortBy) {
       case SORT_ROBOT:
-        incidents.sort(this.sortByRobot(compFn));
+        incidentsToSort.sort(sortByRobot(compFn));
         break;
       case SORT_TIME:
-        incidents.sort(this.sortByTime(compFn));
+        incidentsToSort.sort(sortByTime(compFn));
         break;
       case SORT_STATUS:
-        incidents.sort(this.sortByStatus(compFn));
+        incidentsToSort.sort(sortByStatus(compFn));
         break;
       case SORT_COMP:
-        incidents.sort(this.sortByComponent(compFn));
+        incidentsToSort.sort(sortByComponent(compFn));
         break;
       case SORT_SEV:
-        incidents.sort(this.sortBySeverity(compFn));
+        incidentsToSort.sort(sortBySeverity(compFn));
         break;
       case SORT_PRIO: {
         // HACK(herchu) This is an exception and is not done in place because the way
         // sortIncidentsByRobotStatus was originally written. So this one does not
         // really sort in place, and updates state.sortedRows instead.
-        const sortedRows = sortIncidentsByRobotStatus(incidents);
-        this.setState({ sortedRows });
+        setSortedRows(sortIncidentsByRobotStatus(incidentsToSort));
         break;
       }
       default:
       // ignore
     }
-  }
-
-  render() {
-    const t0 = Date.now();
-    const { classes, isZeroData } = this.props;
-    const { sortBy, sortAsc, sortedRows } = this.state;
-    const direction = sortAsc ? 'asc' : 'desc'; // for MUI's TableSortLabel
-    const now = Date.now();
-    const incidentRows = sortedRows || [];
-    return (
-      <StyledTableContainer>
-        <Table
-          stickyHeader
-          elementtype="table"
-          aria-label="sticky table"
-          size="small"
-        >
-          <TableHead>
-            <StyledTableRow>
-              <StyledTableCell
-                width="10%"
-              >
-                <TableSortLabel
-                  active={sortBy == SORT_SEV}
-                  direction={direction}
-                  hideSortIcon={isZeroData}
-                  onClick={this.handleSortBySeverity}
-                  classes={{
-                    icon: classes.arrowIcon,
-                    root: classnames({ [classes.cursorInactive]: isZeroData })
-                  }}
-                >
-                  Severity
-                </TableSortLabel>
-              </StyledTableCell>
-              <StyledTableCell
-                width="15%"
-              >
-                <TableSortLabel
-                  active={sortBy == SORT_STATUS}
-                  hideSortIcon={isZeroData}
-                  direction={direction}
-                  onClick={this.handleSortByStatus}
-                  classes={{
-                    icon: classes.arrowIcon,
-                    root: classnames({ [classes.cursorInactive]: isZeroData })
-                  }}
-                >
-                  Status
-                </TableSortLabel>
-              </StyledTableCell>
-              <StyledTableCell width='20%'>
-                <TableSortLabel
-                  active={sortBy == SORT_TIME}
-                  hideSortIcon={isZeroData}
-                  direction={direction}
-                  onClick={this.handleSortByTime}
-                  classes={{
-                    icon: classes.arrowIcon,
-                    root: classnames({ [classes.cursorInactive]: isZeroData })
-                  }}
-                >
-                  Time
-                </TableSortLabel>
-              </StyledTableCell>
-              <StyledTableCell width="20%">
-                <TableSortLabel
-                  active={sortBy == SORT_ROBOT}
-                  hideSortIcon={isZeroData}
-                  direction={direction}
-                  onClick={this.handleSortByRobot}
-                  classes={{
-                    icon: classes.arrowIcon,
-                    root: classnames({ [classes.cursorInactive]: isZeroData })
-                  }}
-                >
-                  Robot
-                </TableSortLabel>
-              </StyledTableCell>
-              <StyledTableCell width="20%">
-                <TableSortLabel
-                  active={sortBy == SORT_COMP}
-                  hideSortIcon={isZeroData}
-                  direction={direction}
-                  onClick={this.handleSortByComponent}
-                  classes={{
-                    icon: classes.arrowIcon,
-                    root: classnames({ [classes.cursorInactive]: isZeroData })
-                  }}
-                >
-                  Component
-                </TableSortLabel>
-              </StyledTableCell>
-              <StyledTableCell width="10%">
-                Data
-              </StyledTableCell>
-              <StyledTableCell width="5%">
-              </StyledTableCell>
-            </StyledTableRow>
-          </TableHead>
-          <StyledTableBody ref={this.tableRef}>
-            {/* HACK(herchu) render at most rows (the first 200 in selected order) */}
-            {incidentRows.map((st, ix) => ix < 150 && this.renderStatusRow(st, now))}
-            {isZeroData && (this.renderZeroData())}
-            {incidentRows.length == 0 && !isZeroData && (
-              <StyledTableRow>
-                <StyledTableCell colSpan="10" style={{ border: 'none' }}>
-                  <NoDataIcon />
-                </StyledTableCell>
-              </StyledTableRow>
-            )}
-          </StyledTableBody>
-          <TableFooter className={classes.footer}>
-            {/* TODO Clara: uncomment the message when the BE limitation for incidents is ready */}
-            {/* {timeLimitation && this.renderLimitErrorLine()} */}
-          </TableFooter>
-        </Table>
-      </StyledTableContainer>
-    );
-  }
+  };
 
   /**
    * Returns a model of what we can find if we have robots returning a design simulating data.
    */
-  renderZeroData = () => {
-    const { classes, theme } = this.props;
+  const renderZeroData = () => {
     const { darkBlue } = theme.palette.text;
     const incidentsZeroData = ICM_SEV_ALL;
     return incidentsZeroData.map((SEV) => (
@@ -592,15 +485,9 @@ class IncidentListWidget extends React.Component {
         </StyledTableCell>
       </StyledTableRow>
     ));
-  }
+  };
 
-  renderStatusRow = (incident, now) => {
-    const {
-      theme,
-      classes,
-      selectedIncident,
-      robotsMap
-    } = this.props;
+  const renderStatusRow = (incident, now) => {
     const { darkBlue } = theme.palette.text;
     const { navDark } = theme.palette.background;
     if (incident.componentsIds && incident.componentsIds[0]
@@ -630,7 +517,7 @@ class IncidentListWidget extends React.Component {
         key={id}
         data-id={id}
         title={getIncidentMessage(incident)}
-        onClick={this.getTableRowClickHandler(id)}
+        onClick={getTableRowClickHandler(id)}
         selected={isSelected}
         className={classnames({ [classes.selectedRow]: isSelected })}
         style={{ cursor: 'pointer' }}
@@ -769,8 +656,123 @@ class IncidentListWidget extends React.Component {
       );
     }
     return line;
-  }
-}
+  };
+
+  const t0 = Date.now(); // eslint-disable-line no-unused-vars
+  const direction = sortAsc ? 'asc' : 'desc'; // for MUI's TableSortLabel
+  const now = Date.now();
+  const incidentRows = sortedRows || [];
+  return (
+    <StyledTableContainer>
+        <Table
+          stickyHeader
+          elementtype="table"
+          aria-label="sticky table"
+          size="small"
+        >
+          <TableHead>
+            <StyledTableRow>
+              <StyledTableCell
+                width="10%"
+              >
+                <TableSortLabel
+                  active={sortBy == SORT_SEV}
+                  direction={direction}
+                  hideSortIcon={isZeroData}
+                  onClick={handleSortBySeverity}
+                  classes={{
+                    icon: classes.arrowIcon,
+                    root: classnames({ [classes.cursorInactive]: isZeroData })
+                  }}
+                >
+                  Severity
+                </TableSortLabel>
+              </StyledTableCell>
+              <StyledTableCell
+                width="15%"
+              >
+                <TableSortLabel
+                  active={sortBy == SORT_STATUS}
+                  hideSortIcon={isZeroData}
+                  direction={direction}
+                  onClick={handleSortByStatus}
+                  classes={{
+                    icon: classes.arrowIcon,
+                    root: classnames({ [classes.cursorInactive]: isZeroData })
+                  }}
+                >
+                  Status
+                </TableSortLabel>
+              </StyledTableCell>
+              <StyledTableCell width='20%'>
+                <TableSortLabel
+                  active={sortBy == SORT_TIME}
+                  hideSortIcon={isZeroData}
+                  direction={direction}
+                  onClick={handleSortByTime}
+                  classes={{
+                    icon: classes.arrowIcon,
+                    root: classnames({ [classes.cursorInactive]: isZeroData })
+                  }}
+                >
+                  Time
+                </TableSortLabel>
+              </StyledTableCell>
+              <StyledTableCell width="20%">
+                <TableSortLabel
+                  active={sortBy == SORT_ROBOT}
+                  hideSortIcon={isZeroData}
+                  direction={direction}
+                  onClick={handleSortByRobot}
+                  classes={{
+                    icon: classes.arrowIcon,
+                    root: classnames({ [classes.cursorInactive]: isZeroData })
+                  }}
+                >
+                  Robot
+                </TableSortLabel>
+              </StyledTableCell>
+              <StyledTableCell width="20%">
+                <TableSortLabel
+                  active={sortBy == SORT_COMP}
+                  hideSortIcon={isZeroData}
+                  direction={direction}
+                  onClick={handleSortByComponent}
+                  classes={{
+                    icon: classes.arrowIcon,
+                    root: classnames({ [classes.cursorInactive]: isZeroData })
+                  }}
+                >
+                  Component
+                </TableSortLabel>
+              </StyledTableCell>
+              <StyledTableCell width="10%">
+                Data
+              </StyledTableCell>
+              <StyledTableCell width="5%">
+              </StyledTableCell>
+            </StyledTableRow>
+          </TableHead>
+          <StyledTableBody ref={tableRef}>
+            {/* HACK(herchu) render at most rows (the first 200 in selected order) */}
+            {incidentRows.map((st, ix) => ix < 150 && renderStatusRow(st, now))}
+            {isZeroData && (renderZeroData())}
+            {incidentRows.length == 0 && !isZeroData && (
+              <StyledTableRow>
+                <StyledTableCell colSpan="10" style={{ border: 'none' }}>
+                  <NoDataIcon />
+                </StyledTableCell>
+              </StyledTableRow>
+            )}
+          </StyledTableBody>
+          <TableFooter className={classes.footer}>
+            {/* TODO Clara: uncomment the message when the BE limitation for incidents is ready */}
+            {/* {timeLimitation && this.renderLimitErrorLine()} */}
+          </TableFooter>
+        </Table>
+      </StyledTableContainer>
+    );
+};
 
 IncidentListWidget.propTypes = {
   classes: PropTypes.object,
@@ -786,8 +788,5 @@ IncidentListWidget.propTypes = {
   onSelectedIncidentChange: PropTypes.func,
   isZeroData: PropTypes.bool,
 };
-
-// Receive global user grants as context
-IncidentListWidget.contextType = OnFeedbackContext;
 
 export default legacyWithStyles(IncidentListWidget, styles);
