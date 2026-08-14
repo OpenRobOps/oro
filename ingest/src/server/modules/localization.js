@@ -430,14 +430,11 @@ export default class RobotLocalizationModule {
     }
 
     const poseUpdates = {
-      x: decodedMsg.posX + (decodedMsg.offsetX || 0),
-      y: decodedMsg.posY + (decodedMsg.offsetY || 0),
+      x: decodedMsg.posX,
+      y: decodedMsg.posY,
       theta: decodedMsg.yaw,
       ts
     };
-    if (decodedMsg.frameId) {
-      poseUpdates.frameId = decodedMsg.frameId;
-    }
     await this._doUpdatePose(robotId, poseUpdates, ts);
 
     const laserUpdates = {};
