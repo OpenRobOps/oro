@@ -222,20 +222,14 @@ DashboardWidgetWrapper.propTypes = {
  * Wrapper to provide the WidgetDatContext (to share data between widget component and its
  * toolbar)
  */
-const DashboardWidgetWithContextWrapper = ({ children, title, ...props }) => (
+const DashboardWidgetWithContextWrapper = ({ title, ...props }) => (
   <WidgetDataProvider title={title}>
     {/* eslint-disable-next-line react/jsx-props-no-spreading */}
-    <DashboardWidgetWrapper {...props}>
-      {children}
-    </DashboardWidgetWrapper>
+    <DashboardWidgetWrapper {...props} />
   </WidgetDataProvider>
 );
 DashboardWidgetWithContextWrapper.propTypes = {
-  title: PropTypes.string, // initial title (can be changed through context)
-  children: PropTypes.oneOfType([
-    PropTypes.arrayOf(PropTypes.node),
-    PropTypes.node
-  ])
+  title: PropTypes.string // initial title (can be changed through context)
 };
 
 export default DashboardWidgetWithContextWrapper;
