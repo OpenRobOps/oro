@@ -102,7 +102,7 @@ const ActionDefinitionSpecApplySchema = {
           type: 'object',
           optional: true,
           props: {
-            control: { type: 'string', values: Object.values(ACTION_ARGUMENT_INPUT_TYPES) },
+            control: { type: 'enum', values: Object.values(ACTION_ARGUMENT_INPUT_TYPES) },
             values: {
               type: 'array',
               optional: true,
