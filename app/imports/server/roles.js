@@ -958,6 +958,23 @@ Meteor.methods({
     }
     throw new Error('Not implemented')
   },
+
+  /**
+   * Returns true if the current user can view the given robot.
+   * Used by the client to validate a robotId restored from localStorage.
+   */
+  'robot.canAccessRobot': async function ({ robotId }) {
+    if (!this.userId) { // User must be logged in
+      throw new Meteor.Error('Unauthorized');
+    }
+    if (!isString(robotId)) {
+      throw new Meteor.Error('wrong-parameter', 'robotId must be a string');
+    }
+    if (!await new OroRoles().canAccessRobot(this.userId, robotId, ACCESS_LEVEL_VIEW)) {
+      throw new Meteor.Error('Unauthorized');
+    }
+    return true;
+  },
 });
 
 /**
