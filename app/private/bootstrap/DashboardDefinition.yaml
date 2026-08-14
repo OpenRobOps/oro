@@ -135,12 +135,6 @@ spec:
         grid: 4
         height: 1
       type: actionsWidget
-    - label: Data Bags
-      layout:
-        chroma: true
-        grid: 4
-        height: 1
-      type: dataBags
     - label: Robot Log
       layout:
         chroma: true
@@ -199,11 +193,5 @@ spec:
         grid: 4
         height: 1
       type: vitals
-    - label: Data Bags
-      layout:
-        chroma: true
-        grid: 4
-        height: 1
-      type: dataBags
     withControlWidget: false
     
