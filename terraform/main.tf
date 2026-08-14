@@ -176,7 +176,7 @@ locals {
       logging                 = false
     }
   })) : jsonencode(merge(local.ingest_base_settings, {
-    modules = { upstream = { enabled = false } }
+    upstream = { enabled = false }
   }))
 }
 
