@@ -35,6 +35,7 @@ const ACTION_TYPES = {
   GO_GO_APP: 'AppPage',
   GO_URL: 'Url',
   MAP_SWITCH: 'MapSwitch', // Beta/Internal: Map switch as action
+  DISPATCH_MISSION: 'DispatchMission',
   // Other "operations", defined as (internal) actions
   NAVIGATE_PATH: 'NavigatePath',
   RELOCALIZE: 'Relocalize',
