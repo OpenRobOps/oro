@@ -93,7 +93,7 @@ const ToolBarButtonGroup = ({
 ToolBarButtonGroup.propTypes = {
   onButtonChange: PropTypes.func.isRequired,
   selectedToolBarButton: PropTypes.string,
-  buttonGroup: PropTypes.object,
+  buttonGroup: PropTypes.array,
   showLabels: PropTypes.bool
 };
 

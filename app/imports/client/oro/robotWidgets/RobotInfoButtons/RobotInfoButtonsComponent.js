@@ -111,83 +111,20 @@ const LG_BREAKPOINT = { display: { lg: 'block', xs: 'none' } };
 class RobotInfoButtons extends React.Component {
   state = {
     confirmDialogOpen: false,
-    currentVariant: '',
-    latestVariantVersion: '',
   }
 
   /**
-   * Returns an object containing the icon color,
-   * tooltip and active / inactive state based on
-   * the robot and agent status.
+   * Returns an object describing the Update Agent button.
+   * ORO does not track published agent releases, so no version comparison is
+   * made: the button is offered whenever an update action is configured.
    */
-  agentStatus = () => {
-    const { version, variant } = this.props;
-    const { currentVariant, latestVariantVersion } = this.state;
-    // If the variant didn't change, don't fetch the new variant
-    // Variant version updates are much less common than switching between robots
-    // so we will fetch the latest version only on variant changes.
-    if (variant !== currentVariant) {
-      this.setAgentVariantState();
-      return false;
-    } else if (version !== latestVariantVersion) {
-      const s = {};
-      s.fill = theme => theme.palette.text.title;
-      s.text = 'Update Agent';
-      s.tooltip = 'Update to ' + latestVariantVersion;
-      s.click = this.confirmUpdate;
-      s.disabled = false;
-      s.version = version;
-      s.latestVersion = latestVariantVersion;
-      return s;
-    } else {
-      return false;
-    }
-  }
-
-  componentDidMount() {
-    this.agentStatus();
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    const { variant, robotId } = this.props;
-    const { currentVariant, latestVariantVersion } = this.state;
-    if (variant != currentVariant) {
-      this.setAgentVariantState();
-    }
-    if (currentVariant !== prevState.currentVariant
-      || latestVariantVersion !== prevState.latestVariantVersion
-      || robotId != prevProps.robotId
-      || variant != prevProps.variant) {
-      this.agentStatus();
-    }
-  }
-
-  /**
-   * Method to call upon the server to get the latest version for a variant
-   * if the variant passed is undefined, the server will assume we desire the
-   * main variant and will return the latest agent version for main.
-   * The method saves in the state the latest variant version and the variant
-   * it is tracking.
-   */
-  setAgentVariantState = () => {
-    const { variant, agentVariantConfig, isPreferenceLoading } = this.props;
-    let latestVariantVersion;
-    let currentVariant;
-    if (!isPreferenceLoading) {
-      Meteor.call('agent.latest_variant', {
-        variant: agentVariantConfig
-      }, (error, result) => {
-        if (result) {
-          latestVariantVersion = result;
-          currentVariant = variant;
-          this.setState({ latestVariantVersion, currentVariant });
-        }
-        if (error) {
-          console.error(error);
-        }
-      });
-    }
-  }
+  agentStatus = () => ({
+    fill: theme => theme.palette.text.title,
+    text: 'Update Agent',
+    tooltip: 'Update the agent to the latest version',
+    click: this.confirmUpdate,
+    disabled: false,
+  })
 
   /**
    * Returns a string indicating the elapsed time since the robot's
@@ -431,10 +368,6 @@ RobotInfoButtons.propTypes = {
   updateStamp: PropTypes.number,
   isZeroData: PropTypes.bool,
   theme: PropTypes.object,
-  version: PropTypes.string,
-  variant: PropTypes.string,
-  agentVariantConfig: PropTypes.string,
-  isPreferenceLoading: PropTypes.bool,
   onFeedback: PropTypes.func, // callback for errors executing agent actions (restart, update)
   onNavigationDetail: PropTypes.func, // callback for the Navigation Detail button
   actionsConfig: PropTypes.object,
