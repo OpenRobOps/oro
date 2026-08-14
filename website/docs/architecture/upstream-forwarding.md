@@ -172,7 +172,7 @@ Most keys are also exposed as Terraform variables (`upstream_enabled`, `upstream
 A local end-to-end check needs a second MQTT-capable upstream (another ORO instance is the simplest):
 
 1. On the upstream, add the local key to `robotApiKeys` and confirm `/mqtt_config` reaches the server.
-2. Set the matching `modules.upstream` block on the local ingest, with at least one mapping, then restart ingest.
+2. Set the matching `upstream` block on the local ingest, with at least one mapping, then restart ingest.
 3. Confirm a row appears in `upstream_mqtt_credentials` and an MQTT connection is established to the upstream (check ingest logs and the upstream's `r/{upstreamRobotId}/state` topic).
 4. Publish a synthetic message to the local broker on `r/{localRobotId}/state` and confirm it shows up upstream at `r/{upstreamRobotId}/state`.
 5. Publish on `r/{localRobotId}/in_cmd` and confirm it is **not** forwarded upstream.

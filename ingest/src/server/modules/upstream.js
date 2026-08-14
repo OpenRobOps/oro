@@ -63,7 +63,7 @@ const CALLBACK_TABLE_MAX_SIZE = 10000;
 // each republished onto the local broker under the local robot's topic.
 //
 // Operators can override this entirely via
-// `modules.upstream.forwarding.downstreamCommands` in settings (see
+// `upstream.forwarding.downstreamCommands` in settings (see
 // UpstreamRobotClient's `downstreamCommands` option). Each entry is
 // `{ subtopic, acceptsPayloads?, awaitsEcho? }`:
 //  - `acceptsPayloads` (optional) is a list of exact string payloads to allow on
@@ -146,7 +146,7 @@ export default class UpstreamModule {
 
   /**
    * Load the module.
-   * @param {object} settings - The `modules.upstream` block from ingest settings.
+   * @param {object} settings - The `upstream` block from ingest settings.
    */
   load = async (settings) => {
     if (!settings || !settings.enabled) {
@@ -164,11 +164,11 @@ export default class UpstreamModule {
     } = settings;
 
     if (!api?.baseUrl || !api?.apiKey) {
-      console.error('[upstream] modules.upstream.api.baseUrl and api.apiKey are required; module not loaded');
+      console.error('[upstream] upstream.api.baseUrl and api.apiKey are required; module not loaded');
       return;
     }
     if (!credentialEncryptionKey) {
-      console.error('[upstream] modules.upstream.credentialEncryptionKey is required; module not loaded');
+      console.error('[upstream] upstream.credentialEncryptionKey is required; module not loaded');
       return;
     }
     if (!this._mqttConfig?.brokers || !this._mqttConfig?.defaultBrokerId) {
@@ -201,7 +201,7 @@ export default class UpstreamModule {
     );
 
     if (!Array.isArray(robotMapping) || robotMapping.length === 0) {
-      console.warn('[upstream] modules.upstream.robotMapping is empty; no robots will be forwarded');
+      console.warn('[upstream] upstream.robotMapping is empty; no robots will be forwarded');
       return;
     }
 
