@@ -21,7 +21,7 @@
  * action buttons, to be placed at the header of the Ground Control view.
  */
 import { Meteor } from 'meteor/meteor';
-import React, { Fragment } from 'react';
+import React, { Fragment, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Button, Typography, Tooltip, Grid, Box }
   from '@mui/material';
@@ -47,8 +47,6 @@ import { Robots } from '../../../../lib/collections';
 // } from '../../../../shared/roles';
 // import UserGrantsContext from '../../contexts/UserGrantsContext';
 import Lock from '../Lock';
-import { Url } from '../../../../lib/urls';
-import { SECTION_SCOPES } from '../../../../lib/uiPreferences';
 import { legacyWithStyles } from '../../util/withStyles';
 import { legacyWithNavigate } from '../../util/withNavigate';
 
@@ -108,78 +106,73 @@ const ALLOW_REMOVE_ROBOT_UNIT = Meteor.isDevelopment ? 'seconds' : 'minutes';
 // Breakpoint style constant
 const LG_BREAKPOINT = { display: { lg: 'block', xs: 'none' } };
 
-class RobotInfoButtons extends React.Component {
-  state = {
-    confirmDialogOpen: false,
-  }
-
-  /**
-   * Returns an object describing the Update Agent button.
-   * ORO does not track published agent releases, so no version comparison is
-   * made: the button is offered whenever an update action is configured.
-   */
-  agentStatus = () => ({
-    fill: theme => theme.palette.text.title,
-    text: 'Update Agent',
-    tooltip: 'Update the agent to the latest version',
-    click: this.confirmUpdate,
-    disabled: false,
-  })
+const RobotInfoButtons = (props) => {
+  const {
+    offline, isZeroData, classes, theme,
+    onNavigationDetail, updateStamp, robot,
+    onFeedback, selectRobotCallback, executeAction,
+    actionsConfig, lock, enableLock, robotId, isRobotLoading
+  } = props;
+  // Confirmation dialog state; the confirm* fields are always set together
+  const [confirmState, setConfirmState] = useState({ confirmDialogOpen: false });
+  const {
+    confirmDialogOpen, confirmTitle, confirmContentText, confirmButtonText, operation
+  } = confirmState;
 
   /**
    * Returns a string indicating the elapsed time since the robot's
    * last connection.
    */
-  getLastSeenInterval = () => {
-    const { updateStamp } = this.props;
-    return 'Last seen ' + moment(updateStamp).fromNow();
-  }
+  const getLastSeenInterval = () => 'Last seen ' + moment(updateStamp).fromNow();
 
   /**
    * Returns a string indicating the last seen time for a robot in
    * '<day> at hh:mm:ss' format, where day can be either 'today',
    * 'yesterday' or 'YYYY/MM/DD'.
    */
-  getLastSeenTime = () => {
-    const { updateStamp } = this.props;
-    return 'Last seen ' + formatTime(updateStamp).toLowerCase();
-  }
+  const getLastSeenTime = () => 'Last seen ' + formatTime(updateStamp).toLowerCase();
 
-  confirmDelete = () => {
-    const { robot } = this.props;
+  const confirmDelete = () => {
     const { name, _id } = robot;
     const robotName = name || _id;
-    this.setState({
+    setConfirmState({
       confirmDialogOpen: true,
       operation: 'delete',
       confirmContentText: `Are you sure you want to delete ${robotName} from your fleet?`,
       confirmButtonText: 'YES, DELETE',
       confirmSuccessMessage: 'Robot deleted'
     });
-  }
+  };
 
-  confirmUpdate = () => {
-    const { robot } = this.props;
+  const confirmUpdate = () => {
     const { name, _id } = robot;
     const robotName = name || _id;
-    this.setState({
+    setConfirmState({
       confirmDialogOpen: true,
       operation: 'updateAgent',
       confirmContentText: `Update the agent installed on ${robotName} to the latest version?`,
       confirmButtonText: 'YES, UPDATE',
       confirmSuccessMessage: 'Update command sent'
     });
-  }
+  };
 
-  confirmResponse = (confirmed) => {
-    const { onFeedback, selectRobotCallback, robotId } = this.props;
-    const { operation } = this.state;
-    this.setState({ confirmDialogOpen: false });
+  const handleUpdateAgent = () => {
+    const action = actionsConfig && actionsConfig[UPDATE_AGENT_ACTION_ID];
+    executeAction({ action: { _id: UPDATE_AGENT_ACTION_ID, ...action } });
+  };
+
+  const handleRestartAgent = () => {
+    const action = actionsConfig && actionsConfig[RESTART_AGENT_ACTION_ID];
+    executeAction({ action: { _id: RESTART_AGENT_ACTION_ID, ...action } });
+  };
+
+  const confirmResponse = (confirmed) => {
+    setConfirmState(prev => ({ ...prev, confirmDialogOpen: false }));
 
     if (confirmed) {
       // TODO Move updateAgent to use confirmation logic from the Actions engine
       if (operation == 'updateAgent') {
-        this.handleUpdateAgent();
+        handleUpdateAgent();
       } else {
         Meteor.call('robot.' + operation, { robotId }, (err) => {
           if (err) {
@@ -191,58 +184,34 @@ class RobotInfoButtons extends React.Component {
         });
       }
     }
-  }
+  };
 
-  handleUpdateAgent = () => {
-    const {
-      actionsConfig,
-      executeAction
-    } = this.props;
-    const action = actionsConfig && actionsConfig[UPDATE_AGENT_ACTION_ID];
-    executeAction({ action: { _id: UPDATE_AGENT_ACTION_ID, ...action } });
-  }
+  /**
+   * Returns an object describing the Update Agent button.
+   * ORO does not track published agent releases, so no version comparison is
+   * made: the button is offered whenever an update action is configured.
+   */
+  const agentStatus = {
+    fill: t => t.palette.text.title,
+    text: 'Update Agent',
+    tooltip: 'Update the agent to the latest version',
+    click: confirmUpdate,
+    disabled: false,
+  };
 
-  handleRestartAgent = () => {
-    const {
-      actionsConfig,
-      executeAction
-    } = this.props;
-    const action = actionsConfig && actionsConfig[RESTART_AGENT_ACTION_ID];
-    executeAction({ action: { _id: RESTART_AGENT_ACTION_ID, ...action } });
-  }
+  // Flags to decide if some buttons should or should not be shown
+  const showDeleteRobot = true; // TODO check access: clientGrantsSpecificAccess(userGrants,
+    //null, [RESOURCE_SINGLETONS.FLEET], ACCESS_LEVEL_CONFIGURE);
+  const showUpdateAgent = showDeleteRobot;
+    //null, [RESOURCE_SINGLETONS.DATASOURCES], ACCESS_LEVEL_CONFIGURE);
+  const restartAction = actionsConfig && actionsConfig[RESTART_AGENT_ACTION_ID];
+  const updateAction = actionsConfig && actionsConfig[UPDATE_AGENT_ACTION_ID];
 
-  // This logic should remain synchronized with the one in NavigationControlBarComponent
-  redirectToRobotSettings = () => {
-    const { robotId, navigate } = this.props;
-    const settingsNavPath = new Url().relative().settings().tail('navigation');
-    const settingsView = robotId
-      ? settingsNavPath.query({ id: robotId, scope: SECTION_SCOPES.ROBOT }).toString()
-      : settingsNavPath.toString();
-    navigate(settingsView);
-  }
+  const restartActionUi = (restartAction && restartAction.ui) || {};
+  const updateActionUi = (updateAction && updateAction.ui) || {};
+  // TODO Clara: Replace isZeroData to noRobotSelected (related to withZeroDataCheck)
 
-  render() {
-    const {
-      offline, isZeroData, classes, theme,
-      onNavigationDetail, updateStamp,
-      actionsConfig, lock, enableLock, robotId, isRobotLoading
-    } = this.props;
-    const { userGrants } = this.context;
-    const { confirmDialogOpen, confirmTitle, confirmContentText, confirmButtonText } = this.state;
-    // Flags to decide if some buttons should or should not be shown
-    const showDeleteRobot = true; // TODO check access: clientGrantsSpecificAccess(this.context && userGrants,
-      //null, [RESOURCE_SINGLETONS.FLEET], ACCESS_LEVEL_CONFIGURE);
-    const showUpdateAgent = showDeleteRobot;
-      //null, [RESOURCE_SINGLETONS.DATASOURCES], ACCESS_LEVEL_CONFIGURE);
-    const restartAction = actionsConfig && actionsConfig[RESTART_AGENT_ACTION_ID];
-    const updateAction = actionsConfig && actionsConfig[UPDATE_AGENT_ACTION_ID];
-
-    const restartActionUi = (restartAction && restartAction.ui) || {};
-    const updateActionUi = (updateAction && updateAction.ui) || {};
-    // TODO Clara: Replace isZeroData to noRobotSelected (related to withZeroDataCheck)
-    const agentStatus = this.agentStatus();
-
-    return !isZeroData && !isRobotLoading ? (
+  return !isZeroData && !isRobotLoading ? (
       <Grid container justifyContent="space-between" align="center" width="100%">
         <div className={classes.robotActions}>
           {restartAction && WrapWithTooltip(getActionTooltip(restartAction), (
@@ -251,7 +220,7 @@ class RobotInfoButtons extends React.Component {
               size="small"
               aria-label="Restart"
               className={classes.rowButton}
-              onClick={this.handleRestartAgent}
+              onClick={handleRestartAgent}
               data-test="robot-buttons-restart-agent"
               disabled={restartActionUi && restartActionUi.isDisabled}
             >
@@ -319,7 +288,7 @@ class RobotInfoButtons extends React.Component {
                 size="small"
                 aria-label="Delete"
                 className={classes.rowButton}
-                onClick={this.confirmDelete}
+                onClick={confirmDelete}
                 title="Remove"
                 classes={{ text: classes.lowerCaseButton }}
               >
@@ -336,16 +305,16 @@ class RobotInfoButtons extends React.Component {
         <div className={classes.systemActions}>
           <Box sx={{ display: { lg: 'flex', xs: 'none' }, alignItems: 'center' }}>
             {offline && (
-              <Tooltip title={this.getLastSeenTime()} disableInteractive>
+              <Tooltip title={getLastSeenTime()} disableInteractive>
                 <Typography variant="caption" className={classes.lastSeen}>
-                  {this.getLastSeenInterval()}
+                  {getLastSeenInterval()}
                 </Typography>
               </Tooltip>
             )}
           </Box>
         </div>
         <ConfirmationDialog
-          onDone={this.confirmResponse}
+          onDone={confirmResponse}
           open={confirmDialogOpen}
           title={confirmTitle}
           content={confirmContentText}
@@ -355,8 +324,7 @@ class RobotInfoButtons extends React.Component {
     ) : (
       <Fragment />
     );
-  }
-}
+};
 
 // RobotInfoButtons.contextType = UserGrantsContext;
 
