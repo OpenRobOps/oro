@@ -57,7 +57,33 @@ OAuth._fetch = async function (url, ...args) {
   return response;
 };
 
+/**
+ * The login page offers exactly the methods listed in
+ * Meteor.settings.public.oauthProviders. That list is maintained by hand (in
+ * settings/secrets), so it can advertise methods the server cannot actually
+ * serve — e.g. "email" without smtp.url configured, or an OAuth provider
+ * without credentials — leaving dead controls on the login screen. Drop those
+ * entries at startup so clients only see working login methods.
+ */
+const sanitizePublicOauthProviders = () => {
+  const advertised = Meteor.settings.public?.oauthProviders;
+  if (!Array.isArray(advertised)) {
+    return;
+  }
+  const isAvailable = provider => (provider === 'email'
+    ? Boolean(Meteor.settings.smtp?.url)
+    : Boolean(Meteor.settings.oauth?.[provider]?.clientId));
+  const dropped = advertised.filter(provider => !isAvailable(provider));
+  if (dropped.length) {
+    console.warn('OAuth: hiding advertised login methods with missing server '
+      + `configuration: ${dropped.join(', ')} (check public.oauthProviders `
+      + 'against the smtp/oauth settings)');
+    Meteor.settings.public.oauthProviders = advertised.filter(isAvailable);
+  }
+};
+
 const configureOAuth = async () => {
+  sanitizePublicOauthProviders();
   const oauthSettings = Meteor.settings.oauth;
   if (!oauthSettings) {
     console.warn('OAuth: No oauth settings found in Meteor.settings — login will not work');
