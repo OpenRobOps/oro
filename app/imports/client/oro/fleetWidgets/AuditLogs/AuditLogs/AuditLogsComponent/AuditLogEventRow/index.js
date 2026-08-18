@@ -30,8 +30,10 @@ const AuditLogEventRow = ((props) => {
   const { eventObject } = props;
   const [isExpanded, setIsExpanded] = useState(false);
   const eventRobotId = eventObject.robotId;
+  // The executionId is merged into the logged action object (older events may
+  // have it at the eventData top level)
   const actionExecutionId = eventObject.module == EVENT_MODULES.ACTION
-    ? eventObject?.eventData?.executionId
+    ? (eventObject?.eventData?.executionId ?? eventObject?.eventData?.action?.executionId)
     : null;
 
   // This meteor call hook returns { isLoading, data, error, call }
@@ -41,8 +43,9 @@ const AuditLogEventRow = ((props) => {
   // Function to handle the state of the expandable row
   const handleToggleExpanded = useCallback(() => {
     // If state is going from closed to expanded get
-    // custom action script details
-    if (!isExpanded) {
+    // custom action script details (only script executions have feedback to
+    // fetch; other expandable rows display details already in the event)
+    if (!isExpanded && actionExecutionId) {
       fetchActionDetails({
         executionId: actionExecutionId,
         robotId: eventRobotId

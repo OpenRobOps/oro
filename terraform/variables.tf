@@ -138,6 +138,12 @@ variable "upstream_robot_mapping" {
   default = []
 }
 
+variable "upstream_display_name" {
+  description = "Actor name shown in local audit logs for commands arriving over the upstream link (e.g. \"Space Intelligence\")"
+  type        = string
+  default     = "Upstream"
+}
+
 variable "upstream_reject_unauthorized" {
   description = "Verify upstream broker TLS certificate. Set to false only for testing with self-signed certs."
   type        = bool

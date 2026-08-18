@@ -436,10 +436,22 @@ const getMissionVerb = (typeVal) => {
 
 // Unlike all other get** functions, this one returns { text, tooltip }
 // with an optional tooltip message to display when the row is hovered
+// Maximum length of action argument excerpts shown inline in the audit log line
+const ACTION_ARG_EXCERPT_LEN = 60;
+const excerpt = value => (
+  String(value).length > ACTION_ARG_EXCERPT_LEN
+    ? `${String(value).slice(0, ACTION_ARG_EXCERPT_LEN)}…`
+    : String(value)
+);
+
 const getEventActionText = (event) => {
   let tooltip = null;
   let text = null;
   const eventData = event.eventData || event;
+  // Action arguments (message, fileName, args, executionId) are merged into the
+  // logged action object by EventLog.logExecutedAction; older events may have
+  // them at the eventData top level instead, so check both places.
+  const actionArgs = eventData.action || eventData;
   const actionType = eventData.type;
   const actionName = eventData.label || eventData.actionId;
   switch (actionType) {
@@ -457,18 +469,25 @@ const getEventActionText = (event) => {
       break;
     }
     case ACTION_TYPES.RUN_SCRIPT: {
-      const { args } = eventData;
-      const { fileName } = eventData;
+      const fileName = eventData.fileName ?? actionArgs.fileName;
+      const args = eventData.args ?? actionArgs.args;
       const { label } = eventData;
       tooltip = `Run script: ${fileName || ''} ${args || ''}`.trim();
-      // Shows the action label if it exists, otherwise shows the file name
-      text = label || `Run script: ${fileName}`;
+      // Shows the action label (with the script name for context) if it
+      // exists, otherwise shows the file name
+      if (label) {
+        text = fileName ? `${label} (${excerpt(fileName)})` : label;
+      } else {
+        text = `Run script: ${fileName}`;
+      }
       break;
     }
     case ACTION_TYPES.PUBLISH_TO_TOPIC: {
-      // When expanded, print the script arguments
-      const { message } = eventData;
-      tooltip = `Published: '${message}'`;
+      const message = eventData.message ?? actionArgs.message;
+      if (message != null) {
+        tooltip = `Published: '${message}'`;
+        text = `${actionName}: '${excerpt(message)}'`;
+      }
       break;
     }
     default:
@@ -479,6 +498,33 @@ const getEventActionText = (event) => {
     text = actionName;
   }
   return { text, tooltip };
+};
+
+/**
+ * Returns a list of { label, value } detail rows for an executed-action event,
+ * used by the audit log UI when a row is expanded. Returns an empty array for
+ * events with nothing beyond what the one-line summary already shows.
+ */
+const getEventActionDetails = (event) => {
+  const eventData = event.eventData || event;
+  const action = eventData.action || eventData;
+  const details = [];
+  const push = (label, value) => {
+    if (value !== undefined && value !== null && value !== '') {
+      details.push({ label, value: String(value) });
+    }
+  };
+  push('Action', eventData.label || eventData.actionId);
+  push('Type', eventData.type);
+  push('Message', eventData.message ?? action.message);
+  push('Script', eventData.fileName ?? action.fileName);
+  push('Arguments', eventData.args ?? action.args);
+  // Provenance for commands that arrived over the upstream link
+  if (action.source === 'upstream') {
+    push('Source', `upstream link (as '${action.upstreamRobotId || 'unknown'}')`);
+    push('Command topic', action.commandTopic);
+  }
+  return details;
 };
 
 const getSettingText = (event) => {
@@ -663,5 +709,6 @@ export {
   getUserEmail,
   getUserLoggingAttributes,
   formatEvent,
+  getEventActionDetails,
   renderLogEntry
 };
