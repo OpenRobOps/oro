@@ -22,7 +22,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import AuditLogs from '../AuditLogs';
-import { prepareTimeVarsForQuery, LIVE_TIME, StartTsPropType } from '../../../util/timeUtils';
+import { prepareTimeVarsForQuery, isLive, LIVE_TIME, StartTsPropType } from '../../../util/timeUtils';
 
 const AuditLogsFleet = (props) => {
   const {
@@ -42,7 +42,11 @@ const AuditLogsFleet = (props) => {
   const query = {
     startTs: timeVars.startTs,
     endTs: timeVars.endTs,
-    limit: 100
+    limit: 100,
+    // In live mode nowTs ticks re-derive startTs/endTs; useAuditLogs uses
+    // these to refresh silently instead of blanking to the loading state
+    live: isLive(startTs),
+    timeRangeMs: timeVars.timeRangeMs
   };
   /**
   * Handles selection of a collection to act as a filter

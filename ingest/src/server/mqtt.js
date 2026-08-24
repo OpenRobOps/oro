@@ -296,7 +296,10 @@ export default class OroMqtt {
       this._listeners = {};
     }
     // TODO Move Odometry to its own module instead
-    this.odometryEnabled = config.odometryEnabled;
+    // Default ON: without the r/+/ros/odometry/+ subscription the speed and
+    // distance attributes (speedLinear, speedAngular, distanceLinear, ...)
+    // are never ingested. Set odometryEnabled: false to opt out.
+    this.odometryEnabled = config.odometryEnabled !== false;
 
     if (!(config.defaultBrokerId in config.brokers)) {
       const msg = `Default brokerId=[${config.defaultBrokerId}] not found in mqtt.brokers configuration`;

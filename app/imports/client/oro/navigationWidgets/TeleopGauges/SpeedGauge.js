@@ -25,6 +25,7 @@
 import React from 'react';
 import { CircularProgress } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
+import { alpha } from '@mui/material/styles';
 import PropTypes from 'prop-types';
 import { isNumber } from 'lodash';
 // ORO Modules
@@ -37,15 +38,20 @@ const ARC_SIZE = 70;
 // 126deg = 360 * (35/100), where 35 = ARC_SIZE/2
 const ROOT_ROTATION = -126;
 
-// Signed variant overrides: arc center is at bottom, grows left or right
+// Signed variant overrides: zero at the top (North), grows right for positive
+// and left for negative values.
+// This inline transform REPLACES MUI's internal rotate(-90deg) on determinate
+// CircularProgress, so the arc starts at SVG 0deg (East, 3 o'clock). Combined
+// with the ringWrapper rotation (ROOT_ROTATION), the start lands at North when
+// East(+90) + ROOT_ROTATION + own = 0  =>  own = -90 - ROOT_ROTATION.
 const signedStyleOverride = {
-  transform: `rotate(${ROOT_ROTATION + 90}deg)`,
+  transform: `rotate(${-90 - ROOT_ROTATION}deg)`,
   boxShadow: 'inset -5px 0px 4px rgba(0,0,0,0.3)',
 };
 
 const GAUGE_SIZE = 110; // px — diameter of the circular gauge
 
-const useStyles = makeStyles()(() => ({
+const useStyles = makeStyles()(theme => ({
   // Outer wrapper: centers the ring + overlays the text
   wrapper: {
     position: 'relative',
@@ -68,17 +74,17 @@ const useStyles = makeStyles()(() => ({
     justifyContent: 'center',
   },
   backgroundRing: {
-    color: 'rgba(255,255,255,0.12)',
+    color: alpha(theme.palette.text.primary, 0.12),
     position: 'absolute',
   },
   foregroundRing: {
-    color: '#3f93ff',
+    color: theme.palette.incidents.ok,
     position: 'absolute',
     boxShadow: 'inset 3px -4px 5px rgba(0,0,0,0.3)',
     borderRadius: '50%',
   },
   foregroundRingZeroData: {
-    color: 'rgba(63,147,255,0.45)',
+    color: alpha(theme.palette.incidents.ok, 0.45),
   },
   // Text overlay — centered, not rotated
   textOverlay: {
@@ -93,22 +99,22 @@ const useStyles = makeStyles()(() => ({
     fontWeight: 600,
     fontSize: '1.4rem',
     lineHeight: 1.1,
-    color: '#ffffff',
+    color: theme.palette.text.primary,
     letterSpacing: '-0.01em',
   },
   units: {
     fontSize: '0.6rem',
     fontWeight: 300,
-    color: 'rgba(255,255,255,0.55)',
+    color: alpha(theme.palette.text.primary, 0.55),
     textAlign: 'center',
     lineHeight: 1.2,
     whiteSpace: 'nowrap',
   },
   offline: {
-    color: 'rgba(255,255,255,0.3)',
+    color: alpha(theme.palette.text.primary, 0.3),
   },
   zeroData: {
-    color: 'rgba(255,255,255,0.45)',
+    color: alpha(theme.palette.text.primary, 0.45),
   },
 }));
 

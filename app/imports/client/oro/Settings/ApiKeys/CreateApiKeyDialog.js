@@ -48,7 +48,7 @@ const useStyles = makeStyles()(theme => ({
   },
   keyBlock: {
     marginTop: '16px',
-    fontFamily: 'monospace',
+    fontFamily: theme.fontFamily.mono,
     fontSize: '13px',
     wordBreak: 'break-all',
     userSelect: 'all',

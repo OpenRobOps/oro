@@ -33,7 +33,8 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 // ORO modules
 import {
   EVENT_MODULES,
-  formatEvent
+  formatEvent,
+  getEventActionDetails
 } from '../../../../../../../lib/events'
 import { formatTime } from '../../../../../../../lib/util';
 import { StyledTableCell, StyledTableRow } from '../../../../../util/DefaultTable';
@@ -69,6 +70,10 @@ const useStyles = makeStyles()(theme => ({
   },
   expandedRow: {
     backgroundColor: `${theme.palette.background.navDark} !important`
+  },
+  // One block-level line per action detail in the expanded row
+  detailLine: {
+    fontSize: '13px'
   },
   expandIcon: {
     color: theme.palette.text.darkBlue
@@ -108,8 +113,14 @@ const AuditLogEventRowComponent = ({
 
   const actionExecutionId = useMemo(() => (
     moduleVal == EVENT_MODULES.ACTION
-    && eventObject.eventData?.executionId
+    && (eventObject.eventData?.executionId ?? eventObject.eventData?.action?.executionId)
   ), [moduleVal, eventObject]);
+
+  // Detail rows ({ label, value }) shown when the row is expanded
+  const actionDetailRows = useMemo(() => (
+    moduleVal == EVENT_MODULES.ACTION ? getEventActionDetails(eventObject) : []
+  ), [moduleVal, eventObject]);
+  const isExpandable = Boolean(actionExecutionId || actionDetailRows.length);
 
   if (!formattedEvent) {
     return null;
@@ -152,7 +163,7 @@ const AuditLogEventRowComponent = ({
           )}
         </StyledTableCell>
         <StyledTableCell className={cx({ [classes.withoutBorder]: isExpanded })} width="10%">
-          {actionExecutionId ? ( // only rows corresponding to executing scripts can be expanded
+          {isExpandable ? ( // action rows with details or script feedback can be expanded
             <IconButton aria-label="expand row" size="small" onClick={onExpandRowClicked} sx={{ p: 0 }}>
               {isExpanded
                 ? <KeyboardArrowUpIcon className={classes.expandIcon} />
@@ -163,7 +174,26 @@ const AuditLogEventRowComponent = ({
           )}
         </StyledTableCell>
       </StyledTableRow>
-      {isExpanded && (
+      {isExpanded && actionDetailRows.length > 0 && (
+        <StyledTableRow className={classes.expandedRow}>
+          <StyledTableCell
+            className={cx({ [classes.withoutBorder]: Boolean(actionExecutionId) })}
+            colSpan={3}
+          >
+            {actionDetailRows.map(({ label, value }) => (
+              <Typography key={label} className={classes.detailLine} component="div">
+                <Typography className={classes.boldLogText}>
+                  {label}
+                  :
+                </Typography>
+                {' '}
+                {value}
+              </Typography>
+            ))}
+          </StyledTableCell>
+        </StyledTableRow>
+      )}
+      {isExpanded && actionExecutionId && (
         <AuditLogActionFeedbackRow
           isExpanded={isExpanded}
           actionDetails={actionDetails}

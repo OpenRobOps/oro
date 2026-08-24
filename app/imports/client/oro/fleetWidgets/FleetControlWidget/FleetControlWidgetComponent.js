@@ -80,7 +80,7 @@ const useStyles = makeStyles()(theme => ({
   filterChipLabel: {
     fontSize: '13px',
     fontWeight: 400,
-    fontFamily: '"Inter", sans-serif',
+    fontFamily: theme.fontFamily.ui,
     color: theme.palette.text.buttonText,
     lineHeight: 'normal',
     whiteSpace: 'nowrap',

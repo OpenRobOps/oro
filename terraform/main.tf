@@ -168,6 +168,7 @@ locals {
         rejectUnauthorized = var.upstream_reject_unauthorized
       }
       robotMapping = var.upstream_robot_mapping
+      displayName  = var.upstream_display_name
       forwarding = {
         denyTopicSuffixes       = var.upstream_deny_topic_suffixes
         publishRetainedMessages = true
@@ -176,7 +177,7 @@ locals {
       logging                 = false
     }
   })) : jsonencode(merge(local.ingest_base_settings, {
-    modules = { upstream = { enabled = false } }
+    upstream = { enabled = false }
   }))
 }
 

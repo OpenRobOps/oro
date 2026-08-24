@@ -375,7 +375,8 @@ const TimelineComponent = ({
     }
 
     return layout;
-  }, [dataQuery, data, timeFocus, range]);
+    // theme is a dep so the chart recolors on hot theme switch
+  }, [dataQuery, data, timeFocus, range, theme]);
 
 
   /**

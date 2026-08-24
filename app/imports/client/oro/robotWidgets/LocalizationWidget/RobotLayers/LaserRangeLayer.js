@@ -30,9 +30,9 @@ import VectorSource from 'ol/source/Vector';
 import Feature from 'ol/Feature';
 import Polygon from 'ol/geom/Polygon';
 import { Fill, Stroke, Style } from 'ol/style';
+import { alpha, useTheme } from '@mui/material/styles';
 // Modules
 import ReactVectorLayer from './ReactVectorLayer';
-import theme from '../../../../Styles';
 import { transformFeatures } from '../utils/geometry';
 
 // Big enough number to cover the whole map, this is going to be the radius of the outer
@@ -117,13 +117,13 @@ const getOutOfAngleRangeCone = (laserConfig) => {
   return new Polygon([points]);
 };
 
-const createShadowStyle = (zIndex = 0) => (
+const createShadowStyle = (color, zIndex = 0) => (
   new Style({
     stroke: new Stroke({
       color: 'transparent'
     }),
     fill: new Fill({
-      color: theme.palette.shadowColor.darkGrayWithOpacity
+      color
     }),
     zIndex
   })
@@ -132,10 +132,10 @@ const createShadowStyle = (zIndex = 0) => (
 /**
  * Creates the features to draw the laser range cone
  */
-const createFeatures = ({ laserConfig, zIndex, laserPreferences = {} }) => {
+const createFeatures = ({ laserConfig, shadowColor, zIndex, laserPreferences = {} }) => {
   const { transform = {} } = laserConfig;
   const features = [];
-  const style = createShadowStyle(zIndex);
+  const style = createShadowStyle(shadowColor, zIndex);
 
   const laserRangesArch = new Feature(getLaserRangesArch(laserConfig));
   laserRangesArch.setStyle(style);
@@ -161,13 +161,19 @@ const LaserRangesLayer = (
     new VectorSource()
   ), []);
 
-  // laserConfig changes rarely if ever so calculate features on a memo that only
-  // depends on laserConfig
-  const featuresAtOrigin = useMemo(() => (
-    createFeatures({ laserConfig, zIndex, laserPreferences })
-  ), [laserConfig, zIndex]);
+  // Scrim over the out-of-range area, derived from the theme's text color so it
+  // contrasts with the map in every theme: dark dim on light maps, light fog on
+  // dark (inverted) maps
+  const theme = useTheme();
+  const shadowColor = alpha(theme.palette.text.primary, 0.3);
 
-  // Redraw cone every time the robotPose changes
+  // laserConfig changes rarely if ever so calculate features on a memo that only
+  // depends on laserConfig (plus the themed color, for hot theme switches)
+  const featuresAtOrigin = useMemo(() => (
+    createFeatures({ laserConfig, shadowColor, zIndex, laserPreferences })
+  ), [laserConfig, shadowColor, zIndex]);
+
+  // Redraw cone every time the robotPose changes or the features are rebuilt
   useEffect(() => {
     const clones = featuresAtOrigin.map(f => f.clone());
     const featuresAtMap = transformFeatures(clones, robotPose);
@@ -176,7 +182,7 @@ const LaserRangesLayer = (
     return () => {
       vectorSource && vectorSource.clear();
     };
-  }, [robotPose, laserConfig]);
+  }, [robotPose, featuresAtOrigin]);
 
   return (
     <ReactVectorLayer

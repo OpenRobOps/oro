@@ -4,10 +4,15 @@ sidebar_position: 2.3
 
 # Locks API
 
-A robot can be **locked** so that only one user operates it at a time. A *soft* lock
-can be re-acquired or released by the same user; a *hard* lock prevents other users from
-operating the robot until it is released (users with the engineer role or above can
-break another user's lock).
+A robot can be **locked** so that only one user operates it at a time. All locks
+behave identically once taken; `soft` is a *request* flag, not a lock kind — on
+lock it means "fail instead of taking over another user's lock", and on unlock
+it means "only release the lock if it is mine". Users with the engineer role or
+above can break another user's lock (by locking/unlocking without `soft`).
+
+Locks **expire**: by default after 600 seconds (configurable via lock
+preferences; a value ≤ 0 means never). Expired locks are cleared lazily the
+next time the lock is read.
 
 ## Get Lock Status
 
@@ -21,7 +26,14 @@ Requires **view** access on the robot.
 
 ```json
 {
-  "lock": { "userId": "abc", "ts": 1710000000000, "soft": false },
+  "lock": {
+    "userId": "abc",
+    "userName": "Jo Smith",
+    "userEmail": "jo@example.com",
+    "locked": true,
+    "ts": 1710000000000,
+    "expirationTs": 1710000600000
+  },
   "lockedForUser": true
 }
 ```
@@ -29,6 +41,9 @@ Requires **view** access on the robot.
 | Field | Type | Description |
 |-------|------|-------------|
 | `lock` | object \| null | The current lock, or `null` if the robot is not locked |
+| `lock.userId` / `userName` / `userEmail` | string | The lock owner |
+| `lock.ts` | number | When the lock was taken (epoch ms) |
+| `lock.expirationTs` | number | When the lock expires (epoch ms) |
 | `lockedForUser` | boolean | `true` if the robot is locked by **another** user (so you cannot operate it) |
 
 ---
@@ -49,14 +64,14 @@ Requires **operate** access on the robot.
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
-| `soft` | boolean | `false` | Acquire a soft lock instead of a hard lock |
+| `soft` | boolean | `false` | Fail (403) instead of taking over another user's existing lock |
 
 ### Response
 
 `201 Created`:
 
 ```json
-{ "lock": { "userId": "abc", "ts": 1710000000000, "soft": false } }
+{ "lock": { "userId": "abc", "userName": "Jo Smith", "userEmail": "jo@example.com", "locked": true, "ts": 1710000000000, "expirationTs": 1710000600000 } }
 ```
 
 ### Errors
@@ -81,6 +96,8 @@ Requires **operate** access on the robot. Returns `204 No Content` on success.
 ```json
 { "soft": false }
 ```
+
+With `soft: true`, the lock is only released if the calling user owns it.
 
 ### Errors
 

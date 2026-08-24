@@ -229,7 +229,6 @@ export default class RobotStatusManager {
    * @arg newValues is an object with attributeId: { value: x } pairs
    */
   evaluateStatus = async (robotId, newValues) => {
-    console.log(`evaluating status for robot ${robotId}: ${Object.keys(newValues)}`);
     // Store time for attributes metrics calculation.
     const t0 = Date.now();
 
@@ -303,6 +302,7 @@ export default class RobotStatusManager {
           || (attrStatus.attributeValue != newValues[attributeId].value
               && newStatus.value != STATUS.OK.value
           ) || (newStatus.value == STATUS.OK.value && attrStatus.hasOpenAlert)) {
+          console.log(`status changed for attribute ${attributeId} of robot ${robotId}: ${newStatus.value} - ${newStatus.message}`); 
           attrStatus.lastChangeTs = now;
           updatedAttributes.push(attributeId);
         }
@@ -340,10 +340,12 @@ export default class RobotStatusManager {
             await this.peerClient.resolveAlert({
               robotId, triggerId: attributeId
             });
-            // The alert has been resolved, hasOpenAlert must be cleared
+            // The alert has been resolved, hasOpenAlert must be cleared.
+            // Dot notation: a whole-subdocument $set would wipe the computed
+            // status (value/ts/message/attributeValue) written above.
             await this._robotStatusColl.updateOne(
-              { _id: robotId }, 
-              { $set: { [attributeId]: { hasOpenAlert: null } } }, 
+              { _id: robotId },
+              { $set: { [`${attributeId}.hasOpenAlert`]: null } },
               { upsert: true }
             );
           } catch (e) {
@@ -364,10 +366,12 @@ export default class RobotStatusManager {
               formattedValue: st.formattedValue,
               source: 'status'
             });
-            // The alert has been created, hasOpenAlert must be set to true
+            // The alert has been created, hasOpenAlert must be set to true.
+            // Dot notation: a whole-subdocument $set would wipe the computed
+            // status (value/ts/message/attributeValue) written above.
             await this._robotStatusColl.updateOne(
-              { _id: robotId }, 
-              { $set: { [attributeId]: { hasOpenAlert: true } } }, 
+              { _id: robotId },
+              { $set: { [`${attributeId}.hasOpenAlert`]: true } },
               { upsert: true }
             );
           } catch (e) {

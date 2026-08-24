@@ -31,14 +31,22 @@ generated key — it is shown only once. See
 
 Use the key in the `x-auth-api-key` header on API requests.
 
+:::note
+User API keys authenticate REST API calls only. Robot agents authenticate with
+a different credential: the **robot API key**, one of the values generated into
+`app/settings.json` under `robotApiKeys` (created by
+`./scripts/generate-settings.sh`).
+:::
+
 ## Step 2: Register a Robot
 
-Robots are automatically registered when they first connect to the MQTT broker with valid credentials. The registration process:
+Robots are registered automatically on their first `/mqtt_config` request —
+before any MQTT connection is made. The registration process:
 
-1. The robot agent requests MQTT credentials from the web app via the `/mqtt_config` endpoint.
-2. The server creates a new robot record in MongoDB and generates MQTT credentials.
+1. The robot agent posts its `robotId` and the robot API key to the web app's `/mqtt_config` endpoint.
+2. The server validates the key against `robotApiKeys` in `app/settings.json`, then creates a robot record in MongoDB — the robot's name defaults to the hostname it reported — and generates MQTT credentials.
 3. The credentials are stored (encrypted) in the `mqtt_credentials` collection.
-4. The robot connects to the MQTT broker and begins publishing telemetry.
+4. The robot connects to the MQTT broker with those credentials and begins publishing telemetry.
 
 ## Step 3: Verify MQTT Connectivity
 

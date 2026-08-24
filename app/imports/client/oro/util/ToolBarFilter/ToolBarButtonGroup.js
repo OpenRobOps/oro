@@ -27,7 +27,7 @@ import { ToggleButtonGroup, ToggleButton } from '@mui/material';
 
 const StyledButtonGroup = styled(ToggleButton)(({ theme }) => ({
   '&.MuiToggleButton-root': {
-    fontFamily: 'Inter',
+    fontFamily: theme.fontFamily.ui,
     fontWeight: 500,
     width: 'fit-content',
     textTransform: 'capitalize',
@@ -93,7 +93,7 @@ const ToolBarButtonGroup = ({
 ToolBarButtonGroup.propTypes = {
   onButtonChange: PropTypes.func.isRequired,
   selectedToolBarButton: PropTypes.string,
-  buttonGroup: PropTypes.object,
+  buttonGroup: PropTypes.array,
   showLabels: PropTypes.bool
 };
 

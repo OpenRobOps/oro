@@ -36,15 +36,18 @@ Returns the current value of a specific attribute for a robot.
 | Field | Type | Description |
 |-------|------|-------------|
 | `attribute` | string | The attribute ID that was queried |
-| `value` | string | Current attribute value |
+| `value` | number \| string \| object | Current attribute value (objects for `json`/`yaml` data sources) |
 | `ts` | number | Timestamp of the last value update (epoch milliseconds) |
+
+If the attribute is defined but the robot has never reported it, the response
+is `200` with only the `attribute` field (`value` and `ts` are omitted).
 
 ### Errors
 
 | Status | Condition |
 |--------|-----------|
 | 403 | User lacks view access to this robot |
-| 404 | Attribute does not exist for this robot |
+| 404 | Attribute is not defined for this robot |
 
 ### Example
 

@@ -32,9 +32,11 @@ import {
   Alert,
   CircularProgress,
 } from '@mui/material';
+import { alpha, useTheme } from '@mui/material/styles';
 import GoogleIcon from '@mui/icons-material/Google';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import { isArray } from 'lodash';
+import OroLogo from '../util/OroLogo';
 
 // ---- Extension point for OAuth providers ----
 const OAUTH_PROVIDERS = [
@@ -65,6 +67,7 @@ const ENABLED_OAUTH_PROVIDERS = isArray(Meteor.settings.public.oauthProviders)
   : [];
 
 const LoginPage = () => {
+  const theme = useTheme();
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
@@ -155,17 +158,7 @@ const LoginPage = () => {
             lineHeight: 0,
           }}
         >
-          <Box
-            component="img"
-            src="/images/oro-logo.svg"
-            alt="ORO"
-            sx={{
-              height: 44,
-              width: 'auto',
-              display: 'block',
-              maxWidth: '100%',
-            }}
-          />
+          <OroLogo height={44} title="ORO" style={{ display: 'block', maxWidth: '100%' }} />
         </Box>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
           Sign in to continue
@@ -194,7 +187,7 @@ const LoginPage = () => {
                   htmlInput: { sx: { color: 'text.primary' } },
                 }}
                 sx={{
-                  '& .MuiInput-underline:before': { borderColor: 'rgba(190, 174, 221, 0.4)' },
+                  '& .MuiInput-underline:before': { borderColor: (theme) => alpha(theme.palette.text.secondary, 0.4) },
                   '& .MuiInput-underline:hover:not(.Mui-disabled):before': { borderColor: 'text.secondary' },
                   '& .MuiInput-underline:after': { borderColor: 'secondary.main' },
                 }}
@@ -228,7 +221,7 @@ const LoginPage = () => {
                   htmlInput: { sx: { color: 'text.primary' } },
                 }}
                 sx={{
-                  '& .MuiInput-underline:before': { borderColor: 'rgba(190, 174, 221, 0.4)' },
+                  '& .MuiInput-underline:before': { borderColor: (theme) => alpha(theme.palette.text.secondary, 0.4) },
                   '& .MuiInput-underline:hover:not(.Mui-disabled):before': { borderColor: 'text.secondary' },
                   '& .MuiInput-underline:after': { borderColor: 'secondary.main' },
                 }}

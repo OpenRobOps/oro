@@ -69,6 +69,12 @@ const ALLOWED_MODULES_UNLOAD = [
   MODULE_NAMES.ROS_IMAGE_AGENTLET
 ];
 
+// Delay before honoring a module unload once demand drops to zero. Gives
+// reconnecting clients time to re-establish their subscriptions without the
+// agent unloading/reloading modules on every flap.
+// ponytail: fixed 60s delay; make it a setting if a deployment ever needs to tune it
+const UNLOAD_HYSTERESIS_MS = 60 * 1000;
+
 let instance;
 /**
  * @class AgentManager
@@ -96,6 +102,8 @@ export default class AgentManager {
     this.cleanupTimerSpec = cleanupTimerSpec;
     this.runlevelChangeCallbacks = {};
     this.moduleStateOverrides = {};
+    // Timers for scheduled (hysteresis-delayed) unloads, keyed by robotId|moduleName
+    this._pendingUnloads = {};
     this.serverId = serverId;
 
     // Set-up a cron job to refresh our documents and clean-up stale ones
@@ -618,7 +626,11 @@ export default class AgentManager {
    * (irrespective of robotId being a proxy or not)
    */
   _doRequestMore = async (robotId, moduleName, runlevel) => {
-    // Record new number of watchers
+    // Record new number of watchers.
+    // forceSend: requests leaked by dead servers (cleaned up only after a couple of
+    // hours) can pin the expected runlevel so it never "changes" here, while the agent
+    // does not actually have the module loaded. Since load_module is idempotent on the
+    // agent, always (re)send it when someone requests the module.
     await this._runlevelComparator(
       robotId,
       moduleName,
@@ -626,7 +638,8 @@ export default class AgentManager {
       async () => await AgentModuleRequests.upsertAsync(
         { robotId, moduleName, runlevel, serverId: this.serverId },
         { $inc: { value: 1 }, $set: { ts: Date.now() } },
-      )
+      ),
+      true // forceSend
     );
   }
 
@@ -656,9 +669,12 @@ export default class AgentManager {
 
   /**
    * Compares a given runlevel to the one that is expected in AgentModuleRequests
-   * Then decides whether to send a load or unload command to the agent
+   * Then decides whether to send a load or unload command to the agent.
+   *
+   * When forceSend is true, the (idempotent) load command and state are sent to the
+   * agent even if the expected runlevel did not change.
    */
-  _runlevelComparator = async (robotId, moduleName, newRunlevel, dbUpdateFunc) => {
+  _runlevelComparator = async (robotId, moduleName, newRunlevel, dbUpdateFunc, forceSend = false) => {
     const beforeRunlevel = await this.getModuleLevels(robotId, moduleName);
 
     await dbUpdateFunc();
@@ -666,7 +682,21 @@ export default class AgentManager {
     // Query for the maximum requested runlevel now (new necessary update)
     const expectedRunlevel = await this.getModuleLevels(robotId, moduleName);
 
-    if (expectedRunlevel != beforeRunlevel) {
+    if (expectedRunlevel === null) {
+      // Unload wanted: don't send it right away. Reconnecting clients (e.g. a
+      // flapping websocket) drop and re-create their subscriptions within
+      // seconds; unloading eagerly makes the agent reload its modules on every
+      // flap, which is expensive and can wedge agentlet subscriptions.
+      if (expectedRunlevel != beforeRunlevel) {
+        this._scheduleUnload(robotId, moduleName);
+      }
+      return;
+    }
+
+    // Any load or level change cancels a pending unload for this module
+    this._cancelPendingUnload(robotId, moduleName);
+
+    if (expectedRunlevel != beforeRunlevel || forceSend) {
       try {
         // When the runlevel changes, we execute the callback for the module, if it exists
         const runlevelChangedCallback = this.runlevelChangeCallbacks[moduleName];
@@ -677,6 +707,40 @@ export default class AgentManager {
 
       // Load or unload the module in the agent
       await this._changeModule(robotId, moduleName, expectedRunlevel);
+    }
+  };
+
+  /**
+   * Schedules a module unload after UNLOAD_HYSTERESIS_MS, replacing any
+   * previously scheduled one. Demand is re-checked when the timer fires, so a
+   * client that comes back within the window keeps the module loaded and the
+   * agent never sees the churn.
+   */
+  _scheduleUnload = (robotId, moduleName) => {
+    const key = `${robotId}|${moduleName}`;
+    this._cancelPendingUnload(robotId, moduleName);
+    this._pendingUnloads[key] = setTimeout(Meteor.bindEnvironment(async () => {
+      delete this._pendingUnloads[key];
+      // Only unload if there is still no demand for the module
+      const currentRunlevel = await this.getModuleLevels(robotId, moduleName);
+      if (currentRunlevel !== null) {
+        return;
+      }
+      try {
+        const runlevelChangedCallback = this.runlevelChangeCallbacks[moduleName];
+        runlevelChangedCallback && runlevelChangedCallback(robotId, null);
+      } catch (error) {
+        console.error(`Failed executing runlevel callback for ${robotId}-${moduleName}`, error);
+      }
+      await this._changeModule(robotId, moduleName, null);
+    }), UNLOAD_HYSTERESIS_MS);
+  };
+
+  _cancelPendingUnload = (robotId, moduleName) => {
+    const key = `${robotId}|${moduleName}`;
+    if (this._pendingUnloads[key]) {
+      clearTimeout(this._pendingUnloads[key]);
+      delete this._pendingUnloads[key];
     }
   };
 

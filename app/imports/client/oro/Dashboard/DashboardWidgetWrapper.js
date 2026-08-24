@@ -45,8 +45,12 @@ const useStyles = makeStyles()(theme => ({
     borderRadius: '10px',
     padding: '12px'
   },
+  // Modifiers of `widget` use '&&' (doubled class specificity) so they beat it
+  // regardless of CSS injection order: on a hot theme switch emotion re-inserts
+  // only theme-dependent rules (like widget's), which would otherwise win the
+  // specificity tie and, e.g., restore widget's 12px padding.
   controlWidget: {
-    padding: '3px 3px'
+    '&&': { padding: '3px 3px' }
   },
   controlWidgetContainer: {
     padding: '3px 0px'
@@ -66,7 +70,7 @@ const useStyles = makeStyles()(theme => ({
     paddingBottom: '12px'
   },
   widgetLabel: {
-    fontFamily: 'Inter, Helvetica, Arial, sans-serif',
+    fontFamily: theme.fontFamily.ui,
     fontWeight: '300',
     fontSize: '1.125rem',
     display: 'flex',
@@ -78,9 +82,11 @@ const useStyles = makeStyles()(theme => ({
     flex: '1'
   },
   withoutBackground: {
-    background: 'transparent',
-    boxShadow: 'none',
-    padding: '0'
+    '&&': {
+      background: 'transparent',
+      boxShadow: 'none',
+      padding: '0'
+    }
   },
   widgetContentContainer: {
     '& *': {
@@ -216,20 +222,14 @@ DashboardWidgetWrapper.propTypes = {
  * Wrapper to provide the WidgetDatContext (to share data between widget component and its
  * toolbar)
  */
-const DashboardWidgetWithContextWrapper = ({ children, title, ...props }) => (
+const DashboardWidgetWithContextWrapper = ({ title, ...props }) => (
   <WidgetDataProvider title={title}>
     {/* eslint-disable-next-line react/jsx-props-no-spreading */}
-    <DashboardWidgetWrapper {...props}>
-      {children}
-    </DashboardWidgetWrapper>
+    <DashboardWidgetWrapper {...props} />
   </WidgetDataProvider>
 );
 DashboardWidgetWithContextWrapper.propTypes = {
-  title: PropTypes.string, // initial title (can be changed through context)
-  children: PropTypes.oneOfType([
-    PropTypes.arrayOf(PropTypes.node),
-    PropTypes.node
-  ])
+  title: PropTypes.string // initial title (can be changed through context)
 };
 
 export default DashboardWidgetWithContextWrapper;

@@ -26,9 +26,10 @@ import { transformFeatures } from '../utils/geometry';
 import { PALETTE, makeTransparentColor } from '../utils/utils';
 import theme from '../../../../Styles';
 
-// Colors for selected / unselected robots
-const SELECTED_COLOR = PALETTE.robotPoseNormalPrimary; // blue
-const UNSELECTED_COLOR = theme.palette.text.title; // gray
+// Colors for selected / unselected robots. Functions, not consts: they read
+// the active theme at call time (hot theme switch)
+const selectedColor = () => PALETTE.robotPoseNormalPrimary; // blue
+const unselectedColor = () => theme.palette.text.title; // gray
 
 const createGeometry = ({ bufferFootprint }) => {
   // Only create geometry if bufferFootprint is explicitly defined
@@ -46,7 +47,7 @@ const createFeature = ({ bufferFootprint, zIndex, selected }) => {
     return null;
   }
 
-  const baseColor = selected ? SELECTED_COLOR : UNSELECTED_COLOR;
+  const baseColor = selected ? selectedColor() : unselectedColor();
   const fillColor = makeTransparentColor(baseColor, 0.2); // 20% opacity fill
   const strokeColor = makeTransparentColor(baseColor, 0.2);
   const feature = new Feature(geometry);

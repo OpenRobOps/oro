@@ -83,11 +83,33 @@ describe('NotificationsFromAlertsIntegration', () => {
     expect(notification.alertId).eq(alert._id);
   });
 
-  it('creates no notification when the definition has no manualActions', async () => {
+  it('creates a notification with no action buttons when the definition has no manualActions', async () => {
     await seedDefinition();
     const mgr = wire(fakeEngine());
     await mgr.createAlert({ robotId, triggerId: TRIGGER, event: EVENT, source: 'status' });
-    expect(await Notifications.find({ robotId }).countAsync()).eq(0);
+    const notification = await Notifications.findOneAsync({ robotId });
+    expect(notification).to.be.ok;
+    expect(notification.actions).deep.eq([]);
+  });
+
+  it('keeps the notification when the level changes to one without manualActions', async () => {
+    // warning declares a manual action, error does not (e.g. error auto-docks)
+    await IncidentConfiguration.insertAsync({
+      _id: TRIGGER, triggerId: TRIGGER, label: 'Battery incident',
+      error: { severity: ICM_SEV_1 },
+      warning: { severity: ICM_SEV_1, manualActions: ['DockManual'] },
+      ok: {}
+    });
+    const mgr = wire(fakeEngine());
+    await mgr.createAlert({
+      robotId, triggerId: TRIGGER, event: { ...EVENT, level: 'warning' }, source: 'status'
+    });
+    expect((await Notifications.findOneAsync({ robotId })).actions).to.have.length(1);
+    // Escalation to error: banner stays, buttons go away
+    await mgr.createAlert({ robotId, triggerId: TRIGGER, event: EVENT, source: 'status' });
+    const notification = await Notifications.findOneAsync({ robotId });
+    expect(notification).to.be.ok;
+    expect(notification.actions).deep.eq([]);
   });
 
   it('removes the notification when the incident resolves', async () => {

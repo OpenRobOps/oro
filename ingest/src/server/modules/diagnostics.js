@@ -81,6 +81,11 @@ export default class DiagnosticsModule {
               keyValueUpdates.push({ value: kv.value, namespace: name, key: kv.key });
             });
           }
+          // Also expose each status' level and message as mappable key-values, under reserved
+          // keys, so data sources can bind them. Note agents older than 4.19.0 never forward
+          // real key-values, making these the only diagnostics values available from them.
+          keyValueUpdates.push({ value: level, namespace: name, key: '__level__' });
+          keyValueUpdates.push({ value: event.msg, namespace: name, key: '__msg__' });
           sensorEvents.push(event);
         }
       });
@@ -116,7 +121,6 @@ export default class DiagnosticsModule {
     // Decode the MQTT payload
     try {
       const statusV2 = this.RosDiagnosticsStatusMessage.decode(message);
-    console.log("Diagnostics: onStatusMessage" , statusV2)
       if (statusV2 && statusV2.hasStatus) {
         const status = statusV2.status || 0;
         // Save to vitals and propagate updates.

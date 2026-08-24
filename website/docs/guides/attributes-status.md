@@ -17,7 +17,7 @@ An **attribute** is a named value associated with a robot, derived from telemetr
 3. The **AttributesManager** computes and stores current attribute values.
 4. Widgets query attribute values to display on dashboards.
 
-Attributes can be sourced from ROS topics, from REST API calls or derived from other attributes using an expressions language.
+Attributes can be sourced from ROS topic key-values (`keyValue`), robot events, ROS diagnostics (`rosDiagnostics`), disk and network usage, text or image files, or derived from other attributes using an expressions language (`derived`).
 
 ### Querying Attributes
 
@@ -41,7 +41,8 @@ Response:
 ### Defining a Key-Value Attribute
 
 A `DataSourceDefinition` whose `source.keyValue.key` matches a key the agent publishes
-maps that telemetry into a named attribute:
+maps that telemetry into a named attribute (an optional `topic` field scopes
+the key to one custom-data topic):
 
 ```bash
 curl -X POST \
@@ -139,20 +140,22 @@ See the [Config API Kinds reference](../api/configapikinds.md#statusdefinition) 
 
 ## Vitals
 
-The **Vitals** widget displays real-time system health metrics that are automatically collected by the SystemModule:
+The **Vitals** widget displays real-time system health metrics that are collected automatically:
 
 | Vital | Source | Description |
 |-------|--------|-------------|
 | **CPU** | SystemStatsMessage | Current CPU utilization |
 | **Memory** | SystemStatsMessage | RAM usage percentage |
 | **Disk** | SystemStatsMessage | Disk usage percentage |
-| **Network RTT** | sysNetRtt | Round-trip time to the robot |
-| **Clock Drift** | sysNetAgentTimeDelta | Time synchronization offset |
+| **Network RTT** | `pingAvg` / `pingLast` | Round-trip time to the robot, computed by the web app's RTT manager |
 
-These vitals are stored in the `RobotVitals` MongoDB collection and do not require ConfigAPI configuration.
+These vitals are stored in the `robot_vitals` MongoDB collection and their
+values need no ConfigAPI configuration (which vitals a widget shows is part of
+the widget's `dataSources` config in the DashboardDefinition).
 
 ## Next Steps
 
+- [Incidents & Alerts](./incidents-alerts.md) — turn status changes into incidents and notifications
 - [ConfigAPI Reference](../api/configapi.md) — full details on DataSourceDefinition and StatusDefinition
 - [Custom Data Sources](../extending/custom-data-sources.md) — define your own data sources
 - [Dashboards & Widgets](./dashboards-widgets.md) — how attributes and status appear in the UI

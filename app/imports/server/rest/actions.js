@@ -23,21 +23,12 @@ import Validator from 'fastest-validator';
 import LockManager from '../lock';
 import { ACCESS_LEVEL_VIEW, ACCESS_LEVEL_OPERATE } from '../roles';
 import ConfigManager, { ID_TYPE_ROBOT } from '../../lib/configManagerAsync';
-import { ActionDefinitions, ACTION_TYPES } from '../../lib/actions';
+import { ActionDefinitions } from '../../lib/actions';
 import { notFoundApiError } from '../rest_api_common';
 import { RobotCustomScript } from '../../lib/collections';
 import ActionsEngine from '../actions';
 import EventLog, { EVENT_MODULES, EVENT_TYPES, buildEvent } from '../eventLog/eventLogger';
 import { getUserLoggingAttributes } from '../../lib/events';
-
-/**
- * List of action types that we want to make available via API.
- */
-const API_ACTION_TYPES = [
-  ACTION_TYPES.RUN_SCRIPT,
-  ACTION_TYPES.PUBLISH_TO_TOPIC,
-  ACTION_TYPES.DISPATCH_MISSION
-];
 
 // Schema validators
 const ActionExecutionRequestSchema = {

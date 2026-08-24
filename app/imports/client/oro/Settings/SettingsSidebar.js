@@ -22,6 +22,7 @@ import PropTypes from 'prop-types';
 import { Box, Chip, Typography } from '@mui/material';
 import GroupOutlinedIcon from '@mui/icons-material/GroupOutlined';
 import VpnKeyOutlinedIcon from '@mui/icons-material/VpnKeyOutlined';
+import PaletteOutlinedIcon from '@mui/icons-material/PaletteOutlined';
 import { makeStyles } from 'tss-react/mui';
 import AvatarInitials from '../util/AvatarInitials';
 import { VERSION } from '../../../shared/version';
@@ -29,6 +30,7 @@ import { VERSION } from '../../../shared/version';
 export const SECTIONS = [
   { id: 'users', label: 'Users', Icon: GroupOutlinedIcon },
   { id: 'apiKeys', label: 'API keys', Icon: VpnKeyOutlinedIcon },
+  { id: 'appearance', label: 'Appearance', Icon: PaletteOutlinedIcon },
 ];
 
 const useStyles = makeStyles()(theme => ({
@@ -71,7 +73,7 @@ const useStyles = makeStyles()(theme => ({
     '& .MuiChip-label': {
       padding: '4px 8px',
       textTransform: 'capitalize',
-      fontFamily: 'Inter',
+      fontFamily: theme.fontFamily.ui,
       fontWeight: 500,
       color: theme.palette.text.darkBlue,
     },

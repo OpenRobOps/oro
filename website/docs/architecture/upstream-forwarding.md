@@ -23,7 +23,7 @@ local robots → Mosquitto → ingest
 For each mapped robot, the module:
 
 1. Subscribes on the local broker to `r/{localRobotId}/#`.
-2. For each received message, drops it if its subtopic appears in the configured deny list (typically server→robot topics such as `in_cmd`), otherwise republishes it to the upstream broker as `r/{upstreamRobotId}/{subtopic}` with the original payload bytes, QoS, and retain flag preserved.
+2. For each received message, drops it if its subtopic appears in the configured deny list (typically server→robot topics such as `in_cmd`), otherwise republishes it to the upstream broker as `r/{upstreamRobotId}/{subtopic}` with the original payload bytes, QoS, and retain flag preserved. The one exception is the `state` topic: the agent-version field of its `online|apiKey|agentVersion|hostname` payload is stamped with a `+oro-<version>` semver build-metadata suffix, so upstream operators can tell the telemetry was relayed through an ORO instance. The stamp is idempotent (never applied twice).
 
 Forwarding is **primarily upstream** (robot telemetry → upstream). A limited,
 operator-configurable **allow-list** of server→robot commands is also delivered
@@ -120,36 +120,34 @@ The upstream protocol issues credentials *per robot*. The module therefore opens
 
 ## Configuration
 
-All operator-facing configuration lives under `modules.upstream` in `ingest/settings.json`:
+All operator-facing configuration lives under the top-level `upstream` key in `ingest/settings.json`:
 
 ```json
 {
-  "modules": {
-    "upstream": {
-      "enabled": false,
-      "api": {
-        "baseUrl": "https://control.inorbit.ai",
-        "apiKey": "<upstream-issued-robot-api-key>"
-      },
-      "brokerOptions": {
-        "rejectUnauthorized": true
-      },
-      "robotMapping": [
-        { "localRobotId": "robot-1", "upstreamRobotId": "abc-1" }
-      ],
-      "forwarding": {
-        "denyTopicSuffixes": ["in_cmd", "modules/set_state"],
-        "publishRetainedMessages": true,
-        "downstreamCommands": [
-          { "subtopic": "custom_command/ros" },
-          { "subtopic": "ros/teleop/go" },
-          { "subtopic": "ros/loc/nav_goal", "awaitsEcho": true },
-          { "subtopic": "in_cmd", "acceptsPayloads": ["restart", "get_state"] }
-        ]
-      },
-      "credentialEncryptionKey": "<64-hex-char key>",
-      "logging": false
-    }
+  "upstream": {
+    "enabled": false,
+    "api": {
+      "baseUrl": "https://control.inorbit.ai",
+      "apiKey": "<upstream-issued-robot-api-key>"
+    },
+    "brokerOptions": {
+      "rejectUnauthorized": true
+    },
+    "robotMapping": [
+      { "localRobotId": "robot-1", "upstreamRobotId": "abc-1" }
+    ],
+    "forwarding": {
+      "denyTopicSuffixes": ["in_cmd", "modules/set_state"],
+      "publishRetainedMessages": true,
+      "downstreamCommands": [
+        { "subtopic": "custom_command/ros" },
+        { "subtopic": "ros/teleop/go" },
+        { "subtopic": "ros/loc/nav_goal", "awaitsEcho": true },
+        { "subtopic": "in_cmd", "acceptsPayloads": ["restart", "get_state"] }
+      ]
+    },
+    "credentialEncryptionKey": "<64-hex-char key>",
+    "logging": false
   }
 }
 ```
@@ -165,16 +163,17 @@ All operator-facing configuration lives under `modules.upstream` in `ingest/sett
 | `forwarding.publishRetainedMessages` | Whether to preserve the retain flag when republishing. Default `true`. |
 | `forwarding.downstreamCommands` | Optional override of the **downstream** (upstream→robot) command allow-list. List of `{ subtopic, acceptsPayloads?, awaitsEcho? }`; `acceptsPayloads` (optional) restricts delivery to those exact string payloads; `awaitsEcho: true` marks callback commands (`<seq>\|…`) whose robot echo must be relayed back upstream (see [Command callbacks](#command-callbacks-echo-relay)). Omit to use the built-in default; set to `[]` to disable downstream delivery. See [Downstream commands](#downstream-commands). |
 | `credentialEncryptionKey` | 64-character hex string used to AES-256-GCM-encrypt stored upstream passwords. Typically reuses the value from `mqtt.credentialEncryptionKey`. |
+| `displayName` | Actor name shown in local audit log entries for commands arriving over the upstream link (e.g. `"Space Intelligence" executed Publish to topic ...`). Default `Upstream`. |
 | `logging` | Verbose per-message logging. Off by default. |
 
-These keys are also exposed as Terraform variables (`upstream_enabled`, `upstream_api_base_url`, `upstream_api_key`, `upstream_robot_mapping`, `upstream_reject_unauthorized`, `upstream_deny_topic_suffixes`) when settings are generated via `scripts/generate-settings.sh`.
+Most keys are also exposed as Terraform variables (`upstream_enabled`, `upstream_api_base_url`, `upstream_api_key`, `upstream_robot_mapping`, `upstream_reject_unauthorized`, `upstream_deny_topic_suffixes`) when settings are generated via `scripts/generate-settings.sh`. `forwarding.downstreamCommands` is settings-only (no Terraform variable), and `credentialEncryptionKey` is auto-generated by Terraform rather than a variable.
 
 ## Verifying
 
 A local end-to-end check needs a second MQTT-capable upstream (another ORO instance is the simplest):
 
 1. On the upstream, add the local key to `robotApiKeys` and confirm `/mqtt_config` reaches the server.
-2. Set the matching `modules.upstream` block on the local ingest, with at least one mapping, then restart ingest.
+2. Set the matching `upstream` block on the local ingest, with at least one mapping, then restart ingest.
 3. Confirm a row appears in `upstream_mqtt_credentials` and an MQTT connection is established to the upstream (check ingest logs and the upstream's `r/{upstreamRobotId}/state` topic).
 4. Publish a synthetic message to the local broker on `r/{localRobotId}/state` and confirm it shows up upstream at `r/{upstreamRobotId}/state`.
 5. Publish on `r/{localRobotId}/in_cmd` and confirm it is **not** forwarded upstream.

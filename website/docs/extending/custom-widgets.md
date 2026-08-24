@@ -17,8 +17,8 @@ A typical widget consists of:
 
 ```
 MyWidget/
-├── index.js              # Export and widget metadata
-└── MyWidgetComponent.js  # React component
+├── index.js              # Container: data loading, default export
+└── MyWidgetComponent.js  # Presentational React component
 ```
 
 ## Creating a Robot Widget
@@ -44,52 +44,83 @@ const MyWidgetComponent = ({ robotId, data }) => {
 export default MyWidgetComponent;
 ```
 
-### 2. Create the Index
+### 2. Create the Container (Index)
 
-Create `app/imports/client/oro/robotWidgets/MyWidget/index.js`:
+By convention, `index.js` **default-exports a container** that loads data with
+Meteor's `useTracker` and renders the presentational component, usually wrapped
+with `WithNoDataMessage`. Create
+`app/imports/client/oro/robotWidgets/MyWidget/index.js`:
 
 ```javascript
-export { default as MyWidgetComponent } from './MyWidgetComponent';
+import React from 'react';
+import { useTracker } from 'meteor/react-meteor-data';
+import { Meteor } from 'meteor/meteor';
+import WithNoDataMessage from '../../util/WithNoDataMessage';
+import MyWidgetComponent from './MyWidgetComponent';
+
+const MyWidgetContainer = (props) => {
+  const { robotId } = props;
+  const trackerData = useTracker(() => {
+    // Subscribe to publications and fetch what the widget needs
+    return {};
+  }, [robotId]);
+  return <MyWidgetComponent {...props} {...trackerData} />;
+};
+
+export default WithNoDataMessage(MyWidgetContainer);
 ```
 
-## Accessing Robot Data
+See `robotWidgets/VitalsWidget/index.js` for a complete example.
 
-Widgets receive data through React context. Use the `WidgetDataContext` for shared robot data:
+### 3. Register the Widget
+
+A widget only renders on dashboards after it is registered in two places:
+
+1. **Widget type id** — add an entry to `WIDGET_TYPES_IDS` in
+   `app/imports/lib/uiPreferences.js`. This id is what dashboard configs
+   (Config API `DashboardDefinition`) reference as the widget `type`.
+2. **Renderer** — add the component to `WIDGET_FACTORY` in
+   `app/imports/client/oro/Dashboard/Dashboard_index.js` (and optionally a
+   toolbar to `TOOLBAR_FACTORY` in the same file).
+
+Finally, reference the new type from a dashboard/section configuration so it
+appears somewhere. Without the factory entry the dashboard renders
+"Unknown widget type".
+
+## Accessing Widget and Robot Data
+
+Robot data is loaded in the container via Meteor subscriptions (see above).
+For state shared between a widget and its toolbar (such as the widget title),
+use the `useWidgetData()` hook — `WidgetDataContext` itself is exported only
+for legacy class components:
 
 ```jsx
-import React, { useContext } from 'react';
-import { WidgetDataContext } from '../path/to/context';
+import { useWidgetData } from '../../contexts/WidgetDataContext';
 
 const MyWidgetComponent = () => {
-  const widgetData = useContext(WidgetDataContext);
-  // Access robot data from context
+  const { setWidgetTitle } = useWidgetData();
+  // ...
 };
 ```
 
-For custom data sources, use the `useCustomWidgetData()` hook:
+For custom data sources, use the `useCustomWidgetData()` hook (default export;
+`dataType` is `'key_value'` for key-value data):
 
 ```jsx
-import { useCustomWidgetData } from '../path/to/hooks';
+import useCustomWidgetData from '../../hooks/useCustomWidgetData';
 
 const MyWidgetComponent = ({ robotId }) => {
-  const customData = useCustomWidgetData(robotId);
+  const { isLoading, data } = useCustomWidgetData(robotId, 'key_value', customField);
   // Access custom key-value data, text, or images
 };
 ```
 
 ## Widget Wrapper
 
-All widgets should be rendered within the `DashboardWidgetWrapper` component for consistent layout and styling:
-
-```jsx
-import DashboardWidgetWrapper from '../shared/DashboardWidgetWrapper';
-
-const MyWidget = (props) => (
-  <DashboardWidgetWrapper title="My Widget">
-    <MyWidgetComponent {...props} />
-  </DashboardWidgetWrapper>
-);
-```
+Widgets are wrapped **automatically**: the dashboard's `SectionComponent`
+renders each registered widget inside `DashboardWidgetWrapper` (via its
+`contents` prop) for consistent layout and styling. Do not import or apply the
+wrapper yourself — just export the bare widget from `index.js`.
 
 ## Styling
 

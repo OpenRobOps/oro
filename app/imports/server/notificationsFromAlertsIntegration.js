@@ -17,10 +17,11 @@
 /**
  * Creates and removes in-app notifications in response to alert changes.
  *
- * When an open incident's definition declares manualActions for the alert's level,
- * a notification is upserted (keyed by alertId) carrying those actions as buttons.
- * The notification is removed when the incident resolves, or when no manual actions
- * are configured.
+ * Every open incident upserts a notification (keyed by alertId). When the
+ * incident's definition declares manualActions for the alert's current level,
+ * they are carried as action buttons; otherwise the notification has no
+ * actions and can only be dismissed. The notification is removed when the
+ * incident resolves.
  *
  * Registered as an AlertsManager listener (see incidentsManagementSubsystem).
  */
@@ -46,11 +47,7 @@ export default class NotificationsFromAlertsIntegration {
       return;
     }
     const definition = await IncidentConfiguration.findOneAsync({ _id: alert.componentId });
-    const actionIds = definition?.[alert.event?.level]?.manualActions;
-    if (!actionIds?.length) {
-      await Notifications.removeAsync({ alertId: alert._id });
-      return;
-    }
+    const actionIds = definition?.[alert.event?.level]?.manualActions || [];
     const definitionsById = await this._actionsEngine.getActionDefinitions(actionIds);
     const actions = actionIds.map((actionId) => ({
       actionId,

@@ -38,7 +38,7 @@ with existing InOrbit tooling.
 
 | Status | Error | Description |
 |--------|-------|-------------|
-| 401 | `AUTHENTICATION_ERROR: no API key provided` | Missing `x-auth-api-key` header |
+| 401 | `AUTHENTICATION_ERROR: no API key provided in x-auth-api-key HTTP header` | Missing `x-auth-api-key` header |
 | 403 | `AUTHENTICATION_ERROR: wrong credentials` | Unknown / invalid API key |
 | 403 | `AUTHENTICATION_ERROR: API key expired` | The key has passed its expiration |
 | 403 | `User not authorized` | User lacks any role (pending approval) |
@@ -56,13 +56,17 @@ All responses are JSON. Successful responses return the data directly:
 }
 ```
 
-Error responses include an `error` field:
+Most error responses include an `error` field:
 
 ```json
 {
   "error": "NOT_FOUND"
 }
 ```
+
+Some endpoints instead return the error message as a bare JSON string body
+(for example the robots 404 and several validation 400s) — check each
+endpoint's documentation for the exact shape.
 
 ## HTTP Methods
 

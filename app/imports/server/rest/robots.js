@@ -202,6 +202,13 @@ export async function apiGetRobots({ user, queryParams }) {
   } else {
     robots = await Robots.find({}).fetchAsync(); 
   }
+  // Keep only robots this user can view (fleet-wide or per-robot grants)
+  const accessibleIds = await new OroRoles().getAccessibleRobotIds(
+    user._id,
+    robots.map(robotDoc => robotDoc._id),
+    ACCESS_LEVEL_VIEW
+  );
+  robots = robots.filter(robotDoc => accessibleIds.includes(robotDoc._id));
   robots = robots.map(formatRobotDocument);
   // Apply after-fetch filters
   if (isOnline !== null) {
@@ -224,7 +231,8 @@ const routes = [
     method: 'GET',
     handler: apiGetRobots,
     trackingId: 'getRobots',
-    ACCESS_LEVEL_VIEW,
+    // NOTE: no checkUserCanRobot here (there is no single robot); the handler
+    // filters the list down to robots the user can view
   },
   {
     path: 'robots/{robotId:id}',

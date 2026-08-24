@@ -88,7 +88,8 @@ const styles = theme => ({
   groupCount: {
     fontSize: '0.9rem',
     color: theme.palette.text.inactive,
-    marginLeft: '10px'
+    marginLeft: '10px',
+    flexShrink: 0
   }
 });
 
@@ -125,7 +126,11 @@ const panelSummaryStyles = {
   },
   content: {
     minHeight: 0,
-    margin: 0
+    margin: 0,
+    // Allow the flex content to shrink below its text width, so long group
+    // labels truncate instead of pushing the expand icon and overflowing
+    minWidth: 0,
+    alignItems: 'center'
   }
 };
 const CustomExpansionPanelSummary = withStyles(AccordionSummary, panelSummaryStyles);
@@ -239,7 +244,7 @@ const ActionsButtons = ({
             sm: bigButtons ? 12 : undefined,
             md: bigButtons ? 6 : undefined
           }}
-          classes={{ root: classes.actionButton }}
+          className={classes.actionButton}
           key={action._id || ix}
         >
           {renderActionButton(action, action._id || ix)}
@@ -288,18 +293,12 @@ const ActionsButtons = ({
             id={panelId}
             expandIcon={<ExpandMoreIcon />}
           >
-            <Grid container className={className}>
-              <Grid size={{ xs: 9 }}>
-                <Typography classes={{ root: classes.typography }}>
-                  {groupName}
-                </Typography>
-              </Grid>
-              <Grid size={{ xs: 3 }}>
-                <Typography classes={{ root: classes.groupCount }}>
-                  {groupActions.length}
-                </Typography>
-              </Grid>
-            </Grid>
+            <Typography noWrap classes={{ root: classes.typography }}>
+              {groupName}
+            </Typography>
+            <Typography classes={{ root: classes.groupCount }}>
+              {groupActions.length}
+            </Typography>
           </CustomExpansionPanelSummary>
           <CustomExpansionPanelDetails classes={{ root: classes.panelDetailsRoot }}>
             {row}

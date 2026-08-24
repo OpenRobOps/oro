@@ -15,19 +15,83 @@
  */
 
 /**
- * ORO Styles module — Deep Navy theme.
+ * ORO Styles module.
  *
- * We use this module file to create and export all top level
- * theme and style information for easier re-use.
+ * Builds the MUI theme from a design-token set (see ./themes/). The initial
+ * theme comes from the `theme` URL parameter (e.g. http://.../?theme=monokai,
+ * which also overrides the stored user preference) and defaults to the ORO
+ * theme. Themes can be hot-applied without reloading via setTheme():
+ * App.jsx re-renders through useOroTheme(), and modules importing this
+ * module's default export get a live view of the current theme — because of
+ * that, never capture nested theme values in module-level constants.
  */
-import React from 'react';
+import React, { useSyncExternalStore } from 'react';
+import { Meteor } from 'meteor/meteor';
 import { createTheme, responsiveFontSizes } from '@mui/material/styles';
 import { ChevronDown } from 'lucide-react';
+import oro from './themes/oro';
+import monokai from './themes/monokai';
+import tokyoNight from './themes/tokyoNight';
+import tokyoDay from './themes/tokyoDay';
+import catppuccinMocha from './themes/catppuccinMocha';
+import catppuccinLatte from './themes/catppuccinLatte';
+import rosePineMoon from './themes/rosePineMoon';
+import rosePineDawn from './themes/rosePineDawn';
 
-const theme = createTheme({
+const THEMES = {
+  oro,
+  monokai,
+  'tokyo-night': tokyoNight,
+  'tokyo-day': tokyoDay,
+  'catppuccin-mocha': catppuccinMocha,
+  'catppuccin-latte': catppuccinLatte,
+  'rose-pine-moon': rosePineMoon,
+  'rose-pine-dawn': rosePineDawn,
+};
+export const THEME_NAMES = Object.keys(THEMES);
+export const themeMode = (name) => THEMES[name]?.mode || 'dark';
+
+// 'auto' follows the browser's light/dark preference using the per-mode
+// defaults below, optionally overridden deployment-wide in settings.json:
+//   { "public": { "defaultTheme": "monokai", "defaultLightTheme": "tokyo-day" } }
+export const AUTO_THEME = 'auto';
+const configuredDark = Meteor.settings?.public?.defaultTheme;
+const configuredLight = Meteor.settings?.public?.defaultLightTheme;
+export const DEFAULT_DARK = THEMES[configuredDark] ? configuredDark : 'oro';
+export const DEFAULT_LIGHT = THEMES[configuredLight] ? configuredLight : 'rose-pine-dawn';
+
+const prefersLight = typeof window !== 'undefined' && window.matchMedia
+  ? window.matchMedia('(prefers-color-scheme: light)')
+  : null;
+export const getAutoThemeName = () => (prefersLight?.matches ? DEFAULT_LIGHT : DEFAULT_DARK);
+
+const FONT_UI = 'Inter, Helvetica, Arial, sans-serif';
+const FONT_MONO = 'DM Mono, monospace';
+
+const buildTheme = (tokens) => responsiveFontSizes(createTheme({
   components: {
     MuiCssBaseline: {
       styleOverrides: {
+        // Keep the CSS custom properties in styles.css in sync with the theme.
+        // Doubled :root wins over the static fallbacks in styles.css regardless
+        // of stylesheet order (StyledEngineProvider injectFirst puts these first).
+        ':root:root': {
+          '--color-background': tokens.background.default,
+          '--color-foreground': tokens.text.primary,
+          '--color-card': tokens.background.paper,
+          '--color-primary': tokens.secondary.main,
+          '--color-primary-hover': tokens.background.selected,
+          '--color-muted': tokens.text.secondary,
+          '--color-border': tokens.background.borderLight,
+          '--color-border-gray': tokens.background.borderGray,
+          '--color-nav-dark': tokens.background.navDark,
+          '--color-button-text': tokens.text.buttonText,
+          // Robot maps arrive white-free/black-occupied; invert them only on
+          // dark themes so light themes show the map as reported (see map.css)
+          '--map-image-filter': tokens.mode === 'light'
+            ? 'opacity(0.85)'
+            : 'invert(0.9) opacity(0.85)',
+        },
         '& *': {
           // to avoid boxSizing inherit making most of our components smaller
           boxSizing: 'content-box',
@@ -37,7 +101,7 @@ const theme = createTheme({
             width: '12px'
           },
           '&::-webkit-scrollbar-thumb': {
-            background: '#BEAEDD',
+            background: tokens.text.secondary,
             borderRadius: '6px',
             // padding-box causes the border of the element to be cut off
             // (along with the background color under it), so by setting the border to a fully
@@ -63,7 +127,7 @@ const theme = createTheme({
       },
       styleOverrides: {
         icon: {
-          color: '#9E6FF3',
+          color: tokens.secondary.main,
         },
       },
     },
@@ -81,21 +145,43 @@ const theme = createTheme({
       styleOverrides: {
         // Breakpoint-specific styles here
         root: {
-          // To avoid showing a border when hovering the button
-          '&:hover': {
-            border: '0 !important'
-          },
           '@media (max-width: 900px)': {
             padding: '10px',
           }
         }
       }
     },
+    // On dark themes MUI's default hover colors are invisible: contained
+    // hovers to primary.dark (≈ primary.main when main is already near-black)
+    // and outlined hovers to a faint primary-tinted overlay. Hover toward the
+    // lighter surface tokens instead. Light themes keep the MUI defaults.
+    MuiButton: {
+      styleOverrides: tokens.mode === 'dark' ? {
+        containedPrimary: {
+          '&:hover': {
+            backgroundColor: tokens.primary.light,
+            // Accent the label too; it's a nested Typography that carries its
+            // own color, so plain `color` on the button wouldn't reach it
+            '& .MuiTypography-root': {
+              color: tokens.secondary.main,
+            },
+          },
+        },
+        outlinedPrimary: {
+          '&:hover': {
+            backgroundColor: tokens.background.onHoverGray,
+            '& .MuiTypography-root': {
+              color: tokens.secondary.main,
+            },
+          },
+        },
+      } : {},
+    },
     MuiTypography: {
       styleOverrides: {
         root: {
-          fontFamily: 'Inter, Helvetica, Arial, sans-serif',
-          color: '#FFFFFF',
+          fontFamily: FONT_UI,
+          color: tokens.text.bright,
           letterSpacing: '0.01em',
           fontOpticalSizing: 'auto'
         }
@@ -104,7 +190,7 @@ const theme = createTheme({
         {
           props: { variant: 'errorMessage' },
           style: {
-            color: '#C2C2C2',
+            color: tokens.text.content,
             fontWeight: 400,
             lineHeight: '1.2',
             textAlign: 'center',
@@ -113,7 +199,7 @@ const theme = createTheme({
         {
           props: { variant: 'errorMessageBold' },
           style: {
-            color: '#C2C2C2',
+            color: tokens.text.content,
             lineHeight: '1.2',
             textAlign: 'center',
             fontWeight: 500,
@@ -124,21 +210,21 @@ const theme = createTheme({
     MuiPaper: {
       styleOverrides: {
         root: {
-          backgroundColor: '#170E28',
-          color: '#FAF0F0',
+          backgroundColor: tokens.background.paper,
+          color: tokens.text.primary,
         },
       },
     },
     MuiMenu: {
       styleOverrides: {
         paper: {
-          backgroundColor: '#170E28',
-          border: '1px solid #3E3155',
-          color: '#FAF0F0',
+          backgroundColor: tokens.background.paper,
+          border: `1px solid ${tokens.background.borderLight}`,
+          color: tokens.text.primary,
         },
         // Targets .MuiMenu-list (the <ul> inside the menu).
         list: {
-          backgroundColor: '#170E28',
+          backgroundColor: tokens.background.paper,
         },
       },
     },
@@ -146,7 +232,15 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           '&:hover': {
-            backgroundColor: '#251A38',
+            backgroundColor: tokens.background.onHoverGray,
+          },
+          // Same selected background as Autocomplete options; MUI's default
+          // (action.selected) is nearly invisible on light themes
+          '&.Mui-selected': {
+            backgroundColor: tokens.background.chip,
+          },
+          '&.Mui-selected:hover': {
+            backgroundColor: tokens.background.chip,
           },
         },
       },
@@ -157,39 +251,39 @@ const theme = createTheme({
       },
       styleOverrides: {
         paper: {
-          backgroundColor: '#170E28',
-          border: '1px solid #3E3155',
-          color: '#FAF0F0',
+          backgroundColor: tokens.background.paper,
+          border: `1px solid ${tokens.background.borderLight}`,
+          color: tokens.text.primary,
         },
         listbox: {
-          backgroundColor: '#170E28',
+          backgroundColor: tokens.background.paper,
         },
         popper: {
           zIndex: 1300,
         },
         option: {
           fontSize: '14px',
-          backgroundColor: '#170E28',
+          backgroundColor: tokens.background.paper,
           '&:hover': {
-            backgroundColor: '#251A38 !important',
+            backgroundColor: `${tokens.background.onHoverGray} !important`,
           },
           '&[aria-selected="true"]': {
-            backgroundColor: '#3A285A !important',
+            backgroundColor: `${tokens.background.chip} !important`,
           },
         },
         popupIndicator: {
-          color: '#9E6FF3',
+          color: tokens.secondary.main,
         },
         clearIndicator: {
-          color: '#BEAEDD',
+          color: tokens.text.secondary,
         },
       },
     },
     MuiTableCell: {
       styleOverrides: {
         root: {
-          color: '#FFFFFF',
-          borderBottomColor: '#3E3155',
+          color: tokens.text.bright,
+          borderBottomColor: tokens.background.borderLight,
         },
       },
     },
@@ -197,13 +291,13 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           '&:hover': {
-            color: '#FFFFFF',
+            color: tokens.text.bright,
           },
           '&.Mui-active': {
-            color: '#FFFFFF',
+            color: tokens.text.bright,
           },
           '&.Mui-active .MuiTableSortLabel-icon': {
-            color: '#FFFFFF',
+            color: tokens.text.bright,
           },
         },
       },
@@ -221,203 +315,10 @@ const theme = createTheme({
   },
   spacing: 8,
   fontFamily: {
-    ui: 'Inter, Helvetica, Arial, sans-serif',
-    mono: 'DM Mono, monospace',
+    ui: FONT_UI,
+    mono: FONT_MONO,
   },
-  palette: {
-    mode: 'dark',
-    text: {
-      // MUI reads these for Typography color="text.primary" / "text.secondary"
-      primary: '#FAF0F0',
-      secondary: '#BEAEDD',
-      icon: '#BEAEDD',
-      notesLight: '#BEAEDD',
-      title: '#D6CCE8',
-      notesMedium: '#BEAEDD',
-      notesDark: '#FAF0F0',
-      content: '#C2C2C2',
-      contrastText: '#FAF0F0',
-      darkBlue: '#9E6FF3',
-      robotAvatar: '#BE9AFF',
-      statusError: '#FB7188',
-      lightGray: '#C2C2C2',
-      mediumDarkGray: '#BEAEDD',
-      muted: '#AAAAAA',
-      mutedDark: '#585858',
-      subtle: '#D0D0D0',
-      buttonText: '#D9D9D9',
-      inactive: '#9488AA',
-      inputLabel: '#757575',
-      detailsLabel: '#CAC4D6',
-      detailsValue: '#E6E1EE',
-      pendingDot: '#EFB8C8',
-      onApprove: '#1A004A',
-      heading: '#E2D8F0',
-      subheading: '#A898C4',
-      black: '#000000',
-    },
-    background: {
-      default: '#1A0F2E',
-      paper: '#170E28',
-      blueLightBackground: '#1A0F2E',
-      lightBackground: '#1A0F2E',
-      tabSelected: '#9E6FF3',
-      titleBar: '#170E28',
-      spaceIntelligence: '#251A38',
-      navLight: '#1A0F2E',
-      navMedium: '#170E28',
-      navDark: '#0E0918',
-      white: '#FFFFFF',
-      surface: '#170E28',
-      mintAccent: '#5ECFA8',
-      mintAccentDim: '#1D4942',
-      orangeAccent: '#F4935A',
-      orangeAccentDim: '#5F3021',
-      lightBlue: '#1A0F2E',
-      veryLightGray: '#1A0F2E',
-      lightGray: '#251A38',
-      gray: '#251A38',
-      darkGray: '#251A38',
-      black: '#0E0918',
-      brightBlue: '#9E6FF3',
-      devMagenta: '#9E6FF3',
-      loadingBarGray: '#251A38',
-      loadingBarTransparentGray: '#251A3800',
-      onHoverGray: '#251A38',
-      zeroData: '#251A38',
-      robOpsCopilotTable: '#1A0F2E',
-      softGray: '#1A0F2E',
-      borderGray: '#251A38',
-      borderLight: '#3E3155',
-      borderMedium: '#4A3570',
-      chip: '#3A285A',
-      selected: '#5C35A8',
-      offlineBar: '#F4935A',
-      zoneDefaultColor: '#FFCD87',
-      accentPurpleHover: '#A78BFA',
-      sidebar: '#201533',
-      sidebarBorder: '#382B51',
-      userCardBg: '#1D1231',
-      detailsBorder: '#4A4557',
-      pendingBg: 'rgba(99, 59, 72, 0.3)',
-      rejectBorder: '#938E9F',
-      approveBtn: '#9E6FF3',
-      selectedNav: '#341F5A',
-    },
-    modes: {
-      mission: '#5ECFA8',
-      idle: '#A139C3',
-      error: '#B41270',
-      charging: '#BA8A27',
-      others: '#BCBCBC',
-      modeBrown: '#BB8900',
-      modeBlue: '#507CCF'
-    },
-    incidents: {
-      ok: '#3F93FF',
-      resolved: '#4CAF50',
-      warning: '#FFBB32',
-      error: '#FB7188',
-      inactive: '#BCBCBC',
-      staleOk: '#B2D3FF',
-      staleWarning: '#FFE3AD',
-      staleError: '#EAAD9A',
-      staleInactive: '#E4E4E4',
-      // Used for disabling data sources according to mode.
-      disabled: '#f3f3f3',
-      disabledSelected: '#2b2e82',
-      selectedBorder: '#2A3C98',
-    },
-    teleop: {
-      actionButton: '#F05523',
-      hoverActionButton: '#C14821',
-      planedPath: '#88BF2D',
-      wayPoint: '#006B00',
-      completedPath: '#2A3C98',
-      openTeleop: '#F05523',
-      waypointAvatar: '#CFFAEC'
-    },
-    severityColor: {
-      'SEV 0': '#700893',
-      'SEV 1': '#A335C8',
-      'SEV 2': '#DA80F9',
-      'SEV 3': '#F1CAFF',
-    },
-    tags: {
-      skyBlue: '#63B1DC',
-      greenBlue: '#66C2A5',
-      poloBlue: '#8DA0CB',
-      lightOrange: '#FC8D62',
-      yellow: '#FFD92F',
-      pink: '#E78AC3',
-      lightBeige: '#E5C494'
-    },
-    shadowColor: {
-      gray: '#00000080',
-      white: '#FAF0F01A',
-      darkGrayWithOpacity: '#0E09184D'
-    },
-    teleopArrows: {
-      darkBackground: '#2B2B2B',
-      lightBackground: '#ECECEC',
-      baseArrow: '#B9B9B9',
-      darkModeArrow: '#696969',
-      stepwise: '#88BF2D',
-      teleop: '#F4935A'
-    },
-    cameras: {
-      delayTime: '#FFBB32'
-    },
-    icons: {
-      lightGray: '#BEAEDD',
-      bigIcon: '60px',
-      mediumIcon: '40px',
-      smallIcon: '20px'
-    },
-    primary: {
-      lighter: '#1A0F2E',
-      light: '#251A38',
-      main: '#170E28',
-      dark: '#0E0918',
-      contrastDefaultColor: 'light',
-      contrastText: '#FAF0F0'
-    },
-    secondary: {
-      main: '#9E6FF3',
-    },
-    laserPoints: {
-      primary: '#3993FFCC',
-      secondary: '#B41270CC',
-      tertiary: '#BB8900CC'
-    },
-    zeroData: {
-      softBlue: '#9AC2F7',
-      gray: '#E1E1E1',
-      softPink: '#DB90C0',
-      softOrange: '#FDC6B0',
-      darkBlue: '#2678B2',
-      lightBlue: '#C3C4E0',
-      orangeLighter: '#F7D69B'
-    },
-    boxShadow: {
-      light: '#0000007f',
-      white: '#faf0f019'
-    },
-    zone: {
-      defaultColor: '#FFCD87'
-    },
-    snackbar: {
-      success: '#43A047',
-      error: '#e53935',
-      info: '#1E88E5',
-      warning: '#FFA000',
-    },
-    copilotContextChips: {
-      color: '#9E6FF3',
-      bg: '#9E6FF314',
-      hoverBg: '#9E6FF329',
-    }
-  },
+  palette: tokens,
   fontWeight: {
     bold: 700,
     medium: 500,
@@ -425,6 +326,83 @@ const theme = createTheme({
     lightPlus: 400,
     light: 200
   }
+}));
+
+// URL override: handy for testing and sharing links; wins over the stored
+// user preference (see ThemePreference in App.jsx)
+const requestedTheme = typeof window !== 'undefined'
+  ? new URLSearchParams(window.location.search).get('theme')
+  : null;
+export const urlThemeOverride = THEMES[requestedTheme] ? requestedTheme : null;
+
+// Built MUI themes, one per token set, created on demand (also used to
+// preview themes other than the active one, via nested ThemeProvider)
+const builtThemes = new Map();
+export const getThemeInstance = (name) => {
+  if (!THEMES[name]) {
+    return null;
+  }
+  if (!builtThemes.has(name)) {
+    builtThemes.set(name, buildTheme(THEMES[name]));
+  }
+  return builtThemes.get(name);
+};
+
+// The user's selection ('auto' or a theme name) and the concrete theme it
+// resolves to right now
+let currentSelection = urlThemeOverride || AUTO_THEME;
+let currentName = urlThemeOverride || getAutoThemeName();
+let currentTheme = getThemeInstance(currentName);
+const listeners = new Set();
+
+export const getThemeName = () => currentName;
+export const getThemeSelection = () => currentSelection;
+
+// Hot-applies a selection ('auto' or a theme name) and notifies subscribers
+export const setTheme = (name) => {
+  if (name !== AUTO_THEME && !THEMES[name]) {
+    return;
+  }
+  const resolved = name === AUTO_THEME ? getAutoThemeName() : name;
+  if (name === currentSelection && resolved === currentName) {
+    return;
+  }
+  currentSelection = name;
+  currentName = resolved;
+  currentTheme = getThemeInstance(resolved);
+  listeners.forEach((listener) => listener());
+};
+
+// Follow the browser's light/dark preference live while on 'auto'
+prefersLight?.addEventListener?.('change', () => {
+  if (currentSelection === AUTO_THEME) {
+    currentName = getAutoThemeName();
+    currentTheme = getThemeInstance(currentName);
+    listeners.forEach((listener) => listener());
+  }
 });
 
-export default responsiveFontSizes(theme);
+const subscribe = (callback) => {
+  listeners.add(callback);
+  return () => listeners.delete(callback);
+};
+
+// React subscription to the current theme; App.jsx re-renders (and MUI
+// restyles everything) when setTheme() is called
+export const useOroTheme = () => useSyncExternalStore(subscribe, () => currentTheme);
+
+// React subscription to the selection ('auto' or a theme name); re-renders
+// even when the resolved theme doesn't change (e.g. pinning the theme that
+// auto already resolved to)
+export const useThemeSelection = () => useSyncExternalStore(subscribe, () => currentSelection);
+
+// Live view of the current theme, for non-React modules that import the theme
+// directly (OpenLayers map layers, svg icon modules). Property reads always
+// see the active theme. Do NOT capture nested values in module-level
+// constants — they would freeze the initial theme's colors.
+export default new Proxy({}, {
+  get: (_, prop) => currentTheme[prop],
+  has: (_, prop) => prop in currentTheme,
+  ownKeys: () => Reflect.ownKeys(currentTheme),
+  getOwnPropertyDescriptor: (_, prop) => Object.getOwnPropertyDescriptor(currentTheme, prop),
+});

@@ -248,10 +248,6 @@ Schemas.robotModuleState = new SimpleSchema({
   unsafeMode: Boolean, // Locks teleop, preventing continous commands
   // Camera Agentlet Module specific keys:
   camera_preset: String,
-  camera_topic0: String, // TODO: (Pisti): remove this, deprecated for agents previous to 1.2.9
-  camera_topic1: String, // TODO: (Pisti): remove this, deprecated for agents previous to 1.2.9
-  // TODO (Flor_Grosso): remove camera_topics from schema (deprecated - v1.2.11)
-  camera_topics: { type: Object, blackbox: true },
   // This schema is defined this was as an attempt to prevent simpleSchema to not
   // filter out updates using the syntaxt cameras_config.0
   // this attempt failed and I ended disabling the schema even in development mode.
@@ -800,6 +796,11 @@ Schemas.preferences = new SimpleSchema({
   //   autoCreateUIElements: Bool
   // }
   dataSources: { type: Object, blackbox: true, optional: true },
+  // ui: per-user UI preferences (docs with entityType 'user'), e.g.:
+  // ui: {
+  //   theme: string // theme name, see imports/client/themes
+  // }
+  ui: { type: Object, blackbox: true, optional: true },
 }, { requiredByDefault: false });
 
 const SpatialAnnotations = new Mongo.Collection(COLLECTIONS.SPATIAL_ANNOTATIONS);

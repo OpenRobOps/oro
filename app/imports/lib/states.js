@@ -150,49 +150,9 @@ const getAgentState = (robotId, moduleName = undefined, key = undefined) => {
   return states;
 }
 
-/**
- * Given a camera topics state, which looks like
- * ```
- * {
- *   '0': "topic1",
- *   '1': "topic2"
- *   '4': "topic4"
- * }
- * ```
- *
- * It will parse the structure and return an array of objects:
- * ```
- * {
- *   id: cameraId,
- *   topic: topicString,
- *   enabled: true,
- *   label: <the same camera id>
- * }
- * ```
- *
- * The returned array is sorted by camera id (numeric sorting, even if these are
- * strings).
- *
- * Note that the input object does not guarantee the list of cameras is sequential,
- * any id could be missing.
- */
-const cameraStateToArray = state => (
-  Object.keys(state).reduce((acc, id) => {
-    if (!state[id]) {
-      return acc; // empty camera, no topic, etc
-    }
-    acc.push({
-      id,
-      topic: state[id]
-    });
-    return acc;
-  }, []).sort((a, b) => Number(a.id) - Number(b.id))
-);
-
 export {
   getCalculatedStateAsync,
   getAgentState,
-  cameraStateToArray,
   MODULES_CONFIGURATION,
   ALL_MODULE_NAMES,
   ID_TYPE_AGENT

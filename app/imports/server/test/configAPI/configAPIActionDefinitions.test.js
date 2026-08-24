@@ -531,6 +531,43 @@ describe('configAPI:ActionDefinition', function () {
     ).to.be.rejectedWith('Missing action argument: message');
   });
 
+  it('validates enum values for widgets and argument input control', async () => {
+    const action = {
+      kind: KIND_ACTION_DEFINITION,
+      metadata: {
+        id: 'myAction',
+      },
+      spec: {
+        type: 'RunScript',
+        label: 'My script',
+        arguments: [{
+          name: 'filename',
+          type: 'string',
+          value: 'script.sh',
+          input: { control: 'text' }
+        }]
+      },
+      apiVersion: 'v0.1'
+    };
+    const user = await createUser({ role: ROLE_ADMIN });
+    // valid control ('text') and widgets values pass
+    const validConfig = cloneDeep(action);
+    validConfig.spec.widgets = ['navigation'];
+    await new ConfigAPI().apply({ configObject: validConfig, user });
+    // invalid input.control is rejected
+    const badControl = cloneDeep(action);
+    badControl.spec.arguments[0].input.control = 'dropdown';
+    await expect(
+      new ConfigAPI().apply({ configObject: badControl, user })
+    ).to.be.rejectedWith(/does not match any of the allowed values/);
+    // invalid widgets value is rejected
+    const badWidget = cloneDeep(action);
+    badWidget.spec.widgets = ['teleport'];
+    await expect(
+      new ConfigAPI().apply({ configObject: badWidget, user })
+    ).to.be.rejectedWith(/does not match any of the allowed values/);
+  });
+
   it('validates protected action types', async () => {
     const user = await createUser({ role: ROLE_ADMIN });
     

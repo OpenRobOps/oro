@@ -33,6 +33,7 @@ Defines custom data sources and attribute mappings for robots. Data sources repr
 | `spec.scale` | number | No | Scale factor applied to the value |
 | `spec.precision` | number | No | Number of decimal places for display |
 | `spec.source` | object | No | Data source mapping (exactly one key allowed) |
+| `spec.timeline` | object | No | Timeseries options: `disabled` (boolean) turns off history recording; `fieldType` (`string` \| `number` \| `boolean`) overrides the stored value type. `timeline: {}` enables history with defaults |
 
 #### Source types
 
@@ -47,7 +48,7 @@ The `source` field must contain exactly one of the following keys:
 | `imageFile` | `path` (required) | Image read from a file on the robot |
 | `diskUsage` | `partition` (required) | Disk usage for a specific partition |
 | `networkUsage` | `interface` (required) | Network usage for a specific interface |
-| `rosDiagnostics` | `namespace` (required), `key` (required) | Value from ROS diagnostics |
+| `rosDiagnostics` | `namespace` (required), `key` (required) | Value from ROS diagnostics. `namespace` is the diagnostic status' full name as published by the node (e.g. `/Other/amcl: Standard deviation`); `key` is one of its key-values. Two reserved keys are always available for every status: `__level__` (numeric diagnostic level) and `__msg__` (status message) — the only bindable diagnostics values on agents older than 4.19.0, which don't forward diagnostics key-values |
 
 ### Examples
 
@@ -124,6 +125,22 @@ spec:
     rosDiagnostics:
       namespace: /motors/left
       key: temperature
+```
+
+Binding a diagnostic's message via the reserved `__msg__` key (works even when
+the agent forwards no key-values):
+
+```yaml
+apiVersion: v0.1
+kind: DataSourceDefinition
+metadata:
+  id: amcl_std_dev
+spec:
+  label: AMCL standard deviation
+  source:
+    rosDiagnostics:
+      namespace: '/Other/amcl: Standard deviation'
+      key: __msg__
 ```
 
 ---
@@ -236,7 +253,7 @@ Configures actions that can be executed on robots. Actions appear in the UI and 
 
 | Field | Type | Required | Default | Description |
 |-------|------|----------|---------|-------------|
-| `spec.type` | string | Yes | | Action type identifier (max 255 chars) |
+| `spec.type` | enum | Yes | | Action type. One of: `RestartAgent`, `RunScript`, `PublishToTopic`, `Url`, `MapSwitch`, `NavigatePath`, `Relocalize`, `NavigateTo`, `CancelNavGoal`, `Teleop`, `UpdateAgent`, `CameraToggle` — applying any other value fails |
 | `spec.label` | string | No | `""` | Display label (max 255 chars) |
 | `spec.description` | string | No | `""` | Description text (max 255 chars) |
 | `spec.lock` | boolean | No | `false` | Whether the action locks the robot during execution |
@@ -257,25 +274,33 @@ Configures actions that can be executed on robots. Actions appear in the UI and 
 | `spec.arguments[].input.values[].label` | string | Yes | | Display label for the option |
 | `spec.arguments[].input.values[].value` | string | Yes | | Value for the option |
 
+:::note[Required arguments per type]
+Some action types require specific arguments, and apply fails with
+`Missing action argument: ...` without them: `RunScript` requires `filename`,
+`PublishToTopic` requires `message`, `CameraToggle` requires `cameraId`, and
+`MapSwitch` requires `label`.
+:::
+
 ### Examples
 
-A simple action with no arguments:
+A simple agent-restart action with no arguments:
 
 ```yaml
 apiVersion: v0.1
 kind: ActionDefinition
 metadata:
-  id: restart_service
+  id: restart_agent
 spec:
-  type: restartService
-  label: Restart Service
-  description: Restarts the main robot service
+  type: RestartAgent
+  label: Restart Agent
+  description: Restarts the robot agent
   lock: true
   confirmation:
     required: true
 ```
 
-An action with arguments and a dropdown selector:
+A script action with a dropdown-selected extra argument (`filename` is
+required for `RunScript`):
 
 ```yaml
 apiVersion: v0.1
@@ -283,11 +308,14 @@ kind: ActionDefinition
 metadata:
   id: set_speed
 spec:
-  type: setSpeed
+  type: RunScript
   label: Set Speed
   description: Sets the maximum robot speed
   group: Motion Control
   arguments:
+    - name: filename
+      type: string
+      value: set_speed.sh
     - name: speed_mode
       type: string
       input:
@@ -301,23 +329,23 @@ spec:
             value: "2.0"
 ```
 
-An action embedded in the navigation widget:
+A topic-publish action embedded in the navigation widget (`message` is
+required for `PublishToTopic`):
 
 ```yaml
 apiVersion: v0.1
 kind: ActionDefinition
 metadata:
-  id: send_waypoint
+  id: announce_arrival
 spec:
-  type: sendWaypoint
-  label: Send Waypoint
+  type: PublishToTopic
+  label: Announce Arrival
   widgets:
     - navigation
   arguments:
-    - name: x
-      type: number
-    - name: "y"
-      type: number
+    - name: message
+      type: string
+      value: arrived
 ```
 
 ---
@@ -351,7 +379,7 @@ Defines custom dashboards with sections and widgets. Dashboards organize robot a
 | `label` | string | Yes | Widget display name |
 | `type` | enum | Yes | Widget type (see supported types below) |
 | `layout` | object | No | Layout configuration |
-| `layout.grid` | number/string | No | Width in grid columns (1-12) or CSS value |
+| `layout.grid` | number/string | No | Width in grid columns (conventionally 1-12, not validated) or CSS value |
 | `layout.height` | number/string | No | Height in rows or CSS value |
 | `layout.chroma` | boolean | No | Enable color theming |
 | `layout.withoutBackground` | boolean | No | Render without background |
@@ -363,7 +391,7 @@ Defines custom dashboards with sections and widgets. Dashboards organize robot a
 | Type | Config fields | Description |
 |------|---------------|-------------|
 | `vitals` | `dataSources[]` with `id`, `label`, `unit`, `type` (`text` or `gauge`) | Real-time vital metrics display |
-| `chart` | `chartType` (`linechart` or `areachart`), `min`, `max`, `dataSources[]` with `id`, `label`, `precision`, `scale`, `op` | Time-series chart |
+| `chart` | `chartType` (`linechart` or `areachart`, **required** when `config` is present), `min`, `max`, `dataSources[]` with `id`, `label`, `precision`, `scale`, `op` (`average`, `count`, `maximum`, `minimum`, `sum`, `last`). `dataSources[].id` values must be unique within the widget | Time-series chart |
 | `history` | `dataSources[]` with `id`, `label`, `type` | Historical data table |
 | `listData` | `dataSources[]` with `id`, `label`, `precision`, `type`, `unit` | Data list display |
 | `actionsWidget` | `bigButtons`, `expanded`, `actionIds[]` | Robot actions panel |
@@ -382,6 +410,15 @@ Defines custom dashboards with sections and widgets. Dashboards organize robot a
 | `logsWidget` | (none) | Logs viewer |
 | `customDataImage` | (none) | Custom data image |
 | `customDataText` | (none) | Custom data text |
+| `text` | `text` (Markdown string) | Markdown panel |
+
+The enum also accepts `robotSearch`, `fleetControl`, `image`,
+`robotControlBar`, `navigationControlBar`, `missionTracker`,
+`fleetMissionTracker`, and `missionControlBar`, but these have no config
+converter — any `config` passed is silently dropped. Note that some accepted
+types (`localization`, `dataBags`, `logsWidget`, `image`, `robotSearch`,
+`history`, and the mission widgets) currently have no client renderer and
+display "Unknown widget type" on dashboards.
 
 ### Examples
 
@@ -571,8 +608,114 @@ spec:
 
 ---
 
+## IncidentDefinition
+
+Defines how alerts raised for an attribute's status become incidents: severity,
+automatic and manual actions, and notification channels per level. The
+`metadata.id` is the **attribute (trigger) id** the definition applies to.
+See the [Incidents & Alerts guide](../guides/incidents-alerts.md) for the full
+pipeline.
+
+### Schema
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `spec.label` | string | No | Fixed incident title |
+| `spec.labelTemplate` | string | No | Title template; supports `{{robotName}}` |
+| `spec.error` / `spec.warning` | object | No | Per-level blocks (see below) |
+| `spec.<level>.severity` | enum | No | `SEV 0`, `SEV 1`, `SEV 2`, or `SEV 3` |
+| `spec.<level>.autoActions` | array | No | `ActionDefinition` ids executed automatically at this level (run as the system user) |
+| `spec.<level>.manualActions` | array | No | Action ids offered as buttons on the in-app notification |
+| `spec.<level>.notificationChannels` | array | No | `NotificationChannel` ids notified at this level (missing channels are skipped) |
+| `spec.ok` | object | No | Resolution block — only `autoActions` and `notificationChannels` (no `severity`/`manualActions`); runs on resolve |
+
+### Example
+
+```yaml
+apiVersion: v0.1
+kind: IncidentDefinition
+metadata:
+  id: battery_level
+spec:
+  labelTemplate: "Battery problem on {{robotName}}"
+  error:
+    severity: SEV 1
+    autoActions: [pause_robot]
+    manualActions: [restart_agent]
+    notificationChannels: [ops-webhook]
+  ok:
+    notificationChannels: [ops-webhook]
+```
+
+---
+
+## NotificationChannel
+
+Named delivery endpoints referenced by `IncidentDefinition`
+`notificationChannels` lists. Webhook is the only supported type today.
+
+### Schema
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `spec.type` | enum | Yes | Only `webhook` |
+| `spec.url` | url | Yes | Endpoint that receives JSON `POST`s |
+| `spec.secret` | string | No | Sent as `Authorization: Bearer <secret>` on each delivery |
+
+The `metadata.id` is the name referenced from incident definitions. Deliveries
+fire on incident open, escalation, and resolve; best-effort, no retries. See
+the [Incidents & Alerts guide](../guides/incidents-alerts.md#notification-channels)
+for the payload format.
+
+### Example
+
+```yaml
+apiVersion: v0.1
+kind: NotificationChannel
+metadata:
+  id: ops-webhook
+spec:
+  type: webhook
+  url: https://ops.example.com/hooks/oro
+  secret: my-shared-secret
+```
+
+---
+
+## ModuleState
+
+Singleton state documents for **agent modules** (agentlets), keyed by module
+name. Used to persist per-module configuration such as the minimum run level
+at which a module starts.
+
+### Schema
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `spec.state` | object | Yes | Opaque state blob; contents are not validated |
+
+Applying **replaces** the whole stored state document — include every field you
+want kept, not just the one you're changing. `metadata.id` is the module
+(agentlet) name, e.g. `RosLocalizationAgentlet`. Requires fleet configure
+access.
+
+### Example
+
+```yaml
+apiVersion: v0.1
+kind: ModuleState
+metadata:
+  id: RosLocalizationAgentlet
+spec:
+  state:
+    minRunlevel: 2
+```
+
+---
+
 ## See Also
 
 - [Config API](./configapi.md) -- API endpoints for apply, clear, and list operations
 - [Attributes & Status](../guides/attributes-status.md) -- practical guide to using DataSourceDefinitions and StatusDefinitions
+- [Incidents & Alerts](../guides/incidents-alerts.md) -- the alert → incident pipeline
 - [Custom Data Sources](../extending/custom-data-sources.md) -- advanced data source configuration

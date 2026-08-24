@@ -63,7 +63,7 @@ const CALLBACK_TABLE_MAX_SIZE = 10000;
 // each republished onto the local broker under the local robot's topic.
 //
 // Operators can override this entirely via
-// `modules.upstream.forwarding.downstreamCommands` in settings (see
+// `upstream.forwarding.downstreamCommands` in settings (see
 // UpstreamRobotClient's `downstreamCommands` option). Each entry is
 // `{ subtopic, acceptsPayloads?, awaitsEcho? }`:
 //  - `acceptsPayloads` (optional) is a list of exact string payloads to allow on
@@ -146,7 +146,7 @@ export default class UpstreamModule {
 
   /**
    * Load the module.
-   * @param {object} settings - The `modules.upstream` block from ingest settings.
+   * @param {object} settings - The `upstream` block from ingest settings.
    */
   load = async (settings) => {
     if (!settings || !settings.enabled) {
@@ -161,14 +161,17 @@ export default class UpstreamModule {
       forwarding = {},
       credentialEncryptionKey,
       logging = false,
+      // Name shown as the actor in local audit log entries for commands that
+      // arrive over the upstream link (e.g. "Space Intelligence executed ...")
+      displayName = 'Upstream',
     } = settings;
 
     if (!api?.baseUrl || !api?.apiKey) {
-      console.error('[upstream] modules.upstream.api.baseUrl and api.apiKey are required; module not loaded');
+      console.error('[upstream] upstream.api.baseUrl and api.apiKey are required; module not loaded');
       return;
     }
     if (!credentialEncryptionKey) {
-      console.error('[upstream] modules.upstream.credentialEncryptionKey is required; module not loaded');
+      console.error('[upstream] upstream.credentialEncryptionKey is required; module not loaded');
       return;
     }
     if (!this._mqttConfig?.brokers || !this._mqttConfig?.defaultBrokerId) {
@@ -190,9 +193,11 @@ export default class UpstreamModule {
     this._publishRetained = forwarding.publishRetainedMessages !== false;
     this._credentialEncryptionKey = credentialEncryptionKey;
     this._logging = logging;
+    this._displayName = displayName;
     this._localBrokerConfig = localBrokerConfig;
     this._credsColl = this._mongo.getCollection(COLLECTION_NAME);
     this._eventLogColl = this._mongo.getCollection(COLLECTIONS.EVENT_LOG);
+    this._robotsColl = this._mongo.getCollection(COLLECTIONS.ROBOTS);
     this._logger = new ThrottledLogger({ throttlingMs: 60 * 1000 });
 
     await this._credsColl.createIndex(
@@ -201,7 +206,7 @@ export default class UpstreamModule {
     );
 
     if (!Array.isArray(robotMapping) || robotMapping.length === 0) {
-      console.warn('[upstream] modules.upstream.robotMapping is empty; no robots will be forwarded');
+      console.warn('[upstream] upstream.robotMapping is empty; no robots will be forwarded');
       return;
     }
 
@@ -222,9 +227,11 @@ export default class UpstreamModule {
         publishRetained: this._publishRetained,
         localBrokerConfig: this._localBrokerConfig,
         logging: this._logging,
+        displayName: this._displayName,
         throttledLogger: this._logger,
         oroMqtt: this._oroMqtt,
         eventLogColl: this._eventLogColl,
+        robotsColl: this._robotsColl,
       });
       this._robotClients.set(entry.localRobotId, client);
       client.start().catch((err) => {
@@ -283,6 +290,8 @@ export class UpstreamRobotClient {
     throttledLogger,
     oroMqtt,
     eventLogColl,
+    robotsColl,
+    displayName = 'Upstream',
   }) {
     this.localRobotId = localRobotId;
     this.upstreamRobotId = upstreamRobotId;
@@ -305,6 +314,9 @@ export class UpstreamRobotClient {
     // shared `event_log` mongo collection. Both used by _logUpstreamCommand.
     this._oroMqtt = oroMqtt;
     this._eventLogColl = eventLogColl;
+    this._robotsColl = robotsColl;
+    // Actor name for local audit log entries of upstream-originated commands
+    this._displayName = displayName;
 
     this._upstreamClient = null;
     this._localClient = null;
@@ -962,13 +974,27 @@ export class UpstreamRobotClient {
       upstreamRobotId: this.upstreamRobotId,
       commandTopic: subtopic,
       elementValues: args || {},
+      // Also merge the arguments into the action itself (message, fileName,
+      // args, executionId), mirroring how the app's EventLog.logExecutedAction
+      // stores them — the audit log UI reads them from there.
+      ...(args || {}),
     };
+    // Resolve the robot's display name (best-effort; falls back to the id in
+    // the UI when null). One indexed lookup per logged command is negligible.
+    let robotName = null;
+    try {
+      const robotDoc = await this._robotsColl?.findOne(
+        { _id: this.localRobotId }, { projection: { name: 1 } }
+      );
+      robotName = robotDoc?.name || null;
+    } catch (e) { /* keep robotName null */ }
     await this._eventLogColl.insertOne({
       module: EVENT_MODULE_ACTION,
       eventType: EVENT_TYPE_ACTION_EXECUTED,
       userId: UPSTREAM_USER_ID,
-      userName: 'Upstream',
+      userName: this._displayName,
       robotId: this.localRobotId,
+      robotName,
       ts: Date.now(),
       eventData: {
         actionId,

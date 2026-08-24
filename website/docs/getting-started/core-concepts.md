@@ -10,7 +10,7 @@ This page introduces the key abstractions in OpenRobOps. Understanding these con
 
 A **Robot** is the primary entity in OpenRobOps. Each robot has a unique ID and optionally a name, an online status, and an agent version. 
 Robots report telemetry, can receive and execute actions.
-Robots are registered when an agent first connects using a valid API key.
+Robots are registered on the agent's first `/mqtt_config` request, authenticated with the robot API key from `app/settings.json`.
 
 ## Agents
 
@@ -43,9 +43,17 @@ Telemetry flows through MQTT as protobuf-encoded messages and is processed by th
 - **Fleet widgets** — display data across all robots (e.g., IncidentTimeline, IncidentList)
 - **Robot widgets** — display data for a single robot (e.g., Vitals, CustomData, Lock, ControlBar)
 
-## Incidents
+## Status
 
-**Incidents** are events that indicate a problem or notable condition on a robot. They appear in the IncidentTimeline and IncidentList widgets. Incident definitions are configured through the ConfigAPI.
+**Status definitions** (ConfigAPI `StatusDefinition`) evaluate rules against attribute values — thresholds, sustained conditions, calculated expressions — and produce a per-robot status severity that drives fleet health indicators.
+
+## Alerts & Incidents
+
+When an attribute's status rule fires, the ingest service raises an **alert**. If an `IncidentDefinition` exists for that attribute and level, the alert becomes an **Incident** — with a severity (SEV 0–3), optional automatic actions, manual actions offered to operators, and notification channels (webhooks). Incidents appear in the IncidentTimeline and IncidentList widgets; open incidents also surface as in-app **notifications** with action buttons. See the [Incidents & Alerts guide](../guides/incidents-alerts.md).
+
+## Locks
+
+A robot can be **locked** so only one user operates it at a time. Locks expire automatically and can be broken by engineers and above. See the [Locks API](../api/locks.md).
 
 ## Actions
 
@@ -75,6 +83,8 @@ Configuration is applied via `POST /api/configuration/apply` and retrieved via `
 - **CustomDataModule** — user-defined key-value data, text, and images
 - **DiagnosticsModule** — ROS-style hardware diagnostics with severity levels
 - **CustomCommandsModule** — execution feedback from remote commands and actions
+- **RobotEventsModule** — sampled key-value events mapped to attributes
+- **UpstreamModule** — optional forwarding of telemetry to an upstream ORO/InOrbit instance
 
 ## MQTT Topics
 

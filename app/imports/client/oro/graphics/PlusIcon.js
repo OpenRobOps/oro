@@ -18,6 +18,7 @@
  * Plus icon - used in Zone selector to create a new zone
  */
 import React from 'react';
+import theme from '../../Styles';
 
 const PlusIcon = (props) => (
   <svg
@@ -29,7 +30,7 @@ const PlusIcon = (props) => (
   >
     <g clipPath="url(#colorchip_svg__a)">
       <path
-        fill="#666"
+        fill={theme.palette.icons.neutral}
         d="M12.667 8.667h-4v4H7.334v-4h-4V7.333h4v-4h1.333v4h4v1.334Z"
       />
     </g>

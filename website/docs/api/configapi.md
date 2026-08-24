@@ -13,6 +13,7 @@ Configuration objects follow a consistent structure:
 ```json
 {
   "kind": "DataSourceDefinition",
+  "apiVersion": "v0.1",
   "metadata": {
     "id": "my-config-id"
   },
@@ -25,8 +26,11 @@ Configuration objects follow a consistent structure:
 | Field | Description |
 |-------|-------------|
 | `kind` | The type of configuration object |
+| `apiVersion` | Config API version — **required**, must be `"v0.1"` |
 | `metadata.id` | Unique identifier within the kind |
 | `spec` | Kind-specific configuration payload |
+
+Request bodies are validated strictly: unknown fields are rejected.
 
 ## Supported Kinds
 
@@ -36,12 +40,14 @@ Configuration objects follow a consistent structure:
 | [`StatusDefinition`](./configapikinds.md#statusdefinition) | Robot status computation rules |
 | [`ActionDefinition`](./configapikinds.md#actiondefinition) | Robot action definitions |
 | [`DashboardDefinition`](./configapikinds.md#dashboarddefinition) | Custom dashboard layouts with widgets |
-| **`ModuleState`** | Singleton state document for a configurable ingest/app module — used to persist per-module configuration applied via the ConfigAPI |
+| [`IncidentDefinition`](./configapikinds.md#incidentdefinition) | Incident rules per attribute status: severity, auto/manual actions, notification channels |
+| [`NotificationChannel`](./configapikinds.md#notificationchannel) | Delivery channels (webhooks) referenced by incident definitions |
+| [`ModuleState`](./configapikinds.md#modulestate) | Singleton state document for a configurable agent module — used to persist per-module configuration applied via the ConfigAPI |
 
 For detailed schemas and examples of each kind, see [Config API Kinds](./configapikinds.md).
 
 :::note
-Additional kinds (IncidentDefinition, RobotCamera, and others) are defined in the codebase but not yet enabled. See the [Roadmap](../contributing/roadmap.md).
+Additional kinds (RobotCamera, MissionTracking, and others) are defined in the codebase but not yet enabled. See the [Roadmap](../contributing/roadmap.md).
 :::
 
 ---
@@ -59,6 +65,7 @@ Creates or updates a configuration object.
 ```json
 {
   "kind": "DataSourceDefinition",
+  "apiVersion": "v0.1",
   "metadata": {
     "id": "battery_level"
   },
@@ -75,6 +82,9 @@ Creates or updates a configuration object.
   "operationStatus": "SUCCESS"
 }
 ```
+
+The response may also include a `messages` array of `{ message, level }`
+objects with warnings or informational notes about the applied object.
 
 ### Errors
 
@@ -93,8 +103,9 @@ curl -X POST \
   http://localhost:3000/api/configuration/apply \
   -d '{
     "kind": "DataSourceDefinition",
+    "apiVersion": "v0.1",
     "metadata": { "id": "battery_level" },
-    "spec": { }
+    "spec": { "label": "Battery", "source": { "keyValue": { "key": "battery_level" } } }
   }'
 ```
 
@@ -113,11 +124,14 @@ Removes a configuration object.
 ```json
 {
   "kind": "DataSourceDefinition",
+  "apiVersion": "v0.1",
   "metadata": {
     "id": "battery_level"
   }
 }
 ```
+
+`spec` must **not** be present in clear requests — the strict schema rejects it.
 
 ### Response
 
@@ -144,6 +158,7 @@ curl -X POST \
   http://localhost:3000/api/configuration/clear \
   -d '{
     "kind": "DataSourceDefinition",
+    "apiVersion": "v0.1",
     "metadata": { "id": "battery_level" }
   }'
 ```
@@ -165,21 +180,38 @@ Lists configuration objects matching the given filters.
 | `kind` | string | Yes | Configuration kind to list |
 | `id` | string | No | Specific configuration ID |
 | `format` | string | No | `short` (default) or `full` |
-| `all` | boolean | No | Include all configurations (`true`/`false`) |
+| `all` | boolean | No | `DataSourceDefinition` only: include definitions auto-created for statuses |
 
 The `full` format returns the complete configuration object (including `spec`), suitable for re-applying with the `apply` endpoint.
 
 ### Response
+
+In the default `short` format, items are flat summaries (no `metadata` wrapper):
+
+```json
+{
+  "items": [
+    {
+      "id": "battery_level",
+      "label": "Battery",
+      "suppressed": false,
+      "kind": "DataSourceDefinition",
+      "scope": ""
+    }
+  ]
+}
+```
+
+With `format=full`, each item is a complete configuration object:
 
 ```json
 {
   "items": [
     {
       "kind": "DataSourceDefinition",
-      "metadata": {
-        "id": "battery_level",
-        "scope": ""
-      }
+      "apiVersion": "v0.1",
+      "metadata": { "id": "battery_level", "scope": "" },
+      "spec": { }
     }
   ]
 }
@@ -212,8 +244,13 @@ Returns the list of configuration kinds supported by this instance.
 ```json
 {
   "items": [
+    "IncidentDefinition",
+    "NotificationChannel",
     "DataSourceDefinition",
-    "StatusDefinition"
+    "StatusDefinition",
+    "ActionDefinition",
+    "DashboardDefinition",
+    "ModuleState"
   ]
 }
 ```
@@ -227,7 +264,9 @@ curl -H "x-auth-api-key: YOUR_KEY" \
 
 ## Global Configuration
 
-Some configuration kinds are "global" — they apply to the entire system rather than individual robots. For these kinds, the `metadata.id` must be set to `"all"`.
+Some configuration kinds can be "global" — applying to the entire system rather
+than individual entities, with `metadata.id` set to `"all"`. No currently
+enabled kind uses this mode.
 
 ## Next Steps
 

@@ -36,6 +36,26 @@ const config: Config = {
     locales: ['en'],
   },
 
+  plugins: [
+    // Apply the stored theme choice before first paint. Runs after
+    // theme-classic's own color-mode script (site plugins inject after preset
+    // plugins), so setting data-theme here wins and the ColorModeProvider
+    // adopts it on hydration.
+    function oroThemeInit() {
+      return {
+        name: 'oro-theme-init',
+        injectHtmlTags: () => ({
+          preBodyTags: [
+            {
+              tagName: 'script',
+              innerHTML: `(function(){try{var t=localStorage.getItem('oro-theme');if(t&&t!=='oro'){document.documentElement.setAttribute('data-oro-theme',t);var m=t==='rose-pine-dawn'?'light':'dark';document.documentElement.setAttribute('data-theme',m);document.documentElement.setAttribute('data-theme-choice',m);}}catch(e){}})();`,
+            },
+          ],
+        }),
+      };
+    },
+  ],
+
   presets: [
     [
       'classic',
@@ -81,6 +101,9 @@ const config: Config = {
     navbar: {
       title: 'OpenRobOps',
       logo: {
+        // src is unused at runtime — src/theme/Logo renders the lockup inline
+        // with theme CSS vars — but the schema requires it and it documents
+        // the canonical asset.
         alt: 'OpenRobOps Logo',
         src: 'img/full-logo-small-size.svg',
       },
@@ -93,6 +116,10 @@ const config: Config = {
         },
         {to: '/docs/api/overview', label: 'API', position: 'left'},
         {to: '/blog', label: 'Blog', position: 'left'},
+        {
+          type: 'custom-oroThemePicker',
+          position: 'right',
+        },
         {
           href: 'https://github.com/OpenRobOps/oro',
           label: 'GitHub',

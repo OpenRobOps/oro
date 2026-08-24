@@ -50,7 +50,7 @@ const StyledTabs = styled(Tabs)(({ theme }) => ({
     flex: 1,
   },
   '& .MuiTab-root': {
-    fontFamily: 'Inter, Helvetica, Arial, sans-serif',
+    fontFamily: theme.fontFamily.ui,
     fontSize: '16px',
     minHeight: '44px',
     color: theme.palette.text.muted,
@@ -70,6 +70,11 @@ const StyledTab = styled(props => (
   <Tab disableRipple {...props} />
 ))(({ theme }) => ({
   position: 'relative',
+  // Before .Mui-selected so the active tab keeps its color on hover
+  // (equal specificity; the later rule wins)
+  '&:hover': {
+    color: theme.palette.secondary.main,
+  },
   '&.Mui-selected': {
     color: theme.palette.text.contrastText,
   },

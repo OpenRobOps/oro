@@ -54,7 +54,7 @@ const useStyles = makeStyles()(theme => ({
     gap: '3px',
     color: theme.palette.background.default,
     fontSize: '10px',
-    fontFamily: 'Inter, Helvetica, Arial, sans-serif',
+    fontFamily: theme.fontFamily.ui,
     fontWeight: 500,
     textTransform: 'none',
     '&:hover': {

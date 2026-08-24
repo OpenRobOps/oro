@@ -442,7 +442,10 @@ export default class StatusConfigAPIHandler {
     }
     // Retrieve configs for the scope, filtering by id
     const statusConfigsMap = await this._robotStatusManager.getStatusConfigs();
-    const statusConfigs = id ? [statusConfigsMap[id]] : Object.values(statusConfigsMap);
+    // An unknown id (e.g. a DataSourceDefinition id with no status) must list as empty, not crash
+    const statusConfigs = id
+      ? [statusConfigsMap[id]].filter(Boolean)
+      : Object.values(statusConfigsMap);
     const dataSourceHandler = this._configApi.getHandler(KIND_DATASOURCE_DEFINITION);
     // in full format, derived attribute definitions associated to a status are included in output
     const dataSources = keyBy(await dataSourceHandler.list({

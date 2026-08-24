@@ -25,7 +25,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import { ToggleButtonGroup, ToggleButton } from '@mui/material';
-import { ICM_SEV_ALL, ICM_SEV_2, ICM_SEV_3 } from '../../../../shared/alerts';
+import { ICM_SEV_ALL } from '../../../../shared/alerts';
 
 const SeverityToggleButton = styled(ToggleButton)(({ theme, value }) => ({
   '&.MuiToggleButton-root': {
@@ -48,9 +48,8 @@ const SeverityToggleButton = styled(ToggleButton)(({ theme, value }) => ({
   '&.Mui-selected': {
     backgroundColor: theme.palette.severityColor[value],
     opacity: 'initial',
-    color: (value === ICM_SEV_2 || value === ICM_SEV_3)
-      ? theme.palette.common.black
-      : theme.palette.text.contrastText,
+    // Black or white, whichever contrasts the chip color in the active theme
+    color: theme.palette.getContrastText(theme.palette.severityColor[value]),
     '&:hover': {
       opacity: '0.25',
       backgroundColor: theme.palette.severityColor[value],

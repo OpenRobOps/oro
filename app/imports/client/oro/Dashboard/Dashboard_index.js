@@ -666,21 +666,21 @@ const WIDGET_FACTORY = {
     />
   ),
 
-  // [WIDGET_TYPES.LOCALIZATION]: ({
-  //   context,
-  //   scope,
-  //   setContext,
-  //   isZeroData,
-  //   config
-  // }) => (
-  //   <LocalizationWidgetWithContext
-  //     context={context}
-  //     scope={scope}
-  //     setContext={setContext}
-  //     isZeroData={isZeroData}
-  //     config={config}
-  //   />
-  // ),
+  [WIDGET_TYPES.LOCALIZATION]: ({
+    context,
+    scope,
+    setContext,
+    isZeroData,
+    config
+  }) => (
+    <LocalizationWidgetWithContext
+      context={context}
+      scope={scope}
+      setContext={setContext}
+      isZeroData={isZeroData}
+      config={config}
+    />
+  ),
 
   [WIDGET_TYPES.ROS_DIAGNOSTICS]: ({ context, setContext, scope, isZeroData }) => (
     <DiagnosticsWidget

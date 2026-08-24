@@ -23,6 +23,7 @@
  */
 import React, { useCallback } from 'react';
 import { Grid, IconButton, Tooltip } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import { makeStyles } from 'tss-react/mui';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
@@ -86,10 +87,14 @@ const useStyles = makeStyles()(theme => ({
     borderRadius: '50%',
     padding: '6px',
     marginBottom: '4px',
+    // text-derived hairline + shadow keep the circle visible over both
+    // light maps (surface is near-white) and dark maps (shadow is invisible)
+    border: `1px solid ${alpha(theme.palette.text.primary, 0.3)}`,
+    boxShadow: '0 1px 4px rgba(0, 0, 0, 0.35)',
     '& .MuiSvgIcon-root': { fontSize: '24px' },
     '&:hover': {
       backgroundColor: theme.palette.background.navDark,
-      color: theme.palette.text.primary,
+      color: theme.palette.secondary.main,
     },
     '&.active-mint': {
       backgroundColor: theme.palette.background.surface,

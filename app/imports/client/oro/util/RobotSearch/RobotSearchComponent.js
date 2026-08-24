@@ -22,10 +22,10 @@
  * The queries will always be limited in the backend to what a user
  * can see.
  */
-import React from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
-import { withStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui';
 import { TextField, Typography, Chip, Autocomplete } from '@mui/material';
 import { Bot, CircleX } from 'lucide-react';
 // ORO modules
@@ -33,10 +33,9 @@ import { ID_TYPE_ROBOT } from '../../../../shared/constants';
 import { DarkModeContext } from '../../contexts/DarkModeContext';
 import LoadingBar from '../LoadingBar';
 import WrapWithTooltip from '../WrapWithTooltip';
-import { legacyWithStyles } from '../withStyles';
 
 
-const styles = theme => ({
+const useStyles = makeStyles()(theme => ({
   autocompleteInput: {
     '&.MuiOutlinedInput-root': {
       padding: '5px',
@@ -174,61 +173,19 @@ const styles = theme => ({
   optionTypography: {
     fontSize: '14px',
   }
-});
+}));
 
-class RobotSearch extends React.Component {
-  state = {
-    robots: [],
-    optionsOpened: false
-  }
+const RobotSearch = (props) => {
+  const {
+    disabled, label = '', dataTest, disablePortal = true,
+    selectedRobot, isRobotLoading, robotData,
+    selectRobotCallback, searchEntitiesMeteorCall
+  } = props;
+  const { classes, theme } = useStyles();
+  const { isDarkMode } = useContext(DarkModeContext);
 
-  componentDidMount() {
-    // Fetch some initial values on mount so the list
-    // is not empty when first opened.
-    this.dispatchNewQuery();
-  }
-
-  /**
-   * Saves the selected robot entity in the state
-   * and passes the robotId to the parent with a callback
-   * @param {Object} event
-   * @param {Object} robotEntity
-   */
-  setSelectedRobotId = (event, robotEntity) => {
-    if (robotEntity) {
-      const { entityId: robotId } = robotEntity;
-      const { selectRobotCallback } = this.props;
-      if (selectRobotCallback) {
-        selectRobotCallback(robotId);
-      }
-    }
-  }
-
-  /**
-   * Removes the robot from the context when the chip "cross" is clicked
-   */
-  handleDeleteRobot = () => {
-    const { selectRobotCallback } = this.props;
-    if (selectRobotCallback) {
-      selectRobotCallback(null);
-    }
-  }
-
-  handleOptionsOpen = () => this.setState({ optionsOpened: true });
-
-  handleOptionsClose = () => this.setState({ optionsOpened: false });
-
-  /**
-   * Event handler for input changes in the Autocomplete
-   * NOTE(herchu) Recent material-ui/lab version adds a third parameter
-   * with a 'reason' for the callback, with value "input". We simply ignore
-   * this argument, but is declared here for clarity.
-   * See https://inorbit.atlassian.net/browse/IO-3988
-   */
-  // eslint-disable-next-line no-unused-vars
-  handleInputChange = (event, value, reason) => {
-    this.dispatchNewQuery(value);
-  }
+  const [robots, setRobots] = useState([]);
+  const [optionsOpened, setOptionsOpened] = useState(false);
 
   /**
    * Given a string, it dispatches a query to find robots whose name or id
@@ -238,10 +195,7 @@ class RobotSearch extends React.Component {
    * to ALL robots the user can see in the company
    * @param {String} queryString
    */
-  dispatchNewQuery = (queryString) => {
-    const {
-      searchEntitiesMeteorCall
-    } = this.props;
+  const dispatchNewQuery = useCallback((queryString) => {
     const filters = {};
     const entityTypes = [ID_TYPE_ROBOT];
     if (searchEntitiesMeteorCall) {
@@ -253,143 +207,178 @@ class RobotSearch extends React.Component {
         if (error) {
           console.error(error);
         } else {
-          this.setState({ robots: result });
+          setRobots(result);
         }
       });
     }
+  }, [searchEntitiesMeteorCall]);
+
+  useEffect(() => {
+    // Fetch some initial values on mount so the list
+    // is not empty when first opened.
+    dispatchNewQuery();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  /**
+   * Saves the selected robot entity in the state
+   * and passes the robotId to the parent with a callback
+   * @param {Object} event
+   * @param {Object} robotEntity
+   */
+  const setSelectedRobotId = (event, robotEntity) => {
+    if (robotEntity) {
+      const { entityId: robotId } = robotEntity;
+      if (selectRobotCallback) {
+        selectRobotCallback(robotId);
+      }
+    }
   };
 
-  render() {
-    const { robots, optionsOpened } = this.state;
-    const {
-      disabled, label = '', classes, dataTest, disablePortal = true,
-      selectedRobot, isRobotLoading, robotData
-    } = this.props;
-    const { isDarkMode } = this.context;
+  /**
+   * Removes the robot from the context when the chip "cross" is clicked
+   */
+  const handleDeleteRobot = () => {
+    if (selectRobotCallback) {
+      selectRobotCallback(null);
+    }
+  };
 
-    const showTextInput = optionsOpened || !selectedRobot;
+  const handleOptionsOpen = () => setOptionsOpened(true);
 
-    const robotVersionTooltip = selectedRobot && `Agent version: ${(robotData && robotData.version) || '--'}`;
+  const handleOptionsClose = () => setOptionsOpened(false);
 
-    return (
-      <div
-        data-test={dataTest || 'robot-search'}
-        className={
-          classnames(
-            classes.searchBoxContainer
-          )
-        }
-      >
-        {(selectedRobot || !isRobotLoading) && (
-          <Autocomplete
-            open={optionsOpened}
-            onOpen={this.handleOptionsOpen}
-            onClose={this.handleOptionsClose}
-            disableClearable
-            // Don't detach from DOM, otherwise it doesn't work full-screen
-            disablePortal={disablePortal}
-            disabled={disabled}
-            value={selectedRobot}
-            // NOTE: onInputChange added a third param in material-ui/lab@4.0.0-alpha.56
-            // which will break this call if we update versions.
-            onInputChange={this.handleInputChange}
-            options={robots}
-            getOptionLabel={option => ((option && option.label) || '')}
-            onChange={this.setSelectedRobotId}
-            isOptionEqualToValue={(option, value) => option?._id == value?._id}
-            classes={
-              isDarkMode ? {
-                inputRoot: classes.autocompleteInputFullscreen,
-                popupIndicator: classes.popupIndicator,
-                listbox: classes.listboxFullScreen,
-                option: classes.optionFullScreen,
-                popper: classes.popper,
-              } : {
-                inputRoot: classes.autocompleteInput,
-                option: classes.optionTypography,
-                popper: classes.popper,
-              }
+  /**
+   * Event handler for input changes in the Autocomplete
+   * NOTE(herchu) Recent material-ui/lab version adds a third parameter
+   * with a 'reason' for the callback, with value "input". We simply ignore
+   * this argument, but is declared here for clarity.
+   * See https://inorbit.atlassian.net/browse/IO-3988
+   */
+  // eslint-disable-next-line no-unused-vars
+  const handleInputChange = (event, value, reason) => {
+    dispatchNewQuery(value);
+  };
+
+  const showTextInput = optionsOpened || !selectedRobot;
+
+  const robotVersionTooltip = selectedRobot && `Agent version: ${(robotData && robotData.version) || '--'}`;
+
+  return (
+    <div
+      data-test={dataTest || 'robot-search'}
+      className={
+        classnames(
+          classes.searchBoxContainer
+        )
+      }
+    >
+      {(selectedRobot || !isRobotLoading) && (
+        <Autocomplete
+          open={optionsOpened}
+          onOpen={handleOptionsOpen}
+          onClose={handleOptionsClose}
+          disableClearable
+          // Don't detach from DOM, otherwise it doesn't work full-screen
+          disablePortal={disablePortal}
+          disabled={disabled}
+          value={selectedRobot}
+          // NOTE: onInputChange added a third param in material-ui/lab@4.0.0-alpha.56
+          // which will break this call if we update versions.
+          onInputChange={handleInputChange}
+          options={robots}
+          getOptionLabel={option => ((option && option.label) || '')}
+          onChange={setSelectedRobotId}
+          isOptionEqualToValue={(option, value) => option?._id == value?._id}
+          classes={
+            isDarkMode ? {
+              inputRoot: classes.autocompleteInputFullscreen,
+              popupIndicator: classes.popupIndicator,
+              listbox: classes.listboxFullScreen,
+              option: classes.optionFullScreen,
+              popper: classes.popper,
+            } : {
+              inputRoot: classes.autocompleteInput,
+              option: classes.optionTypography,
+              popper: classes.popper,
             }
-            renderOption={(props, option) => (
-              <Typography {...props}>
-                {option.label}
-              </Typography>
-            )}
-            renderInput={params => (
-              <div className={classes.chipTagContainer}>
-                {/*activeFilter*/ true ? (
-                  <>
-                    {selectedRobot && !optionsOpened && (
-                      WrapWithTooltip(robotVersionTooltip, (
-                        <Chip
-                          icon={<Bot size={20} color={this.props.theme.palette.text.buttonText} />}
-                          deleteIcon={<CircleX size={16} color={this.props.theme.palette.text.buttonText} />}
-                          className={classnames(classes.chipTagRobot, classes.chipTag)}
-                          classes={{ deleteIcon: classes.deleteIcon, clickable: classes.chipHover }}
-                          label={isRobotLoading ? (
-                            <LoadingBar height="10px" width="80px" />
-                          ) : (
-                            <Typography className={classes.filterLabel}>
-                              {selectedRobot.label}
-                            </Typography>
-                          )}
-                          onClick={this.handleOptionsOpen}
-                          onDelete={this.handleDeleteRobot}
-                        />
-                      ))
-                    )}
-                    <TextField
-                      {...params}
-                      onFocus={this.handleOptionsMouseDown}
-                      label={label}
-                      variant="standard"
-                      InputProps={{
-                        ...params.InputProps,
-                        disableUnderline: true,
-                        classes: showTextInput
-                          ? { input: classes.showTextInputInput }
-                          : {
-                            input: classes.hiddenTextInputInput,
-                            root: classes.hiddenTextInputInputRoot
-                          }
-                      }}
-                      classes={showTextInput
-                        ? { root: classes.showTextInputRoot }
-                        : { root: classes.hiddenTextInputRoot }}
-                    />
-                  </>
-                ) : (
-                  WrapWithTooltip(robotVersionTooltip, (
-                    <TextField
-                      {...params}
-                      label={label}
-                      variant="outlined"
-                      fullWidth
-                      InputProps={{
-                        ...params.InputProps,
-                        classes: {
-                          input: classes.noChipInput,
-                          notchedOutline: classes.notchedOutline,
-                          outlinedInput: classes.outlinedInput
+          }
+          renderOption={(props, option) => (
+            <Typography {...props}>
+              {option.label}
+            </Typography>
+          )}
+          renderInput={params => (
+            <div className={classes.chipTagContainer}>
+              {/*activeFilter*/ true ? (
+                <>
+                  {selectedRobot && !optionsOpened && (
+                    WrapWithTooltip(robotVersionTooltip, (
+                      <Chip
+                        icon={<Bot size={20} color={theme.palette.text.buttonText} />}
+                        deleteIcon={<CircleX size={16} color={theme.palette.text.buttonText} />}
+                        className={classnames(classes.chipTagRobot, classes.chipTag)}
+                        classes={{ deleteIcon: classes.deleteIcon, clickable: classes.chipHover }}
+                        label={isRobotLoading ? (
+                          <LoadingBar height="10px" width="80px" />
+                        ) : (
+                          <Typography className={classes.filterLabel}>
+                            {selectedRobot.label}
+                          </Typography>
+                        )}
+                        onClick={handleOptionsOpen}
+                        onDelete={handleDeleteRobot}
+                      />
+                    ))
+                  )}
+                  <TextField
+                    {...params}
+                    label={label}
+                    variant="standard"
+                    InputProps={{
+                      ...params.InputProps,
+                      disableUnderline: true,
+                      classes: showTextInput
+                        ? { input: classes.showTextInputInput }
+                        : {
+                          input: classes.hiddenTextInputInput,
+                          root: classes.hiddenTextInputInputRoot
                         }
-                      }}
-                      InputLabelProps={{
-                        classes: {
-                          outlined: classes.labelStyle
-                        }
-                      }}
-                    />
-                  ), { withoutDivWrapper: true }))}
-              </div>
-            )}
-          />
-        )}
-      </div>
-    );
-  }
-}
-
-RobotSearch.contextType = DarkModeContext;
+                    }}
+                    classes={showTextInput
+                      ? { root: classes.showTextInputRoot }
+                      : { root: classes.hiddenTextInputRoot }}
+                  />
+                </>
+              ) : (
+                WrapWithTooltip(robotVersionTooltip, (
+                  <TextField
+                    {...params}
+                    label={label}
+                    variant="outlined"
+                    fullWidth
+                    InputProps={{
+                      ...params.InputProps,
+                      classes: {
+                        input: classes.noChipInput,
+                        notchedOutline: classes.notchedOutline,
+                        outlinedInput: classes.outlinedInput
+                      }
+                    }}
+                    InputLabelProps={{
+                      classes: {
+                        outlined: classes.labelStyle
+                      }
+                    }}
+                  />
+                ), { withoutDivWrapper: true }))}
+            </div>
+          )}
+        />
+      )}
+    </div>
+  );
+};
 
 RobotSearch.propTypes = {
   classes: PropTypes.object,
@@ -410,4 +399,4 @@ RobotSearch.propTypes = {
   isRobotLoading: PropTypes.bool // selected robot is loading
 };
 
-export default legacyWithStyles(RobotSearch, styles, { withTheme: true });
+export default RobotSearch;

@@ -10,10 +10,12 @@
   border-radius: 10px;
 }
 
-/* Invert only the map image layer so it reads as dark-background / light-lines
-   on the dark Navigation UI. Vector overlays (robot icon, waypoints) keep true colors. */
+/* Theme-driven filter for the map image layer (set in Styles.js): dark themes
+   invert the robot's white-free/black-occupied map so it reads as dark-background /
+   light-lines; light themes show it as reported. Vector overlays (robot icon,
+   waypoints) keep true colors. */
 .ol-map-image-layer {
-  filter: invert(0.9) opacity(0.85);
+  filter: var(--map-image-filter, invert(0.9) opacity(0.85));
 }
 .ol-control {
   position: absolute;

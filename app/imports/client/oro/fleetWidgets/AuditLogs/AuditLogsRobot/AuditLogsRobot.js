@@ -21,7 +21,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import AuditLogs from '../AuditLogs';
-import { prepareTimeVarsForQuery, StartTsPropType } from '../../../util/timeUtils';
+import { prepareTimeVarsForQuery, isLive, StartTsPropType } from '../../../util/timeUtils';
 
 const AuditLogsRobot = (props) => {
   const {
@@ -37,7 +37,11 @@ const AuditLogsRobot = (props) => {
   const query = {
     startTs: timeVars.startTs,
     endTs: timeVars.endTs,
-    limit: 100
+    limit: 100,
+    // In live mode nowTs ticks re-derive startTs/endTs; useAuditLogs uses
+    // these to refresh silently instead of blanking to the loading state
+    live: isLive(startTs),
+    timeRangeMs: timeVars.timeRangeMs
   };
   if (robotId) {
     query.robotId = robotId;

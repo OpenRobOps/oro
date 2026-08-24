@@ -85,7 +85,8 @@ const CameraViewContainer = (props) => {
       const agentCamerasConfig = (agentImageState?.cameras_config) || {};
       const camerasConfig = applyDefaults(applyDefaults({}, userCamerasConfig), agentCamerasConfig);
 
-      const cameraId = agentImageState?.camera_topics?.[cameraNumber] || robotState?.camera_topics?.[cameraNumber];
+      // Camera frames are stamped with the ROS topic as camera_id
+      const cameraId = camerasConfig?.[cameraNumber]?.topic;
       const cameraEnabledSetting = camerasConfig?.[cameraNumber]?.is_on;
       const cameraEnabled = cameraEnabledSetting === undefined ? true : cameraEnabledSetting;
 

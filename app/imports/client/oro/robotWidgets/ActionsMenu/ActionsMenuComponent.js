@@ -55,7 +55,15 @@ const styles = theme => ({
     backgroundColor: theme.palette.background.black,
     color: theme.palette.background.white,
     '&:hover': {
-      color: theme.palette.background.white,
+      color: theme.palette.secondary.main,
+    }
+  },
+  accentOnHover: {
+    '&:hover': {
+      color: theme.palette.secondary.main,
+      // Text buttons hover to a faint primary overlay, invisible on dark
+      // themes; use the same hover surface as menus and outlined buttons
+      backgroundColor: theme.palette.background.onHoverGray,
     }
   },
   buttonText: {
@@ -182,7 +190,7 @@ const ActionsMenu = (props) => {
             data-test="actions-menu-button-1"
             classes={textClasses}
             style={{ borderRight: 'initial' }}
-            className={classNames({ [classes.mobileButtonAction]: isMobile })}
+            className={classNames(classes.accentOnHover, { [classes.mobileButtonAction]: isMobile })}
           >
             {firstAction?.label ?? 'Actions'}
           </Button>
@@ -196,7 +204,7 @@ const ActionsMenu = (props) => {
           data-test="actions-menu-button-2"
           classes={textClasses}
           style={{ borderRight: 'initial' }}
-          className={classNames({ [classes.dropdownMobileButton]: isMobile })}
+          className={classNames(classes.accentOnHover, { [classes.dropdownMobileButton]: isMobile })}
         >
           <ArrowDropDownIcon />
         </Button>

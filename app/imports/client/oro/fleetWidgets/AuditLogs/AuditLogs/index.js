@@ -29,13 +29,15 @@ import useAuditLogs from '../../../hooks/useAuditLogs';
 const AuditLogsMeteorWrapper = (props) => {
   const { queries, ...otherProps } = props;
   const query = queries && queries[0];
-  const { startTs, endTs, limit, robotId, eventType } = query;
+  const { startTs, endTs, limit, robotId, eventType, live, timeRangeMs } = query;
   const { data, isLoading, error } = useAuditLogs({
     robotId,
     startTs,
     endTs,
     eventType,
-    limit
+    limit,
+    live,
+    timeRangeMs
   });
   return (
     <AuditLogsComponent auditLogs={data} isLoading={isLoading} error={error} {...otherProps} />

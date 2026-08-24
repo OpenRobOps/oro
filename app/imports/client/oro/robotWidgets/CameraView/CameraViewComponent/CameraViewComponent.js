@@ -199,6 +199,14 @@ const CameraView = (props) => {
     }
   }, [updateCameraTsCallback, cameraId]);
 
+  // Report the timestamp of the displayed image. Done in an effect (not during render)
+  // because the callback sets state in an ancestor (TimeStampHintProvider)
+  useEffect(() => {
+    if (image.ts) {
+      updateCameraTs(image.ts);
+    }
+  }, [image.ts, updateCameraTs]);
+
   const handleCameraClicked = useCallback(() => {
     onCameraClicked && onCameraClicked(cameraNumber);
   }, [onCameraClicked, cameraNumber]);
@@ -301,9 +309,6 @@ const CameraView = (props) => {
 
   // Decode image data
   const imageData = image.data || (image.image && toBase64(image.image));
-  if (image.ts) {
-    updateCameraTs(image.ts);
-  }
 
   const renderCameraImage = () => {
     const { mirror, rotation, cropped: isCropped = false } = cameraPrefs;

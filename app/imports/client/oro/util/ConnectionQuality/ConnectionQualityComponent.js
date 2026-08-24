@@ -22,6 +22,7 @@
  */
 import React, { useRef } from 'react';
 import { makeStyles } from 'tss-react/mui';
+import { alpha } from '@mui/material/styles';
 import PropTypes from 'prop-types';
 import { Typography } from '@mui/material';
 import classnames from 'classnames';
@@ -43,7 +44,7 @@ const useStyles = makeStyles()(theme => ({
   value: {
     display: 'flex',
     fontSize: '0.875rem',
-    color: '#3f93ff',
+    color: theme.palette.incidents.ok,
     fontWeight: theme.fontWeight?.bold,
     alignItems: 'center',
     marginLeft: '5px'
@@ -51,7 +52,7 @@ const useStyles = makeStyles()(theme => ({
   unit: {
     display: 'flex',
     fontSize: '0.875rem',
-    color: '#3f93ff',
+    color: theme.palette.incidents.ok,
     fontWeight: theme.fontWeight?.light,
     alignItems: 'center',
     marginLeft: '5px'
@@ -60,7 +61,7 @@ const useStyles = makeStyles()(theme => ({
     display: 'flex',
     fontSize: '0.65rem',
     fontWeight: 400,
-    color: 'rgba(255,255,255,0.6)',
+    color: alpha(theme.palette.text.primary, 0.6),
     letterSpacing: '0.08em',
     textTransform: 'uppercase',
     alignItems: 'center',

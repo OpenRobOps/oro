@@ -30,7 +30,7 @@ Any of these config pairs (Google or GitHub) can be omitted and the authenticati
 Then regenerate settings:
 
 ```bash
-./scripts/generate-settings.sh --apply
+./scripts/generate-settings.sh
 ```
 
 :::note[GitHub App email permission]
@@ -81,9 +81,12 @@ admin_emails = ["you@example.com"]
 ```
 
 Any user whose sign-in email matches an entry (case-insensitive) is granted the `admin`
-role automatically when their account is created. The **Settings → Users** screen also
-warns about configured admin emails that haven't registered yet. Regenerate settings
-(`./scripts/generate-settings.sh --apply`) after changing the list.
+role automatically when their account is created. The grant applies **at account
+creation only** — emails added to the list later never retroactively promote
+already-registered users; grant those a role manually under **Settings → Users**.
+The **Settings → Users** screen also warns about configured admin emails that
+haven't registered yet. Regenerate settings (`./scripts/generate-settings.sh`)
+after changing the list.
 
 ## User Moderation
 
