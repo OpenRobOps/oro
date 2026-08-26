@@ -36,6 +36,7 @@ import { IsoTelemetryIngester } from './ingestTelemetry';
 import { IsoCommandRouter } from './commands';
 import { COLLECTIONS } from '../../shared/constants';
 import { CcsConverter } from '../iso21423/ccs';
+import { CUSTOM_DATA_RESOURCE, CUSTOM_DATA_RESOURCE_CONFIG } from '../iso21423/customData';
 import AttributesManager from '../attributes';
 
 /**
@@ -118,6 +119,8 @@ class IsoRobotsModule {
 
     try {
       const { Iso21423Client, createMqttTransport } = this._sdk;
+      // Same registration the robot side does; identical re-registration is a no-op.
+      this._sdk.registerExtensionResource(CUSTOM_DATA_RESOURCE, CUSTOM_DATA_RESOURCE_CONFIG);
       this._client = await Iso21423Client.connect({
         transport: opts.transport || createMqttTransport(config.mqtt.url, {
           username: config.mqtt.username,
@@ -168,6 +171,7 @@ class IsoRobotsModule {
         client: this._client,
         attributesManager: new AttributesManager(),   // singleton (src/server/attributes.js:65-66)
         robotsColl: this._mongo.getCollection(COLLECTIONS.ROBOTS),
+        keyValuesColl: this._mongo.getCollection(COLLECTIONS.ROBOT_KEY_VALUES),
         converter: this._converter,
         sources: config.attributeSources,
         roster: this._roster,

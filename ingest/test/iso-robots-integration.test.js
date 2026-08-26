@@ -71,7 +71,11 @@ describe('iso-robots integration', () => {
     // Attribute definitions so saveAttributeValues can parse and persist.
     await coll(COLLECTIONS.ATTRIBUTE_DEFINITIONS).insertMany(
       ['agentOnline', 'pose', 'speedLinear', 'speedAngular', 'batteryPercentage']
-        .map((attributeId) => ({ attributeId, definition: { label: attributeId } })));
+        .map((attributeId) => ({ attributeId, definition: { label: attributeId } }))
+        // A keyValue DataSourceDefinition, as `inorbit apply` would store it.
+        .concat([{ attributeId: 'message', definition: { label: 'Message' },
+          mapping: { source: 'key-value', key: 'echo' } }]));
+    await coll(COLLECTIONS.ROBOT_KEY_VALUES).deleteMany({});
     // Gate 2: admit the robot, not the stranger.
     await coll(COLLECTIONS.ROBOTS).insertOne({
       _id: ROBOT, name: 'Lift-9', version: 'iso-21423-v1', updateStamp: Date.now(),
@@ -137,6 +141,18 @@ describe('iso-robots integration', () => {
     assert.ok(Math.abs(values.pose.value.x - 1) < 1e-6, JSON.stringify(values.pose.value));
     assert.ok(Math.abs(values.pose.value.y - 2) < 1e-6);
     assert.strictEqual(values.speedLinear.value, 0.4);
+  });
+
+  it('ingests customData into key-value data sources and robot_key_values', async () => {
+    await robot.handle.publishExtension('customData', {
+      timestamp: new Date().toISOString(), values: { echo: 'hello', extra: '42' },
+    });
+    await settle();
+    const values = await coll(COLLECTIONS.ATTR_VALUES).findOne({ _id: ROBOT });
+    assert.strictEqual(values.message.value, 'hello');
+    const kv = await coll(COLLECTIONS.ROBOT_KEY_VALUES).findOne({ _id: ROBOT });
+    assert.strictEqual(kv.echo.value, 'hello');
+    assert.strictEqual(kv.extra.value, '42');
   });
 
   it('ingests battery soc as a 0..1 fraction', async () => {

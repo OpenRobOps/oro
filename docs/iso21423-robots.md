@@ -262,6 +262,20 @@ named by `settings.iso21423.robots.attributeSources` (default table below, from
 | `batteryVoltage`     | `batteryVoltage`          | ISO `batteryStatus.batteryVoltage`                      |
 | `batteryIsCharging`  | `batteryIsCharging`       | ISO `batteryStatus.batteryChargingState === 'CHARGING'` |
 
+**Key-value data (`customData` extension resource).** ISO 21423 has no key-value message, but its
+extension clause leaves the resource catalog open, so ORO defines one
+(`src/server/iso21423/customData.js`, registered through the SDK's `registerExtensionResource`):
+
+```
+/ISO_21423/v1/IMR/<uuid>/customData          QoS 1, not retained, no schema
+{ "timestamp": "2026-08-26T20:00:00.000Z", "values": { "echo": "hello", "battery_charging": "true" } }
+```
+
+A robot that lists `customData` in `capabilities.provides` and publishes it gets exactly the wire
+robot's treatment: the pairs go through `AttributesManager.handleKeyValuePairs` (so `keyValue`
+DataSourceDefinitions, statuses and incidents work unchanged — mappings without a `topic` match any
+custom field) and into `robot_key_values` for the Key-Values widget. Values are strings.
+
 This is one convention shared by both ISO directions: this direction **writes** these attributes
 from inbound ISO telemetry, the ISO Upstream direction **reads** the same attributes to publish
 outbound ISO telemetry. Overriding a value in `attributeSources` (e.g. to point `pose` at a
