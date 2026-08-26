@@ -8,7 +8,7 @@ OpenRobOps follows a modular architecture where each component has a clear respo
 
 ## Component Diagram
 
-This diagram describes the scenario where the robot runs the ORO Agent. 
+This diagram describes the scenario where the robot runs the ORO Agent. In an [ISO 21423](../iso21423/overview.md) deployment the robot side is instead any ISO 21423-compliant robot (IMR) publishing standard JSON resources on `/ISO_21423/v1/...`, and ingest loads `IsoRobotsModule` — acting as the standard's fleet manager (IMRFM) — in place of the wire-protocol modules.
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
