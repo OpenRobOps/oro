@@ -147,6 +147,8 @@ spec:
   hostname: amr07.facility.local
 ```
 
+Gate 2's admission check, the roster and every ACL normalize uuids to lowercase before comparing, but MQTT topics are case-sensitive on the wire — configure robots (and the `IsoRobot` object's `metadata.id`) with lowercase uuids so the topic a robot actually publishes on matches what ORO subscribes to.
+
 ```bash
 curl -X POST \
   -H "x-auth-api-key: YOUR_KEY" \
@@ -307,6 +309,9 @@ directly: define `pauseRobot`/`resumeRobot` `ActionDefinition`s (an `ActionDefin
 object, same as for a wire robot) and set `iso21423.robots.commandTopics.pause` /
 `.resume` to the subtopics those actions publish agent-bound commands to. Leaving either unset (the
 default, `null`) simply means this deployment has no way to issue that ISO request.
+`commandTopics.pause`/`.resume` only work once the deployment's own `pauseRobot`/`resumeRobot`
+`ActionDefinition`s publish agent-bound commands on a dedicated subtopic — no built-in ORO action
+type does this today, so the knob is forward-looking until such an `ActionDefinition` exists.
 
 ## 8. Known limitations
 
