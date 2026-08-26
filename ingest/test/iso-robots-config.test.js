@@ -134,6 +134,15 @@ describe('iso-robots validateConfig', () => {
     assert.strictEqual(config.commandTopics.cancelNav, 'ros/nav/goal_to_current_pose');
     assert.strictEqual(config.commandTopics.pause, null);
     assert.strictEqual(config.commandTopics.resume, null);
+    assert.strictEqual(config.commandTopics.customCommand, 'custom_command/ros');
+    assert.deepStrictEqual(config.docks, {});
+  });
+
+  it('lower-cases dock ids and rejects non-numeric dock coordinates', () => {
+    const { config } = validateConfig(withRobots({ docks: { A: { x: 9, y: 18.5 } } }));
+    assert.deepStrictEqual(config.docks, { a: { x: 9, y: 18.5 } });
+    const { errors } = validateConfig(withRobots({ docks: { B: { x: 'nine', y: 1 } } }));
+    assert.ok(errors.some((e) => e.includes('docks.B')));
   });
 
   it('accepts deployment-named pause/resume subtopics', () => {

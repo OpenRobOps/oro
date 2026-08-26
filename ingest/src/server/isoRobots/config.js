@@ -31,6 +31,10 @@ const DEFAULT_COMMAND_TOPICS = {
   navGoal: 'ros/loc/nav_goal',
   // Published by the seeded CancelNavGoal action (`nav2d.js:69-71`).
   cancelNav: 'ros/nav/goal_to_current_pose',
+  // Published by every PublishToTopic ActionDefinition (`app/imports/server/mqtt.js:698-703`,
+  // protobuf oro.CustomCommandRosMessage). Forwarded to the robot as an OpenRobOps-format
+  // `customCommand` request, except `dock`/`dock=<id>` which become the native ISO `dock`.
+  customCommand: 'custom_command/ros',
   // Deployment-defined: whatever subtopic this deployment's pauseRobot/resumeRobot
   // ActionDefinitions publish to. Null means "this deployment has no pause action", and
   // pauseImr/resumeImr are simply never issued.
@@ -85,6 +89,16 @@ const validateConfig = (raw, oroMqtt) => {
       + 'supply a usable default (e.g. "mqtt://localhost:1883")');
   }
 
+  // Docking stations in ORO's map frame, keyed by the id operators use in `dock=<id>` commands.
+  const docks = {};
+  for (const [id, p] of Object.entries(robots.docks || {})) {
+    if (!p || !Number.isFinite(p.x) || !Number.isFinite(p.y)) {
+      errors.push(`iso21423.robots.docks.${id} needs numeric x and y (ORO map frame)`);
+    } else {
+      docks[id.toLowerCase()] = { x: p.x, y: p.y };
+    }
+  }
+
   if (errors.length) return { config: null, errors };
 
   return {
@@ -105,6 +119,7 @@ const validateConfig = (raw, oroMqtt) => {
       rosterPollMs: Number.isFinite(robots.rosterPollMs) ? robots.rosterPollMs : 30000,
       requestTimeoutMs: Number.isFinite(robots.requestTimeoutMs) ? robots.requestTimeoutMs : 30000,
       commandTopics: { ...DEFAULT_COMMAND_TOPICS, ...(robots.commandTopics || {}) },
+      docks,
       attributeSources: { ...DEFAULT_ATTRIBUTE_SOURCES, ...(robots.attributeSources || {}) },
     },
     errors: [],

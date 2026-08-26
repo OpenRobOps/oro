@@ -47,6 +47,24 @@
 const ECHO_SUBTOPIC = 'echo';
 
 /**
+ * OpenRobOps-defined request detail carrying a PublishToTopic action's message verbatim. The
+ * robot side republishes `properties.command` wherever its agent used to. ISO 21423 §6 leaves the
+ * action `type` vocabulary open, so this is a vendor type under the default `ISO-21423` format
+ * (the SDK's executor rejects any other `format`, so the detail does not set one); the robot must
+ * list `customCommand` in its `accepts`.
+ */
+const customCommandDetail = (command) => ({
+  type: 'customCommand', version: '1.0', blocking: true, atomic: false, properties: { command },
+});
+
+/** `dock` → nearest dock (id null); `dock=A` → dock id "a"; anything else → undefined. */
+const parseDockCommand = (cmd) => {
+  if (cmd === 'dock') return { dockId: null };
+  if (cmd.startsWith('dock=') && cmd.length > 5) return { dockId: cmd.slice(5).toLowerCase() };
+  return undefined;
+};
+
+/**
  * Parses a nav-goal payload.
  *
  * @param {Buffer|string|undefined} payload the raw MQTT body
@@ -79,8 +97,9 @@ class IsoCommandRouter {
    * @param {boolean} [opts.logging=false]
    */
   constructor({
-    oroMqtt, imrfm, roster, converter, sdk, commandTopics, telemetry, logging = false,
+    oroMqtt, imrfm, roster, converter, sdk, commandTopics, telemetry, docks = {}, logging = false,
   }) {
+    this._docks = docks;
     this._mqtt = oroMqtt;
     this._telemetry = telemetry;
     this._imrfm = imrfm;
@@ -99,6 +118,10 @@ class IsoCommandRouter {
   register = () => {
     this._mqtt.registerListener(this._topics.navGoal, (robotId, msg) => this.onNavGoal(robotId, msg));
     this._mqtt.registerListener(this._topics.cancelNav, (robotId) => this.onCancelNav(robotId));
+    if (this._topics.customCommand) {
+      this._mqtt.registerListener(this._topics.customCommand,
+        (robotId, msg) => this.onCustomCommand(robotId, msg));
+    }
     if (this._topics.pause) {
       this._mqtt.registerListener(this._topics.pause, (robotId) => this.onPause(robotId));
     }
@@ -139,14 +162,7 @@ class IsoCommandRouter {
         destinationType: 'IMR',
         details: [this._sdk.move({ location, orientation })],
       });
-      this._inFlight.set(robotId, handle);
-      // Free the slot on completion however it ends, so a later cancel-nav pauses rather than
-      // trying to cancel a finished request.
-      if (handle.completion) {
-        handle.completion().catch(() => {}).finally(() => {
-          if (this._inFlight.get(robotId) === handle) this._inFlight.delete(robotId);
-        });
-      }
+      this._trackInFlight(robotId, handle);
     } catch (err) {
       console.warn(`ISO 21423 robots: move request failed for ${robotId}: ${err.message}`);
     }
@@ -192,6 +208,77 @@ class IsoCommandRouter {
     }));
   };
 
+  /**
+   * Handles a PublishToTopic action's message. `dock`/`dock=<id>` are translated to the native
+   * ISO `dock` action; every other message is forwarded verbatim as an OpenRobOps `customCommand`.
+   */
+  onCustomCommand = async (robotId, msg) => {
+    if (!this._roster.isAdmitted(robotId)) return;
+    let cmd;
+    try {
+      cmd = this._mqtt.lookupType('oro.CustomCommandRosMessage').decode(msg).cmd;
+    } catch (err) {
+      console.warn(`ISO 21423 robots: undecodable custom command for ${robotId}: ${err.message}`);
+      return;
+    }
+    const dock = parseDockCommand(cmd);
+    if (dock) {
+      await this.onDock(robotId, dock.dockId);
+      return;
+    }
+    await this._send(robotId, customCommandDetail(cmd));
+  };
+
+  /**
+   * Sends the native ISO `dock` action (with `dockActions: ['CHARGE']`) to the dock named by
+   * `dockId`, or to the dock nearest the robot's last-seen position when `dockId` is null.
+   * Docks come from `iso21423.robots.docks` (ORO map frame) and are converted into the CCS.
+   */
+  onDock = async (robotId, dockId) => {
+    if (!this._converter.calibrated) {
+      console.warn(`ISO 21423 robots: refusing a dock for ${robotId} — CCS is uncalibrated: `
+        + this._converter.reason);
+      return;
+    }
+    let id = dockId;
+    if (id === null) {
+      const here = this._telemetry.lastCcsPose(robotId);
+      const ids = Object.keys(this._docks);
+      if (!here || !ids.length) {
+        console.warn(`ISO 21423 robots: dock for ${robotId} ignored — `
+          + (ids.length ? 'no odometry seen yet, so no nearest dock' : 'no docks configured'));
+        return;
+      }
+      const dist = (d) => {
+        const p = this._converter.toLocationPoint(this._docks[d]);
+        return (p.x - here.locationPoint.x) ** 2 + (p.y - here.locationPoint.y) ** 2;
+      };
+      id = ids.reduce((best, d) => (dist(d) < dist(best) ? d : best));
+    }
+    const dock = this._docks[id];
+    if (!dock) {
+      console.warn(`ISO 21423 robots: unknown dock "${id}" for ${robotId}; configured: `
+        + `${Object.keys(this._docks).join(', ') || '(none)'}`);
+      return;
+    }
+    const handle = await this._send(robotId, this._sdk.dock({
+      dockLocation: this._converter.toLocationPoint(dock), dockActions: ['CHARGE'],
+    }));
+    if (handle) this._trackInFlight(robotId, handle);
+  };
+
+  /** Remembers the in-flight motion request so a cancel-nav can cancel it. */
+  _trackInFlight = (robotId, handle) => {
+    this._inFlight.set(robotId, handle);
+    // Free the slot on completion however it ends, so a later cancel-nav pauses rather than
+    // trying to cancel a finished request.
+    if (handle.completion) {
+      handle.completion().catch(() => {}).finally(() => {
+        if (this._inFlight.get(robotId) === handle) this._inFlight.delete(robotId);
+      });
+    }
+  };
+
   /** Handles the deployment's pause action. */
   onPause = async (robotId) => {
     if (!this._roster.isAdmitted(robotId)) return;
@@ -204,15 +291,16 @@ class IsoCommandRouter {
     await this._send(robotId, this._sdk.resumeImr());
   };
 
-  /** Sends one request detail. Never throws onto the MQTT callback. */
+  /** Sends one request detail; returns its handle, or undefined on failure. Never throws onto the MQTT callback. */
   _send = async (robotId, detail) => {
     try {
-      await this._imrfm.sendRequest({
+      return await this._imrfm.sendRequest({
         destination: robotId, destinationType: 'IMR', details: [detail],
       });
     } catch (err) {
       console.warn(
         `ISO 21423 robots: ${detail.type} request failed for ${robotId}: ${err.message}`);
+      return undefined;
     }
   };
 
@@ -236,4 +324,4 @@ class IsoCommandRouter {
   };
 }
 
-export { IsoCommandRouter, parseNavGoal, ECHO_SUBTOPIC };
+export { IsoCommandRouter, parseNavGoal, parseDockCommand, customCommandDetail, ECHO_SUBTOPIC };

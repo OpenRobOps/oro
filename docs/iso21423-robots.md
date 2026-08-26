@@ -71,9 +71,11 @@ its own `enabled` flag, its own broker and its own credential.
       "commandTopics": {
         "navGoal": "ros/loc/nav_goal",
         "cancelNav": "ros/nav/goal_to_current_pose",
+        "customCommand": "custom_command/ros",
         "pause": null,
         "resume": null
       },
+      "docks": {},
       "attributeSources": {
         "online": "agentOnline",
         "pose": "pose",
@@ -301,6 +303,23 @@ agent:
   opposite of what "cancel" means to the operator. With no odometry seen yet for the robot, there is
   nothing to aim at, so ORO no-ops and logs a diagnostic rather than fabricating a goal.
 
+- Any **`PublishToTopic` action** (`commandTopics.customCommand`, default `custom_command/ros`)
+  → its `message` is forwarded verbatim as an OpenRobOps-defined request detail:
+  ```json
+  { "type": "customCommand", "version": "1.0", "properties": { "command": "<message>" } }
+  ```
+  ISO 21423 §6 leaves the action `type` vocabulary open (it also allows vendor `format`s, but the
+  SDK's executor currently accepts only `ISO-21423`, so none is set); a robot opts in by listing
+  `customCommand` in its identity's `capabilities.accepts` (the SDK refuses to send it otherwise)
+  and republishes `properties.command` wherever its old agent used to. This is how deployment
+  actions such as the flatland simulation's battery hacks reach an ISO robot.
+- **`dock` / `dock=<id>` messages** (on that same subtopic) are special-cased into the **native ISO
+  `dock`** action with `dockActions: ["CHARGE"]`, so a standard ISO robot can be docked from ORO
+  without knowing anything about OpenRobOps. Docks are configured in `iso21423.robots.docks` as
+  `{ "<id>": { "x", "y" } }` in ORO's map frame (converted into the CCS on the way out; ids are
+  case-insensitive). A bare `dock` picks the dock nearest the robot's last-seen position. An
+  in-flight `dock` is cancelled by `CancelNavGoal` exactly like a `move`.
+
 Because these commands travel through ORO's Actions framework unchanged, ISO robots get the same
 operator locks, argument validation and audit logging as wire robots, for free.
 
@@ -319,10 +338,9 @@ type does this today, so the knob is forward-looking until such an `ActionDefini
   protocol dispatch.
 - **The robot's ISO uuid is its ORO robot id.** It is visible verbatim in ORO's URLs and UI — there
   is no separate, friendlier ORO robot id and no alias mapping.
-- **`dock`/`undock` and ISO request status are not surfaced.** ORO has no docking action, and a
-  translated command's ISO outcome (success, failure, in-progress) is not fed back into ORO's
-  action-execution status API — that API only tracks `RunScript` executions
-  (`app/imports/server/rest/actions.js:143`).
+- **ISO request status is not surfaced.** A translated command's ISO outcome (success, failure,
+  in-progress) is not fed back into ORO's action-execution status API — that API only tracks
+  `RunScript` executions (`app/imports/server/rest/actions.js:143`). `undock` has no ORO trigger.
 - **A nav goal is acknowledged on receipt, not on arrival.** The synthesized `oro.Echo` this module
   sends back means only that the ISO `move` request was sent to the robot, matching ORO's own
   "received" semantics for any agent command — it says nothing about whether the robot ever reaches

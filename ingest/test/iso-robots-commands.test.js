@@ -1,6 +1,8 @@
 import assert from 'assert';
 
-import { IsoCommandRouter, parseNavGoal } from '../src/server/isoRobots/commands';
+import {
+  IsoCommandRouter, parseNavGoal, parseDockCommand, customCommandDetail,
+} from '../src/server/isoRobots/commands';
 
 const UUID = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 const CCS_ID = '22222222-2222-4222-8222-222222222222';
@@ -18,7 +20,13 @@ const sdk = {
   move: (props) => ({ type: 'move', properties: props }),
   pauseImr: () => ({ type: 'pauseImr', properties: {} }),
   resumeImr: () => ({ type: 'resumeImr', properties: {} }),
+  dock: (props) => ({ type: 'dock', properties: props }),
 };
+
+// oro.CustomCommandRosMessage stand-in: the fake broker hands listeners a JSON buffer.
+const customCommandBuffer = (cmd) => Buffer.from(JSON.stringify({ ts: 1, cmd }));
+// ORO map frame; the converter above shifts these by +10 into the CCS.
+const DOCKS = { a: { x: 9, y: 18.5 }, d: { x: 11.5, y: 1.5 } };
 
 /** Stands in for IsoTelemetryIngester.lastCcsPose — `pose: null` means no odometry seen yet. */
 const fakeTelemetry = (pose = { locationPoint: { ccsId: CCS_ID, x: 30, y: 40, z: 0 }, yaw: 1.25 }) =>
@@ -51,12 +59,16 @@ function fakeOroMqtt() {
     listeners,
     echoes,
     registerListener: (subtopic, cb) => { listeners[subtopic] = cb; },
-    lookupType: () => ({ encode: (m) => ({ finish: () => Buffer.from(JSON.stringify(m)) }) }),
+    lookupType: () => ({
+      encode: (m) => ({ finish: () => Buffer.from(JSON.stringify(m)) }),
+      decode: (buf) => JSON.parse(buf.toString()),
+    }),
     publishProtobuf: async (robotId, subtopic, msg) => { echoes.push({ robotId, subtopic, msg }); },
   };
 }
 
 const TOPICS = {
+  customCommand: 'custom_command/ros',
   navGoal: 'ros/loc/nav_goal',
   cancelNav: 'ros/nav/goal_to_current_pose',
   pause: 'ros/fleet/pause',
@@ -76,6 +88,7 @@ function routerFor(opts = {}) {
       converter,
       sdk,
       commandTopics: TOPICS,
+      docks: DOCKS,
       telemetry: fakeTelemetry(),
       ...opts,
     }),
@@ -112,7 +125,8 @@ describe('iso-robots IsoCommandRouter', () => {
     const { router, oroMqtt } = routerFor();
     router.register();
     assert.deepStrictEqual(Object.keys(oroMqtt.listeners).sort(), [
-      'ros/fleet/pause', 'ros/fleet/resume', 'ros/loc/nav_goal', 'ros/nav/goal_to_current_pose',
+      'custom_command/ros', 'ros/fleet/pause', 'ros/fleet/resume', 'ros/loc/nav_goal',
+      'ros/nav/goal_to_current_pose',
     ]);
   });
 
@@ -122,7 +136,7 @@ describe('iso-robots IsoCommandRouter', () => {
     });
     router.register();
     assert.deepStrictEqual(Object.keys(oroMqtt.listeners).sort(), [
-      'ros/loc/nav_goal', 'ros/nav/goal_to_current_pose',
+      'custom_command/ros', 'ros/loc/nav_goal', 'ros/nav/goal_to_current_pose',
     ]);
   });
 
@@ -221,5 +235,77 @@ describe('iso-robots IsoCommandRouter', () => {
     const { router } = routerFor({ imrfm: fakeImrfm({ fail: 'broker down' }) });
     await router.onPause(UUID);
     await router.onCancelNav(UUID);
+  });
+});
+
+describe('iso-robots parseDockCommand / customCommandDetail', () => {
+  it('recognises dock and dock=<id> (id lower-cased), nothing else', () => {
+    assert.deepStrictEqual(parseDockCommand('dock'), { dockId: null });
+    assert.deepStrictEqual(parseDockCommand('dock=A'), { dockId: 'a' });
+    assert.strictEqual(parseDockCommand('dock='), undefined);
+    assert.strictEqual(parseDockCommand('docking'), undefined);
+    assert.strictEqual(parseDockCommand('charge'), undefined);
+  });
+
+  it('wraps a message in a customCommand detail (vendor type, default ISO-21423 format)', () => {
+    assert.deepStrictEqual(customCommandDetail('charge'), {
+      type: 'customCommand', version: '1.0', blocking: true, atomic: false,
+      properties: { command: 'charge' },
+    });
+  });
+});
+
+describe('iso-robots IsoCommandRouter custom commands', () => {
+  it('forwards a PublishToTopic message verbatim as a customCommand request', async () => {
+    const { router, imrfm } = routerFor();
+    await router.onCustomCommand(UUID, customCommandBuffer('charge'));
+    assert.strictEqual(imrfm.sent.length, 1);
+    assert.strictEqual(imrfm.sent[0].destination, UUID);
+    assert.deepStrictEqual(imrfm.sent[0].details, [customCommandDetail('charge')]);
+  });
+
+  it('translates dock=<id> to the native ISO dock action at that dock, in the CCS', async () => {
+    const { router, imrfm } = routerFor();
+    await router.onCustomCommand(UUID, customCommandBuffer('dock=A'));
+    assert.deepStrictEqual(imrfm.sent[0].details, [{
+      type: 'dock',
+      properties: { dockLocation: { ccsId: CCS_ID, x: 19, y: 28.5, z: 0 }, dockActions: ['CHARGE'] },
+    }]);
+  });
+
+  it('picks the dock nearest the robot for a bare dock', async () => {
+    // Robot is at CCS (30,40) = map (20,30): dock a (9,18.5) is nearer than d (11.5,1.5).
+    const { router, imrfm } = routerFor();
+    await router.onCustomCommand(UUID, customCommandBuffer('dock'));
+    assert.strictEqual(imrfm.sent[0].details[0].properties.dockLocation.x, 19);
+    const { router: r2, imrfm: i2 } = routerFor({ telemetry: fakeTelemetry(
+      { locationPoint: { ccsId: CCS_ID, x: 21, y: 12, z: 0 }, yaw: 0 }) });
+    await r2.onCustomCommand(UUID, customCommandBuffer('dock'));
+    assert.strictEqual(i2.sent[0].details[0].properties.dockLocation.x, 21.5);
+  });
+
+  it('a dock is cancelled by cancel-nav like a move', async () => {
+    const { router, imrfm } = routerFor();
+    await router.onCustomCommand(UUID, customCommandBuffer('dock=d'));
+    await router.onCancelNav(UUID);
+    assert.strictEqual(imrfm.handles[0].canceled, true);
+    assert.strictEqual(imrfm.sent.length, 1);
+  });
+
+  it('ignores an unknown dock id, a bare dock with no odometry, and an uncalibrated CCS', async () => {
+    const { router, imrfm } = routerFor();
+    await router.onCustomCommand(UUID, customCommandBuffer('dock=zz'));
+    const { router: r2, imrfm: i2 } = routerFor({ telemetry: fakeTelemetry(null) });
+    await r2.onCustomCommand(UUID, customCommandBuffer('dock'));
+    const { router: r3, imrfm: i3 } = routerFor({ converter: { ...converter, calibrated: false, reason: 'x' } });
+    await r3.onCustomCommand(UUID, customCommandBuffer('dock=a'));
+    assert.strictEqual(imrfm.sent.length + i2.sent.length + i3.sent.length, 0);
+  });
+
+  it('never lets a decode failure or a send failure escape onto the MQTT callback', async () => {
+    const { router, imrfm } = routerFor({ imrfm: fakeImrfm({ fail: 'NotCapable' }) });
+    await router.onCustomCommand(UUID, customCommandBuffer('reset'));
+    assert.strictEqual(imrfm.sent.length, 1);
+    await router.onCustomCommand(UUID, Buffer.from('not json'));
   });
 });

@@ -183,6 +183,7 @@ class IsoRobotsModule {
         converter: this._converter,
         sdk: this._sdk,
         commandTopics: config.commandTopics,
+        docks: config.docks,
         telemetry: this._ingester,      // for lastCcsPose (decision 15)
         logging: config.logging,
       });
