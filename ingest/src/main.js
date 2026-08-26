@@ -56,6 +56,8 @@ import {
 //   GpsModule,
   UpstreamModule,
 } from './server/modules';
+import IsoRobotsModule from './server/isoRobots';
+import { isoModeEnabled } from './server/isoRobots/config';
 
 // Read settings from configuration file
 // TODO Allow passing configuration file path from an environment variable
@@ -79,6 +81,7 @@ let queue;
 let objectsManager;
 let attributesManager;
 let upstreamModule;
+let isoRobots;
 
 async function run() {
   console.log('---------------------------------------------------------');
@@ -103,6 +106,10 @@ async function run() {
   // robot telemetry to an upstream MQTT broker (another ORO / InOrbit).
   // This module is started earlier and we attempt to wait for connection so that any incoming mqtt message
   // (including retained messages; robot states) are forwarded immediately upon connecting our local mqtt broker.
+  if (isoModeEnabled(settings) && settings.upstream?.enabled) {
+    console.warn('UpstreamModule (InOrbit forwarder) is enabled but ingest is in ISO 21423 mode; '
+      + 'it will forward nothing. Disable settings.upstream, or disable iso21423.robots.');
+  }
   if (settings.upstream?.enabled) {
     upstreamModule = new UpstreamModule({ mqtt, mqttConfig: settings.mqtt });
     await upstreamModule.load(settings.upstream);
@@ -130,7 +137,21 @@ async function run() {
   // TODO Separate init from run and make sure the service
   // is considered ready (including readiness probe) when connection
   // to MQTT has succeeded.
-  mqtt.run(settings.mqtt);
+  const isoMode = isoModeEnabled(settings);
+
+  // ISO mode (decision 1): this deployment's robots speak ISO 21423, not the InOrbit wire
+  // protocol, so none of the protobuf telemetry modules would ever receive a message. Everything
+  // protocol-agnostic stays: Mongo, the worker queues, AttributesManager, DerivedAttributesService
+  // and PeerClient are all loaded above and below this block, untouched.
+  //
+  // `odometryEnabled: false` drops OroMqtt's unconditional `r/+/ros/odometry/+` subscription
+  // (src/server/mqtt.js:302, :402-404) — an ISO deployment has no such publisher.
+  //
+  // NOTE: `noDefaultListeners` (src/server/mqtt.js:291-297) is deliberately NOT passed. It would
+  // also drop the built-in `echo` listener, and IsoRobotsModule *synthesizes* echoes so the app's
+  // publishAsync round trip completes (decision 9). The `logfiles_update` listener is harmless
+  // dead weight in ISO mode; dropping it would need a third flag in mqtt.js and is not worth it.
+  mqtt.run({ ...settings.mqtt, ...(isoMode ? { odometryEnabled: false } : {}) });
 
   // // Initialize profiler
   // profiler = new Profiler({
@@ -138,19 +159,24 @@ async function run() {
   //   settings: settings.profiler
   // }).load();
 
-  // Initialize modules
-  new BasicsModule(mqtt).load();
-  new SystemModule(mqtt).load();
-  new CustomDataModule({ mqtt, mongo }).load();
-  new RobotEventsModule({ mqtt, mongo }).load();
-  new DiagnosticsModule(mqtt).load(moduleSettings.diagnostics);
-  new CustomCommandsModule(mqtt).load();
+  if (isoMode) {
+    console.log('Ingest is in ISO 21423 mode: InOrbit wire-protocol modules are NOT loaded');
+    isoRobots = new IsoRobotsModule({ mongo, mqtt, workerQueue: queue });
+    await isoRobots.load(settings.iso21423, { oroMqttSettings: settings.mqtt });
+  } else {
+    new BasicsModule(mqtt).load();
+    new SystemModule(mqtt).load();
+    new CustomDataModule({ mqtt, mongo }).load();
+    new RobotEventsModule({ mqtt, mongo }).load();
+    new DiagnosticsModule(mqtt).load(moduleSettings.diagnostics);
+    new CustomCommandsModule(mqtt).load();
 
-  await new RobotLocalizationModule({
-    mqtt,
-    objectsManager,
-    workerQueue: queue
-  }).load(moduleSettings.robotLocalization);
+    await new RobotLocalizationModule({
+      mqtt,
+      objectsManager,
+      workerQueue: queue
+    }).load(moduleSettings.robotLocalization);
+  }
   // new DataBagsModule(mqtt, timeseriesApi).load(moduleSettings.databags);
   // new AlertsModule(mqtt).load();
   // new StatesModule(mqtt).load(moduleSettings.states);
@@ -174,6 +200,7 @@ async function run() {
   console.log('Ingest service ready for business');
   console.log('---------------------------------------------------------');
 
+ 
   // Write out readiness probe file. This is used by the k8s deployment
   // to confirm the service is up and open for business.
   // fs.writeFileSync('/tmp/ready', 'ready');
@@ -184,6 +211,7 @@ async function shutdown() {
   console.log('Ingest service shutdown initiated at ' + moment().format());
   // Shutdown all modules cleanly
   upstreamModule && await upstreamModule.shutdown();
+  isoRobots && await isoRobots.shutdown();
   mqtt && await mqtt.shutdown();
   storage && await storage.shutdown();
   mongo && await mongo.shutdown();
