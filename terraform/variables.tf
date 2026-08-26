@@ -155,3 +155,15 @@ variable "upstream_deny_topic_suffixes" {
   type        = list(string)
   default     = ["in_cmd", "modules/set_state"]
 }
+
+variable "iso21423_robots_enabled" {
+  description = "Enable ISO 21423 ISO Robots mode in ingest: ISO-native robots join the fleet. Disabled by default."
+  type        = bool
+  default     = false
+}
+
+variable "iso21423_upstream_enabled" {
+  description = "Enable the ISO 21423 Upstream bridge in ingest: present ORO's fleet to an upper ISO fleet manager. Disabled by default."
+  type        = bool
+  default     = false
+}

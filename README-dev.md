@@ -65,6 +65,7 @@ The following components are run by the previous scripts:
 | Web / App | Meteor app + MongoDB (`./run.sh` in `/app`); main UI | 3000 |
 | MongoDB | Database used by Meteor (run via `/app` run.sh) | 3001 |
 | Ingest | Ingest service (`./run.sh` in `/ingest`); connects to MQTT and MongoDB | — |
+| ISO 21423 (optional) | ISO-native robots join the fleet via ingest, disabled by default — see `docs/iso21423-robots.md` | — |
 
 ## Instance initial setup
 

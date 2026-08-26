@@ -151,6 +151,10 @@ locals {
       peerKey           = random_password.peer_key.result
       connectionPooling = true
     }
+    iso21423 = {
+      robots   = { enabled = var.iso21423_robots_enabled }
+      upstream = { enabled = var.iso21423_upstream_enabled }
+    }
   }
 
   # When upstream is disabled, only `enabled = false` is written so no other

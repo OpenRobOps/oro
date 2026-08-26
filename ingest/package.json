@@ -5,6 +5,7 @@
   "type": "commonjs",
   "main": "src/main.js",
   "scripts": {
+    "build": "node scripts/build.js",
     "test": "npm run test:unit -- $@",
     "test:unit": "NODE_PRESERVE_SYMLINKS=1 mocha -t 5000 --require @babel/register --require test/it-helper --delay --exit \"test/**/*.test.js\" ",
     "test:unit:report": "NODE_PRESERVE_SYMLINKS=1 mocha -t 5000 --reporter mocha-junit-reporter --reporter-options mochaFile=junit_ingest.xml --require @babel/register --require test/it-helper --delay --exit \"test/**/*.test.js\" ",
@@ -39,5 +40,8 @@
     "mongo-unit": "^3.4.0",
     "nodemon": "^3.1.14",
     "sinon": "^21.0.0"
+  },
+  "optionalDependencies": {
+    "@openrobops/iso21423": "file:../../iso21423/ts-sdk"
   }
 }
