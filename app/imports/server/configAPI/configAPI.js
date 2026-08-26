@@ -29,6 +29,7 @@ import ActionConfigAPIHandler from './actionDefinitions';
 import DashboardsConfigAPIHandler from './dashboards';
 import StatusConfigAPIHandler from './statusDefinitions';
 import ModuleStateConfigAPIHandler from './moduleState';
+import IsoRobotConfigAPIHandler from './isoRobots';
 // import MissionTrackingAPIHandler from './missionTracking';
 // import RobotFootprintAPIHandler from './robotFootprint';
 // import SpatialTransformationConfigAPIHandler from './spatialTransformation';
@@ -53,6 +54,7 @@ import {
   buildListFiltersSchema,
   KIND_DASHBOARD_DEFINITION,
   KIND_MODULE_STATE,
+  KIND_ISO_ROBOT,
 } from '../../shared/configAPI';
 import { getSystemUser } from '../../shared/roles';
 // import PeerApiKindHandler from './peerApiKindHandler';
@@ -108,6 +110,7 @@ export default class ConfigAPI {
       [KIND_ACTION_DEFINITION]: new ActionConfigAPIHandler(this),
       [KIND_DASHBOARD_DEFINITION]: new DashboardsConfigAPIHandler(this),
       [KIND_MODULE_STATE]: new ModuleStateConfigAPIHandler(this),
+      [KIND_ISO_ROBOT]: new IsoRobotConfigAPIHandler(this),
       // [KIND_MISSION_TRACKING]: new MissionTrackingAPIHandler(this),
       // [KIND_ROBOT_FOOTPRINT]: new RobotFootprintAPIHandler(this),
       // [KIND_PREFERENCES]: new PreferencesConfigAPIHandler(this),

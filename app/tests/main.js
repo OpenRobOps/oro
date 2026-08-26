@@ -41,6 +41,7 @@ import '../imports/server/test/configAPI/configAPIModuleState.test.js'
 import '../imports/server/test/timeseries/timeseriesStore.test.js'
 import '../imports/server/test/timeseries/timeseriesManager.test.js'
 import '../imports/server/test/isoMqttConfig.test'
+import '../imports/server/test/isoRobots.test'
 
 describe("app", function () {
   it("package.json has correct name", async function () {
