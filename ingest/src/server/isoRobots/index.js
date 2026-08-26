@@ -33,6 +33,7 @@
 import { validateConfig } from './config';
 import { AdmittedRoster } from './roster';
 import { IsoTelemetryIngester } from './ingestTelemetry';
+import { IsoCommandRouter } from './commands';
 import { COLLECTIONS } from '../../shared/constants';
 import { CcsConverter } from '../iso21423/ccs';
 import AttributesManager from '../attributes';
@@ -80,6 +81,7 @@ class IsoRobotsModule {
     this._converter = null;
     this._roster = null;
     this._ingester = null;
+    this._commands = null;
   }
 
   /**
@@ -165,6 +167,24 @@ class IsoRobotsModule {
       });
       this._observe = (uuid) => this._ingester.observe(uuid);
       this._unobserve = (uuid) => this._ingester.unobserve(uuid);
+
+      this._commands = new IsoCommandRouter({
+        oroMqtt: this._oroMqtt,
+        imrfm: this._imrfm,
+        roster: this._roster,
+        converter: this._converter,
+        sdk: this._sdk,
+        commandTopics: config.commandTopics,
+        telemetry: this._ingester,      // for lastCcsPose (decision 15)
+        logging: config.logging,
+      });
+      this._commands.register();
+      if (!config.commandTopics.pause || !config.commandTopics.resume) {
+        console.log('ISO 21423 robots: no pause/resume subtopics configured, so ISO pauseImr and '
+          + 'resumeImr are only reachable through the cancel-nav fallback. Set '
+          + 'iso21423.robots.commandTopics.pause/.resume to the subtopics your pauseRobot and '
+          + 'resumeRobot ActionDefinitions publish to.');
+      }
 
       // Fleet-wide identity watch: purely so an operator learns that a robot is on the network but
       // not admitted. ORO subscribes to no telemetry for it and sends it nothing (Gate 2).
