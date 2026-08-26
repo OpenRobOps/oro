@@ -51,8 +51,8 @@ jobs:
         env:
           ISO_SDK_READ_TOKEN: ${{ secrets.ISO_SDK_READ_TOKEN }}
         run: |
-          # iso21243 is private: read via the ISO_SDK_READ_TOKEN fine-grained PAT (contents: read).
-          git clone --depth 1 "https://x-access-token:${ISO_SDK_READ_TOKEN}@github.com/OpenRobOps/iso21243" ../iso21423
+          # iso21423 is private: read via the ISO_SDK_READ_TOKEN fine-grained PAT (contents: read).
+          git clone --depth 1 "https://x-access-token:${ISO_SDK_READ_TOKEN}@github.com/OpenRobOps/iso21423" ../iso21423
           cd ../iso21423/ts-sdk
           npm ci
           npm run build
