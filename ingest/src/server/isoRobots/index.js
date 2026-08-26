@@ -31,6 +31,7 @@
  * would turn a missing package into an ingest boot failure.
  */
 import { validateConfig } from './config';
+import { AdmittedRoster } from './roster';
 
 class IsoRobotsModule {
   /**
@@ -48,6 +49,7 @@ class IsoRobotsModule {
     this._sdk = null;
     this._client = null;
     this._imrfm = null;
+    this._roster = null;
   }
 
   /**
@@ -60,6 +62,8 @@ class IsoRobotsModule {
    * @returns {Promise<this>}
    */
   load = async (settings, opts = {}) => {
+    // eslint-disable-next-line global-require
+    const { COLLECTIONS } = require('../shared/constants');
     const { config, errors } = validateConfig(settings, opts.oroMqttSettings);
     if (errors.length) {
       console.error('ISO 21423 robots: misconfigured, not starting:');
@@ -104,6 +108,15 @@ class IsoRobotsModule {
       this._client.on('error', (err) => console.warn('ISO 21423 robots client error:', err.message));
       this._client.on('diagnostic', (d) => config.logging && console.log('ISO 21423 robots:', d));
       console.log(`ISO 21423 robots is ON: IMRFM ${config.imrfmId} at ${config.mqtt.url}`);
+
+      this._roster = new AdmittedRoster({
+        collection: this._mongo.getCollection(COLLECTIONS.ROBOTS),
+        pollMs: config.rosterPollMs,
+        logging: config.logging,
+        onAdmit: async (uuid) => { await this._observe(uuid); },
+        onRevoke: async (uuid) => { await this._unobserve(uuid); },
+      });
+      await this._roster.start();
     } catch (err) {
       console.error('ISO 21423 robots failed to connect:', err.message);
       this._client = null;
@@ -113,6 +126,7 @@ class IsoRobotsModule {
 
   /** Closes the ISO client and therefore its MQTT session. Safe when the module never started. */
   shutdown = async () => {
+    this._roster && this._roster.stop();
     if (!this._client) return;
     try {
       await this._client.close({ timeout: 5000 });
@@ -132,8 +146,17 @@ class IsoRobotsModule {
       status: health.connection === 'connected' ? 'UP' : 'DOWN',
       imrfmId: this._config.imrfmId,
       connection: health.connection,
-      // Filled in by later tasks: `admitted` (Task 2), `ccs` (Task 3), `observed` (Task 4).
+      admitted: this._roster ? this._roster.admittedIds().length : 0,
+      // Filled in by later tasks: `ccs` (Task 3), `observed` (Task 4).
     };
+  };
+
+  // Task 4 fills these
+  _observe = async (uuid) => {
+  };
+
+  // Task 4 fills these
+  _unobserve = async (uuid) => {
   };
 }
 
