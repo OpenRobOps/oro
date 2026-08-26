@@ -18,14 +18,18 @@ import { assert } from 'chai';
 
 import { Robots } from '../../lib/collections';
 import { IsoRobotConfigAPIHandler } from '../configAPI/isoRobots';
-import { ValidationError, SchemaError } from '../../shared/configAPI';
+import { ValidationError, SchemaError, AuthorizationError, LIST_FORMAT_FULL } from '../../shared/configAPI';
+import OroRoles from '../roles';
+import { ROLE_VIEWER } from '../../lib/roles';
+import { createUser } from './configAPI';
+import { resetDatabase } from './setup';
 
 if (!Meteor.isTest) {
   throw new Error('This is TEST code only');
 }
 
 const UUID = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
-const SYSTEM_USER = { userId: 'oro' };
+const SYSTEM_USER = { _id: 'oro' };
 
 const handler = () => new IsoRobotConfigAPIHandler({});
 const objectFor = (spec = {}, id = UUID) => ({
@@ -34,7 +38,42 @@ const objectFor = (spec = {}, id = UUID) => ({
 
 describe('IsoRobotConfigAPIHandler', function () {
   beforeEach(async function () {
-    await Robots.removeAsync({ _id: UUID });
+    await resetDatabase();
+    await new OroRoles().createDefaultRoles();
+  });
+
+  // ---- authorization ------------------------------------------------------
+
+  it('apply: rejects users without fleet/configure permission', async function () {
+    const user = await createUser({ role: ROLE_VIEWER });
+    try {
+      await handler().apply({ configObject: objectFor({ label: 'Nope' }), user });
+      assert.fail('expected an AuthorizationError');
+    } catch (e) {
+      assert.instanceOf(e, AuthorizationError);
+    }
+  });
+
+  it('clear: rejects users without fleet/configure permission', async function () {
+    const user = await createUser({ role: ROLE_VIEWER });
+    await handler().apply({ configObject: objectFor({ label: 'Still here' }), user: SYSTEM_USER });
+    try {
+      await handler().clear({ configObject: objectFor({}), user });
+      assert.fail('expected an AuthorizationError');
+    } catch (e) {
+      assert.instanceOf(e, AuthorizationError);
+    }
+    assert.isOk(await Robots.findOneAsync({ _id: UUID }), 'unauthorized clear must not delete');
+  });
+
+  it('list: rejects users without fleet/configure permission', async function () {
+    const user = await createUser({ role: ROLE_VIEWER });
+    try {
+      await handler().list({ user });
+      assert.fail('expected an AuthorizationError');
+    } catch (e) {
+      assert.instanceOf(e, AuthorizationError);
+    }
   });
 
   it('derives the version suffix from the protocol namespace, never hardcoding it', async function () {
@@ -114,5 +153,15 @@ describe('IsoRobotConfigAPIHandler', function () {
     const listed = await handler().list({ user: SYSTEM_USER });
     assert.deepEqual(listed.map((o) => o.metadata.id), [UUID]);
     await Robots.removeAsync({ _id: 'flatland-ros2' });
+  });
+
+  it('lists in full format with the spec label and hostname', async function () {
+    await handler().apply({
+      configObject: objectFor({ label: 'Lift-9 #3', hostname: 'lift9-3.local' }),
+      user: SYSTEM_USER,
+    });
+    const listed = await handler().list({ user: SYSTEM_USER, format: LIST_FORMAT_FULL });
+    assert.equal(listed.length, 1);
+    assert.deepEqual(listed[0].spec, { label: 'Lift-9 #3', hostname: 'lift9-3.local' });
   });
 });

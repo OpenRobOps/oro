@@ -32,10 +32,30 @@
 import Validator from 'fastest-validator';
 
 import Robot from '../model/robot';
+import OroRoles from '../roles';
 import { Robots } from '../../lib/collections';
-import { SchemaError, ValidationError, LIST_FORMAT_SHORT } from '../../shared/configAPI';
+import {
+  SchemaError, ValidationError, AuthorizationError, LIST_FORMAT_SHORT,
+} from '../../shared/configAPI';
+import { RESOURCE_SINGLETONS, ACCESS_LEVEL_CONFIGURE, isSystemUser } from '../../shared/roles';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+// Same guard as moduleState.js: admitting/revoking fleet robots requires configure access on the
+// fleet singleton, mirrored across every kind handler rather than left to ConfigAPI's base check
+// (which only verifies a user exists).
+const assertAuthorized = async (user) => {
+  if (!user) {
+    throw new AuthorizationError('Unauthorized');
+  }
+  if (!isSystemUser(user) && !await new OroRoles().canAccessSystemElement(
+    user._id,
+    RESOURCE_SINGLETONS.FLEET,
+    ACCESS_LEVEL_CONFIGURE,
+  )) {
+    throw new AuthorizationError('Unauthorized');
+  }
+};
 
 /**
  * ISO 21423 protocol namespace; must match the SDK's `ROOT_NAMESPACE`
@@ -90,7 +110,8 @@ export class IsoRobotConfigAPIHandler {
    *
    * @returns {Promise<Array<Object>>} config objects in the same shape `apply` accepts
    */
-  list = async ({ id = null, format = LIST_FORMAT_SHORT } = {}) => {
+  list = async ({ id = null, user, format = LIST_FORMAT_SHORT } = {}) => {
+    await assertAuthorized(user);
     const query = id ? { _id: id } : {};
     const docs = await Robots.find(query, { projection: { name: 1, hostname: 1 } }).fetchAsync();
     return docs
@@ -111,7 +132,8 @@ export class IsoRobotConfigAPIHandler {
    * @throws {ValidationError} when `metadata.id` is not a UUID
    * @throws {SchemaError} when the spec carries unknown keys
    */
-  apply = async ({ configObject }) => {
+  apply = async ({ configObject, user }) => {
+    await assertAuthorized(user);
     const uuid = String(configObject?.metadata?.id || '').toLowerCase();
     if (!UUID_RE.test(uuid)) {
       throw new ValidationError(
@@ -148,7 +170,8 @@ export class IsoRobotConfigAPIHandler {
    * membership is not the same decision as revoking the ability to publish, and
    * `mqtt_credentials.suspended` is the control for the latter.
    */
-  clear = async ({ configObject }) => {
+  clear = async ({ configObject, user }) => {
+    await assertAuthorized(user);
     const uuid = String(configObject?.metadata?.id || '').toLowerCase();
     if (!UUID_RE.test(uuid)) {
       throw new ValidationError('IsoRobot metadata.id must be the robot\'s ISO entity UUID');
