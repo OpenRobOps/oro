@@ -22,6 +22,7 @@ import { MqttLogins } from './collections';
 import { VALID_ID_REGEXP } from '../shared/constants';
 import { decryptPassword } from './mqttCredentialUtils';
 import { provisionRobotCredentials } from './mqttCredentialProvisioner';
+import { isoMqttConfigEndpoint } from './isoMqttConfig';
 import AgentManager from './agentManager';
 import AlertsManager from './alertsManager';
 import Robot from './model/robot';
@@ -137,6 +138,9 @@ const mqttConfigEndpoint = (fromRobot = true, defaultApiKey = undefined) => asyn
 };
 
 WebApp.connectHandlers.use('/mqtt_config', httpHandleExceptions(mqttConfigEndpoint(true)));
+
+WebApp.connectHandlers.use('/iso_mqtt_config',
+  httpHandleExceptions(isoMqttConfigEndpoint()));
 
 
 /**
