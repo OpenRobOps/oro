@@ -164,6 +164,10 @@ curl -X POST \
 owns status and pose once telemetry arrives. Re-applying an already-admitted robot updates only
 those display fields.
 
+Applying or clearing an `IsoRobot` object requires the calling user to have `configure` access on
+the fleet singleton (same guard as `ModuleState`) — a user with only, e.g., viewer access gets
+`Unauthorized` rather than admitting the robot.
+
 Clearing the object (`POST /api/configuration/clear` with the same `metadata`, no `spec`) revokes
 admission: ingest stops observing the robot on its next roster poll. It deliberately **does not**
 touch the robot's broker credential — being part of the fleet and being able to publish are
@@ -332,8 +336,11 @@ default, `null`) simply means this deployment has no way to issue that ISO reque
    `./scripts/generate-settings.sh` (or `kubectl apply` the updated Secret).
 2. Fill in the deployment-specific values Terraform does **not** generate: `iso21423.robots.imrfmId`
    (a UUID you choose for ORO's own IMRFM identity), `iso21423.robots.broker` (only if ISO robots
-   use a different broker than ORO's own), and `iso21423.ccs` (at least 3 reference points — see
-   [§6](#6-ccs-calibration)).
+   use a different broker than ORO's own), `iso21423.ccs` (at least 3 reference points — see
+   [§6](#6-ccs-calibration)), and `iso21423.robots.mqtt` — the broker username/password for this
+   *module's own* connection (`config.js` gives it no default, unlike `broker`). This is not a
+   robot credential: it's separate from the per-robot Gate-1 credentials each robot obtains via
+   `POST /iso_mqtt_config`.
 3. Restart ingest. Confirm in its log:
    ```
    Ingest is in ISO 21423 mode: InOrbit wire-protocol modules are NOT loaded
