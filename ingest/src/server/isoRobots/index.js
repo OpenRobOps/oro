@@ -32,8 +32,34 @@
  */
 import { validateConfig } from './config';
 import { AdmittedRoster } from './roster';
+import { IsoTelemetryIngester } from './ingestTelemetry';
 import { COLLECTIONS } from '../../shared/constants';
 import { CcsConverter } from '../iso21423/ccs';
+import AttributesManager from '../attributes';
+
+/**
+ * Body of the fleet-wide identity-watch callback: warns once per uuid when an ISO IMR identity is
+ * seen on the network but is not admitted. Extracted to a plain function so the `identity.id`
+ * mapping (controller ruling R2 — NOT `identity.entityUuid`, which would silently disable this
+ * warning for every unadmitted identity) has a direct unit test independent of a full `load()`.
+ *
+ * @param {Object} identity an `EntityIdentity` from `subscribeEntities`
+ * @param {Object} deps
+ * @param {Object} deps.roster the `AdmittedRoster`
+ * @param {Set<string>} deps.seenUnadmitted uuids already warned about this process
+ * @param {(name: string, data: Object) => void} deps.diagnostic `this._imrfm.ctx.diagnostic`
+ * @param {(msg: string) => void} [deps.warn=console.warn]
+ */
+const handleUnadmittedIdentity = (identity, { roster, seenUnadmitted, diagnostic, warn = console.warn }) => {
+  const uuid = String(identity.id || '').toLowerCase();
+  if (!uuid || roster.isAdmitted(uuid) || seenUnadmitted.has(uuid)) return;
+  seenUnadmitted.add(uuid);   // once per uuid per process — never a log flood
+  diagnostic('iso-robot-not-admitted', { entityUuid: uuid });
+  warn(
+    `ISO 21423 robots: IMR ${uuid} is publishing on the ISO network but is not admitted. `
+    + 'ORO is ignoring it. Admit it by applying an IsoRobot configuration object with '
+    + `id "${uuid}" (see docs/iso21423-robots.md).`);
+};
 
 class IsoRobotsModule {
   /**
@@ -53,6 +79,7 @@ class IsoRobotsModule {
     this._imrfm = null;
     this._converter = null;
     this._roster = null;
+    this._ingester = null;
   }
 
   /**
@@ -124,6 +151,32 @@ class IsoRobotsModule {
         onAdmit: async (uuid) => { await this._observe(uuid); },
         onRevoke: async (uuid) => { await this._unobserve(uuid); },
       });
+
+      this._client.sdk = this._sdk;   // EntityFilter et al., for the ingester's per-robot filters
+
+      this._ingester = new IsoTelemetryIngester({
+        client: this._client,
+        attributesManager: new AttributesManager(),   // singleton (src/server/attributes.js:65-66)
+        robotsColl: this._mongo.getCollection(COLLECTIONS.ROBOTS),
+        converter: this._converter,
+        sources: config.attributeSources,
+        roster: this._roster,
+        logging: config.logging,
+      });
+      this._observe = (uuid) => this._ingester.observe(uuid);
+      this._unobserve = (uuid) => this._ingester.unobserve(uuid);
+
+      // Fleet-wide identity watch: purely so an operator learns that a robot is on the network but
+      // not admitted. ORO subscribes to no telemetry for it and sends it nothing (Gate 2).
+      this._seenUnadmitted = new Set();
+      await this._client.subscribeEntities(this._sdk.EntityFilter.ofType('IMR'), (identity) => {
+        handleUnadmittedIdentity(identity, {
+          roster: this._roster,
+          seenUnadmitted: this._seenUnadmitted,
+          diagnostic: (name, data) => this._imrfm.ctx.diagnostic(name, data),
+        });
+      });
+
       await this._roster.start();
     } catch (err) {
       console.error('ISO 21423 robots failed to connect:', err.message);
@@ -135,6 +188,7 @@ class IsoRobotsModule {
   /** Closes the ISO client and therefore its MQTT session. Safe when the module never started. */
   shutdown = async () => {
     this._roster && this._roster.stop();
+    if (this._ingester) await this._ingester.stop();
     if (!this._client) return;
     try {
       await this._client.close({ timeout: 5000 });
@@ -155,19 +209,20 @@ class IsoRobotsModule {
       imrfmId: this._config.imrfmId,
       connection: health.connection,
       admitted: this._roster ? this._roster.admittedIds().length : 0,
+      observed: this._roster ? this._roster.admittedIds().length : 0,
       ccs: this._converter.calibrated ? 'calibrated' : 'uncalibrated',
-      // Filled in by later tasks: `observed` (Task 4).
     };
   };
 
-  // Task 4 fills these
+  // Overwritten in load() once the ingester exists. Left as no-ops so `AdmittedRoster`'s
+  // onAdmit/onRevoke callbacks (bound at construction, before the ingester exists) are always safe
+  // to call even if `load()` fails after constructing the roster but before wiring the ingester.
   _observe = async (uuid) => {
   };
 
-  // Task 4 fills these
   _unobserve = async (uuid) => {
   };
 }
 
 export default IsoRobotsModule;
-export { IsoRobotsModule };
+export { IsoRobotsModule, handleUnadmittedIdentity };
