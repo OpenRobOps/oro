@@ -62,6 +62,34 @@ describe('isoMqttConfig', function () {
   });
 
   describe('provisionIsoRobotCredentials', function () {
+    // Self-sufficient: CI runs `meteor test` with no --settings file, so
+    // Meteor.settings.mqtt is undefined. Bootstrap only what's missing —
+    // mirrors the save/restore pattern in apiKeys.test.js — so this suite
+    // also respects a real --settings file when run locally.
+    let originalSettings;
+
+    beforeEach(function () {
+      originalSettings = Meteor.settings;
+      const mqtt = Meteor.settings?.mqtt || {};
+      Meteor.settings = {
+        ...Meteor.settings,
+        mqtt: {
+          ...mqtt,
+          credentialEncryptionKey: mqtt.credentialEncryptionKey
+            || '0123456789abcdef'.repeat(4), // 64 hex chars = 32 bytes, AES-256-GCM
+          defaultBrokerId: mqtt.defaultBrokerId || 'local',
+          brokers: {
+            ...mqtt.brokers,
+            local: mqtt.brokers?.local || { hostname: 'localhost', port: 1883, protocol: 'mqtt' },
+          },
+        },
+      };
+    });
+
+    afterEach(function () {
+      Meteor.settings = originalSettings;
+    });
+
     it('refuses to mint credentials for a robot that was never admitted', async function () {
       try {
         await provisionIsoRobotCredentials(UUID, 'local');

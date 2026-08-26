@@ -46,6 +46,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-modules-
 
+      # TODO(iso-sdk-registry): remove once @openrobops/iso21423 is published and the file: link is flipped (Plan 5 Task 8).
+      - name: "Build the ISO 21423 SDK (file: dependency)"
+        run: |
+          git clone --depth 1 https://github.com/OpenRobOps/iso21243 ../iso21423
+          cd ../iso21423/ts-sdk
+          npm ci
+          npm run build
+
       - name: Install dependencies [if not cached]
         working-directory: ingest
         run: npm ci
