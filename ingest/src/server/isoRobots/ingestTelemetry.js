@@ -34,7 +34,10 @@
  */
 
 /** ISO operating states that mean "ORO cannot hear from this robot" (B.4 will included). */
+import { CUSTOM_DATA_RESOURCE, ISO_CUSTOM_FIELD, parseCustomData } from '../iso21423/customData';
+
 const OFFLINE_STATES = new Set(['OFFLINE', 'LOST_CONNECTION']);
+const KV_RESERVED_KEYS = new Set(['robotId', '_id']);   // as in modules/customData.js
 
 /**
  * Maps an ISO status message's `states` array onto ORO's online concept.
@@ -63,11 +66,13 @@ class IsoTelemetryIngester {
    * @param {boolean} [opts.logging=false]
    */
   constructor({
-    client, attributesManager, robotsColl, converter, sources, roster, logging = false,
+    client, attributesManager, robotsColl, keyValuesColl = null, converter, sources, roster,
+    logging = false,
   }) {
     this._client = client;
     this._attrs = attributesManager;
     this._robots = robotsColl;
+    this._keyValues = keyValuesColl;   // robot_key_values, feeding the UI's Key-Values widget
     this._converter = converter;
     this._sources = sources;
     this._roster = roster;
@@ -110,6 +115,8 @@ class IsoTelemetryIngester {
         (ev) => this.onOdometry(ev.entityUuid, ev.message)),
       this._client.subscribeResource('batteryStatus', filter,
         (ev) => this.onBattery(ev.entityUuid, ev.message)),
+      this._client.subscribeResource(CUSTOM_DATA_RESOURCE, filter,
+        (ev) => this.onCustomData(ev.entityUuid, ev.message)),
     ]);
     this._subs.set(uuid, subs);
     if (this._logging) console.log(`ISO 21423 robots: observing ${uuid}`);
@@ -205,6 +212,36 @@ class IsoTelemetryIngester {
    * Writes one batch of attribute values. Never throws: this runs on the ISO message callback,
    * and a Mongo hiccup must not tear down the subscription.
    */
+  /**
+   * Handles OpenRobOps' `customData` extension resource (raw text — extension resources have no
+   * schema): the pairs go through the same key-value path as a wire robot's custom data, so
+   * `keyValue` DataSourceDefinitions, statuses and incidents work unchanged, and into
+   * `robot_key_values` for the Key-Values widget.
+   */
+  onCustomData = async (uuid, text) => {
+    if (this._isRevoked(uuid)) return;
+    const parsed = parseCustomData(text);
+    if (!parsed) {
+      if (this._logging) console.warn(`ISO 21423 robots: malformed customData from ${uuid}`);
+      return;
+    }
+    const { ts, pairs } = parsed;
+    if (!pairs.length) return;
+    try {
+      await this._attrs.handleKeyValuePairs(uuid, ISO_CUSTOM_FIELD, pairs, ts);
+    } catch (err) {
+      if (this._logging) console.warn(`ISO 21423 robots: key-value save failed for ${uuid}: ${err.message}`);
+    }
+    if (!this._keyValues) return;
+    const $set = {};
+    pairs.forEach((kv) => { if (!KV_RESERVED_KEYS.has(kv.key)) $set[kv.key] = { value: kv.value, ts }; });
+    try {
+      await this._keyValues.updateOne({ _id: uuid }, { $set }, { upsert: true });
+    } catch (err) {
+      if (this._logging) console.warn(`ISO 21423 robots: robot_key_values update failed for ${uuid}: ${err.message}`);
+    }
+  };
+
   _save = async (robotId, attributeValues) => {
     if (!Object.keys(attributeValues).length) return;
     try {

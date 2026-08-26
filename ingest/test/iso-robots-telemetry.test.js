@@ -16,7 +16,17 @@ const converter = {
 
 function fakeAttributes() {
   const saved = [];
-  return { saved, saveAttributeValues: async (args) => { saved.push(args); } };
+  const keyValues = [];
+  return {
+    saved, keyValues,
+    saveAttributeValues: async (args) => { saved.push(args); },
+    handleKeyValuePairs: async (robotId, customField, pairs, ts) => { keyValues.push({ robotId, customField, pairs, ts }); },
+  };
+}
+
+function fakeKeyValuesColl() {
+  const updates = [];
+  return { updates, updateOne: async (q, u, o) => { updates.push({ q, u, o }); } };
 }
 
 function fakeRobots() {
@@ -164,5 +174,42 @@ describe('iso-robots IsoTelemetryIngester', () => {
     await ingester.onBattery(UUID, { batterySoc: 0.5 });
     assert.deepStrictEqual(attributesManager.saved, []);
     assert.deepStrictEqual(robotsColl.updates, []);
+  });
+});
+
+describe('iso-robots IsoTelemetryIngester customData', () => {
+  const payload = JSON.stringify({
+    timestamp: '2026-08-26T20:00:00.000Z', values: { echo: 'hello', battery_charging: 'true', n: 3 },
+  });
+
+  it('routes the pairs through the key-value path with the ISO custom field and the message timestamp', async () => {
+    const { ingester, attributesManager } = ingesterFor();
+    await ingester.onCustomData(UUID, payload);
+    assert.deepStrictEqual(attributesManager.keyValues, [{
+      robotId: UUID, customField: 'iso21423', ts: Date.parse('2026-08-26T20:00:00.000Z'),
+      pairs: [{ key: 'echo', value: 'hello' }, { key: 'battery_charging', value: 'true' }, { key: 'n', value: '3' }],
+    }]);
+  });
+
+  it('upserts robot_key_values for the Key-Values widget, skipping reserved keys', async () => {
+    const keyValuesColl = fakeKeyValuesColl();
+    const { ingester } = ingesterFor({ keyValuesColl });
+    await ingester.onCustomData(UUID, JSON.stringify({ values: { echo: 'x', _id: 'evil' } }));
+    assert.strictEqual(keyValuesColl.updates.length, 1);
+    const { q, u, o } = keyValuesColl.updates[0];
+    assert.deepStrictEqual(q, { _id: UUID });
+    assert.deepStrictEqual(Object.keys(u.$set), ['echo']);
+    assert.strictEqual(u.$set.echo.value, 'x');
+    assert.deepStrictEqual(o, { upsert: true });
+  });
+
+  it('ignores malformed payloads, empty value maps and revoked robots', async () => {
+    const { ingester, attributesManager } = ingesterFor();
+    await ingester.onCustomData(UUID, 'not json');
+    await ingester.onCustomData(UUID, JSON.stringify({ values: 'nope' }));
+    await ingester.onCustomData(UUID, JSON.stringify({ values: {} }));
+    const revoked = ingesterFor({ roster: { isAdmitted: () => false } });
+    await revoked.ingester.onCustomData(UUID, payload);
+    assert.strictEqual(attributesManager.keyValues.length + revoked.attributesManager.keyValues.length, 0);
   });
 });
