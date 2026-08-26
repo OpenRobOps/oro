@@ -32,6 +32,8 @@
  */
 import { validateConfig } from './config';
 import { AdmittedRoster } from './roster';
+import { COLLECTIONS } from '../../shared/constants';
+import { CcsConverter } from '../iso21423/ccs';
 
 class IsoRobotsModule {
   /**
@@ -49,6 +51,7 @@ class IsoRobotsModule {
     this._sdk = null;
     this._client = null;
     this._imrfm = null;
+    this._converter = null;
     this._roster = null;
   }
 
@@ -62,8 +65,6 @@ class IsoRobotsModule {
    * @returns {Promise<this>}
    */
   load = async (settings, opts = {}) => {
-    // eslint-disable-next-line global-require
-    const { COLLECTIONS } = require('../shared/constants');
     const { config, errors } = validateConfig(settings, opts.oroMqttSettings);
     if (errors.length) {
       console.error('ISO 21423 robots: misconfigured, not starting:');
@@ -109,6 +110,13 @@ class IsoRobotsModule {
       this._client.on('diagnostic', (d) => config.logging && console.log('ISO 21423 robots:', d));
       console.log(`ISO 21423 robots is ON: IMRFM ${config.imrfmId} at ${config.mqtt.url}`);
 
+      this._converter = CcsConverter.create(config.ccs, this._sdk);
+      if (!this._converter.calibrated) {
+        console.warn('ISO 21423 robots: pose ingestion and move commands are DISABLED — '
+          + this._converter.reason);
+        this._imrfm.ctx.diagnostic('ccs-uncalibrated', { reason: this._converter.reason });
+      }
+
       this._roster = new AdmittedRoster({
         collection: this._mongo.getCollection(COLLECTIONS.ROBOTS),
         pollMs: config.rosterPollMs,
@@ -147,7 +155,8 @@ class IsoRobotsModule {
       imrfmId: this._config.imrfmId,
       connection: health.connection,
       admitted: this._roster ? this._roster.admittedIds().length : 0,
-      // Filled in by later tasks: `ccs` (Task 3), `observed` (Task 4).
+      ccs: this._converter.calibrated ? 'calibrated' : 'uncalibrated',
+      // Filled in by later tasks: `observed` (Task 4).
     };
   };
 
