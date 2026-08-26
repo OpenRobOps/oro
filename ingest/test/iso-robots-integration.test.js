@@ -2,6 +2,7 @@ import assert from 'assert';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
+import * as sinon from 'sinon';
 
 // eslint-disable-next-line import/no-unresolved
 import { MemoryBroker } from '@openrobops/iso21423/testing';
@@ -245,5 +246,52 @@ describe('iso-robots integration', () => {
     await off.load({ robots: { enabled: false } });
     assert.strictEqual((await off.reportHealth()).status, 'OFF');
     await off.shutdown();
+  });
+
+  it('does not warn about an admitted robot whose identity was already retained before load '
+    + '(roster must start before the fleet-wide identity watch replays retained identities)', async () => {
+    const freshBroker = new MemoryBroker();
+    const preAdmitted = 'dddddddd-dddd-4ddd-8ddd-dddddddddddd';
+    await coll(COLLECTIONS.ROBOTS).insertOne({
+      _id: preAdmitted, name: 'Pre-connected', version: 'iso-21423-v1', updateStamp: Date.now(),
+      status: { agentOnline: false },
+    });
+    // Simulates a production restart: the robot's identity is retained on the broker BEFORE
+    // ORO's module even connects, so the SDK replays it synchronously as soon as
+    // subscribeEntities is called (client.ts: subscribeEntities iterates the already-warm cache).
+    const preConnected = await simulatedRobot(freshBroker, preAdmitted);
+
+    const freshModule = new IsoRobotsModule({
+      mongo: new MongoManager(), mqtt: oroMqtt, workerQueue: queue,
+    });
+    await freshModule.load(SETTINGS, { transport: freshBroker.createTransport() });
+    await settle();
+
+    assert.ok(!freshModule._seenUnadmitted.has(preAdmitted),
+      'a robot already admitted in Mongo before load() must never land in seenUnadmitted');
+
+    await preConnected.client.close();
+    await freshModule.shutdown();
+  });
+
+  it('closes the client when load() fails after connecting, instead of leaking the session', async () => {
+    const freshBroker = new MemoryBroker();
+    const sandbox = sinon.createSandbox();
+    const closeSpy = sandbox.spy(Iso21423Client.prototype, 'close');
+    // Fails the roster's first refresh — a real post-connect failure (registerSelfEntity,
+    // subscribeEntities and the identity watch all already succeeded by this point).
+    const brokenMongo = {
+      getCollection: (name) => (name === COLLECTIONS.ROBOTS
+        ? { find: () => { throw new Error('mongo down'); } }
+        : coll(name)),
+    };
+    const failing = new IsoRobotsModule({ mongo: brokenMongo, mqtt: oroMqtt, workerQueue: queue });
+    try {
+      await failing.load(SETTINGS, { transport: freshBroker.createTransport() });
+      assert.strictEqual(failing._client, null, 'client must be nulled after a failed load');
+      assert.ok(closeSpy.calledOnce, 'load() must close the client it connected before failing');
+    } finally {
+      sandbox.restore();
+    }
   });
 });

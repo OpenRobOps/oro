@@ -200,7 +200,6 @@ async function run() {
   console.log('Ingest service ready for business');
   console.log('---------------------------------------------------------');
 
- 
   // Write out readiness probe file. This is used by the k8s deployment
   // to confirm the service is up and open for business.
   // fs.writeFileSync('/tmp/ready', 'ready');

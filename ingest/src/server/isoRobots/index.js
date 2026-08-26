@@ -194,6 +194,14 @@ class IsoRobotsModule {
           + 'resumeRobot ActionDefinitions publish to.');
       }
 
+      // Roster MUST be started (and thus fully populated with the admitted set) before the
+      // fleet-wide identity watch below is wired up. subscribeEntities() replays the SDK's
+      // retained-identity set as soon as it's called; on a production restart that replay would
+      // otherwise race an empty roster and produce a false "not admitted" warning + diagnostic per
+      // already-admitted robot. _observe/_unobserve are already wired to the ingester above, so
+      // starting the roster here is safe.
+      await this._roster.start();
+
       // Fleet-wide identity watch: purely so an operator learns that a robot is on the network but
       // not admitted. ORO subscribes to no telemetry for it and sends it nothing (Gate 2).
       this._seenUnadmitted = new Set();
@@ -204,11 +212,14 @@ class IsoRobotsModule {
           diagnostic: (name, data) => this._imrfm.ctx.diagnostic(name, data),
         });
       });
-
-      await this._roster.start();
     } catch (err) {
       console.error('ISO 21423 robots failed to connect:', err.message);
+      // A failure after connect (registerSelfEntity, subscribeEntities, roster's first refresh)
+      // still leaves a live client with its LWT armed and auto-reconnect running — close it
+      // best-effort so load() failure doesn't orphan a session reconnecting every 5s forever.
+      const client = this._client;
       this._client = null;
+      if (client) await client.close({ timeout: 2000 }).catch(() => {});
     }
     return this;
   };
