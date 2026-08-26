@@ -90,7 +90,8 @@ class IsoRobotsModule {
    *
    * @param {Object|undefined} settings the whole `iso21423` block of settings.json
    * @param {Object} [opts] test-only overrides
-   * @param {Object} [opts.transport] an MqttTransport to use instead of a real mqtt client
+   * @param {Object} [opts.transport] an MqttTransport to use instead of a real mqtt client.
+   *   TEST ONLY — production always builds its own session from `settings.iso21423`.
    * @returns {Promise<this>}
    */
   load = async (settings, opts = {}) => {
@@ -135,7 +136,14 @@ class IsoRobotsModule {
         details: { platform: 'OpenRobOps', service: 'ingest', role: 'iso-robots' },
         capabilities: { provides: [], accepts: [] },
       });
-      this._client.on('error', (err) => console.warn('ISO 21423 robots client error:', err.message));
+      // The SDK's ClientEvents has no `error` event — connection trouble surfaces as a
+      // `connection` state change instead (`@openrobops/iso21423` `core/client.ts`). 'closed' is
+      // excluded: it also fires on this module's own graceful `shutdown()`, which is not trouble.
+      this._client.on('connection', (s) => {
+        if (s === 'reconnecting' || s === 'offline') {
+          console.warn(`ISO 21423 robots client connection: ${s}`);
+        }
+      });
       this._client.on('diagnostic', (d) => config.logging && console.log('ISO 21423 robots:', d));
       console.log(`ISO 21423 robots is ON: IMRFM ${config.imrfmId} at ${config.mqtt.url}`);
 
