@@ -184,13 +184,13 @@ class IsoTelemetryIngester {
     await this._save(uuid, values);
   };
 
-  /** Handles an ISO battery message: soc (0..1) becomes ORO's 0..100 percentage. */
+  /** Handles an ISO battery message. ISO `batterySoc` and ORO's `batteryPercentage` are both 0..1 fractions. */
   onBattery = async (uuid, battery) => {
     if (this._isRevoked(uuid)) return;
     const values = {};
     const b = battery || {};
     if (Number.isFinite(b.batterySoc)) {
-      values[this._sources.batteryPercentage] = { value: b.batterySoc * 100 };
+      values[this._sources.batteryPercentage] = { value: b.batterySoc };
     }
     if (Number.isFinite(b.batteryVoltage)) {
       values[this._sources.batteryVoltage] = { value: b.batteryVoltage };

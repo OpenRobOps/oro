@@ -256,7 +256,7 @@ named by `settings.iso21423.robots.attributeSources` (default table below, from
 | `pose`               | `pose`                    | ISO `odometry.pose.locationPoint` (CCS → ORO map)      |
 | `speedLinear`        | `speedLinear`             | ISO `odometry.velocity.linear`                         |
 | `speedAngular`       | `speedAngular`            | ISO `odometry.velocity.angular`                        |
-| `batteryPercentage`  | `batteryPercentage`       | ISO `batteryStatus.batterySoc` (0..1 → 0..100)          |
+| `batteryPercentage`  | `batteryPercentage`       | ISO `batteryStatus.batterySoc` (both 0..1 fractions)    |
 | `batteryVoltage`     | `batteryVoltage`          | ISO `batteryStatus.batteryVoltage`                      |
 | `batteryIsCharging`  | `batteryIsCharging`       | ISO `batteryStatus.batteryChargingState === 'CHARGING'` |
 

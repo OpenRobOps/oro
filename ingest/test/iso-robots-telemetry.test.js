@@ -112,13 +112,13 @@ describe('iso-robots IsoTelemetryIngester', () => {
     assert.strictEqual(values.speedLinear, 0.4);
   });
 
-  it('converts battery soc to a percentage and the charging state to a boolean', async () => {
+  it('passes battery soc through as a 0..1 fraction and maps the charging state to a boolean', async () => {
     const { ingester, attributesManager } = ingesterFor();
     await ingester.onBattery(UUID, {
       batterySoc: 0.42, batteryVoltage: 48.2, batteryChargingState: 'CHARGING',
     });
     assert.deepStrictEqual(valuesOf(attributesManager.saved[0]), {
-      batteryPercentage: 42, batteryVoltage: 48.2, batteryIsCharging: true,
+      batteryPercentage: 0.42, batteryVoltage: 48.2, batteryIsCharging: true,
     });
   });
 
@@ -131,7 +131,7 @@ describe('iso-robots IsoTelemetryIngester', () => {
   it('omits absent optional battery fields rather than writing undefined', async () => {
     const { ingester, attributesManager } = ingesterFor();
     await ingester.onBattery(UUID, { batterySoc: 0.5 });
-    assert.deepStrictEqual(valuesOf(attributesManager.saved[0]), { batteryPercentage: 50 });
+    assert.deepStrictEqual(valuesOf(attributesManager.saved[0]), { batteryPercentage: 0.5 });
   });
 
   it('honours an overridden attribute source id', async () => {
@@ -139,7 +139,7 @@ describe('iso-robots IsoTelemetryIngester', () => {
       sources: { ...DEFAULT_ATTRIBUTE_SOURCES, batteryPercentage: 'socPercent' },
     });
     await ingester.onBattery(UUID, { batterySoc: 0.5 });
-    assert.deepStrictEqual(valuesOf(attributesManager.saved[0]), { socPercent: 50 });
+    assert.deepStrictEqual(valuesOf(attributesManager.saved[0]), { socPercent: 0.5 });
   });
 
   it('writes nothing for a message with no usable fields', async () => {

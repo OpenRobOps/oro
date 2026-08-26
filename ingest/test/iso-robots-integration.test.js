@@ -139,11 +139,11 @@ describe('iso-robots integration', () => {
     assert.strictEqual(values.speedLinear.value, 0.4);
   });
 
-  it('ingests battery as an ORO percentage', async () => {
+  it('ingests battery soc as a 0..1 fraction', async () => {
     await robot.handle.publishBatteryStatus({ batterySoc: 0.42 });
     await settle();
     const values = await coll(COLLECTIONS.ATTR_VALUES).findOne({ _id: ROBOT });
-    assert.strictEqual(values.batteryPercentage.value, 42);
+    assert.strictEqual(values.batteryPercentage.value, 0.42);
   });
 
   it('publishes to the attributes exchange, which is what the Upstream direction taps', async () => {
