@@ -38,6 +38,9 @@ const MapSelector = ({ robotId, mapSelected, onChange, className }) => {
       onChange={(e) => onChange && onChange(e.target.value)}
       data-test="navdet-controls-map-switcher"
       disabled={!onChange}
+      // MUI places the 24px chevron at `top: calc(50% - .5em)`, which sits ~4px low in the
+      // standard variant; center it on the control like the robot selector's arrow.
+      sx={{ '& .MuiSelect-icon': { top: 'calc(50% - 12px)' } }}
     >
       {maps.map((m) => (
         <MenuItem key={mapRefFor(m)} value={mapRefFor(m)}>
