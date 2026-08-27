@@ -25,10 +25,12 @@
  *   - `fromCcsPoint` / `fromCcsYaw` — CCS → ORO map, for telemetry ORO ingests from ISO robots
  *     and for `move` targets it sends them (the ISO Robots direction).
  *
- * Reference points live in `settings.iso21423.ccs` rather than Mongo: ORO has no settings
- * collection, and the one modelled Mongo home for facility frames — the `spatial_transformations`
- * collection (`app/imports/lib/collections.js:808-828`) — has no live readers or writers.
- * `create()` is the single seam to change if that collection ever wakes up.
+ * Reference points can also live in `settings.iso21423.ccs` when no operator-managed transform
+ * exists yet: `create()` fits a transform from those points alone. `load()` is the preferred
+ * entry point — it prefers a `map` entry in the `spatial_transformations` collection
+ * (`app/imports/lib/collections.js:808-828`), the one Mongo home shared with the
+ * SpatialTransformation ConfigAPI kind and the Navigation widget, falling back to `create()` and
+ * seeding that collection from it when calibrated.
  */
 
 class CcsConverter {
@@ -85,6 +87,39 @@ class CcsConverter {
       return new CcsConverter(id, null, geometry,
         `fitTransform rejected the reference points: ${err.message}`);
     }
+  }
+
+  /**
+   * Like `create`, but the shared `spatial_transformations` system document is the source of
+   * truth: a `map → <ccs.id>` entry there wins over `settings.iso21423.ccs.referencePoints`.
+   * When only settings are available and they calibrate, the fitted matrix is written to that
+   * document so the SpatialTransformation ConfigAPI kind, the Navigation widget and this
+   * converter all read one transform. An existing `map` entry for another frame is left alone.
+   *
+   * @param {{id: string|null, referencePoints: Array}} ccsConfig
+   * @param {Object} geometry
+   * @param {import('mongodb').Collection} transformsColl the `spatial_transformations` collection
+   * @returns {Promise<CcsConverter>}
+   */
+  static async load(ccsConfig, geometry, transformsColl) {
+    const { id } = ccsConfig || {};
+    const query = { entityType: 'system', entityId: '0' };
+    const doc = await transformsColl.findOne(query);
+    const entry = doc && doc.transformations && doc.transformations.map;
+    if (id && entry && entry.frameId === id && entry.aTb && Array.isArray(entry.aTb.m)) {
+      const m = entry.aTb.m;
+      const t = { rotation: Math.atan2(m[1][0], m[0][0]), tx: m[0][2], ty: m[1][2] };
+      return new CcsConverter(id, t, geometry, null);
+    }
+    const converter = CcsConverter.create(ccsConfig, geometry);
+    if (converter.calibrated && !entry) {
+      const { rotation, tx, ty } = converter._t;
+      const c = Math.cos(rotation); const s = Math.sin(rotation);
+      await transformsColl.updateOne(query, {
+        $set: { 'transformations.map': { frameId: id, aTb: { m: [[c, -s, tx], [s, c, ty], [0, 0, 1]] } } },
+      }, { upsert: true });
+    }
+    return converter;
   }
 
   /**
