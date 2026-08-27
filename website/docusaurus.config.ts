@@ -115,6 +115,7 @@ const config: Config = {
           label: 'Docs',
         },
         {to: '/docs/api/overview', label: 'API', position: 'left'},
+        {to: '/docs/iso21423/overview', label: 'ISO 21423', position: 'left'},
         {to: '/blog', label: 'Blog', position: 'left'},
         {
           type: 'custom-oroThemePicker',
@@ -140,6 +141,10 @@ const config: Config = {
             {
               label: 'API Reference',
               to: '/docs/api/overview',
+            },
+            {
+              label: 'ISO 21423',
+              to: '/docs/iso21423/overview',
             },
           ],
         },

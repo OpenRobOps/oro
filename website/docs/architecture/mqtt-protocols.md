@@ -5,7 +5,7 @@ sidebar_position: 2
 # MQTT & Protocols
 
 :::info
-This page describes the ORO protocol. Other communication standards are currently work-in-progress and will be added soon to these guides.
+This page describes the ORO wire protocol spoken by the ORO/InOrbit robot agents. OpenRobOps also implements the **ISO 21423** open standard (MQTT + JSON, `/ISO_21423/v1/...` topics) for robots that speak it natively — see [ISO 21423](../iso21423/overview.md). A deployment runs in one mode or the other.
 :::
 
 OpenRobOps uses MQTT as its primary communication protocol between robot agents and the cloud platform. Most telemetry messages are serialized with Protocol Buffers; a few legacy topics (such as `state` and `ros/loc/config/N`) carry pipe-delimited text instead.

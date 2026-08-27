@@ -19,7 +19,14 @@ During this Getting Started guide, all examples assume ORO runs locally (host na
 You can drive ORO end-to-end using the
 [Flatland simulator](https://github.com/OpenRobOps/sim-flatland), which publishes
 the same MQTT/protobuf telemetry as a real ORO agent. It's the fastest way to
-verify your installation.
+verify your installation. The same simulator can also connect as an
+[ISO 21423 robot](../iso21423/flatland-simulator.md).
+:::
+
+:::note[ISO 21423 robots]
+This page describes robots running an ORO/InOrbit agent. Robots that speak the
+ISO 21423 standard are onboarded differently (admission object + `/iso_mqtt_config`);
+see the [ISO Robots setup guide](../iso21423/iso-robots-setup.md).
 :::
 
 ## Step 1: Get Your API Key
