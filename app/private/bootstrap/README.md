@@ -10,3 +10,5 @@ In development environments, one can just drop a config collection to get all ob
 to defaults using this method.
 
 See `server/bootstrapConfig.js`.
+
+`SpatialAnnotation.yaml` — the rendered flatland sample map, shared by all robots (generated with `tools/png2map.py`).

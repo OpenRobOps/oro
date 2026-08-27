@@ -35,6 +35,8 @@ import attributesApiRoutes from './rest/attributes';
 // import auditLogsApiRoutes from './rest/auditLogs';
 // import incidentsApiRoutes from './rest/incidents';
 // import mapsApiRoutes from './rest/maps';
+// TODO(maps): REST multipart `POST /api/maps` for browser uploads and PNGs too large for
+// base64-in-JSON. Maps are uploaded through the SpatialAnnotation ConfigAPI kind today.
 import actionsApiRoutes from './rest/actions';
 import localizationApiRoutes from './rest/localization';
 // import missionTrackingRoutes from './rest/missionTracking';
