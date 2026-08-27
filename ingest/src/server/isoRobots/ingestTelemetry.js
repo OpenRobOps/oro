@@ -104,13 +104,17 @@ class IsoTelemetryIngester {
    * Per-robot rather than one fleet-wide wildcard, so revoking a robot actually stops the traffic
    * (ND-17: the SDK unsubscribes on the last listener) instead of merely filtering it in ORO.
    *
+   * The five subscribes settle independently: if any rejects, every subscription that DID
+   * succeed is unsubscribed before rethrowing, so a failed `observe()` leaves nothing behind for
+   * the roster's retry to pile duplicate handlers onto.
+   *
    * @param {string} uuid the robot's ISO entity uuid, which is also its ORO robot id
    */
   observe = async (uuid) => {
     if (this._subs.has(uuid)) return;
     const { EntityFilter } = this._client.sdk;
     const filter = EntityFilter.entity(uuid);
-    const subs = await Promise.all([
+    const results = await Promise.allSettled([
       this._client.subscribeResource('status', filter,
         (ev) => this.onStatus(ev.entityUuid, ev.message)),
       this._client.subscribeResource('odometry', filter,
@@ -121,7 +125,13 @@ class IsoTelemetryIngester {
         (ev) => this.onCustomData(ev.entityUuid, ev.message)),
       this._client.subscribeEntities(filter, (identity) => this.onIdentity(uuid, identity)),
     ]);
-    this._subs.set(uuid, subs);
+    const rejected = results.find((r) => r.status === 'rejected');
+    if (rejected) {
+      const fulfilled = results.filter((r) => r.status === 'fulfilled');
+      await Promise.all(fulfilled.map((r) => r.value.unsubscribe().catch(() => {})));
+      throw rejected.reason;
+    }
+    this._subs.set(uuid, results.map((r) => r.value));
     if (this._logging) console.log(`ISO 21423 robots: observing ${uuid}`);
   };
 

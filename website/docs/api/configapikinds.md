@@ -852,7 +852,7 @@ fleet so the id is directly `system` or the robot id.
 |-------|------|----------|-------------|
 | `spec.footprint` | array | No | The robot's outline: &ge;3 `{x, y}` points, in metres, in the robot's own frame (+x forward) |
 | `spec.bufferFootprint` | array | No | A second polygon, same shape as `footprint` (e.g. a safety buffer). Stored and served by the REST endpoint, but not drawn by the widget yet |
-| `spec.radius` | number | No | Circular footprint radius in metres (&ge;0). Also sizes the orientation arrow |
+| `spec.radius` | number | No | Circular footprint radius in metres (&ge;0). Also sizes the orientation arrow. `0` degenerates to a zero-size ring while the orientation arrow keeps its default size -- use `spec: null` to hide a footprint, not `radius: 0` |
 | `spec.primaryColor` | string | No | Hex color (`#rrggbb`) |
 | `spec.secondaryColor` | string | No | Hex color (`#rrggbb`) |
 | `spec.opacity` | number | No | Opacity of the whole avatar (fill, outline and orientation arrow), 0-1. A *selected* robot always renders at full opacity, regardless of this value |

@@ -230,6 +230,27 @@ describe('iso-robots IsoTelemetryIngester customData', () => {
   });
 });
 
+describe('iso-robots IsoTelemetryIngester observe', () => {
+  it('unsubscribes every fulfilled subscription and rethrows when one subscribe rejects', async () => {
+    const unsubscribeCalls = { status: 0, odometry: 0, batteryStatus: 0 };
+    const spy = (name) => ({ unsubscribe: async () => { unsubscribeCalls[name] += 1; } });
+    const client = {
+      sdk: { EntityFilter: { entity: (u) => u } },
+      subscribeResource: async (resource) => {
+        if (resource === 'batteryStatus') throw new Error('subscribe failed');
+        if (resource === 'status' || resource === 'odometry') return spy(resource);
+        return spy('other');
+      },
+      subscribeEntities: async () => spy('other'),
+    };
+    const { ingester } = ingesterFor({ client });
+    await assert.rejects(ingester.observe(UUID), /subscribe failed/);
+    assert.strictEqual(unsubscribeCalls.status, 1);
+    assert.strictEqual(unsubscribeCalls.odometry, 1);
+    assert.strictEqual(ingester._subs.has(UUID), false);
+  });
+});
+
 describe('iso-robots IsoTelemetryIngester onIdentity', () => {
   it('onIdentity: stores a valid imrFootprint as robots.footprint', async () => {
     const { ingester, robotsColl } = ingesterFor();
