@@ -118,6 +118,56 @@ curl -H "x-auth-api-key: YOUR_KEY" \
   http://localhost:3000/api/robots/robot_abc123
 ```
 
+---
+
+## Get Robot Footprint
+
+```
+GET /api/robots/{robotId}/footprint
+```
+
+Returns the robot's resolved footprint: its own
+[`RobotFootprint`](./configapikinds.md#robotfootprint) config, falling back
+field-by-field to the `system` config, falling back to its reported outline
+(ISO 21423 robots only) when neither config defines a footprint or radius.
+See [Maps: Robot footprint](../maps.md#robot-footprint) for the full
+resolution order. Requires the viewer role.
+
+### Path Parameters
+
+| Parameter | Description |
+|-----------|-------------|
+| `robotId` | Unique robot identifier |
+
+### Response
+
+Polygons as `[x, y]` pairs, in metres, in the robot's own frame (+x
+forward). Only the fields that resolved are present; an empty object `{}`
+means no configured or reported footprint (the widget falls back to its
+default 0.45 m ring).
+
+```json
+{
+  "footprint": [[0.3, 0.2], [0.3, -0.2], [-0.3, -0.2], [-0.3, 0.2]],
+  "bufferFootprint": [[0.4, 0.3], [0.4, -0.3], [-0.4, -0.3], [-0.4, 0.3]],
+  "radius": 0.3
+}
+```
+
+### Errors
+
+| Status | Condition |
+|--------|-----------|
+| 403 | User lacks the viewer role |
+| 404 | Robot not found |
+
+### Example
+
+```bash
+curl -H "x-auth-api-key: YOUR_KEY" \
+  http://localhost:3000/api/robots/robot_abc123/footprint
+```
+
 ## Response Fields
 
 | Field | Type | Description |
