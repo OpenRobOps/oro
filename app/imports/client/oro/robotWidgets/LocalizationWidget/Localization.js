@@ -67,6 +67,7 @@ const useStyles = makeStyles()(theme => ({
     transform: 'translateX(-50%)',
     zIndex: 1,
     backgroundColor: theme.palette.warning.main,
+    color: theme.palette.warning.contrastText,
     padding: '4px 12px',
     borderRadius: 4,
   },

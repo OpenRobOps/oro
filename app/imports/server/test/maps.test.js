@@ -136,13 +136,13 @@ describe('shared/maps', () => {
       const data = {
         robotPose: { x: 1, y: 0, theta: 0 },
         laserRanges: { ranges: [1, 2] },
-        paths: [{ points: [{ x: 1, y: 0 }, { x: 2, y: 0 }] }],
+        paths: { p1: { points: [{ x: 1, y: 0 }, { x: 2, y: 0 }] } },
         costmap: { x: 1, y: 0, theta: 0, width: 2 },
       };
       const out = transformLocalizationData(data, t);
       near(out.robotPose.x, 0); near(out.robotPose.y, 1); near(out.robotPose.theta, Math.PI / 2);
       expect(out.robotPose.frameId).to.equal('ccs');
-      near(out.paths[0].points[1].y, 2);
+      near(out.paths.p1.points[1].y, 2);
       near(out.costmap.y, 1); expect(out.costmap.width).to.equal(2);
       expect(out.laserRanges).to.equal(data.laserRanges);
     });

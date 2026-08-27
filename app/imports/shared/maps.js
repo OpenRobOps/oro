@@ -137,13 +137,12 @@ function transformLocalizationData(data, transform) {
   if (!data || !transform || !transform.aTb || isIdentity(transform.aTb.m)) return data;
   const out = { ...data };
   if (data.robotPose) out.robotPose = transformPose(data.robotPose, transform);
-  if (Array.isArray(data.paths)) {
-    out.paths = data.paths.map((p) => ({
-      ...p,
-      points: Array.isArray(p.points) ? p.points.map((pt) => transformPose(pt, transform)) : p.points,
-    }));
+  if (data.paths && typeof data.paths === 'object') {
+    out.paths = Object.fromEntries(Object.entries(data.paths).map(([id, p]) => [id, {
+      ...p, points: Array.isArray(p.points) ? p.points.map((pt) => transformPose(pt, transform)) : p.points,
+    }]));
   }
-  if (data.costmap) out.costmap = { ...data.costmap, ...transformPose(data.costmap, transform) };
+  if (data.costmap) out.costmap = transformPose(data.costmap, transform);
   return out;
 }
 
