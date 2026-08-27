@@ -22,13 +22,15 @@ import OroRoles from '../server/roles';
 import AgentManager from '../server/agentManager';
 import { ACCESS_LEVEL_VIEW, ACCESS_LEVEL_OPERATE } from '../shared/roles';
 import { queryIncidentsForRobots } from '../lib/alerts';
-import { Robots, RobotKeyValues, RobotCustomData, RobotLocalization, SpatialAnnotations, SpatialTransformations, RobotDiagnostics, RobotModuleState } from '../lib/collections';
+import { Robots, RobotKeyValues, RobotCustomData, RobotLocalization, SpatialAnnotations, SpatialTransformations, RobotDiagnostics, RobotModuleState, UIPreferences } from '../lib/collections';
 import { ID_TYPE_AGENT, ID_TYPE_ROBOT } from '../shared/constants';
 import { queryRobotAttributeValues } from '../lib/attributes';
 import { VITAL_PING_RTT_AVG, VITAL_PING_RTT_LAST } from '../shared/attributes';
 import ConfigManager from '../lib/configManagerAsync';
 import RttManager from './rttManager';
 import { mapsListQuery, mapSummary, ROBOT_MAPS_COLLECTION } from '../shared/maps';
+import { footprintDocsFor } from './footprints';
+import { ROBOT_FOOTPRINTS_COLLECTION } from '../shared/footprint';
 
 /**
  * Publish localization data (pose, map metadata + URL) for one or more robots.
@@ -127,6 +129,40 @@ Meteor.publish('spatial_transformations', async function ({ robotId }) {
   return SpatialTransformations.find({
     $or: [{ entityType: 'robot', entityId: robotId }, { entityType: 'system', entityId: '0' }],
   });
+});
+
+/**
+ * Publish each robot's RESOLVED footprint pose (configured over ISO-reported) into the
+ * client-only `robot_footprints` collection. Resolution runs server-side so the widget stays a
+ * plain renderer; recomputed for the whole set whenever a relevant ui_preferences or robots
+ * document changes (footprints change rarely, so a full recompute per change is fine).
+ */
+Meteor.publish('robot_footprints', async function ({ robotIds }) {
+  if (!this.userId || !isArray(robotIds) || robotIds.length === 0) {
+    return this.ready();
+  }
+  if (!await new OroRoles().canAccessRobots(this.userId, robotIds, ACCESS_LEVEL_VIEW)) {
+    return this.error(new Meteor.Error('Unauthorized'));
+  }
+  let published = {};
+  const refresh = async () => {
+    const docs = await footprintDocsFor(robotIds);
+    Object.entries(docs).forEach(([id, pose]) => {
+      if (published[id]) this.changed(ROBOT_FOOTPRINTS_COLLECTION, id, { pose });
+      else this.added(ROBOT_FOOTPRINTS_COLLECTION, id, { pose });
+    });
+    published = docs;
+  };
+  // ponytail: any change to an input → recompute all robotIds (tiny sets, rare changes).
+  const onChange = { added: refresh, changed: refresh, removed: refresh };
+  const handles = await Promise.all([
+    UIPreferences.find({ $or: [{ entityType: 'system', entityId: '0' }, { entityType: 'robot', entityId: { $in: robotIds } }] },
+      { fields: { 'map.pose': 1 } }).observeChangesAsync(onChange),
+    Robots.find({ _id: { $in: robotIds } }, { fields: { footprint: 1 } }).observeChangesAsync(onChange),
+  ]);
+  await refresh();
+  this.onStop(() => handles.forEach((h) => h.stop()));
+  return this.ready();
 });
 
 Meteor.publish('robots', async function ({
