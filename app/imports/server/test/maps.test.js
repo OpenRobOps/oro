@@ -18,7 +18,7 @@ import { Meteor } from 'meteor/meteor';
 import { expect } from 'chai';
 import {
   normalizeMapAnnotation, invert3x3, findFrameTransform, fitRigidTransform2D,
-  validateTransformMatrix, IDENTITY_3X3,
+  validateTransformMatrix, IDENTITY_3X3, mapsListQuery,
 } from '../../shared/maps';
 import { transformPose } from '../../shared/geometry';
 
@@ -108,6 +108,18 @@ describe('shared/maps', () => {
       expect(validateTransformMatrix([[2, 0, 0], [0, 2, 0], [0, 0, 1]])).to.match(/rotation/);
       expect(validateTransformMatrix([[1, 0, 0], [0, -1, 0], [0, 0, 1]])).to.match(/reflection/);
       expect(validateTransformMatrix([[NaN, 0, 0], [0, 1, 0], [0, 0, 1]])).to.match(/finite/);
+    });
+  });
+
+  describe('mapsListQuery', () => {
+    it('matches robot maps (legacy and v2) and system maps, not other annotation types', () => {
+      const q = mapsListQuery('r1');
+      expect(q).to.deep.equal({
+        $and: [
+          { $or: [{ entityType: 'robot', entityId: 'r1' }, { entityType: 'system', entityId: '0' }] },
+          { $or: [{ type: 'map' }, { type: { $exists: false }, map: { $exists: true } }] },
+        ],
+      });
     });
   });
 });

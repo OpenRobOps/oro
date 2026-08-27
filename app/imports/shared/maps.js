@@ -127,6 +127,16 @@ function validateTransformMatrix(m) {
   return null;
 }
 
+/** Mongo query for every map a robot can display: its own maps plus system-scope maps. */
+function mapsListQuery(robotId) {
+  return {
+    $and: [
+      { $or: [{ entityType: 'robot', entityId: robotId }, { entityType: 'system', entityId: '0' }] },
+      { $or: [{ type: 'map' }, { type: { $exists: false }, map: { $exists: true } }] },
+    ],
+  };
+}
+
 export {
   DEFAULT_FRAME_ID,
   IDENTITY_3X3,
@@ -135,4 +145,5 @@ export {
   findFrameTransform,
   fitRigidTransform2D,
   validateTransformMatrix,
+  mapsListQuery,
 };
