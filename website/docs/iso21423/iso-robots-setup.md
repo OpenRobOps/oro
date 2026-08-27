@@ -63,6 +63,17 @@ Add an `iso21423` block to `ingest/settings.json` (Terraform users: `iso21423_ro
 | `robots.commandTopics` | no | Which agent-bound MQTT subtopics ORO's actions publish to; defaults match the built-in Navigate/Cancel actions and `PublishToTopic`. |
 | `robots.attributeSources` | no | Rename the ORO attribute ids the ISO telemetry is written to (defaults: `agentOnline`, `pose`, `speedLinear`, `speedAngular`, `batteryPercentage`, `batteryVoltage`, `batteryIsCharging`). |
 
+:::note[The CCS calibration is also a SpatialTransformation]
+Once calibrated (from these reference points, or from an existing entry),
+the ORO map ↔ facility CCS transform lives in the same place as any other
+frame transform: the `system`-scope
+[`SpatialTransformation`](../api/configapikinds.md#spatialtransformation)
+config object, as a `map → <ccs.id>` entry. It's visible with `inorbit list`
+and editable the same way. A [shared map](../maps.md) drawn directly in the
+facility CCS should declare `frameId: <ccs.id>` — it then lines up with ISO
+robots' poses without needing its own transform.
+:::
+
 Restart ingest and confirm in its log:
 
 ```
