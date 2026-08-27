@@ -109,6 +109,22 @@ describe('iso-robots IsoTelemetryIngester', () => {
     assert.strictEqual(values.speedAngular, -0.1);
   });
 
+  it('mirrors the converted pose into localization.robotPose for the Navigation widget', async () => {
+    const localizationColl = fakeKeyValuesColl();   // same updateOne recorder shape
+    const { ingester } = ingesterFor({ localizationColl });
+    await ingester.onOdometry(UUID, {
+      pose: { locationPoint: { ccsId: CCS_ID, x: 11, y: 12, z: 0 }, orientation: { yaw: 1.5 } },
+    });
+    assert.strictEqual(localizationColl.updates.length, 1);
+    const { q, u, o } = localizationColl.updates[0];
+    assert.deepStrictEqual(q, { _id: UUID });
+    assert.deepStrictEqual(o, { upsert: true });
+    const { robotPose, robotPoseUpdatedTs } = u.$set;
+    assert.deepStrictEqual({ x: robotPose.x, y: robotPose.y, theta: robotPose.theta, frameId: robotPose.frameId },
+      { x: 1, y: 2, theta: 1.5, frameId: 'map' });
+    assert.strictEqual(robotPose.ts, robotPoseUpdatedTs);
+  });
+
   it('still writes speeds when the converter is uncalibrated, but no pose', async () => {
     const { ingester, attributesManager } = ingesterFor({
       converter: { calibrated: false, reason: 'no points' },

@@ -106,17 +106,19 @@ export class SpatialTransformationConfigAPIHandler {
     await assertAuthorized(user);
     const query = id ? entityFor(id) : {};
     const docs = await SpatialTransformations.find(query).fetchAsync();
+    if (format === LIST_FORMAT_SHORT) {
+      // Same flat shape as the other kinds; ConfigAPI.list() appends the CLI's `scope` field.
+      return docs.map((doc) => ({ id: idFor(doc), label: idFor(doc) }));
+    }
     return docs.map((doc) => ({
       apiVersion: 'v0.1',
       kind: KIND_SPATIAL_TRANSFORMATION,
       metadata: { id: idFor(doc) },
-      ...(format === LIST_FORMAT_SHORT ? {} : {
-        spec: {
-          transformations: Object.entries(doc.transformations || {}).map(([from, t]) => ({
-            from, to: t.frameId, matrix: t.aTb.m,
-          })),
-        },
-      }),
+      spec: {
+        transformations: Object.entries(doc.transformations || {}).map(([from, t]) => ({
+          from, to: t.frameId, matrix: t.aTb.m,
+        })),
+      },
     }));
   };
 

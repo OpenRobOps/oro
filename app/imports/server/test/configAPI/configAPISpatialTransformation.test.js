@@ -88,6 +88,13 @@ describe('configAPI:SpatialTransformation', () => {
     expect(Object.keys(doc.transformations)).to.deep.equal(['odom']);
   });
 
+  it('list short: flat id/label with the CLI scope field', async () => {
+    await configApi.apply({ configObject: obj([{ from: 'map', to: 'ccs', matrix: TRANSLATE_10 }], 'r1'), user: manager });
+    const short = await configApi.list({ kind: KIND, user: manager });
+    expect(short).to.have.length(1);
+    expect(short[0]).to.include({ id: 'r1', label: 'r1', scope: '' });
+  });
+
   it('list full: round-trips as matrices', async () => {
     await configApi.apply({ configObject: obj([{ from: 'map', to: 'ccs', matrix: TRANSLATE_10 }]), user: manager });
     const full = await configApi.list({ kind: KIND, user: manager, format: LIST_FORMAT_FULL });

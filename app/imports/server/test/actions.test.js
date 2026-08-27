@@ -26,7 +26,7 @@ import {
   ACTION_TYPES, ARGNAME_SCRIPT_FILENAME,
   createDummyArgName, createInternalActionId, formatScriptAction
 } from '../../shared/actions';
-import { Robots, RobotCustomScript, RobotLocalization } from '../../lib/collections';
+import { Robots, RobotCustomScript, RobotLocalization, SpatialTransformations } from '../../lib/collections';
 import { AttrValues } from '../../lib/attributes';
 import ActionsEngine from '../actions';
 // import EventLog from '../eventLog/eventLogger';
@@ -1010,6 +1010,45 @@ describe('ActionsEngine.compileAction()', () => {
       y: 2,
       theta: 3,
       frameId: 'other_floor'
+    });
+  });
+
+  describe('frame transforms for poses sent to the robot', () => {
+    const ROT90_T10 = [[0, -1, 10], [1, 0, 10], [0, 0, 1]]; // map -> ccs
+    const near = (a, b) => expect(Math.abs(a - b)).to.be.below(1e-9);
+    beforeEach(async () => {
+      await RobotLocalization.insertAsync({ _id: ROBOT_ID, map: { frameId: 'map' }, robotPose: { x: 0, y: 0, theta: 0, frameId: 'map' } });
+      await SpatialTransformations.insertAsync({
+        entityType: 'system', entityId: '0',
+        transformations: { map: { frameId: 'ccs', aTb: { m: ROT90_T10 } } },
+      });
+    });
+    it('_resolveNavigateToPose: transforms a pose given in another frame into the robot frame', async () => {
+      const { ok, pose } = await engine._resolveNavigateToPose({
+        context: { robotId: ROBOT_ID }, elementValues: { pose: { x: 10, y: 11, theta: Math.PI / 2, frameId: 'ccs' } },
+      });
+      expect(ok).to.be.true;
+      near(pose.x, 1); near(pose.y, 0); near(pose.theta, 0);
+      expect(pose.frameId).to.equal('map');
+    });
+    it('_resolveNavigateToPose: passes a pose without frameId through unchanged', async () => {
+      const { ok, pose } = await engine._resolveNavigateToPose({
+        context: { robotId: ROBOT_ID }, elementValues: { pose: { x: 1, y: 2, theta: 3 } },
+      });
+      expect(ok).to.be.true;
+      expect(pose).to.deep.equal({ x: 1, y: 2, theta: 3, frameId: 'map' });
+    });
+    it('_resolveNavigateToPose: fails when no transformation links the frames', async () => {
+      const { ok, error } = await engine._resolveNavigateToPose({
+        context: { robotId: ROBOT_ID }, elementValues: { pose: { x: 1, y: 2, theta: 3, frameId: 'nowhere' } },
+      });
+      expect(ok).to.be.false;
+      expect(error).to.match(/No spatial transformation from frame "nowhere"/);
+    });
+    it('_resolveDeltaPose: rotates the delta only', async () => {
+      const d = await engine._resolveDeltaPose(ROBOT_ID, { x: 1, y: 0, theta: 0.2, frameId: 'ccs' });
+      near(d.x, 0); near(d.y, -1); near(d.theta, 0.2);
+      expect(d.frameId).to.be.undefined;
     });
   });
 

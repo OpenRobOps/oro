@@ -173,6 +173,7 @@ class IsoRobotsModule {
         attributesManager: new AttributesManager(),   // singleton (src/server/attributes.js:65-66)
         robotsColl: this._mongo.getCollection(COLLECTIONS.ROBOTS),
         keyValuesColl: this._mongo.getCollection(COLLECTIONS.ROBOT_KEY_VALUES),
+        localizationColl: this._mongo.getCollection(COLLECTIONS.LOCALIZATION),
         converter: this._converter,
         sources: config.attributeSources,
         roster: this._roster,

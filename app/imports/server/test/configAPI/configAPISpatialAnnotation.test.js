@@ -87,7 +87,7 @@ describe('configAPI:SpatialAnnotation', () => {
     await configApi.apply({ configObject: obj(), user: manager });
     const short = await configApi.list({ kind: KIND, user: manager, format: LIST_FORMAT_SHORT });
     expect(short).to.have.length(1);
-    expect(short[0].metadata.id).to.equal('pretty');
+    expect(short[0]).to.include({ id: 'pretty', label: 'Pretty', scope: '' });
     expect(JSON.stringify(short)).to.not.include(PNG_1X1);
     const full = await configApi.list({ kind: KIND, user: manager, format: LIST_FORMAT_FULL });
     expect(full[0].spec).to.include({ scope: 'system', frameId: 'map', label: 'Pretty', x: 0, y: 0, resolution: 0.05, formatVersion: 2, image: PNG_1X1 });

@@ -98,11 +98,15 @@ export class SpatialAnnotationConfigAPIHandler {
     const query = { type: 'map', ...(id ? { label: id } : {}) };
     const projection = format === LIST_FORMAT_SHORT ? { 'annotation.data': 0 } : {};
     const docs = await SpatialAnnotations.find(query, { projection }).fetchAsync();
+    if (format === LIST_FORMAT_SHORT) {
+      // Same flat shape as the other kinds; ConfigAPI.list() appends the CLI's `scope` field.
+      return docs.map((doc) => ({ id: doc.label, label: doc.annotation.label }));
+    }
     return docs.map((doc) => ({
       apiVersion: 'v0.1',
       kind: KIND_SPATIAL_ANNOTATION,
       metadata: { id: doc.label },
-      spec: toSpec(doc, format !== LIST_FORMAT_SHORT),
+      spec: toSpec(doc, true),
     }));
   };
 
