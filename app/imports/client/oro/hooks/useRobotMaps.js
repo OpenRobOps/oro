@@ -23,11 +23,13 @@
  *   - `<mapId>`        — legacy: the robot's own map with that label
  */
 import { Meteor } from 'meteor/meteor';
+import { Mongo } from 'meteor/mongo';
 import { useTracker } from 'meteor/react-meteor-data';
-import {
-  RobotLocalization, SpatialAnnotations, SpatialTransformations,
-} from '../../../lib/collections';
-import { mapsListQuery, normalizeMapAnnotation, findFrameTransform } from '../../../shared/maps';
+import { RobotLocalization, SpatialTransformations } from '../../../lib/collections';
+import { findFrameTransform, ROBOT_MAPS_COLLECTION } from '../../../shared/maps';
+
+/** Client-only mirror of the `spatial_annotations.maps` publication (map summaries). */
+const RobotMaps = new Mongo.Collection(ROBOT_MAPS_COLLECTION);
 
 const SYSTEM = { entityType: 'system', entityId: '0' };
 
@@ -58,16 +60,10 @@ export function useRobotMapsList(robotId) {
       Meteor.subscribe('spatial_annotations.maps', { robotId }),
       Meteor.subscribe('localization', { robotIds: [robotId], lowBandwidth: true }),
     ];
-    const maps = SpatialAnnotations.find(mapsListQuery(robotId)).fetch()
-      .map(normalizeMapAnnotation)
-      .filter(Boolean)
-      .map((n) => ({
-        mapId: n.annotation.annotationId,
-        label: n.annotation.label,
-        entityType: n.entity.entityType,
-        entityId: n.entity.entityId,
-        frameId: n.entity.frameId,
-      }));
+    // Summaries for other robots may be present when several widgets show different robots.
+    const maps = RobotMaps.find({
+      $or: [{ entityType: 'system' }, { entityType: 'robot', entityId: robotId }],
+    }).fetch().map(({ _id, ...summary }) => summary);
     const robotDefault = RobotLocalization.findOne({ _id: robotId })?.defaultMap;
     const own = maps.find((m) => m.entityType === 'robot' && m.mapId === robotDefault);
     const firstSystem = maps.find((m) => m.entityType === 'system');

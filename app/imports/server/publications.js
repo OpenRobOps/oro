@@ -28,7 +28,7 @@ import { queryRobotAttributeValues } from '../lib/attributes';
 import { VITAL_PING_RTT_AVG, VITAL_PING_RTT_LAST } from '../shared/attributes';
 import ConfigManager from '../lib/configManagerAsync';
 import RttManager from './rttManager';
-import { mapsListQuery } from '../shared/maps';
+import { mapsListQuery, mapSummary, ROBOT_MAPS_COLLECTION } from '../shared/maps';
 
 /**
  * Publish localization data (pose, map metadata + URL) for one or more robots.
@@ -63,7 +63,9 @@ Meteor.publish('localization', async function ({ robotIds, lowBandwidth = false 
 });
 
 /**
- * Publish the list of maps a robot can display (its own + system-wide), metadata only.
+ * Publish the list of maps a robot can display (its own + system-wide) as lightweight summaries
+ * into the client-only `robot_maps` collection (see ROBOT_MAPS_COLLECTION in shared/maps.js for
+ * why these are not published as partial `spatial_annotations` docs).
  */
 Meteor.publish('spatial_annotations.maps', async function ({ robotId }) {
   if (!this.userId || !robotId) {
@@ -72,9 +74,19 @@ Meteor.publish('spatial_annotations.maps', async function ({ robotId }) {
   if (!await new OroRoles().canAccessRobot(this.userId, robotId, ACCESS_LEVEL_VIEW)) {
     return this.error(new Meteor.Error('Unauthorized'));
   }
-  return SpatialAnnotations.find(mapsListQuery(robotId), {
+  const publishSummary = (method) => (doc) => {
+    const summary = mapSummary(doc);
+    if (summary) this[method](ROBOT_MAPS_COLLECTION, doc._id, summary);
+  };
+  const handle = await SpatialAnnotations.find(mapsListQuery(robotId), {
     fields: { 'map.data': 0, 'annotation.data': 0 },
+  }).observeAsync({
+    added: publishSummary('added'),
+    changed: publishSummary('changed'),
+    removed: (doc) => this.removed(ROBOT_MAPS_COLLECTION, doc._id),
   });
+  this.onStop(() => handle.stop());
+  return this.ready();
 });
 
 /**

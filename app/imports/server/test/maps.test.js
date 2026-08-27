@@ -19,7 +19,7 @@ import { expect } from 'chai';
 import {
   normalizeMapAnnotation, invert3x3, findFrameTransform, fitRigidTransform2D,
   validateTransformMatrix, IDENTITY_3X3, mapsListQuery, transformLocalizationData,
-  inverseTransform, transformDelta,
+  inverseTransform, transformDelta, mapSummary,
 } from '../../shared/maps';
 import { transformPose } from '../../shared/geometry';
 import { resetDatabase } from './setup';
@@ -111,6 +111,16 @@ describe('shared/maps', () => {
       expect(validateTransformMatrix([[2, 0, 0], [0, 2, 0], [0, 0, 1]])).to.match(/rotation/);
       expect(validateTransformMatrix([[1, 0, 0], [0, -1, 0], [0, 0, 1]])).to.match(/reflection/);
       expect(validateTransformMatrix([[NaN, 0, 0], [0, 1, 0], [0, 0, 1]])).to.match(/finite/);
+    });
+  });
+
+  describe('mapSummary', () => {
+    it('reduces legacy and v2 map docs to switcher records, null for other types', () => {
+      expect(mapSummary({ entityType: 'robot', entityId: 'r1', label: 'map', map: { frameId: 'odom', data: 'x' } }))
+        .to.deep.equal({ mapId: 'map', label: 'map', entityType: 'robot', entityId: 'r1', frameId: 'odom' });
+      expect(mapSummary({ entityType: 'system', entityId: '0', label: 's', type: 'map', frameId: 'ccs', annotation: { label: 'Site', data: 'x' } }))
+        .to.deep.equal({ mapId: 's', label: 'Site', entityType: 'system', entityId: '0', frameId: 'ccs' });
+      expect(mapSummary({ entityType: 'robot', entityId: 'r1', label: 'w', type: 'waypoint', annotation: {} })).to.equal(null);
     });
   });
 

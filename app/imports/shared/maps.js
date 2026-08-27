@@ -159,6 +159,27 @@ function transformDelta(delta, transform) {
   return { ...delta, x: a * delta.x + b * delta.y, y: c * delta.x + d * delta.y };
 }
 
+/**
+ * Client-only collection the `spatial_annotations.maps` publication feeds with `mapSummary` docs.
+ * Kept separate from `spatial_annotations` on purpose: Meteor merges publications per TOP-LEVEL
+ * field, so a `map` published without `map.data` would shadow the full `map` that
+ * `spatial_annotations.map` publishes and the image would never reach the client.
+ */
+const ROBOT_MAPS_COLLECTION = 'robot_maps';
+
+/** The lightweight per-map record the map switcher needs; null for non-map docs. */
+function mapSummary(doc) {
+  const n = normalizeMapAnnotation(doc);
+  if (!n) return null;
+  return {
+    mapId: n.annotation.annotationId,
+    label: n.annotation.label,
+    entityType: n.entity.entityType,
+    entityId: n.entity.entityId,
+    frameId: n.entity.frameId,
+  };
+}
+
 /** Mongo query for every map a robot can display: its own maps plus system-scope maps. */
 function mapsListQuery(robotId) {
   return {
@@ -170,6 +191,8 @@ function mapsListQuery(robotId) {
 }
 
 export {
+  ROBOT_MAPS_COLLECTION,
+  mapSummary,
   DEFAULT_FRAME_ID,
   IDENTITY_3X3,
   normalizeMapAnnotation,
