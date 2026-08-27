@@ -81,6 +81,7 @@ class IsoTelemetryIngester {
     this._subs = new Map();        // uuid -> Subscription[]
     this._lastCcsPoint = new Map();  // uuid -> the last ISO LocationPoint seen, unconverted
     this._lastCcsYaw = new Map();    // uuid -> the last ISO yaw seen, unconverted
+    this._warnedFootprint = new Set();   // uuids already warned about a malformed imrFootprint
   }
 
   /**
@@ -118,6 +119,7 @@ class IsoTelemetryIngester {
         (ev) => this.onBattery(ev.entityUuid, ev.message)),
       this._client.subscribeResource(CUSTOM_DATA_RESOURCE, filter,
         (ev) => this.onCustomData(ev.entityUuid, ev.message)),
+      this._client.subscribeEntities(filter, (identity) => this.onIdentity(uuid, identity)),
     ]);
     this._subs.set(uuid, subs);
     if (this._logging) console.log(`ISO 21423 robots: observing ${uuid}`);
@@ -242,6 +244,41 @@ class IsoTelemetryIngester {
       await this._keyValues.updateOne({ _id: uuid }, { $set }, { upsert: true });
     } catch (err) {
       if (this._logging) console.warn(`ISO 21423 robots: robot_key_values update failed for ${uuid}: ${err.message}`);
+    }
+  };
+
+  /**
+   * Handles an ISO `identity` (retained; replayed on subscribe). The only field ORO uses is the
+   * robot's physical outline, `details.imrFootprint` (+ `imrHeight`), stored as the robot's
+   * REPORTED footprint. A configured `RobotFootprint` overrides it (spec decision 1). Malformed
+   * footprints are ignored with one warning per robot.
+   *
+   * @param {string} uuid
+   * @param {Object} identity an ISO EntityIdentity
+   */
+  onIdentity = async (uuid, identity) => {
+    if (this._isRevoked(uuid)) return;
+    const details = (identity && identity.details) || {};
+    const pts = details.imrFootprint;
+    const valid = Array.isArray(pts) && pts.length >= 3
+      && pts.every((p) => p && Number.isFinite(p.x) && Number.isFinite(p.y));
+    if (!valid) {
+      if (pts !== undefined && !this._warnedFootprint.has(uuid)) {
+        this._warnedFootprint.add(uuid);
+        console.warn(`ISO 21423 robots: ignoring malformed imrFootprint for ${uuid}`);
+      }
+      return;
+    }
+    const footprint = {
+      points: pts.map(({ x, y }) => [x, y]),
+      height: Number.isFinite(details.imrHeight) ? details.imrHeight : null,
+      ts: Date.now(),
+      source: 'iso21423',
+    };
+    try {
+      await this._robots.updateOne({ _id: uuid }, { $set: { footprint } });
+    } catch (err) {
+      if (this._logging) console.warn(`ISO 21423 robots: footprint update failed for ${uuid}: ${err.message}`);
     }
   };
 
