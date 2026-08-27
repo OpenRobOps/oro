@@ -105,4 +105,11 @@ describe('configAPI:SpatialAnnotation', () => {
     await configApi.clear({ configObject: { kind: KIND, apiVersion: 'v0.1', metadata: { id: 'pretty' } }, user: manager });
     expect(await SpatialAnnotations.findOneAsync({ label: 'pretty' })).to.not.exist;
   });
+
+  it('apply: rejects an id that collides with the robot\'s ingested map', async () => {
+    const legacy = { entityType: 'robot', entityId: 'r1', label: 'map', map: { x: 0, y: 0, data: 'x' } };
+    await SpatialAnnotations.insertAsync(legacy);
+    await expect(configApi.apply({ configObject: obj({ scope: 'r1' }, 'map'), user: manager })).to.be.rejectedWith(ValidationError);
+    expect(await SpatialAnnotations.findOneAsync({ entityType: 'robot', entityId: 'r1', label: 'map' })).to.deep.include(legacy);
+  });
 });

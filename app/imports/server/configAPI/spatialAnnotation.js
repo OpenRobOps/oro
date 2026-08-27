@@ -120,6 +120,9 @@ export class SpatialAnnotationConfigAPIHandler {
     }
     const { width, height } = pngInfo(buf);
     const entity = entityFor(spec.scope);
+    if (await SpatialAnnotations.findOneAsync({ ...entity, label, type: { $exists: false } })) {
+      throw new ValidationError(`SpatialAnnotation id "${label}" collides with the robot's ingested map; choose another id`);
+    }
     const now = Date.now();
     await SpatialAnnotations.upsertAsync(
       { ...entity, label },
