@@ -28,8 +28,15 @@ import { useTracker } from 'meteor/react-meteor-data';
 import { RobotLocalization, SpatialTransformations } from '../../../lib/collections';
 import { findFrameTransform, ROBOT_MAPS_COLLECTION } from '../../../shared/maps';
 
-/** Client-only mirror of the `spatial_annotations.maps` publication (map summaries). */
-const RobotMaps = new Mongo.Collection(ROBOT_MAPS_COLLECTION);
+/**
+ * Client-only mirror of the `spatial_annotations.maps` publication (map summaries).
+ * Cached on globalThis: a Meteor collection name can only be claimed once per page, and the dev
+ * server's hot module replacement re-evaluates this module, which would otherwise throw
+ * "There is already a collection named" and break every consumer.
+ */
+const clientCollections = (globalThis.__oroClientCollections ||= {});
+const RobotMaps = (clientCollections[ROBOT_MAPS_COLLECTION]
+  ||= new Mongo.Collection(ROBOT_MAPS_COLLECTION));
 
 const SYSTEM = { entityType: 'system', entityId: '0' };
 
