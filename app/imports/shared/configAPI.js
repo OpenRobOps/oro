@@ -185,7 +185,10 @@ const buildConfigObjectClearSchema = (isExternal = true) => ({
     props: {
       id: { type: 'string', optional: false, max: 255, pattern: ID_PATTERN },
     }
-  }
+  },
+  // Optional, kind-specific scoping (e.g. SpatialAnnotation's spec.scope). Clear objects
+  // without a spec — including the InOrbit CLI's — still validate.
+  spec: { type: 'object', optional: true },
 });
 
 // Schema of a configuration object for list operations

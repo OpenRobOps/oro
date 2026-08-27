@@ -100,10 +100,25 @@ describe('configAPI:SpatialAnnotation', () => {
     expect(await configApi.list({ kind: KIND, user: manager })).to.have.length(0);
   });
 
-  it('clear: removes the map', async () => {
+  it('clear: removes the map at system scope by default', async () => {
     await configApi.apply({ configObject: obj(), user: manager });
     await configApi.clear({ configObject: { kind: KIND, apiVersion: 'v0.1', metadata: { id: 'pretty' } }, user: manager });
     expect(await SpatialAnnotations.findOneAsync({ label: 'pretty' })).to.not.exist;
+  });
+
+  it('clear: is scoped, does not remove a map with the same id at another scope', async () => {
+    await configApi.apply({ configObject: obj(), user: manager });
+    await configApi.apply({ configObject: obj({ scope: 'r1' }), user: manager });
+
+    await configApi.clear({
+      configObject: { kind: KIND, apiVersion: 'v0.1', metadata: { id: 'pretty' }, spec: { scope: 'r1' } },
+      user: manager,
+    });
+    expect(await SpatialAnnotations.findOneAsync({ entityType: 'robot', entityId: 'r1', label: 'pretty' })).to.not.exist;
+    expect(await SpatialAnnotations.findOneAsync({ entityType: 'system', entityId: '0', label: 'pretty' })).to.exist;
+
+    await configApi.clear({ configObject: { kind: KIND, apiVersion: 'v0.1', metadata: { id: 'pretty' } }, user: manager });
+    expect(await SpatialAnnotations.findOneAsync({ entityType: 'system', entityId: '0', label: 'pretty' })).to.not.exist;
   });
 
   it('apply: rejects an id that collides with the robot\'s ingested map', async () => {

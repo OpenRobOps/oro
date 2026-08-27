@@ -747,8 +747,9 @@ by scope, not just by id.
 :::
 
 `list` returns every field except `spec.image` by default; request the full
-format to get the image data back. `clear` removes the map id at **every**
-scope (system and all robots), not just the scope it was applied at.
+format to get the image data back. `clear` removes only the map at the scope
+named by `spec.scope` (system, the default, when omitted) — it does not touch
+a map with the same id at another scope.
 
 ### Example
 
@@ -805,8 +806,9 @@ The ISO 21423 facility CCS calibration is itself a `system`-scope
 [ISO Robots setup guide](../iso21423/iso-robots-setup.md#2-settings).
 
 `clear` removes only the entity named by `metadata.id` (`system`, or one
-robot) — unlike `SpatialAnnotation`'s `clear`, which removes the map id at
-every scope.
+robot) — same scoping principle as `SpatialAnnotation`'s `clear`, just keyed
+by `metadata.id` here instead of `spec.scope`, since a `SpatialTransformation`
+entity id already is the scope.
 
 ### Example
 

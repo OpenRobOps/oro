@@ -153,7 +153,8 @@ export class SpatialAnnotationConfigAPIHandler {
     await assertAuthorized(user);
     const label = String(configObject?.metadata?.id || '');
     if (!label) throw new ValidationError('metadata.id is required');
-    await SpatialAnnotations.removeAsync({ type: 'map', label });
+    const entity = entityFor(configObject.spec?.scope);
+    await SpatialAnnotations.removeAsync({ ...entity, type: 'map', label });
   };
 }
 
