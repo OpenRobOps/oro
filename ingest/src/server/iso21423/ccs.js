@@ -33,6 +33,10 @@
  * seeding that collection from it when calibrated.
  */
 
+/** True for a well-formed 3x3 `aTb.m` — three rows of three finite numbers. */
+const isValidMatrix = (m) => Array.isArray(m) && m.length === 3
+  && m.every((row) => Array.isArray(row) && row.length === 3 && row.every(Number.isFinite));
+
 class CcsConverter {
   /**
    * @param {string|null} ccsId
@@ -96,6 +100,10 @@ class CcsConverter {
    * document so the SpatialTransformation ConfigAPI kind, the Navigation widget and this
    * converter all read one transform. An existing `map` entry for another frame is left alone.
    *
+   * Like `create`, this NEVER throws or rejects: a `spatial_transformations` read/write failure,
+   * or a malformed stored matrix, is logged and degrades to the settings-only path instead of
+   * aborting the caller's startup.
+   *
    * @param {{id: string|null, referencePoints: Array}} ccsConfig
    * @param {Object} geometry
    * @param {import('mongodb').Collection} transformsColl the `spatial_transformations` collection
@@ -104,20 +112,34 @@ class CcsConverter {
   static async load(ccsConfig, geometry, transformsColl) {
     const { id } = ccsConfig || {};
     const query = { entityType: 'system', entityId: '0' };
-    const doc = await transformsColl.findOne(query);
+    let doc = null;
+    try {
+      doc = await transformsColl.findOne(query);
+    } catch (err) {
+      console.warn(
+        `ISO 21423 CCS: could not read spatial_transformations (${err.message}); using settings`);
+    }
     const entry = doc && doc.transformations && doc.transformations.map;
-    if (id && entry && entry.frameId === id && entry.aTb && Array.isArray(entry.aTb.m)) {
-      const m = entry.aTb.m;
-      const t = { rotation: Math.atan2(m[1][0], m[0][0]), tx: m[0][2], ty: m[1][2] };
-      return new CcsConverter(id, t, geometry, null);
+    if (id && entry && entry.frameId === id) {
+      const m = entry.aTb && entry.aTb.m;
+      if (isValidMatrix(m)) {
+        const t = { rotation: Math.atan2(m[1][0], m[0][0]), tx: m[0][2], ty: m[1][2] };
+        return new CcsConverter(id, t, geometry, null);
+      }
+      console.warn('ISO 21423 CCS: spatial_transformations map entry has a malformed matrix; '
+        + 'using settings');
     }
     const converter = CcsConverter.create(ccsConfig, geometry);
     if (converter.calibrated && !entry) {
       const { rotation, tx, ty } = converter._t;
       const c = Math.cos(rotation); const s = Math.sin(rotation);
-      await transformsColl.updateOne(query, {
-        $set: { 'transformations.map': { frameId: id, aTb: { m: [[c, -s, tx], [s, c, ty], [0, 0, 1]] } } },
-      }, { upsert: true });
+      try {
+        await transformsColl.updateOne(query, {
+          $set: { 'transformations.map': { frameId: id, aTb: { m: [[c, -s, tx], [s, c, ty], [0, 0, 1]] } } },
+        }, { upsert: true });
+      } catch (err) {
+        console.warn(`ISO 21423 CCS: could not seed spatial_transformations (${err.message})`);
+      }
     }
     return converter;
   }

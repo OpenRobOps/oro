@@ -130,4 +130,22 @@ describe('iso21423 CcsConverter.load', () => {
     assert.strictEqual(c.calibrated, false);
     assert.strictEqual(coll.store.doc.transformations.map.frameId, 'other');
   });
+
+  it('degrades to settings when reading spatial_transformations fails', async () => {
+    const coll = {
+      findOne: async () => { throw new Error('mongo down'); },
+      updateOne: async () => ({ acknowledged: true }),
+    };
+    const c = await CcsConverter.load({ id: CCS_ID, referencePoints: TRANSLATION }, geometry, coll);
+    assert.strictEqual(c.calibrated, true);
+  });
+
+  it('still returns a calibrated converter when seeding spatial_transformations fails', async () => {
+    const coll = {
+      findOne: async () => null,
+      updateOne: async () => { throw new Error('mongo down'); },
+    };
+    const c = await CcsConverter.load({ id: CCS_ID, referencePoints: TRANSLATION }, geometry, coll);
+    assert.strictEqual(c.calibrated, true);
+  });
 });
