@@ -37,7 +37,8 @@ import {
 } from '../../contexts/RobotsDataContext/RobotsDataContext';
 import WithNoDataMessage from '../../util/WithNoDataMessage';
 import Map from './Map';
-import { useRobotMapsList, parseMapRef, mapRefFor } from '../../hooks/useRobotMaps';
+import { useRobotMapsList, useFrameTransform, parseMapRef, mapRefFor } from '../../hooks/useRobotMaps';
+import { transformLocalizationData, DEFAULT_FRAME_ID } from '../../../../shared/maps';
 
 // Constant arrays to avoid new objects and re-renders
 const EMPTY_ANNOTATIONS_LIST = [];
@@ -130,6 +131,16 @@ function LocalizationAdapter({
     }
   );
 
+  // Place robots on the selected map: robot frame → map frame.
+  // ponytail: one transform for all displayed robots (main robot's); per-robot transforms when mixed-frame fleets appear.
+  const robotFrameId = robotsLocalizationData?.[mainRobotId]?.map?.frameId || DEFAULT_FRAME_ID;
+  const { transform: frameTransform } = useFrameTransform({
+    robotId: mainRobotId, from: robotFrameId, to: map.frameId,
+  });
+  const mapWithFrame = useMemo(() => ({
+    ...map, frameTransform, robotFrameId, noTransform: !!map.frameId && !frameTransform,
+  }), [map, frameTransform, robotFrameId]);
+
   // Fetch robot online/offline data
   useDataSource(state, dispatch, LOCALIZATION_DATA_TYPE.DETAILS, { robotIds: robotIdsToQuery });
   const robotDetails = useMemo(
@@ -159,8 +170,12 @@ function LocalizationAdapter({
 
   const isLoading = robotsLoading;
 
-  // Filter localization data for only information for selected robotIds
-  const filteredRobotLocalizationData = pickKeys(robotsLocalizationData, robotIdsToDisplay);
+  // Filter localization data for only information for selected robotIds, then transform each
+  // robot's data into the map's frame.
+  const filteredRobotLocalizationData = useMemo(() => Object.fromEntries(
+    Object.entries(pickKeys(robotsLocalizationData, robotIdsToDisplay))
+      .map(([rId, d]) => [rId, transformLocalizationData(d, frameTransform)])
+  ), [robotsLocalizationData, robotIdsToDisplay, frameTransform]);
 
   // Load keys for outdoor map tiles services
   const tilesetKey = Meteor.settings?.public?.maptilerKey;
@@ -168,7 +183,7 @@ function LocalizationAdapter({
   return (
     <Localization
       isLoading={isLoading}
-      map={map}
+      map={mapWithFrame}
       selectedRobotId={selectedRobotId}
       robotsLocalizationData={filteredRobotLocalizationData}
       robotsUiPreferences={robotsUiPreferences}

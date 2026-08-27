@@ -48,7 +48,7 @@ const MapImageLayer = ({ url, mapMetadata, style, zIndex = 0, autoFit = false })
     const { height, width } = mapMetadata;
     const imageExtent = [0, 0, width, height];
     const imageProjection = new Projection({
-      code: 'image-map',
+      code: `image-map-${mapMetadata._id || 'default'}`,
       units: 'pixels',
       extent: imageExtent,
     });
@@ -93,6 +93,7 @@ const MapImageLayer = ({ url, mapMetadata, style, zIndex = 0, autoFit = false })
 MapImageLayer.propTypes = {
   url: PropTypes.string,
   mapMetadata: PropTypes.shape({
+    _id: PropTypes.string,
     height: PropTypes.number,
     width: PropTypes.number,
     resolution: PropTypes.number,

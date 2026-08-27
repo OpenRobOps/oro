@@ -18,7 +18,7 @@ import { Meteor } from 'meteor/meteor';
 import { expect } from 'chai';
 import {
   normalizeMapAnnotation, invert3x3, findFrameTransform, fitRigidTransform2D,
-  validateTransformMatrix, IDENTITY_3X3, mapsListQuery,
+  validateTransformMatrix, IDENTITY_3X3, mapsListQuery, transformLocalizationData,
 } from '../../shared/maps';
 import { transformPose } from '../../shared/geometry';
 import { resetDatabase } from './setup';
@@ -127,6 +127,29 @@ describe('shared/maps', () => {
 
       const docs = await SpatialAnnotations.find(mapsListQuery('r1')).fetchAsync();
       expect(docs.map((d) => d.label).sort()).to.deep.equal(['a', 'map', 's']);
+    });
+  });
+
+  describe('transformLocalizationData', () => {
+    const t = { frameId: 'ccs', aTb: { m: rot(Math.PI / 2, 0, 0) } };
+    it('rotates pose, path points and costmap origin; leaves lasers alone', () => {
+      const data = {
+        robotPose: { x: 1, y: 0, theta: 0 },
+        laserRanges: { ranges: [1, 2] },
+        paths: [{ points: [{ x: 1, y: 0 }, { x: 2, y: 0 }] }],
+        costmap: { x: 1, y: 0, theta: 0, width: 2 },
+      };
+      const out = transformLocalizationData(data, t);
+      near(out.robotPose.x, 0); near(out.robotPose.y, 1); near(out.robotPose.theta, Math.PI / 2);
+      expect(out.robotPose.frameId).to.equal('ccs');
+      near(out.paths[0].points[1].y, 2);
+      near(out.costmap.y, 1); expect(out.costmap.width).to.equal(2);
+      expect(out.laserRanges).to.equal(data.laserRanges);
+    });
+    it('returns the same object for identity/null', () => {
+      const data = { robotPose: { x: 1, y: 2 } };
+      expect(transformLocalizationData(data, null)).to.equal(data);
+      expect(transformLocalizationData(data, { frameId: 'map', aTb: { m: IDENTITY_3X3 } })).to.equal(data);
     });
   });
 });

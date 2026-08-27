@@ -25,6 +25,8 @@
  * where `m` maps a pose in `from` into `to` (see `transformPose` in ./geometry.js).
  */
 
+import { transformPose } from './geometry';
+
 const DEFAULT_FRAME_ID = 'map';
 const IDENTITY_3X3 = [[1, 0, 0], [0, 1, 0], [0, 0, 1]];
 
@@ -127,6 +129,24 @@ function validateTransformMatrix(m) {
   return null;
 }
 
+const isIdentity = (m) => m === IDENTITY_3X3
+  || m.every((row, i) => row.every((v, j) => v === IDENTITY_3X3[i][j]));
+
+/** Re-expresses a robot's localization data in the map's frame. Lasers are robot-relative: untouched. */
+function transformLocalizationData(data, transform) {
+  if (!data || !transform || !transform.aTb || isIdentity(transform.aTb.m)) return data;
+  const out = { ...data };
+  if (data.robotPose) out.robotPose = transformPose(data.robotPose, transform);
+  if (Array.isArray(data.paths)) {
+    out.paths = data.paths.map((p) => ({
+      ...p,
+      points: Array.isArray(p.points) ? p.points.map((pt) => transformPose(pt, transform)) : p.points,
+    }));
+  }
+  if (data.costmap) out.costmap = { ...data.costmap, ...transformPose(data.costmap, transform) };
+  return out;
+}
+
 /** Mongo query for every map a robot can display: its own maps plus system-scope maps. */
 function mapsListQuery(robotId) {
   return {
@@ -146,4 +166,5 @@ export {
   fitRigidTransform2D,
   validateTransformMatrix,
   mapsListQuery,
+  transformLocalizationData,
 };
