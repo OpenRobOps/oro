@@ -96,9 +96,10 @@ spec:                        # all optional; `spec: null` suppresses
   `robots.footprint = { points: [[x,y]…], height: details.imrHeight, ts, source: 'iso21423' }`.
   Malformed → one warn per robot, no write. Nothing else in ingest changes.
 - Flatland `iso-agent` (sim-flatland repo, separate PR): publish a spec-valid `imrIdentity` in
-  `details`: `imrModel: 'flatland-nav2'`, `imrSerialNumber` (the uuid), `imrFootprint` = 16-point
-  polygon of the turtlebot body circle (`worlds/turtlebot.model.yaml`: radius 0.22 m),
-  `imrWorkingArea` = same, `imrHeight: 0.4`, `softwareVersions: [{name:'iso-agent', version}]`.
+  `details`: `imrModel: 'flatland-nav2'`, `imrSerialNumber` (the uuid), `imrFootprint` = the nav2 costmap
+  footprint (`config/nav2_params.yaml`: 0.44 x 0.28 m) as a rounded rectangle (0.06 m corners, 20
+  points) — the sim's physics body is a 0.22 m circle, but the planner's rectangle is what the
+  map should show; `imrWorkingArea` = same, `imrHeight: 0.4`, `softwareVersions: [{name:'iso-agent', version}]`.
 
 ## 5. Docs and tests
 
