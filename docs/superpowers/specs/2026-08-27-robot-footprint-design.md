@@ -97,9 +97,9 @@ spec:                        # all optional; `spec: null` suppresses
   Malformed → one warn per robot, no write. Nothing else in ingest changes.
 - Flatland `iso-agent` (sim-flatland repo, separate PR): publish a spec-valid `imrIdentity` in
   `details`: `imrModel: 'flatland-nav2'`, `imrSerialNumber` (the uuid), `imrFootprint` = the nav2 costmap
-  footprint (`config/nav2_params.yaml`: 0.44 x 0.28 m) as a rounded rectangle (0.06 m corners, 20
-  points) — the sim's physics body is a 0.22 m circle, but the planner's rectangle is what the
-  map should show; `imrWorkingArea` = same, `imrHeight: 0.4`, `softwareVersions: [{name:'iso-agent', version}]`.
+  footprint (`config/nav2_params.yaml`: 0.44 x 0.28 m) enlarged proportionally to 0.60 x 0.38 m as a
+  rounded rectangle (0.08 m corners, 20 points) — the sim's physics body is a 0.22 m circle, but a
+  robot-shaped outline readable at fleet zoom is what the map should show; `imrWorkingArea` = same, `imrHeight: 0.4`, `softwareVersions: [{name:'iso-agent', version}]`.
 
 ## 5. Docs and tests
 
