@@ -33,6 +33,7 @@ import { Meteor } from 'meteor/meteor';
 import { Robots, RobotLocalization, SpatialAnnotations } from '../../../../lib/collections';
 import { fetchRobotAttributeValues } from '../../../../lib/attributes';
 import { VITAL_PING_RTT_AVG } from '../../../../shared/attributes';
+import { normalizeMapAnnotation } from '../../../../shared/maps';
 import { keyBy } from 'lodash';
 import {
   multipleRobotsLocalizationData, mapData, rttData, robotDetailsData
@@ -75,44 +76,53 @@ function useMeteorLocalizationData({ robotIds, lowBandwidth }, cb = null) {
  * Uses objectUrl when available; falls back to a data URL built from the base64 `data` field.
  */
 const useMeteorMapData = (
-  { robotId, entityId, label = 'map' },
+  { robotId, entityId, entityType = 'robot', label = 'map' },
   cb = null,
 ) => useTracker(() => {
-  const id = robotId || entityId;
-  if (!id) {
+  const accessRobotId = robotId || entityId;
+  if (!accessRobotId || !label) {
     cb && cb({ isLoading: false });
     return { isLoading: false };
   }
+  const query = entityType === 'system'
+    ? { entityType: 'system', entityId: '0', label }
+    : { entityType: 'robot', entityId: entityId || accessRobotId, label };
 
-  const sub = Meteor.subscribe('spatial_annotations.map', { robotId: id, label });
+  const sub = Meteor.subscribe('spatial_annotations.map', { robotId: accessRobotId, ...query });
   const isLoading = !sub.ready();
-  const doc = SpatialAnnotations.findOne({ entityType: 'robot', entityId: id, label });
-  const map = doc?.map;
+  const normalized = normalizeMapAnnotation(SpatialAnnotations.findOne(query));
+  const a = normalized?.annotation;
 
   let mapUrl = null;
-  if (map?.objectUrl?.startsWith('http')) {
-    mapUrl = map.objectUrl;
-  } else if (map?.data) {
-    mapUrl = `data:image/png;base64,${map.data}`;
+  if (a?.objectUrl?.startsWith('http')) {
+    mapUrl = a.objectUrl;
+  } else if (a?.data) {
+    mapUrl = `data:image/png;base64,${a.data}`;
   }
 
   const result = {
     isLoading,
     mapUrl,
-    ...(map ? {
-      width: map.width,
-      height: map.height,
-      x: map.x,
-      y: map.y,
-      resolution: map.resolution,
-      formatVersion: map.formatVersion,
-      dataHash: map.dataHash,
+    ...(a ? {
+      entityType: normalized.entity.entityType,
+      entityId: normalized.entity.entityId,
+      label,
+      frameId: normalized.entity.frameId,
+      // OL projection code must be unique per image (MapImageLayer); `_id` feeds createImagePixelProjection
+      _id: `${normalized.entity.entityType}-${normalized.entity.entityId}-${label}`,
+      width: a.width,
+      height: a.height,
+      x: a.x,
+      y: a.y,
+      resolution: a.resolution,
+      formatVersion: a.formatVersion,
+      dataHash: a.dataHash,
     } : {}),
   };
 
   cb && cb(result);
   return result;
-}, [robotId, entityId, label]);
+}, [robotId, entityId, entityType, label]);
 
 /**
  * Hook to return RTT data for a single robot. Subscribing to robot.connectionQuality starts

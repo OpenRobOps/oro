@@ -37,6 +37,7 @@ import {
 } from '../../contexts/RobotsDataContext/RobotsDataContext';
 import WithNoDataMessage from '../../util/WithNoDataMessage';
 import Map from './Map';
+import { useRobotMapsList, parseMapRef, mapRefFor } from '../../hooks/useRobotMaps';
 
 // Constant arrays to avoid new objects and re-renders
 const EMPTY_ANNOTATIONS_LIST = [];
@@ -107,16 +108,19 @@ function LocalizationAdapter({
     robotIds: robotIdsToQuery, lowBandwidth
   });
 
-  // Get the map metadata and URL, render-ready.
-  // Use the mapLabel passed from the context as prop if exists;
-  // if not, use the selected robot's default map.
-  const mapLabel = contextMapLabel || robotsLocalizationData?.[mainRobotId]?.defaultMap;
+  // Which map to show: the ref from context (system:<id> | robot:<id> | <label>), else the
+  // robot's own default map, else the first shared map (ISO robots publish no map at all).
+  const { defaultMap } = useRobotMapsList(mainRobotId);
+  const mapRef = contextMapLabel
+    || (defaultMap && mapRefFor(defaultMap))
+    || robotsLocalizationData?.[mainRobotId]?.defaultMap;
+  const mapQuery = parseMapRef(mapRef, mainRobotId) || {};
 
   useDataSource(
     state,
     dispatch,
     LOCALIZATION_DATA_TYPE.MAP,
-    { entityId: mainRobotId, label: mapLabel }
+    { robotId: mainRobotId, entityType: mapQuery.entityType, entityId: mapQuery.entityId, label: mapQuery.label }
   );
 
   // Fetch robot online/offline data
