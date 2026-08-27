@@ -728,7 +728,7 @@ helper that builds this YAML from a PNG file.
 | Field | Type | Required | Default | Description |
 |-------|------|----------|---------|-------------|
 | `spec.scope` | string | No | `system` | `system` for a shared map, or a robot id for a robot-owned map |
-| `spec.type` | string | No | `map` | Must be `map` if present |
+| `spec.type` | `"map"` | No | `map` | Must be `map` if present |
 | `spec.frameId` | string | Yes | | Coordinate frame the image is drawn in. Robot grids are normally in `map`; see [Maps](../maps.md#frames-and-transforms) for what happens when this differs from a robot's own frame |
 | `spec.label` | string | Yes | | Display name shown in the map switcher |
 | `spec.x` | number | Yes | | World X of the image's bottom-left corner, in `frameId` units |
@@ -738,9 +738,12 @@ helper that builds this YAML from a PNG file.
 | `spec.image` | string | Yes | | Base64-encoded PNG. 12 MB decoded max; width/height and a content hash are computed server-side |
 
 :::note[Collisions with robot-ingested maps]
-`apply` is rejected when the id collides with a map the robot itself already
-publishes over MQTT (its live occupancy grid) — pick a different id for the
-shared map.
+`apply` is rejected when a **robot-scoped** map (`spec.scope: <robotId>`)
+reuses the id of a map that robot already publishes over MQTT (its live
+occupancy grid) — the check is scoped to that same robot, so pick a
+different id for it. Shared maps (`scope: system`, the default) never
+collide with any robot's ingested grid: the map switcher tells them apart
+by scope, not just by id.
 :::
 
 `list` returns every field except `spec.image` by default; request the full
@@ -784,7 +787,7 @@ is needed.
 | `spec.transformations` | array | Yes | One entry per source frame (`from`) |
 | `spec.transformations[].from` | string | Yes | Source frame id |
 | `spec.transformations[].to` | string | Yes | Destination frame id |
-| `spec.transformations[].matrix` | array | One of `matrix`/`referencePoints` | Explicit 3x3 matrix mapping a pose in `from` into `to` |
+| `spec.transformations[].matrix` | array | One of `matrix`/`referencePoints` | Explicit 3x3 matrix mapping a pose in `from` into `to`. Must be a rigid transform: all entries finite, last row `[0, 0, 1]`, and the 2x2 rotation block orthonormal with positive determinant (rotation + translation only — no scale, shear, or reflection); otherwise `apply` fails with a validation error |
 | `spec.transformations[].referencePoints` | array | One of `matrix`/`referencePoints` | ≥3 `{from:{x,y}, to:{x,y}}` landmark pairs; the rigid transform (rotation + translation) is least-squares fitted server-side |
 
 Exactly one of `matrix` or `referencePoints` must be given per entry, and
@@ -800,6 +803,10 @@ with a banner and the robot is hidden.
 The ISO 21423 facility CCS calibration is itself a `system`-scope
 `map → <ccs.id>` entry — see the
 [ISO Robots setup guide](../iso21423/iso-robots-setup.md#2-settings).
+
+`clear` removes only the entity named by `metadata.id` (`system`, or one
+robot) — unlike `SpatialAnnotation`'s `clear`, which removes the map id at
+every scope.
 
 ### Example
 
