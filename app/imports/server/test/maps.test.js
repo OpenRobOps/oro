@@ -21,6 +21,8 @@ import {
   validateTransformMatrix, IDENTITY_3X3, mapsListQuery,
 } from '../../shared/maps';
 import { transformPose } from '../../shared/geometry';
+import { resetDatabase } from './setup';
+import { SpatialAnnotations } from '../../lib/collections';
 
 if (!Meteor.isTest) throw new Error('This is TEST code only');
 
@@ -112,14 +114,19 @@ describe('shared/maps', () => {
   });
 
   describe('mapsListQuery', () => {
-    it('matches robot maps (legacy and v2) and system maps, not other annotation types', () => {
-      const q = mapsListQuery('r1');
-      expect(q).to.deep.equal({
-        $and: [
-          { $or: [{ entityType: 'robot', entityId: 'r1' }, { entityType: 'system', entityId: '0' }] },
-          { $or: [{ type: 'map' }, { type: { $exists: false }, map: { $exists: true } }] },
-        ],
-      });
+    beforeEach(async function () {
+      await resetDatabase();
+    });
+
+    it('matches robot maps (legacy and v2) and system maps, not other annotation types', async () => {
+      await SpatialAnnotations.insertAsync({ entityType: 'robot', entityId: 'r1', label: 'a', type: 'map', annotation: {} });
+      await SpatialAnnotations.insertAsync({ entityType: 'robot', entityId: 'r1', label: 'map', map: { x: 0 } });
+      await SpatialAnnotations.insertAsync({ entityType: 'system', entityId: '0', label: 's', type: 'map', annotation: {} });
+      await SpatialAnnotations.insertAsync({ entityType: 'robot', entityId: 'r2', label: 'b', type: 'map', annotation: {} });
+      await SpatialAnnotations.insertAsync({ entityType: 'robot', entityId: 'r1', label: 'w', type: 'waypoint', annotation: {} });
+
+      const docs = await SpatialAnnotations.find(mapsListQuery('r1')).fetchAsync();
+      expect(docs.map((d) => d.label).sort()).to.deep.equal(['a', 'map', 's']);
     });
   });
 });

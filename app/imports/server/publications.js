@@ -92,6 +92,9 @@ Meteor.publish('spatial_annotations.map', async function ({
   if (!await new OroRoles().canAccessRobot(this.userId, robotId, ACCESS_LEVEL_VIEW)) {
     return this.error(new Meteor.Error('Unauthorized'));
   }
+  if (!['robot', 'system'].includes(entityType)) {
+    return this.error(new Meteor.Error('wrong-parameter', 'entityType must be "robot" or "system"'));
+  }
   const id = entityType === 'system' ? '0' : (entityId || robotId);
   if (entityType === 'robot' && id !== robotId) {
     return this.error(new Meteor.Error('Unauthorized'));
