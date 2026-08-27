@@ -60,6 +60,17 @@ const useStyles = makeStyles()(theme => ({
     opacity: '0.5',
     top: 0
   },
+  noTransformBanner: {
+    position: 'absolute',
+    top: 8,
+    left: '50%',
+    transform: 'translateX(-50%)',
+    zIndex: 1,
+    backgroundColor: theme.palette.warning.main,
+    color: theme.palette.warning.contrastText,
+    padding: '4px 12px',
+    borderRadius: 4,
+  },
   mapContainer: {
     contain: 'content',
     height: 'inherit',
@@ -204,7 +215,7 @@ function Localization({
               tilesetKey={tilesetKey}
             />
           )}
-        {Object.keys(robotsLocalizationData).map(rId => (
+        {!map.noTransform && Object.keys(robotsLocalizationData).map(rId => (
           <RobotLayer
             key={rId}
             map={mapToRender}
@@ -226,12 +237,17 @@ function Localization({
             selected={selectedRobotId == rId}
           />
         ))}
-        {variant !== LOCALIZATION_VARIANTS.MAP_WIDGET && (
+        {!map.noTransform && variant !== LOCALIZATION_VARIANTS.MAP_WIDGET && (
           <InteractionPicker
             robotLocalizationData={selectedRobotLocalizationData}
           />
         )}
       </Layers>
+      {map.noTransform && (
+        <div className={classes.noTransformBanner}>
+          No transform from frame “{map.robotFrameId}” to “{map.frameId}” for this robot
+        </div>
+      )}
     </MapComponent>
   );
 }

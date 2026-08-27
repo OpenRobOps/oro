@@ -91,3 +91,61 @@ describe('iso21423 CcsConverter', () => {
     assert.throws(() => c.fromCcsYaw(0), /uncalibrated/);
   });
 });
+
+const fakeColl = (doc) => {
+  const store = { doc };
+  return {
+    store,
+    findOne: async () => store.doc,
+    updateOne: async (q, update) => {
+      store.doc = { ...(store.doc || q),
+        transformations: { ...((store.doc && store.doc.transformations) || {}),
+          map: update.$set['transformations.map'] } };
+      return { acknowledged: true };
+    },
+  };
+};
+
+describe('iso21423 CcsConverter.load', () => {
+  it('prefers the system spatial_transformations entry over settings', async () => {
+    const coll = fakeColl({ entityType: 'system', entityId: '0',
+      transformations: { map: { frameId: CCS_ID, aTb: { m: [[1, 0, 100], [0, 1, 100], [0, 0, 1]] } } } });
+    const c = await CcsConverter.load({ id: CCS_ID, referencePoints: TRANSLATION }, geometry, coll);
+    const p = c.toLocationPoint({ x: 0, y: 0 });
+    near(p.x, 100); near(p.y, 100);
+  });
+
+  it('falls back to settings and writes the fitted matrix back', async () => {
+    const coll = fakeColl(null);
+    const c = await CcsConverter.load({ id: CCS_ID, referencePoints: TRANSLATION }, geometry, coll);
+    assert.strictEqual(c.calibrated, true);
+    const m = coll.store.doc.transformations.map.aTb.m;
+    assert.strictEqual(coll.store.doc.transformations.map.frameId, CCS_ID);
+    near(m[0][2], 10); near(m[1][2], 10); near(m[0][0], 1);
+  });
+
+  it('ignores a system entry that targets a different frame and stays uncalibrated without settings', async () => {
+    const coll = fakeColl({ transformations: { map: { frameId: 'other', aTb: { m: [[1, 0, 1], [0, 1, 1], [0, 0, 1]] } } } });
+    const c = await CcsConverter.load({ id: CCS_ID, referencePoints: [] }, geometry, coll);
+    assert.strictEqual(c.calibrated, false);
+    assert.strictEqual(coll.store.doc.transformations.map.frameId, 'other');
+  });
+
+  it('degrades to settings when reading spatial_transformations fails', async () => {
+    const coll = {
+      findOne: async () => { throw new Error('mongo down'); },
+      updateOne: async () => ({ acknowledged: true }),
+    };
+    const c = await CcsConverter.load({ id: CCS_ID, referencePoints: TRANSLATION }, geometry, coll);
+    assert.strictEqual(c.calibrated, true);
+  });
+
+  it('still returns a calibrated converter when seeding spatial_transformations fails', async () => {
+    const coll = {
+      findOne: async () => null,
+      updateOne: async () => { throw new Error('mongo down'); },
+    };
+    const c = await CcsConverter.load({ id: CCS_ID, referencePoints: TRANSLATION }, geometry, coll);
+    assert.strictEqual(c.calibrated, true);
+  });
+});

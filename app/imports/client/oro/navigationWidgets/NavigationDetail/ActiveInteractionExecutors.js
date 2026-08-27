@@ -23,6 +23,10 @@ import PropTypes from 'prop-types';
 // ORO imports
 import { useActionsConfig } from '../../util/hooks';
 import { useActiveInteraction } from '../../contexts/ActiveInteractionContext';
+import { useRobotsDataContext } from '../../contexts/RobotsDataContext/RobotsDataContext';
+import { useFrameTransform } from '../../hooks/useRobotMaps';
+import { transformPose } from '../../../../shared/geometry';
+import { inverseTransform, transformDelta, DEFAULT_FRAME_ID } from '../../../../shared/maps';
 import {
   NAVIGATE_TO_ACTION_ID,
   RELOCALIZE_ACTION_ID,
@@ -36,15 +40,20 @@ const ActiveInteractionExecutors = ({
 }) => {
   const { setInteractionCallback, clearInteractionCallback } = useActiveInteraction();
   const { data: actionsConfig } = useActionsConfig(robotId);
+  const { state } = useRobotsDataContext();
+  const robotFrameId = state.robotsLocalizationData?.[robotId]?.map?.frameId || DEFAULT_FRAME_ID;
+  const { transform } = useFrameTransform({ robotId, from: robotFrameId, to: state.map?.frameId });
+  const toRobotFrame = inverseTransform(transform);
 
   useEffect(() => {
     // Waypoint Teleop
     setInteractionCallback(NAVIGATE_MODE, ({ pose }) => {
+      const { frameId, ...robotPose } = transformPose(pose, toRobotFrame);
       executeAction({
         action: {
           ...actionsConfig[NAVIGATE_TO_ACTION_ID],
           actionId: NAVIGATE_TO_ACTION_ID,
-          args: { pose }
+          args: { pose: robotPose }
         }
       });
       return true;
@@ -57,7 +66,7 @@ const ActiveInteractionExecutors = ({
           ...actionsConfig[RELOCALIZE_ACTION_ID],
           actionId: RELOCALIZE_ACTION_ID,
           args: {
-            deltaPose: pose
+            deltaPose: transformDelta(pose, toRobotFrame)
           }
         }
       });
@@ -80,7 +89,7 @@ const ActiveInteractionExecutors = ({
       clearInteractionCallback(RELOCALIZE_MODE);
       clearInteractionCallback(CANCEL_NAVGOAL_INTERACTION);
     };
-  }, [executeAction, actionsConfig, setInteractionCallback, clearInteractionCallback]);
+  }, [executeAction, actionsConfig, setInteractionCallback, clearInteractionCallback, transform]);
 
   // Teleop doesn't need to execute anything after it's finished
   useEffect(() => {

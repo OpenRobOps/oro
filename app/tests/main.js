@@ -38,10 +38,13 @@ import '../imports/server/test/configAPI/configAPIStatusDefinition.test.js'
 import '../imports/server/test/configAPI/configAPIDashboards.test.js'
 import '../imports/server/test/configAPI/configAPIActionDefinitions.test.js'
 import '../imports/server/test/configAPI/configAPIModuleState.test.js'
+import '../imports/server/test/configAPI/configAPISpatialAnnotation.test.js'
+import '../imports/server/test/configAPI/configAPISpatialTransformation.test.js'
 import '../imports/server/test/timeseries/timeseriesStore.test.js'
 import '../imports/server/test/timeseries/timeseriesManager.test.js'
 import '../imports/server/test/isoMqttConfig.test'
 import '../imports/server/test/isoRobots.test'
+import '../imports/server/test/maps.test.js'
 
 describe("app", function () {
   it("package.json has correct name", async function () {

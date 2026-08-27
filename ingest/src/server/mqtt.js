@@ -169,13 +169,8 @@ export default class OroMqtt {
     this.callbacks = {};
     this.callbacks._seq = 1;
 
-    // Cache robotId to brokerId mappings to avoid database queries
-    // this.cacheRobotToBroker = new AsyncCache({
-    //   maxAge: moment.duration(1, 'hour').valueOf(),
-    //   maxSize: 1000,
-    //   createFunction: this.getMqttBrokerId
-    // });
-    this.cacheRobotToBroker = (robotId) => 'default';
+    // ponytail: robotId -> brokerId is resolved with one query per publish (getMqttBrokerId);
+    // bring back an AsyncCache in front of it if publish volume ever makes that show up.
 
     // HACK(adamantivm) Used to limit the number of odometry requests
     // per robot, as a performance alleviation. Saves the ts of the last
@@ -741,15 +736,14 @@ export default class OroMqtt {
    */
   getMqttBrokerId = async (robotId) => {
     const login = await this.mqttLogins.findOne({ robotId });
-    return login?.brokerId | this.defaultBrokerId;
+    return login?.brokerId || this.defaultBrokerId;
   };
 
   /**
    * Returns the MQTT instance corresponding to a particular robot.
    */
   getMqttBroker = async (robotId) => {
-    // Resolve brokerId from robotId with getMqttBrokerId via cache.
-    let brokerId = await this.cacheRobotToBroker.get(robotId);
+    let brokerId = await this.getMqttBrokerId(robotId);
     if (!(brokerId in this.brokers)) {
       console.error(`Broker instance for brokerId=[${brokerId}], requested for `
         + `robotId=[${robotId}] not found. Falling back to brokerId=[${brokerId}]`);

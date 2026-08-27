@@ -713,9 +713,129 @@ spec:
 
 ---
 
+## SpatialAnnotation
+
+Uploads a map image for the [Navigation widget](./navigation.md). `metadata.id`
+is the map id. By default a map is stored at `scope: system`, so every robot
+can list it as a **shared map**; setting `spec.scope` to a robot id stores a
+robot-owned map instead. The image travels as base64 inside the spec (the
+Config API is JSON-only) — see [Maps](../maps.md) for the end-to-end workflow
+and the [`tools/png2map.py`](https://github.com/OpenRobOps/oro/blob/main/tools/png2map.py)
+helper that builds this YAML from a PNG file.
+
+### Schema
+
+| Field | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `spec.scope` | string | No | `system` | `system` for a shared map, or a robot id for a robot-owned map |
+| `spec.type` | `"map"` | No | `map` | Must be `map` if present |
+| `spec.frameId` | string | Yes | | Coordinate frame the image is drawn in. Robot grids are normally in `map`; see [Maps](../maps.md#frames-and-transforms) for what happens when this differs from a robot's own frame |
+| `spec.label` | string | Yes | | Display name shown in the map switcher |
+| `spec.x` | number | Yes | | World X of the image's bottom-left corner, in `frameId` units |
+| `spec.y` | number | Yes | | World Y of the image's bottom-left corner, in `frameId` units |
+| `spec.resolution` | number | Yes | | Metres per pixel (must be positive) |
+| `spec.formatVersion` | enum | No | `2` | `1` or `2` |
+| `spec.image` | string | Yes | | Base64-encoded PNG. 12 MB decoded max; width/height and a content hash are computed server-side |
+
+:::note[Collisions with robot-ingested maps]
+`apply` is rejected when a **robot-scoped** map (`spec.scope: <robotId>`)
+reuses the id of a map that robot already publishes over MQTT (its live
+occupancy grid) — the check is scoped to that same robot, so pick a
+different id for it. Shared maps (`scope: system`, the default) never
+collide with any robot's ingested grid: the map switcher tells them apart
+by scope, not just by id.
+:::
+
+`list` returns every field except `spec.image` by default; request the full
+format to get the image data back. `clear` removes only the map at the scope
+named by `spec.scope` (system, the default, when omitted) — it does not touch
+a map with the same id at another scope.
+
+### Example
+
+```yaml
+apiVersion: v0.1
+kind: SpatialAnnotation
+metadata:
+  id: warehouse-floor-1
+spec:
+  scope: system
+  type: map
+  frameId: map
+  label: Warehouse Floor 1
+  x: 0
+  y: 0
+  resolution: 0.05
+  formatVersion: 2
+  image: <base64 PNG>
+```
+
+---
+
+## SpatialTransformation
+
+Defines a rigid transform between two coordinate frames, so a robot whose
+localization frame differs from a map's `frameId` can still be placed on that
+map. `metadata.id` is `system` (applies to every robot) or a robot id
+(overrides the system entry for that robot only). See
+[Maps: Frames and transforms](../maps.md#frames-and-transforms) for when one
+is needed.
+
+### Schema
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `spec.transformations` | array | Yes | One entry per source frame (`from`) |
+| `spec.transformations[].from` | string | Yes | Source frame id |
+| `spec.transformations[].to` | string | Yes | Destination frame id |
+| `spec.transformations[].matrix` | array | One of `matrix`/`referencePoints` | Explicit 3x3 matrix mapping a pose in `from` into `to`. Must be a rigid transform: all entries finite, last row `[0, 0, 1]`, and the 2x2 rotation block orthonormal with positive determinant (rotation + translation only — no scale, shear, or reflection); otherwise `apply` fails with a validation error |
+| `spec.transformations[].referencePoints` | array | One of `matrix`/`referencePoints` | ≥3 `{from:{x,y}, to:{x,y}}` landmark pairs; the rigid transform (rotation + translation) is least-squares fitted server-side |
+
+Exactly one of `matrix` or `referencePoints` must be given per entry, and
+`from` must differ from `to`. Applying **replaces** the entity's whole set of
+transformations — include every `from` frame you want kept. At most one entry
+per source frame is allowed.
+
+When the Navigation widget looks up a transform for a robot, it checks the
+robot's own entry first, then the `system` entry, then falls back to identity
+when the frames are already equal; if none of those apply, the map is shown
+with a banner and the robot is hidden.
+
+The ISO 21423 facility CCS calibration is itself a `system`-scope
+`map → <ccs.id>` entry — see the
+[ISO Robots setup guide](../iso21423/iso-robots-setup.md#2-settings).
+
+`clear` removes only the entity named by `metadata.id` (`system`, or one
+robot) — same scoping principle as `SpatialAnnotation`'s `clear`, just keyed
+by `metadata.id` here instead of `spec.scope`, since a `SpatialTransformation`
+entity id already is the scope.
+
+### Example
+
+```yaml
+apiVersion: v0.1
+kind: SpatialTransformation
+metadata:
+  id: system
+spec:
+  transformations:
+    - from: map
+      to: 3f2504e0-4f89-41d3-9a0c-0305e82c3301
+      referencePoints:
+        - from: { x: 0, y: 0 }
+          to: { x: 12.40, y: 8.10 }
+        - from: { x: 10, y: 0 }
+          to: { x: 22.35, y: 8.05 }
+        - from: { x: 0, y: 10 }
+          to: { x: 12.45, y: 18.05 }
+```
+
+---
+
 ## See Also
 
 - [Config API](./configapi.md) -- API endpoints for apply, clear, and list operations
+- [Maps](../maps.md) -- shared maps, frames and transforms, and the map switcher
 - [Attributes & Status](../guides/attributes-status.md) -- practical guide to using DataSourceDefinitions and StatusDefinitions
 - [Incidents & Alerts](../guides/incidents-alerts.md) -- the alert → incident pipeline
 - [Custom Data Sources](../extending/custom-data-sources.md) -- advanced data source configuration

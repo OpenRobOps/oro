@@ -25,11 +25,17 @@
  *   - `fromCcsPoint` / `fromCcsYaw` — CCS → ORO map, for telemetry ORO ingests from ISO robots
  *     and for `move` targets it sends them (the ISO Robots direction).
  *
- * Reference points live in `settings.iso21423.ccs` rather than Mongo: ORO has no settings
- * collection, and the one modelled Mongo home for facility frames — the `spatial_transformations`
- * collection (`app/imports/lib/collections.js:808-828`) — has no live readers or writers.
- * `create()` is the single seam to change if that collection ever wakes up.
+ * Reference points can also live in `settings.iso21423.ccs` when no operator-managed transform
+ * exists yet: `create()` fits a transform from those points alone. `load()` is the preferred
+ * entry point — it prefers a `map` entry in the `spatial_transformations` collection
+ * (`app/imports/lib/collections.js:808-828`), the one Mongo home shared with the
+ * SpatialTransformation ConfigAPI kind and the Navigation widget, falling back to `create()` and
+ * seeding that collection from it when calibrated.
  */
+
+/** True for a well-formed 3x3 `aTb.m` — three rows of three finite numbers. */
+const isValidMatrix = (m) => Array.isArray(m) && m.length === 3
+  && m.every((row) => Array.isArray(row) && row.length === 3 && row.every(Number.isFinite));
 
 class CcsConverter {
   /**
@@ -85,6 +91,57 @@ class CcsConverter {
       return new CcsConverter(id, null, geometry,
         `fitTransform rejected the reference points: ${err.message}`);
     }
+  }
+
+  /**
+   * Like `create`, but the shared `spatial_transformations` system document is the source of
+   * truth: a `map → <ccs.id>` entry there wins over `settings.iso21423.ccs.referencePoints`.
+   * When only settings are available and they calibrate, the fitted matrix is written to that
+   * document so the SpatialTransformation ConfigAPI kind, the Navigation widget and this
+   * converter all read one transform. An existing `map` entry for another frame is left alone.
+   *
+   * Like `create`, this NEVER throws or rejects: a `spatial_transformations` read/write failure,
+   * or a malformed stored matrix, is logged and degrades to the settings-only path instead of
+   * aborting the caller's startup.
+   *
+   * @param {{id: string|null, referencePoints: Array}} ccsConfig
+   * @param {Object} geometry
+   * @param {import('mongodb').Collection} transformsColl the `spatial_transformations` collection
+   * @returns {Promise<CcsConverter>}
+   */
+  static async load(ccsConfig, geometry, transformsColl) {
+    const { id } = ccsConfig || {};
+    const query = { entityType: 'system', entityId: '0' };
+    let doc = null;
+    try {
+      doc = await transformsColl.findOne(query);
+    } catch (err) {
+      console.warn(
+        `ISO 21423 CCS: could not read spatial_transformations (${err.message}); using settings`);
+    }
+    const entry = doc && doc.transformations && doc.transformations.map;
+    if (id && entry && entry.frameId === id) {
+      const m = entry.aTb && entry.aTb.m;
+      if (isValidMatrix(m)) {
+        const t = { rotation: Math.atan2(m[1][0], m[0][0]), tx: m[0][2], ty: m[1][2] };
+        return new CcsConverter(id, t, geometry, null);
+      }
+      console.warn('ISO 21423 CCS: spatial_transformations map entry has a malformed matrix; '
+        + 'using settings');
+    }
+    const converter = CcsConverter.create(ccsConfig, geometry);
+    if (converter.calibrated && !entry) {
+      const { rotation, tx, ty } = converter._t;
+      const c = Math.cos(rotation); const s = Math.sin(rotation);
+      try {
+        await transformsColl.updateOne(query, {
+          $set: { 'transformations.map': { frameId: id, aTb: { m: [[c, -s, tx], [s, c, ty], [0, 0, 1]] } } },
+        }, { upsert: true });
+      } catch (err) {
+        console.warn(`ISO 21423 CCS: could not seed spatial_transformations (${err.message})`);
+      }
+    }
+    return converter;
   }
 
   /**

@@ -58,7 +58,9 @@ import { EXTERNAL_USER_ID, EVENT_SETTINGS_SECTION_NAMES, getUserLoggingAttribute
 // import AlertsManager from './alertsManager';
 import LockManager from './lock';
 import Robot from './model/robot';
-import { RobotCustomScript, RobotLocalization } from '../lib/collections';
+import { RobotCustomScript, RobotLocalization, SpatialTransformations } from '../lib/collections';
+import { findFrameTransform, transformDelta, DEFAULT_FRAME_ID } from '../shared/maps';
+import { transformPose } from '../shared/geometry';
 // import { GROUP_LABEL_NONE, GROUP_ID_NONE } from '../lib/uiPreferences';
 // import UIPreferencesManager from './uiPreferences';
 import EventLog, { EVENT_TYPES, EVENT_MODULES, buildEvent } from './eventLog/eventLogger';
@@ -1548,20 +1550,39 @@ class ActionsEngine {
       };
     }
 
-    if (pose.frameId === undefined) {
-      // complete the frameId property of the pose if not provided
-      const robotLocalization = await RobotLocalization.findOneAsync({ _id: robotId }) || {};
-      const { frameId } = robotLocalization.robotPose || {};
-      pose.frameId = frameId;
+    // Poses arrive in the frame of the map the operator was looking at (`pose.frameId`); the
+    // robot wants them in its own world frame. No frameId means "already in the robot frame".
+    const { transform, robotFrameId } = await this._transformToRobotFrame(robotId, pose.frameId);
+    if (!transform) {
+      return {
+        ok: false,
+        error: `No spatial transformation from frame "${pose.frameId}" to the robot frame "${robotFrameId}"`
+      };
     }
+    const { frameId, ...tPose } = transformPose(pose, transform);
+    return { ok: true, pose: { ...tPose, frameId: robotFrameId } };
+  };
 
-    // const tPose = await new SpatialTransformationsManager().transformPoseToRobotFrame(
-    //   robotId,
-    //   pose
-    // );
-    console.warn('_resolveNavigateToPose: Pose transformation not implemented yet');
-    const tPose = { ...pose };
-    return { ok: true, pose: tPose };
+  /**
+   * Resolves the transform from `fromFrameId` into the robot's world frame (its map frame, or
+   * `map`), from the robot-scoped and system-scoped `spatial_transformations` documents.
+   * Identity when `fromFrameId` is absent or already the robot frame; `transform: null` when the
+   * frames are not linked.
+   *
+   * @param {string} robotId
+   * @param {string|undefined} fromFrameId
+   * @returns {Promise<{transform: object|null, robotFrameId: string}>}
+   */
+  // eslint-disable-next-line class-methods-use-this
+  _transformToRobotFrame = async (robotId, fromFrameId) => {
+    const localization = await RobotLocalization.findOneAsync({ _id: robotId }) || {};
+    const robotFrameId = localization.map?.frameId || localization.robotPose?.frameId || DEFAULT_FRAME_ID;
+    const from = fromFrameId || robotFrameId;
+    const [robotDoc, systemDoc] = await Promise.all([
+      SpatialTransformations.findOneAsync({ entityType: 'robot', entityId: robotId }),
+      SpatialTransformations.findOneAsync({ entityType: 'system', entityId: '0' }),
+    ]);
+    return { transform: findFrameTransform({ robotDoc, systemDoc, from, to: robotFrameId }), robotFrameId };
   };
 
   /**
@@ -1573,33 +1594,9 @@ class ActionsEngine {
    */
   // eslint-disable-next-line class-methods-use-this
   _resolveDeltaPose = async (robotId, deltaPose) => {
-    let { frameId } = deltaPose;
-    const { x, y, theta } = deltaPose;
-
-    if (frameId === undefined) {
-      // complete the frameId property of the pose if not provided
-      const robotLocalization = await RobotLocalization.findOneAsync({ _id: robotId }) || {};
-      frameId = robotLocalization.robotPose?.frameId;
-    }
-
-    console.warn('_resolveDeltaPose: Pose transformation not implemented yet');
-    const transformedDeltaPoint = { ...deltaPose }; // HACK
-    const origin = { x: 0, y: 0, theta: 0 }; // HACK
-    // const transformedDeltaPoint = await new SpatialTransformationsManager().transformPoseToRobotFrame(
-    //   robotId,
-    //   { x, y, theta, frameId }
-    // );
-    // const origin = await new SpatialTransformationsManager().transformPoseToRobotFrame(
-    //   robotId,
-    //   { x: 0, y: 0, theta: 0, frameId }
-    // );
-    // The delta in the robot world frame is calculated by the subtraction of deltaPose and the
-    // origin, both in the robot world frame
-    const robotDeltaPose = {
-      x: transformedDeltaPoint.x - origin.x,
-      y: transformedDeltaPoint.y - origin.y,
-      theta: transformedDeltaPoint.theta - origin.theta
-    };
+    const { transform } = await this._transformToRobotFrame(robotId, deltaPose.frameId);
+    // A delta has no origin: only the rotation block applies (theta deltas are frame-invariant).
+    const { frameId, ...robotDeltaPose } = transformDelta(deltaPose, transform || undefined);
     return robotDeltaPose;
   };
 

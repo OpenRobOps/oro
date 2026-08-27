@@ -22,12 +22,13 @@ import OroRoles from '../server/roles';
 import AgentManager from '../server/agentManager';
 import { ACCESS_LEVEL_VIEW, ACCESS_LEVEL_OPERATE } from '../shared/roles';
 import { queryIncidentsForRobots } from '../lib/alerts';
-import { Robots, RobotKeyValues, RobotCustomData, RobotLocalization, SpatialAnnotations, RobotDiagnostics, RobotModuleState } from '../lib/collections';
+import { Robots, RobotKeyValues, RobotCustomData, RobotLocalization, SpatialAnnotations, SpatialTransformations, RobotDiagnostics, RobotModuleState } from '../lib/collections';
 import { ID_TYPE_AGENT, ID_TYPE_ROBOT } from '../shared/constants';
 import { queryRobotAttributeValues } from '../lib/attributes';
 import { VITAL_PING_RTT_AVG, VITAL_PING_RTT_LAST } from '../shared/attributes';
 import ConfigManager from '../lib/configManagerAsync';
 import RttManager from './rttManager';
+import { mapsListQuery, mapSummary, ROBOT_MAPS_COLLECTION } from '../shared/maps';
 
 /**
  * Publish localization data (pose, map metadata + URL) for one or more robots.
@@ -62,23 +63,70 @@ Meteor.publish('localization', async function ({ robotIds, lowBandwidth = false 
 });
 
 /**
- * Publish the map annotation (metadata + image data) for a robot.
- * Clients use `map.objectUrl` when available, otherwise `map.data` (base64 PNG) as fallback.
+ * Publish the list of maps a robot can display (its own + system-wide) as lightweight summaries
+ * into the client-only `robot_maps` collection (see ROBOT_MAPS_COLLECTION in shared/maps.js for
+ * why these are not published as partial `spatial_annotations` docs).
  */
-Meteor.publish('spatial_annotations.map', async function ({ robotId, label = 'map' }) {
-  if (!this.userId) {
-    return this.ready();
-  }
-  if (!robotId) {
+Meteor.publish('spatial_annotations.maps', async function ({ robotId }) {
+  if (!this.userId || !robotId) {
     return this.ready();
   }
   if (!await new OroRoles().canAccessRobot(this.userId, robotId, ACCESS_LEVEL_VIEW)) {
     return this.error(new Meteor.Error('Unauthorized'));
   }
-  return SpatialAnnotations.find(
-    { entityType: 'robot', entityId: robotId, label },
-    { fields: { entityType: 1, entityId: 1, label: 1, map: 1 } }
-  );
+  const publishSummary = (method) => (doc) => {
+    const summary = mapSummary(doc);
+    if (summary) this[method](ROBOT_MAPS_COLLECTION, doc._id, summary);
+  };
+  const handle = await SpatialAnnotations.find(mapsListQuery(robotId), {
+    fields: { 'map.data': 0, 'annotation.data': 0 },
+  }).observeAsync({
+    added: publishSummary('added'),
+    changed: publishSummary('changed'),
+    removed: (doc) => this.removed(ROBOT_MAPS_COLLECTION, doc._id),
+  });
+  this.onStop(() => handle.stop());
+  return this.ready();
+});
+
+/**
+ * Publish one map annotation (metadata + image data). `robotId` is the robot the viewer is
+ * looking at (access check); the doc itself is `entityType/entityId/label`, which defaults to
+ * that robot's own map but may name a system-scope map.
+ * Clients use `objectUrl` when available, otherwise `data` (base64 PNG) as fallback.
+ */
+Meteor.publish('spatial_annotations.map', async function ({
+  robotId, entityType = 'robot', entityId, label = 'map',
+}) {
+  if (!this.userId || !robotId) {
+    return this.ready();
+  }
+  if (!await new OroRoles().canAccessRobot(this.userId, robotId, ACCESS_LEVEL_VIEW)) {
+    return this.error(new Meteor.Error('Unauthorized'));
+  }
+  if (!['robot', 'system'].includes(entityType)) {
+    return this.error(new Meteor.Error('wrong-parameter', 'entityType must be "robot" or "system"'));
+  }
+  const id = entityType === 'system' ? '0' : (entityId || robotId);
+  if (entityType === 'robot' && id !== robotId) {
+    return this.error(new Meteor.Error('Unauthorized'));
+  }
+  return SpatialAnnotations.find({ entityType, entityId: id, label });
+});
+
+/**
+ * Publish frame transformations relevant to a robot: its own overrides and the system-wide set.
+ */
+Meteor.publish('spatial_transformations', async function ({ robotId }) {
+  if (!this.userId || !robotId) {
+    return this.ready();
+  }
+  if (!await new OroRoles().canAccessRobot(this.userId, robotId, ACCESS_LEVEL_VIEW)) {
+    return this.error(new Meteor.Error('Unauthorized'));
+  }
+  return SpatialTransformations.find({
+    $or: [{ entityType: 'robot', entityId: robotId }, { entityType: 'system', entityId: '0' }],
+  });
 });
 
 Meteor.publish('robots', async function ({

@@ -812,6 +812,8 @@ const WIDGET_FACTORY = {
       robotId={getRobotId(context, scope)}
       selectRobotCallback={setRobotId(setContext, scope)}
       setSelectedRobotId={setRobotId(setContext, scope)}
+      mapLabel={getNavigationMap(context, scope)}
+      setMapLabel={setNavigationMap(setContext, scope)}
     />
   ),
 

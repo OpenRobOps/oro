@@ -66,13 +66,14 @@ class IsoTelemetryIngester {
    * @param {boolean} [opts.logging=false]
    */
   constructor({
-    client, attributesManager, robotsColl, keyValuesColl = null, converter, sources, roster,
-    logging = false,
+    client, attributesManager, robotsColl, keyValuesColl = null, localizationColl = null,
+    converter, sources, roster, logging = false,
   }) {
     this._client = client;
     this._attrs = attributesManager;
     this._robots = robotsColl;
     this._keyValues = keyValuesColl;   // robot_key_values, feeding the UI's Key-Values widget
+    this._localization = localizationColl;   // localization, feeding the Navigation widget
     this._converter = converter;
     this._sources = sources;
     this._roster = roster;
@@ -179,7 +180,9 @@ class IsoTelemetryIngester {
         && this._converter.calibrated) {
       const { x, y } = this._converter.fromCcsPoint(point);
       const yaw = (sample.pose.orientation && sample.pose.orientation.yaw) || 0;
-      values[this._sources.pose] = { value: { x, y, theta: this._converter.fromCcsYaw(yaw) } };
+      const pose = { x, y, theta: this._converter.fromCcsYaw(yaw) };
+      values[this._sources.pose] = { value: pose };
+      await this._saveRobotPose(uuid, pose);
     }
     const velocity = (sample && sample.velocity) || {};
     if (Number.isFinite(velocity.linear)) {
@@ -239,6 +242,27 @@ class IsoTelemetryIngester {
       await this._keyValues.updateOne({ _id: uuid }, { $set }, { upsert: true });
     } catch (err) {
       if (this._logging) console.warn(`ISO 21423 robots: robot_key_values update failed for ${uuid}: ${err.message}`);
+    }
+  };
+
+  /**
+   * Mirrors the pose into `localization.robotPose`, which is what the Navigation widget draws
+   * (wire robots get it from `modules/localization.js` `_doUpdatePose`; the `pose` attribute alone
+   * is not enough). The frame is ORO's `map` frame, the one `fromCcsPoint` converts into.
+   */
+  _saveRobotPose = async (robotId, pose) => {
+    if (!this._localization) return;
+    const ts = Date.now();
+    try {
+      await this._localization.updateOne(
+        { _id: robotId },
+        { $set: { robotPose: { ...pose, frameId: 'map', ts }, robotPoseUpdatedTs: ts } },
+        { upsert: true },
+      );
+    } catch (err) {
+      if (this._logging) {
+        console.warn(`ISO 21423 robots: localization update failed for ${robotId}: ${err.message}`);
+      }
     }
   };
 

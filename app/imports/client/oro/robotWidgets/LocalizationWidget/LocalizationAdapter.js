@@ -37,6 +37,10 @@ import {
 } from '../../contexts/RobotsDataContext/RobotsDataContext';
 import WithNoDataMessage from '../../util/WithNoDataMessage';
 import Map from './Map';
+import {
+  useRobotMapsList, useFrameTransform, parseMapRef, mapRefFor, findMapRef,
+} from '../../hooks/useRobotMaps';
+import { transformLocalizationData, DEFAULT_FRAME_ID } from '../../../../shared/maps';
 
 // Constant arrays to avoid new objects and re-renders
 const EMPTY_ANNOTATIONS_LIST = [];
@@ -107,17 +111,48 @@ function LocalizationAdapter({
     robotIds: robotIdsToQuery, lowBandwidth
   });
 
-  // Get the map metadata and URL, render-ready.
-  // Use the mapLabel passed from the context as prop if exists;
-  // if not, use the selected robot's default map.
-  const mapLabel = contextMapLabel || robotsLocalizationData?.[mainRobotId]?.defaultMap;
+  // Which map to show: the ref from context (system:<id> | robot:<id> | <label>), else the
+  // robot's own default map, else the first shared map (ISO robots publish no map at all).
+  // The context ref can be stale after switching to a robot that doesn't have that map (e.g. it
+  // named a robot-owned map of the previously selected robot); once the maps list has loaded,
+  // ignore it unless it still resolves to one of this robot's maps. While loading, keep it as-is
+  // to avoid flashing to the default map and back.
+  const { isLoading: mapsLoading, maps, defaultMap } = useRobotMapsList(mainRobotId);
+  const contextMapUsable = !!contextMapLabel
+    && (mapsLoading || !!findMapRef(maps, contextMapLabel, mainRobotId));
+  const mapRef = (contextMapUsable && contextMapLabel)
+    || (defaultMap && mapRefFor(defaultMap))
+    || robotsLocalizationData?.[mainRobotId]?.defaultMap;
+  const mapQuery = parseMapRef(mapRef, mainRobotId) || {};
 
   useDataSource(
     state,
     dispatch,
     LOCALIZATION_DATA_TYPE.MAP,
-    { entityId: mainRobotId, label: mapLabel }
+    {
+      robotId: mainRobotId,
+      entityType: mapQuery.entityType,
+      entityId: mapQuery.entityId,
+      // null (not undefined) bypasses useMeteorMapData's `label = 'map'` default, so an
+      // unresolved mapQuery doesn't fall through to reconstructing a robot/'map' query.
+      label: mapQuery.label || null,
+    }
   );
+
+  // Place robots on the selected map: robot frame → map frame.
+  // ponytail: one transform for all displayed robots (main robot's); per-robot transforms when mixed-frame fleets appear.
+  const robotFrameId = robotsLocalizationData?.[mainRobotId]?.map?.frameId || DEFAULT_FRAME_ID;
+  const { isLoading: transformLoading, transform: frameTransform } = useFrameTransform({
+    robotId: mainRobotId, from: robotFrameId, to: map.frameId,
+  });
+  const mapWithFrame = useMemo(() => ({
+    ...map,
+    frameTransform,
+    robotFrameId,
+    // While the spatial_transformations subscription is still loading, don't flash the "no
+    // transform" banner for a transform that just hasn't arrived yet.
+    noTransform: !!map.frameId && !frameTransform && !transformLoading,
+  }), [map, frameTransform, robotFrameId, transformLoading]);
 
   // Fetch robot online/offline data
   useDataSource(state, dispatch, LOCALIZATION_DATA_TYPE.DETAILS, { robotIds: robotIdsToQuery });
@@ -148,8 +183,12 @@ function LocalizationAdapter({
 
   const isLoading = robotsLoading;
 
-  // Filter localization data for only information for selected robotIds
-  const filteredRobotLocalizationData = pickKeys(robotsLocalizationData, robotIdsToDisplay);
+  // Filter localization data for only information for selected robotIds, then transform each
+  // robot's data into the map's frame.
+  const filteredRobotLocalizationData = useMemo(() => Object.fromEntries(
+    Object.entries(pickKeys(robotsLocalizationData, robotIdsToDisplay))
+      .map(([rId, d]) => [rId, transformLocalizationData(d, frameTransform)])
+  ), [robotsLocalizationData, robotIdsToDisplay, frameTransform]);
 
   // Load keys for outdoor map tiles services
   const tilesetKey = Meteor.settings?.public?.maptilerKey;
@@ -157,7 +196,7 @@ function LocalizationAdapter({
   return (
     <Localization
       isLoading={isLoading}
-      map={map}
+      map={mapWithFrame}
       selectedRobotId={selectedRobotId}
       robotsLocalizationData={filteredRobotLocalizationData}
       robotsUiPreferences={robotsUiPreferences}

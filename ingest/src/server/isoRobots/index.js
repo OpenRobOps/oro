@@ -150,7 +150,8 @@ class IsoRobotsModule {
       this._client.on('diagnostic', (d) => config.logging && console.log('ISO 21423 robots:', d));
       console.log(`ISO 21423 robots is ON: IMRFM ${config.imrfmId} at ${config.mqtt.url}`);
 
-      this._converter = CcsConverter.create(config.ccs, this._sdk);
+      this._converter = await CcsConverter.load(
+        config.ccs, this._sdk, this._mongo.getCollection(COLLECTIONS.SPATIAL_TRANSFORMATIONS));
       if (!this._converter.calibrated) {
         console.warn('ISO 21423 robots: pose ingestion and move commands are DISABLED — '
           + this._converter.reason);
@@ -172,6 +173,7 @@ class IsoRobotsModule {
         attributesManager: new AttributesManager(),   // singleton (src/server/attributes.js:65-66)
         robotsColl: this._mongo.getCollection(COLLECTIONS.ROBOTS),
         keyValuesColl: this._mongo.getCollection(COLLECTIONS.ROBOT_KEY_VALUES),
+        localizationColl: this._mongo.getCollection(COLLECTIONS.LOCALIZATION),
         converter: this._converter,
         sources: config.attributeSources,
         roster: this._roster,

@@ -42,6 +42,7 @@ import classNames from 'classnames';
 import ActionsDropdownComponent from '../ActionsDropdown';
 import { useFullscreenContext } from '../../contexts/FullscreenContext';
 import FullscreenButton from '../../util/FullscreenButton';
+import MapSelector from '../../util/MapSelector';
 
 // Time in ms that the control bar will close after the user
 // loses focus on the control bar (only for fullscreen)
@@ -152,7 +153,9 @@ const NavigationControlBar = (props) => {
     RobotSearch,
     selectedCollectionId,
     setCollectionId,
-    setSelectedRobotId
+    setSelectedRobotId,
+    mapLabel,
+    setMapLabel
   } = props;
 
   const onToolbarEnter = () => setShowControlBar(true);
@@ -236,6 +239,7 @@ const NavigationControlBar = (props) => {
                   fullscreen={fullscreen}
                 />
               )}
+              <MapSelector robotId={robotId} mapSelected={mapLabel} onChange={setMapLabel} />
               <FullscreenButton
                 fullscreen={fullscreen}
                 onClick={toggleFullscreen}
@@ -257,6 +261,12 @@ const NavigationControlBar = (props) => {
                 <ActionsDropdownComponent
                   robotId={robotId}
                   textClasses={{ root: classNames(classes.baseButtonRoot, colorClassNames) }}
+                />
+                <MapSelector
+                  robotId={robotId}
+                  mapSelected={mapLabel}
+                  onChange={setMapLabel}
+                  className={classNames(classes.baseButtonRoot, colorClassNames)}
                 />
               </div>
               <div className={classes.mapSettingsContainer}>
@@ -282,6 +292,8 @@ NavigationControlBar.propTypes = {
   teleopMode: PropTypes.bool,
   waypointMode: PropTypes.bool,
   camerasEnabled: PropTypes.bool,
+  mapLabel: PropTypes.string,
+  setMapLabel: PropTypes.func,
   // callbacks
   selectRobotCallback: PropTypes.func,
   setCollectionId: PropTypes.func,
