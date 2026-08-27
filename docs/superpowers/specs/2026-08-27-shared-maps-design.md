@@ -182,13 +182,13 @@ png2map.py image.png --id warehouse-pretty --frame map --resolution 0.0125 --x 0
 `--from-ros-yaml` lifts `resolution` and `origin[0..1]` from a ROS map yaml. Output is a
 ready-to-`apply` document.
 
-## 7. Bootstrap / flatland
+## 7. Flatland example
 
-`app/private/bootstrap/SpatialAnnotation.yaml` ships the flatland pretty map
-(`sample_map_pretty_1600x1600.png`, `frameId: map`, `resolution: 0.0125`, origin `0,0`,
-`formatVersion: 2` — the PNG is displayed as-is; in the widget's y-up pixel space `1` would mirror it, and the agent publishes its own grid as `2` too). Applied only when no
-`SpatialAnnotation` exists (existing bootstrap rule). Docs: a short page under
-`website/docs/` describing the two kinds and the helper.
+The rendered flatland map is NOT bootstrapped by ORO: it belongs to the simulator and ships as
+`oro-config/maps.yaml` in the sim-flatland repo (generated with `tools/png2map.py`, `formatVersion: 2`),
+applied with `inorbit apply` like the rest of the flatland profile. ORO's `private/bootstrap/`
+stays deployment-neutral. Docs: a short page under `website/docs/` describing the two kinds and
+the helper.
 
 ## 8. Testing
 
