@@ -86,9 +86,12 @@ configured or reported. Configure it with the
 A robot can hide a fleet-wide footprint by applying `spec: null` for its
 own id: this writes `footprint`, `bufferFootprint` and `radius` as `null`,
 which step 1 treats as defined (so the `system` value is skipped for those
-fields) but which is dropped before rendering -- leaving the robot on its
-reported outline, or the default ring. `primaryColor`/`secondaryColor`/
-`opacity` are unaffected by suppression.
+fields) but which is dropped before rendering -- landing the robot on the
+widget's default ring, **not** its reported outline (step 3 only applies
+when a field is left undefined, and suppression defines it as `null`).
+Removing the entry entirely with `clear`, instead of suppressing it, is
+what restores the `system` → reported → default chain.
+`primaryColor`/`secondaryColor`/`opacity` are unaffected by suppression.
 
 `bufferFootprint` is stored and returned by the REST endpoint below, but
 not yet drawn by the widget.
