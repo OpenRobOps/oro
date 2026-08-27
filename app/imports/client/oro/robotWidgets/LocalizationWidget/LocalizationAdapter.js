@@ -120,7 +120,14 @@ function LocalizationAdapter({
     state,
     dispatch,
     LOCALIZATION_DATA_TYPE.MAP,
-    { robotId: mainRobotId, entityType: mapQuery.entityType, entityId: mapQuery.entityId, label: mapQuery.label }
+    {
+      robotId: mainRobotId,
+      entityType: mapQuery.entityType,
+      entityId: mapQuery.entityId,
+      // null (not undefined) bypasses useMeteorMapData's `label = 'map'` default, so an
+      // unresolved mapQuery doesn't fall through to reconstructing a robot/'map' query.
+      label: mapQuery.label || null,
+    }
   );
 
   // Fetch robot online/offline data

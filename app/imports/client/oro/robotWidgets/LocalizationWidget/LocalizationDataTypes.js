@@ -56,8 +56,11 @@ function singleRobotLocalizationData({ robotId, localizationData }) {
  *  - isLoading
  */
 function mapData(args) {
-  const { mapUrl, type } = args;
-  if (mapUrl || type === LOCALIZATION_MAP_TYPES.NAV_SAT) {
+  const { mapUrl, type, isLoading } = args;
+  // Dispatch when there's a map to show, or the load has finished either way (isLoading===false,
+  // not just falsy/undefined) -- that also clears a stale map when the resolved ref has none.
+  // While isLoading is still true, skip: avoids flicker with the previous map's data.
+  if (mapUrl || type === LOCALIZATION_MAP_TYPES.NAV_SAT || isLoading === false) {
     return {
       ...args,
       action: SET_MAP
