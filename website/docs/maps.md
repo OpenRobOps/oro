@@ -72,6 +72,9 @@ in the Navigation widget's control bar. Shared maps are labelled
 
 ISO 21423 robots have no occupancy-grid resource of their own — the standard
 doesn't define one — so they never have a robot map. Shared maps are the
-only maps an ISO robot can display, typically one drawn in the facility CCS
-frame with `frameId: <ccs.id>` so it lines up with the robot's poses without
-an extra transform.
+only maps an ISO robot can display. Ingest converts every ISO pose into the
+`map` frame on the way in, so a map drawn in the facility CCS frame
+(`frameId: <ccs.id>`) still needs the system `map → <ccs.id>` transform to
+place the robot on it — the same transform `CcsConverter.load()` seeds from
+`settings.iso21423.ccs` when no `SpatialTransformation` exists yet (see
+[Frames and transforms](#frames-and-transforms) above).

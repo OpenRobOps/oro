@@ -37,7 +37,9 @@ import {
 } from '../../contexts/RobotsDataContext/RobotsDataContext';
 import WithNoDataMessage from '../../util/WithNoDataMessage';
 import Map from './Map';
-import { useRobotMapsList, useFrameTransform, parseMapRef, mapRefFor } from '../../hooks/useRobotMaps';
+import {
+  useRobotMapsList, useFrameTransform, parseMapRef, mapRefFor, findMapRef,
+} from '../../hooks/useRobotMaps';
 import { transformLocalizationData, DEFAULT_FRAME_ID } from '../../../../shared/maps';
 
 // Constant arrays to avoid new objects and re-renders
@@ -111,8 +113,14 @@ function LocalizationAdapter({
 
   // Which map to show: the ref from context (system:<id> | robot:<id> | <label>), else the
   // robot's own default map, else the first shared map (ISO robots publish no map at all).
-  const { defaultMap } = useRobotMapsList(mainRobotId);
-  const mapRef = contextMapLabel
+  // The context ref can be stale after switching to a robot that doesn't have that map (e.g. it
+  // named a robot-owned map of the previously selected robot); once the maps list has loaded,
+  // ignore it unless it still resolves to one of this robot's maps. While loading, keep it as-is
+  // to avoid flashing to the default map and back.
+  const { isLoading: mapsLoading, maps, defaultMap } = useRobotMapsList(mainRobotId);
+  const contextMapUsable = !!contextMapLabel
+    && (mapsLoading || !!findMapRef(maps, contextMapLabel, mainRobotId));
+  const mapRef = (contextMapUsable && contextMapLabel)
     || (defaultMap && mapRefFor(defaultMap))
     || robotsLocalizationData?.[mainRobotId]?.defaultMap;
   const mapQuery = parseMapRef(mapRef, mainRobotId) || {};
@@ -134,12 +142,17 @@ function LocalizationAdapter({
   // Place robots on the selected map: robot frame → map frame.
   // ponytail: one transform for all displayed robots (main robot's); per-robot transforms when mixed-frame fleets appear.
   const robotFrameId = robotsLocalizationData?.[mainRobotId]?.map?.frameId || DEFAULT_FRAME_ID;
-  const { transform: frameTransform } = useFrameTransform({
+  const { isLoading: transformLoading, transform: frameTransform } = useFrameTransform({
     robotId: mainRobotId, from: robotFrameId, to: map.frameId,
   });
   const mapWithFrame = useMemo(() => ({
-    ...map, frameTransform, robotFrameId, noTransform: !!map.frameId && !frameTransform,
-  }), [map, frameTransform, robotFrameId]);
+    ...map,
+    frameTransform,
+    robotFrameId,
+    // While the spatial_transformations subscription is still loading, don't flash the "no
+    // transform" banner for a transform that just hasn't arrived yet.
+    noTransform: !!map.frameId && !frameTransform && !transformLoading,
+  }), [map, frameTransform, robotFrameId, transformLoading]);
 
   // Fetch robot online/offline data
   useDataSource(state, dispatch, LOCALIZATION_DATA_TYPE.DETAILS, { robotIds: robotIdsToQuery });

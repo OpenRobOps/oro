@@ -43,6 +43,13 @@ export function parseMapRef(mapRef, robotId) {
 
 export const mapRefFor = ({ entityType, mapId }) => `${entityType}:${mapId}`;
 
+/** The entry in `maps` that `mapRef` points to, or null if it matches none (e.g. stale after
+ * switching to a robot that doesn't have that map). */
+export function findMapRef(maps, mapRef, robotId) {
+  const q = parseMapRef(mapRef, robotId);
+  return (q && maps.find((m) => m.entityType === q.entityType && m.mapId === q.label)) || null;
+}
+
 /** Every map the robot can display, plus which one to show by default. */
 export function useRobotMapsList(robotId) {
   return useTracker(() => {

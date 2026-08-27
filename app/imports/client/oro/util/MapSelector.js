@@ -18,17 +18,16 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { MenuItem, Select } from '@mui/material';
-import { useRobotMapsList, mapRefFor, parseMapRef } from '../hooks/useRobotMaps';
+import { useRobotMapsList, mapRefFor, findMapRef } from '../hooks/useRobotMaps';
 
 const MapSelector = ({ robotId, mapSelected, onChange, className }) => {
   const { maps, defaultMap } = useRobotMapsList(robotId);
   if (maps.length < 2) return null;
 
-  const refs = maps.map((m) => mapRefFor(m));
-  const selectedQ = parseMapRef(mapSelected, robotId);
-  const selectedRef = selectedQ
-    && refs.find((r) => r === `${selectedQ.entityType}:${selectedQ.label}`);
-  const value = selectedRef || (defaultMap && mapRefFor(defaultMap)) || refs[0];
+  const selectedMap = findMapRef(maps, mapSelected, robotId);
+  const value = (selectedMap && mapRefFor(selectedMap))
+    || (defaultMap && mapRefFor(defaultMap))
+    || mapRefFor(maps[0]);
 
   return (
     <Select

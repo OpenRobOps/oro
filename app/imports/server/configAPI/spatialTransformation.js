@@ -123,6 +123,7 @@ export class SpatialTransformationConfigAPIHandler {
   apply = async ({ configObject, user }) => {
     await assertAuthorized(user);
     const id = String(configObject?.metadata?.id || '');
+    if (!id) throw new ValidationError('metadata.id is required');
     const spec = configObject.spec || {};
     const validation = specValidator(spec);
     if (validation !== true) {
@@ -140,7 +141,9 @@ export class SpatialTransformationConfigAPIHandler {
 
   clear = async ({ configObject, user }) => {
     await assertAuthorized(user);
-    await SpatialTransformations.removeAsync(entityFor(String(configObject?.metadata?.id || '')));
+    const id = String(configObject?.metadata?.id || '');
+    if (!id) throw new ValidationError('metadata.id is required');
+    await SpatialTransformations.removeAsync(entityFor(id));
   };
 }
 
