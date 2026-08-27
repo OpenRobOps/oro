@@ -55,8 +55,13 @@ class AdmittedRoster {
   /**
    * One diff pass over the `robots` collection.
    *
-   * A failing `onAdmit` (e.g. a subscription the broker denied) leaves the robot UNadmitted, so
-   * the next pass retries it once the ACL lands — the same retry shape Plan 5's roster uses.
+   * Marks a robot admitted BEFORE invoking `onAdmit`, not after: `onAdmit` sets up the per-robot
+   * subscriptions, and `subscribeEntities` replays an already-retained identity SYNCHRONOUSLY from
+   * inside that same call — so a handler (`onIdentity` in particular) can run before `onAdmit`
+   * even returns. Admitting first means every per-robot handler sees the robot as admitted
+   * throughout subscription setup, retained-replay included. A failing `onAdmit` (e.g. a
+   * subscription the broker denied) rolls the admission back, leaving the robot UNadmitted so the
+   * next pass retries it once the ACL lands — the same retry shape Plan 5's roster uses.
    *
    * @returns {Promise<{admitted: string[], revoked: string[]}>} what actually changed
    */
@@ -73,11 +78,12 @@ class AdmittedRoster {
 
     for (const [uuid, doc] of wanted) {
       if (this._admitted.has(uuid)) continue;
+      this._admitted.add(uuid);
       try {
         await this._onAdmit(uuid, doc);
-        this._admitted.add(uuid);
         admitted.push(uuid);
       } catch (err) {
+        this._admitted.delete(uuid);
         console.warn(`ISO 21423 robots: failed to admit ${uuid}: ${err.message}`);
       }
     }

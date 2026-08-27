@@ -129,6 +129,7 @@ class IsoTelemetryIngester {
   unobserve = async (uuid) => {
     this._lastCcsPoint.delete(uuid);
     this._lastCcsYaw.delete(uuid);
+    this._warnedFootprint.delete(uuid);
     const subs = this._subs.get(uuid);
     if (!subs) return;
     this._subs.delete(uuid);
