@@ -19,6 +19,7 @@ import { expect } from 'chai';
 import {
   normalizeMapAnnotation, invert3x3, findFrameTransform, fitRigidTransform2D,
   validateTransformMatrix, IDENTITY_3X3, mapsListQuery, transformLocalizationData,
+  inverseTransform, transformDelta,
 } from '../../shared/maps';
 import { transformPose } from '../../shared/geometry';
 import { resetDatabase } from './setup';
@@ -150,6 +151,20 @@ describe('shared/maps', () => {
       const data = { robotPose: { x: 1, y: 2 } };
       expect(transformLocalizationData(data, null)).to.equal(data);
       expect(transformLocalizationData(data, { frameId: 'map', aTb: { m: IDENTITY_3X3 } })).to.equal(data);
+    });
+  });
+
+  describe('inverse for map clicks', () => {
+    const t = { frameId: 'ccs', aTb: { m: rot(Math.PI / 2, 10, 0) } };
+    it('inverseTransform round-trips a pose', () => {
+      const p = transformPose({ x: 1, y: 2, theta: 0.3 }, t);
+      const back = transformPose(p, inverseTransform(t));
+      near(back.x, 1); near(back.y, 2); near(back.theta, 0.3);
+      expect(inverseTransform(null)).to.equal(null);
+    });
+    it('transformDelta rotates the translation only', () => {
+      const d = transformDelta({ x: 1, y: 0, theta: 0.2 }, inverseTransform(t));
+      near(d.x, 0); near(d.y, -1); near(d.theta, 0.2);
     });
   });
 });

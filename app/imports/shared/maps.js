@@ -146,6 +146,19 @@ function transformLocalizationData(data, transform) {
   return out;
 }
 
+/** Inverse of a frame transform, or null when it can't be inverted. */
+function inverseTransform(transform) {
+  if (!transform || !transform.aTb) return null;
+  return { frameId: transform.fromFrameId || null, aTb: { m: invert3x3(transform.aTb.m) } };
+}
+
+/** Applies only the rotation block to a delta (relative motion has no origin). */
+function transformDelta(delta, transform) {
+  if (!delta || !transform || !transform.aTb) return delta;
+  const [[a, b], [c, d]] = transform.aTb.m;
+  return { ...delta, x: a * delta.x + b * delta.y, y: c * delta.x + d * delta.y };
+}
+
 /** Mongo query for every map a robot can display: its own maps plus system-scope maps. */
 function mapsListQuery(robotId) {
   return {
@@ -166,4 +179,6 @@ export {
   validateTransformMatrix,
   mapsListQuery,
   transformLocalizationData,
+  inverseTransform,
+  transformDelta,
 };
