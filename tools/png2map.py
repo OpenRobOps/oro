@@ -25,9 +25,11 @@ explicitly on the command line win). Output goes to stdout; pipe into a file or 
 import argparse, base64, json, re, sys
 
 def ros_yaml(path):
-    # Tiny parser for the flat ROS map yaml; avoids a PyYAML dependency.
+    # Tiny parser for the flat ROS map yaml (top-level `key: value` pairs only, no
+    # nesting/multiline); avoids a PyYAML dependency.
     out = {}
     for line in open(path):
+        line = line.split("#", 1)[0]
         m = re.match(r"^(\w+):\s*(.+?)\s*$", line)
         if m:
             k, v = m.groups()
@@ -57,17 +59,18 @@ for k in ("resolution", "x", "y"):
         sys.exit(f"--{k} is required (or --from-ros-yaml)")
 
 data = open(a.png, "rb").read()
-assert data[:8] == b"\x89PNG\r\n\x1a\n", "not a PNG"
+if data[:8] != b"\x89PNG\r\n\x1a\n":
+    sys.exit(f"{a.png}: not a PNG")
 b64 = base64.b64encode(data).decode()
 
 print(f"""kind: SpatialAnnotation
 apiVersion: v0.1
 metadata:
-  id: {a.id}
+  id: {json.dumps(a.id)}
 spec:
-  scope: {a.scope}
+  scope: {json.dumps(a.scope)}
   type: map
-  frameId: {a.frame}
+  frameId: {json.dumps(a.frame)}
   label: {json.dumps(a.label or a.id)}
   x: {a.x}
   y: {a.y}

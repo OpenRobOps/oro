@@ -1,11 +1,11 @@
 kind: SpatialAnnotation
 apiVersion: v0.1
 metadata:
-  id: flatland-pretty
+  id: "flatland-pretty"
 spec:
-  scope: system
+  scope: "system"
   type: map
-  frameId: map
+  frameId: "map"
   label: "Flatland (rendered)"
   x: 0.0
   y: 0.0
