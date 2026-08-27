@@ -106,6 +106,15 @@ export default class EventLog {
   };
 
   /**
+   * Stores an already-built event (see `buildEvent`). Used for one-off event types such as
+   * `action.failed` that have no dedicated logger method.
+   * @param {object} event
+   */
+  sendEvent = (event) => {
+    this._store?.storeEvent(event);
+  };
+
+  /**
    * Logs all actions that are executed through the actions module.
    * @param {string} robotId An id that univocally identifies a robot.
    * @param {object} action Contains the main info about the action to be logged.
