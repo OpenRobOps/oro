@@ -25,6 +25,7 @@ import OroRoles, { ACCESS_LEVEL_VIEW } from '../roles';
 import { Robots } from '../../lib/collections';
 import { ROLE_VIEWER } from '../../shared/roles';
 import { badRequestApiError, unauthorizedApiError } from '../rest_api_common';
+import { resolvedFootprintFor } from '../footprints';
 
 // Query filters for getRobots API
 const QUERY_ARG_IS_ONLINE = 'isOnline'; // Filter robots by online status
@@ -121,6 +122,19 @@ async function apiGetRobot({ robot, user }) {
     return ['Not found', 404];
   }
   return [formatRobotDocument(robotDoc)];
+}
+
+/**
+ * GET /robots/{robotId}/footprint — the resolved footprint geometry (configured over
+ * ISO-reported), as [x, y] pairs in the robot frame. Colors are UI-only and omitted.
+ */
+export async function apiGetRobotFootprint({ robot }) {
+  const { footprint, bufferFootprint, radius } = await resolvedFootprintFor(robot.getId());
+  const out = {};
+  if (footprint) out.footprint = footprint;
+  if (bufferFootprint) out.bufferFootprint = bufferFootprint;
+  if (radius !== undefined) out.radius = radius;
+  return [out];
 }
 
 /**
@@ -242,14 +256,14 @@ const routes = [
     loadRobot: true,
     checkUserCanRobot: ACCESS_LEVEL_VIEW,
   },
-  // {
-  //   path: '/robots/{robotId:id}/footprint',
-  //   method: 'GET',
-  //   handler: apiGetRobotFootprint,
-  //   trackingId: 'getRobotFootprint',
-  //   checkUserCanRobot: ACCESS_LEVEL_VIEW,
-  //   loadRobot: true
-  // },
+  {
+    path: '/robots/{robotId:id}/footprint',
+    method: 'GET',
+    handler: apiGetRobotFootprint,
+    trackingId: 'getRobotFootprint',
+    checkUserCanRobot: ACCESS_LEVEL_VIEW,
+    loadRobot: true
+  },
 ];
 
 export default routes;

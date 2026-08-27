@@ -3,6 +3,10 @@ import { expect } from 'chai';
 import {
   pairsFromPoints, pointsFromPairs, isValidPolygon, resolveFootprint, SUPPRESSED_POSE,
 } from '../../shared/footprint';
+import { resetDatabase } from './setup';
+import { UIPreferences, Robots } from '../../lib/collections';
+import { resolvedFootprintFor, footprintDocsFor } from '../footprints';
+import { apiGetRobotFootprint } from '../rest/robots';
 
 if (!Meteor.isTest) throw new Error('This is TEST code only');
 
@@ -48,6 +52,34 @@ describe('shared/footprint', () => {
     });
     it('ignores an invalid reported polygon', () => {
       expect(resolveFootprint({ reported: { points: [[0, 0]] } })).to.deep.equal({});
+    });
+  });
+
+  describe('server resolution', () => {
+    beforeEach(async () => {
+      await resetDatabase();
+      await Robots.insertAsync({ _id: 'iso1', name: 'iso1', version: 'iso-21423-v1', status: { agentOnline: true }, updateStamp: Date.now(),
+        footprint: { points: SQUARE, height: 0.4, ts: 1, source: 'iso21423' } });
+      await Robots.insertAsync({ _id: 'r1', name: 'r1', version: '1', status: { agentOnline: true }, updateStamp: Date.now() });
+      await UIPreferences.insertAsync({ entityType: 'system', entityId: '0', map: { pose: { radius: 0.3, primaryColor: '#111111' } } });
+      await UIPreferences.insertAsync({ entityType: 'robot', entityId: 'r1', map: { pose: { primaryColor: '#222222' } } });
+    });
+    it('resolvedFootprintFor: robot over system; system radius beats reported polygon', async () => {
+      expect(await resolvedFootprintFor('r1')).to.deep.equal({ radius: 0.3, primaryColor: '#222222' });
+      expect(await resolvedFootprintFor('iso1')).to.deep.equal({ radius: 0.3, primaryColor: '#111111' });
+    });
+    it('footprintDocsFor: reported polygon used when no radius/footprint is configured', async () => {
+      await UIPreferences.updateAsync({ entityType: 'system', entityId: '0' }, { $set: { 'map.pose': { primaryColor: '#111111' } } });
+      const docs = await footprintDocsFor(['r1', 'iso1']);
+      expect(docs.iso1).to.deep.equal({ footprint: SQUARE, primaryColor: '#111111' });
+      expect(docs.r1).to.deep.equal({ primaryColor: '#222222' });
+    });
+    it('REST: returns geometry only, {} when none', async () => {
+      const [body] = await apiGetRobotFootprint({ robot: { getId: () => 'r1' } });
+      expect(body).to.deep.equal({ radius: 0.3 });
+      await UIPreferences.removeAsync({});
+      const [empty] = await apiGetRobotFootprint({ robot: { getId: () => 'r1' } });
+      expect(empty).to.deep.equal({});
     });
   });
 });
