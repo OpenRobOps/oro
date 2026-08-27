@@ -186,7 +186,7 @@ ready-to-`apply` document.
 
 `app/private/bootstrap/SpatialAnnotation.yaml` ships the flatland pretty map
 (`sample_map_pretty_1600x1600.png`, `frameId: map`, `resolution: 0.0125`, origin `0,0`,
-`formatVersion: 1` — same orientation as the PGM it was rendered from). Applied only when no
+`formatVersion: 2` — the PNG is displayed as-is; in the widget's y-up pixel space `1` would mirror it, and the agent publishes its own grid as `2` too). Applied only when no
 `SpatialAnnotation` exists (existing bootstrap rule). Docs: a short page under
 `website/docs/` describing the two kinds and the helper.
 
