@@ -170,7 +170,8 @@ const SpeedGauge = ({
       {/* Text layer — always upright */}
       <div className={classes.textOverlay}>
         <span className={`${classes.value}${isOfflineDisplay ? ` ${classes.offline}` : ''}${isZeroData ? ` ${classes.zeroData}` : ''}`}>
-          {isOfflineDisplay ? '-' : speedVal}
+          {/* Fixed 2 decimals: raw telemetry (e.g. ISO odometry) carries full double precision */}
+          {isOfflineDisplay ? '-' : Number(speedVal).toFixed(2)}
         </span>
         <span className={`${classes.units}${isOfflineDisplay ? ` ${classes.offline}` : ''}`}>
           {unit}
