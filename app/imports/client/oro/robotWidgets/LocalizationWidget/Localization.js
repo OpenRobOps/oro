@@ -39,6 +39,7 @@ import {
   NAVIGATION_MAP_LAYER_LIDARS,
   NAVIGATION_MAP_LAYER_POSE_OUTLINE,
   NAVIGATION_MAP_LAYER_PATHS,
+  NAVIGATION_MAP_LAYER_ROBOT_NAMES,
 } from '../../contexts/LocalizationWidgetContext/mapLayers';
 
 // Variants the Localization widget allows
@@ -68,6 +69,17 @@ const useStyles = makeStyles()(theme => ({
     zIndex: 1,
     backgroundColor: theme.palette.warning.main,
     color: theme.palette.warning.contrastText,
+    padding: '4px 12px',
+    borderRadius: 4,
+  },
+  skippedNote: {
+    position: 'absolute',
+    bottom: 8,
+    left: 8,
+    zIndex: 1,
+    backgroundColor: theme.palette.background?.paper,
+    opacity: 0.85,
+    color: theme.palette.text.secondary,
     padding: '4px 12px',
     borderRadius: 4,
   },
@@ -215,7 +227,7 @@ function Localization({
               tilesetKey={tilesetKey}
             />
           )}
-        {!map.noTransform && Object.keys(robotsLocalizationData).map(rId => (
+        {Object.keys(robotsLocalizationData).map(rId => (
           <RobotLayer
             key={rId}
             map={mapToRender}
@@ -234,6 +246,7 @@ function Localization({
               && isLayerVisible(NAVIGATION_MAP_LAYER_PATHS)}
             showLaserPoints={selectedRobotId === rId
               && isLayerVisible(NAVIGATION_MAP_LAYER_LIDARS)}
+            showRobotNames={isLayerVisible(NAVIGATION_MAP_LAYER_ROBOT_NAMES)}
             selected={selectedRobotId == rId}
           />
         ))}
@@ -245,7 +258,12 @@ function Localization({
       </Layers>
       {map.noTransform && (
         <div className={classes.noTransformBanner}>
-          No transform from frame “{map.robotFrameId}” to “{map.frameId}” for this robot
+          No transform from frame “{map.robotFrameId}” to “{map.frameId}” for the selected robot
+        </div>
+      )}
+      {map.skippedRobots > 0 && (
+        <div className={classes.skippedNote}>
+          {map.skippedRobots} robot{map.skippedRobots > 1 ? 's' : ''} not shown: no transform to “{map.frameId}”
         </div>
       )}
     </MapComponent>

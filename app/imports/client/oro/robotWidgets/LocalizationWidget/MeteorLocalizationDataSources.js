@@ -50,24 +50,20 @@ import {
  * which gets called on every data change -- the later is used to dispatch information
  * to a context (see meteorLocalizationDataSource).
  */
-function useMeteorLocalizationData({ robotIds, lowBandwidth }, cb = null) {
+function useMeteorLocalizationData({ robotIds, lowBandwidth, selectedRobotId }, cb = null) {
+  const key = (robotIds || []).join(',');
   return useTracker(() => {
-    if (!Array.isArray(robotIds) || robotIds.length == 0) {
-      return null;
-    }
-    // Subscribe to all robots' localization data
-    const sub = Meteor.subscribe('localization', { robotIds, lowBandwidth });
-    const p = RobotLocalization.find({ _id: { $in: robotIds } }).fetch()
-      .map((l) => { l.src = 'meteor'; return l; });
-    // Convert from array to object indexed by robotId
-    const localizationData = keyBy(p, '_id');
-    const data = {
-      isLoading: !sub.ready(),
-      localizationData
-    };
-    cb && cb(data); // The callback is used for Contexts
-    return data; // Data is returned anyway, to use as a regular hook
-  }, [robotIds]);
+    if (!Array.isArray(robotIds) || robotIds.length == 0) return null;
+    // Only the selected robot needs lasers and paths; everyone else is drawn from pose alone.
+    const others = robotIds.filter((id) => id !== selectedRobotId);
+    const subs = [];
+    if (others.length) subs.push(Meteor.subscribe('localization', { robotIds: others, lowBandwidth: true }));
+    if (robotIds.includes(selectedRobotId)) subs.push(Meteor.subscribe('localization', { robotIds: [selectedRobotId], lowBandwidth }));
+    const p = RobotLocalization.find({ _id: { $in: robotIds } }).fetch().map((l) => { l.src = 'meteor'; return l; });
+    const data = { isLoading: subs.some((s) => !s.ready()), localizationData: keyBy(p, '_id') };
+    cb && cb(data);
+    return data;
+  }, [key, lowBandwidth, selectedRobotId]);
 }
 
 /**

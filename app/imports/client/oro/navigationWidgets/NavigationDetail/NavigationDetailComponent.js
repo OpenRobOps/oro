@@ -47,6 +47,7 @@ import CameraGrid from '../CameraGrid';
 import LocalizationWithMapInteraction from '../../robotWidgets/LocalizationWidget/LocalizationWithMapInteraction';
 import { LOCALIZATION_VARIANTS } from '../../robotWidgets/LocalizationWidget/Localization';
 import { useActiveInteraction } from '../../contexts/ActiveInteractionContext';
+import { useFleetRobotIds } from '../../hooks/useFleetRobotIds';
 
 const useStyles = makeStyles()(theme => ({
   fullscreenDiv: {
@@ -115,6 +116,7 @@ const NavigationDetailComponent = (props) => {
     onFeedback,
   } = props;
 
+  const fleetRobotIds = useFleetRobotIds();
   const layout = useLayoutContext();
   const { activeInteraction } = useActiveInteraction();
   const teleopMode = activeInteraction === INTERACTION_MODES.TELEOP_MODE;
@@ -160,6 +162,7 @@ const NavigationDetailComponent = (props) => {
           <div key={KEY_BACKGROUND}>
             <LocalizationWithTsHint
               selectedRobotId={robotId}
+              robotIds={fleetRobotIds}
               options={options}
               selectRobotCallback={selectRobotCallback}
               robotOffline={robotOffline}

@@ -126,6 +126,8 @@ Standard resources, on `/ISO_21423/v1/IMR/<uuid>/<resource>`: `identity` (retain
 
 `globalPlan` (nav2's global plan) and `localTrajectory` (nav2's local plan) are ingested into the Navigation widget's paths, styled by a configured [`RobotPath`](../api/configapikinds.md#robotpath) -- see [Maps: Robot paths](../maps.md#robot-paths).
 
+ISO robots are drawn on the map through the same [fleet view](../maps.md#fleet-view) as wire robots -- own frame transform, name label, click to select -- with no special-casing for ISO.
+
 **Key-value data — ORO's `customData` extension resource.** ISO 21423 has no key-value message but leaves the resource catalog open, so ORO defines one:
 
 ```

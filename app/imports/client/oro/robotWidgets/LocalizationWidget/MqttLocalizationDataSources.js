@@ -34,7 +34,7 @@
  *   the time and relies completely on the RobotsDataContext to merge information from multiple
  *   robots and multiple messages of different types per robot.
  */
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useDirectClientMulti } from '../../util/DirectClient';
 import {
   singleRobotLocalizationData
@@ -112,18 +112,24 @@ function decodePaths(msg) {
  * - Each callback call will contain the information of a single received MQTT
  *   message. The receiver RobotsDataContext is responsible for merging the data
  */
-function useDirectClientLocalizationData({ robotIds }, cb = null) {
+function useDirectClientLocalizationData({ robotIds, selectedRobotId }, cb = null) {
+  // Live MQTT detail only for the selected robot; other robots update from Mongo.
+  const liveIds = useMemo(
+    () => (selectedRobotId && robotIds?.includes(selectedRobotId) ? [selectedRobotId] : []),
+    [robotIds, selectedRobotId]
+  );
+
   // NOTE: These hooks always returns the latest message received from
   // one of the provided robots, in the format { [robotId]: localizationData }
   const directLocalizationData = useDirectClientMulti({
-    robotIds,
+    robotIds: liveIds,
     subtopic: 'ros/loc/data2',
     typeString: 'LocationAndPoseMessage',
     decodeFunc: decodeLaserAndPose
   });
 
   const directPathsData = useDirectClientMulti({
-    robotIds,
+    robotIds: liveIds,
     subtopic: 'ros/loc/path',
     typeString: 'PathDataMessage',
     decodeFunc: decodePaths

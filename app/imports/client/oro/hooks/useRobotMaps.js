@@ -93,3 +93,18 @@ export function useFrameTransform({ robotId, from, to }) {
     return { isLoading: !sub.ready(), transform: findFrameTransform({ robotDoc, systemDoc, from, to }) };
   }, [robotId, from, to]);
 }
+
+/** One transform per robot into frame `to` (robot override → system → identity → null). */
+export function useFrameTransforms({ robotIds, robotFrames, to }) {
+  const key = (robotIds || []).join(',');
+  return useTracker(() => {
+    if (!robotIds || robotIds.length === 0 || !to) return { isLoading: false, transforms: {} };
+    const sub = Meteor.subscribe('spatial_transformations', { robotIds });
+    const systemDoc = SpatialTransformations.findOne(SYSTEM);
+    const transforms = Object.fromEntries(robotIds.map((id) => [id, findFrameTransform({
+      robotDoc: SpatialTransformations.findOne({ entityType: 'robot', entityId: id }),
+      systemDoc, from: robotFrames[id] || 'map', to,
+    })]));
+    return { isLoading: !sub.ready(), transforms };
+  }, [key, to, JSON.stringify(robotFrames)]);
+}

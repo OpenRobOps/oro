@@ -38,21 +38,15 @@ import {
 import WithNoDataMessage from '../../util/WithNoDataMessage';
 import Map from './Map';
 import {
-  useRobotMapsList, useFrameTransform, parseMapRef, mapRefFor, findMapRef,
+  useRobotMapsList, useFrameTransforms, parseMapRef, mapRefFor, findMapRef,
 } from '../../hooks/useRobotMaps';
 import { useRobotsUiPreferences } from '../../hooks/useRobotsUiPreferences';
-import { transformLocalizationData, DEFAULT_FRAME_ID } from '../../../../shared/maps';
+import {
+  transformLocalizationData, partitionByTransform, DEFAULT_FRAME_ID,
+} from '../../../../shared/maps';
 
 // Constant arrays to avoid new objects and re-renders
 const EMPTY_ANNOTATIONS_LIST = [];
-
-// Inline subObject helper: returns a new object containing only the given keys
-function pickKeys(object, keys) {
-  if (!object || !keys) return {};
-  return Object.fromEntries(
-    keys.filter(k => Object.prototype.hasOwnProperty.call(object, k)).map(k => [k, object[k]])
-  );
-}
 
 function LocalizationAdapter({
   selectedRobotId, // id to show all data for, prioritize its map
@@ -109,7 +103,7 @@ function LocalizationAdapter({
 
   // Get localization data for all the robots
   useDataSource(state, dispatch, LOCALIZATION_DATA_TYPE.LOCALIZATION, {
-    robotIds: robotIdsToQuery, lowBandwidth
+    robotIds: robotIdsToQuery, lowBandwidth, selectedRobotId: mainRobotId
   });
 
   // Which map to show: the ref from context (system:<id> | robot:<id> | <label>), else the
@@ -140,21 +134,6 @@ function LocalizationAdapter({
     }
   );
 
-  // Place robots on the selected map: robot frame → map frame.
-  // ponytail: one transform for all displayed robots (main robot's); per-robot transforms when mixed-frame fleets appear.
-  const robotFrameId = robotsLocalizationData?.[mainRobotId]?.map?.frameId || DEFAULT_FRAME_ID;
-  const { isLoading: transformLoading, transform: frameTransform } = useFrameTransform({
-    robotId: mainRobotId, from: robotFrameId, to: map.frameId,
-  });
-  const mapWithFrame = useMemo(() => ({
-    ...map,
-    frameTransform,
-    robotFrameId,
-    // While the spatial_transformations subscription is still loading, don't flash the "no
-    // transform" banner for a transform that just hasn't arrived yet.
-    noTransform: !!map.frameId && !frameTransform && !transformLoading,
-  }), [map, frameTransform, robotFrameId, transformLoading]);
-
   // Fetch robot online/offline data
   useDataSource(state, dispatch, LOCALIZATION_DATA_TYPE.DETAILS, { robotIds: robotIdsToQuery });
   const robotDetails = useMemo(
@@ -184,12 +163,36 @@ function LocalizationAdapter({
 
   const isLoading = robotsLoading;
 
-  // Filter localization data for only information for selected robotIds, then transform each
-  // robot's data into the map's frame.
+  // Place robots on the selected map: each robot's frame → map frame.
+  const robotFrames = useMemo(() => Object.fromEntries(robotIdsToDisplay.map((rId) => (
+    [rId, robotsLocalizationData?.[rId]?.map?.frameId || DEFAULT_FRAME_ID]
+  ))), [robotIdsToDisplay, robotsLocalizationData]);
+  const { isLoading: transformLoading, transforms } = useFrameTransforms({
+    robotIds: robotIdsToDisplay, robotFrames, to: map.frameId,
+  });
+  const { drawn, skipped } = useMemo(() => partitionByTransform({
+    robotIds: robotIdsToDisplay, transforms, toFrame: transformLoading ? undefined : map.frameId,
+  }), [robotIdsToDisplay, transforms, transformLoading, map.frameId]);
+  const selectedHasNoTransform = !!map.frameId && !transformLoading
+    && robotIdsToDisplay.includes(mainRobotId) && !transforms[mainRobotId];
+  const mapWithFrame = useMemo(() => ({
+    ...map,
+    frameTransform: transforms[mainRobotId] || null,
+    robotFrameId: robotFrames[mainRobotId] || DEFAULT_FRAME_ID,
+    noTransform: selectedHasNoTransform,
+    skippedRobots: skipped.filter((rId) => rId !== mainRobotId).length,
+  }), [map, transforms, robotFrames[mainRobotId], mainRobotId, selectedHasNoTransform, skipped]);
+
   const filteredRobotLocalizationData = useMemo(() => Object.fromEntries(
-    Object.entries(pickKeys(robotsLocalizationData, robotIdsToDisplay))
-      .map(([rId, d]) => [rId, transformLocalizationData(d, frameTransform)])
-  ), [robotsLocalizationData, robotIdsToDisplay, frameTransform]);
+    drawn.filter((rId) => robotsLocalizationData[rId])
+      .map((rId) => {
+        // Detail (lasers/paths/costmap) is only subscribed for the selected robot; the reducer keeps
+        // the last known values when a robot loses its subscription, so drop them for everyone else.
+        const { laserRanges, paths, costmap, ...poseOnly } = robotsLocalizationData[rId];
+        const data = rId === mainRobotId ? robotsLocalizationData[rId] : poseOnly;
+        return [rId, transformLocalizationData(data, transforms[rId])];
+      })
+  ), [drawn, robotsLocalizationData, transforms, mainRobotId]);
 
   // Load keys for outdoor map tiles services
   const tilesetKey = Meteor.settings?.public?.maptilerKey;

@@ -53,9 +53,9 @@ Meteor.publish('localization', async function ({ robotIds, lowBandwidth = false 
     mapUpdatedTs: 1,
     defaultMap: 1,
     laserConfig: 1,
-    costmap: 1,
   };
   if (!lowBandwidth) {
+    fields.costmap = 1;
     fields.laserRanges = 1;
     fields.laserRangesUpdatedTs = 1;
     fields.paths = 1;
@@ -117,17 +117,19 @@ Meteor.publish('spatial_annotations.map', async function ({
 });
 
 /**
- * Publish frame transformations relevant to a robot: its own overrides and the system-wide set.
+ * Publish frame transformations relevant to a set of robots: each robot's overrides and the
+ * system-wide set. Accepts `robotId` (legacy) or `robotIds`.
  */
-Meteor.publish('spatial_transformations', async function ({ robotId }) {
-  if (!this.userId || !robotId) {
+Meteor.publish('spatial_transformations', async function ({ robotId, robotIds }) {
+  const ids = isArray(robotIds) ? robotIds : (robotId ? [robotId] : []);
+  if (!this.userId || ids.length === 0) {
     return this.ready();
   }
-  if (!await new OroRoles().canAccessRobot(this.userId, robotId, ACCESS_LEVEL_VIEW)) {
+  if (!await new OroRoles().canAccessRobots(this.userId, ids, ACCESS_LEVEL_VIEW)) {
     return this.error(new Meteor.Error('Unauthorized'));
   }
   return SpatialTransformations.find({
-    $or: [{ entityType: 'robot', entityId: robotId }, { entityType: 'system', entityId: '0' }],
+    $or: [{ entityType: 'robot', entityId: { $in: ids } }, { entityType: 'system', entityId: '0' }],
   });
 });
 
@@ -173,8 +175,14 @@ Meteor.publish('robots', async function ({
   if (!this.userId) { // User must be logged in
     return this.ready();
   }
-  // TODO if we want to limit robots visibility, filter them here
   const query = {};
+  const roles = new OroRoles();
+  if (!await roles.isAdmin(this.userId)) {
+    // ponytail: access is evaluated once per subscription; robots created (or granted) afterwards
+    // show up on resubscribe. Move to a reactive filter if roles ever change while a page is open.
+    const allIds = (await Robots.find({}, { fields: { _id: 1 } }).fetchAsync()).map((r) => r._id);
+    query._id = { $in: await roles.getAccessibleRobotIds(this.userId, allIds, ACCESS_LEVEL_VIEW) };
+  }
   if (maxOfflineMs) {
     // Match robots which are online or have been offline for at most maxOfflineMs milliseconds
     query.$or = [

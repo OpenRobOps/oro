@@ -159,6 +159,14 @@ function transformDelta(delta, transform) {
   return { ...delta, x: a * delta.x + b * delta.y, y: c * delta.x + d * delta.y };
 }
 
+/** Which robots can be placed on a map in frame `toFrame` given their resolved transforms. */
+function partitionByTransform({ robotIds, transforms = {}, toFrame }) {
+  if (!toFrame) return { drawn: [...robotIds], skipped: [] };
+  const drawn = robotIds.filter((id) => !!transforms[id]);
+  const skipped = robotIds.filter((id) => !transforms[id]);
+  return { drawn, skipped };
+}
+
 /**
  * Client-only collection the `spatial_annotations.maps` publication feeds with `mapSummary` docs.
  * Kept separate from `spatial_annotations` on purpose: Meteor merges publications per TOP-LEVEL
@@ -204,4 +212,5 @@ export {
   transformLocalizationData,
   inverseTransform,
   transformDelta,
+  partitionByTransform,
 };
