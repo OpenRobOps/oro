@@ -103,7 +103,7 @@ function LocalizationAdapter({
 
   // Get localization data for all the robots
   useDataSource(state, dispatch, LOCALIZATION_DATA_TYPE.LOCALIZATION, {
-    robotIds: robotIdsToQuery, lowBandwidth
+    robotIds: robotIdsToQuery, lowBandwidth, selectedRobotId: mainRobotId
   });
 
   // Which map to show: the ref from context (system:<id> | robot:<id> | <label>), else the
