@@ -136,7 +136,10 @@ class IsoRobotsModule {
         entityUuid: config.imrfmId,
         entityType: 'IMRFM',
         manufacturerName: config.manufacturerName,
-        details: { platform: 'OpenRobOps', service: 'ingest', role: 'iso-robots' },
+        details: {
+          platform: 'OpenRobOps', service: 'ingest', role: 'iso-robots',
+          softwareVersions: config.softwareVersions,
+        },
         capabilities: { provides: [], accepts: [] },
       });
       // The SDK's ClientEvents has no `error` event — connection trouble surfaces as a

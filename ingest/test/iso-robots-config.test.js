@@ -17,6 +17,7 @@ import assert from 'assert';
 
 import { parseShared, DEFAULT_ATTRIBUTE_SOURCES } from '../src/server/iso21423/sharedConfig';
 import { validateConfig, isoModeEnabled } from '../src/server/isoRobots/config';
+import { VERSION } from '../src/lib/version';
 
 const MIN = {
   robots: {
@@ -126,6 +127,18 @@ describe('iso-robots validateConfig', () => {
     assert.strictEqual(config.mqtt.url, 'mqtt://localhost:1883');
     assert.strictEqual(config.mqtt.username, 'iso-fleet');
     assert.deepStrictEqual(config.attributeSources, DEFAULT_ATTRIBUTE_SOURCES);
+    assert.deepStrictEqual(config.softwareVersions,
+      [{ moduleName: 'openrobops', moduleVersion: VERSION }]);
+  });
+
+  it('appends configured softwareVersions after ingest\'s own and rejects malformed entries', () => {
+    const ok = validateConfig({ ...MIN, robots: { ...MIN.robots,
+      softwareVersions: [{ moduleName: 'site-integration', moduleVersion: '2.1.0' }] } });
+    assert.deepStrictEqual(ok.config.softwareVersions.map((v) => v.moduleName),
+      ['openrobops', 'site-integration']);
+    const bad = validateConfig({ ...MIN, robots: { ...MIN.robots, softwareVersions: [{ moduleName: 'x' }] } });
+    assert.strictEqual(bad.config, null);
+    assert.ok(bad.errors.some((e) => e.includes('softwareVersions[0]')));
   });
 
   it('defaults the two ORO navigation subtopics and leaves pause/resume unset', () => {

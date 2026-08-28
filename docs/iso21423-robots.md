@@ -66,6 +66,7 @@ its own `enabled` flag, its own broker and its own credential.
       "enabled": true,
       "imrfmId": "5f0b1d5e-2b8b-4c8b-8c8b-2b8b4c8b8c8b",
       "manufacturerName": "OpenRobOps",
+      "softwareVersions": [],
       "rosterPollMs": 30000,
       "requestTimeoutMs": 30000,
       "commandTopics": {
@@ -99,6 +100,9 @@ a key is omitted, with two exceptions that have no default and must always be se
 `robots.enabled` is `true`: `robots.imrfmId` (a UUID) and, indirectly, the broker credential (see
 below). `uuidNamespace` and `ccs` also default (an empty, uncalibrated CCS) when omitted — see
 [§6](#6-ccs-calibration).
+
+`softwareVersions` is appended to ingest's own entry (`openrobops`, the ingest package
+version) to form the IMRFM identity's `details.softwareVersions`, required by ISO Table 7.
 
 **The broker split is deliberate and explicit (decision 13):**
 
