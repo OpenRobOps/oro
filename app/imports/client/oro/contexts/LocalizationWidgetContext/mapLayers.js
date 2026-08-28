@@ -23,6 +23,7 @@ const NAVIGATION_MAP_LAYER_COSTMAP = 'costmap';
 const NAVIGATION_MAP_LAYER_POSE_OUTLINE = 'poseOutline';
 const NAVIGATION_MAP_LAYER_LIDARS = 'lidars';
 const NAVIGATION_MAP_LAYER_PATHS = 'paths';
+const NAVIGATION_MAP_LAYER_ROBOT_NAMES = 'robotNames';
 
 /**
  * List with all the necessary information to display the layers on the map
@@ -60,6 +61,13 @@ const MAP_LAYERS = [
       isVisible: true
     }
   },
+  {
+    id: NAVIGATION_MAP_LAYER_ROBOT_NAMES,
+    label: 'Names',
+    defaultState: {
+      isVisible: true
+    }
+  },
 ];
 
 export {
@@ -68,4 +76,5 @@ export {
   NAVIGATION_MAP_LAYER_LIDARS,
   NAVIGATION_MAP_LAYER_POSE_OUTLINE,
   NAVIGATION_MAP_LAYER_PATHS,
+  NAVIGATION_MAP_LAYER_ROBOT_NAMES,
 };

@@ -29,6 +29,7 @@ import PropTypes from 'prop-types';
 import { isString } from 'lodash';
 // Modules
 import RobotPoseLayer from './RobotPoseLayer';
+import RobotName from './RobotName';
 import RobotBufferFootprintLayer from './RobotBufferFootprintLayer';
 import LasersPointsLayer, { createFeatures as createLaserPointsFeatures } from './LasersPointsLayer';
 import LaserRangeLayer from './LaserRangeLayer';
@@ -148,6 +149,7 @@ function RobotLayer({
   showLaserPoints = true,
   showPaths = true,
   showBufferFootprint = false,
+  showRobotNames = false,
   robotId,
   robotDetails,
   selected
@@ -198,6 +200,9 @@ function RobotLayer({
         robotId={robotId}
         selected={selected}
       />
+      {showRobotNames && (
+        <RobotName robotPose={robotPose} robotDetails={robotDetails} robotId={robotId} selected={selected} />
+      )}
       {Object.keys(laserConfig).filter(laserId => laserId in laserRanges).map((laserId) => {
         const patchedLaserConfig = patchLaserConfig(laserConfig[laserId]);
         return [
@@ -253,6 +258,7 @@ RobotLayer.propTypes = {
   showLaserPoints: PropTypes.bool,
   showPaths: PropTypes.bool,
   showBufferFootprint: PropTypes.bool,
+  showRobotNames: PropTypes.bool,
   // Data Props
   localizationData: PropTypes.object, // contains data to be rendered for the robot
   robotDetails: PropTypes.object,
