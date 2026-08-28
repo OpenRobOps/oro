@@ -185,8 +185,14 @@ function LocalizationAdapter({
 
   const filteredRobotLocalizationData = useMemo(() => Object.fromEntries(
     drawn.filter((rId) => robotsLocalizationData[rId])
-      .map((rId) => [rId, transformLocalizationData(robotsLocalizationData[rId], transforms[rId])])
-  ), [drawn, robotsLocalizationData, transforms]);
+      .map((rId) => {
+        // Detail (lasers/paths) is only subscribed for the selected robot; the reducer keeps the last
+        // known values when a robot loses its subscription, so drop them here for everyone else.
+        const { laserRanges, paths, ...poseOnly } = robotsLocalizationData[rId];
+        const data = rId === mainRobotId ? robotsLocalizationData[rId] : poseOnly;
+        return [rId, transformLocalizationData(data, transforms[rId])];
+      })
+  ), [drawn, robotsLocalizationData, transforms, mainRobotId]);
 
   // Load keys for outdoor map tiles services
   const tilesetKey = Meteor.settings?.public?.maptilerKey;
