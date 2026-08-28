@@ -180,15 +180,15 @@ function LocalizationAdapter({
     frameTransform: transforms[mainRobotId] || null,
     robotFrameId: robotFrames[mainRobotId] || DEFAULT_FRAME_ID,
     noTransform: selectedHasNoTransform,
-    skippedRobots: skipped.length,
-  }), [map, transforms, robotFrames, mainRobotId, selectedHasNoTransform, skipped.length]);
+    skippedRobots: skipped.filter((rId) => rId !== mainRobotId).length,
+  }), [map, transforms, robotFrames[mainRobotId], mainRobotId, selectedHasNoTransform, skipped]);
 
   const filteredRobotLocalizationData = useMemo(() => Object.fromEntries(
     drawn.filter((rId) => robotsLocalizationData[rId])
       .map((rId) => {
-        // Detail (lasers/paths) is only subscribed for the selected robot; the reducer keeps the last
-        // known values when a robot loses its subscription, so drop them here for everyone else.
-        const { laserRanges, paths, ...poseOnly } = robotsLocalizationData[rId];
+        // Detail (lasers/paths/costmap) is only subscribed for the selected robot; the reducer keeps
+        // the last known values when a robot loses its subscription, so drop them for everyone else.
+        const { laserRanges, paths, costmap, ...poseOnly } = robotsLocalizationData[rId];
         const data = rId === mainRobotId ? robotsLocalizationData[rId] : poseOnly;
         return [rId, transformLocalizationData(data, transforms[rId])];
       })

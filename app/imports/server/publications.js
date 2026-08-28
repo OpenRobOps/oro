@@ -53,9 +53,9 @@ Meteor.publish('localization', async function ({ robotIds, lowBandwidth = false 
     mapUpdatedTs: 1,
     defaultMap: 1,
     laserConfig: 1,
-    costmap: 1,
   };
   if (!lowBandwidth) {
+    fields.costmap = 1;
     fields.laserRanges = 1;
     fields.laserRangesUpdatedTs = 1;
     fields.paths = 1;
@@ -175,8 +175,14 @@ Meteor.publish('robots', async function ({
   if (!this.userId) { // User must be logged in
     return this.ready();
   }
-  // TODO if we want to limit robots visibility, filter them here
   const query = {};
+  const roles = new OroRoles();
+  if (!await roles.isAdmin(this.userId)) {
+    // ponytail: access is evaluated once per subscription; robots created (or granted) afterwards
+    // show up on resubscribe. Move to a reactive filter if roles ever change while a page is open.
+    const allIds = (await Robots.find({}, { fields: { _id: 1 } }).fetchAsync()).map((r) => r._id);
+    query._id = { $in: await roles.getAccessibleRobotIds(this.userId, allIds, ACCESS_LEVEL_VIEW) };
+  }
   if (maxOfflineMs) {
     // Match robots which are online or have been offline for at most maxOfflineMs milliseconds
     query.$or = [
