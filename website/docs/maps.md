@@ -124,6 +124,31 @@ resource and is not consumed -- see
 Wire robots keep whatever path ids their own agent already uses;
 `RobotPath` styles by path id, independent of robot type.
 
+## Fleet view
+
+The Navigation and Map widgets draw every robot the user can see, not just
+the selected one -- online robots the user has view access to; offline
+robots aren't drawn. Click any robot to select it.
+
+Each robot is placed independently: its own frame (`localization.map.frameId`,
+or `map` when unset) is transformed into the displayed map's frame the same
+way as in [Frames and transforms](#frames-and-transforms) above -- a
+robot-scope [`SpatialTransformation`](./api/configapikinds.md#spatialtransformation)
+first, then the `system`-scope one, or the identity transform when the
+frames already match. A robot with no transform to the map's frame is left
+off the map and counted in a small note, `N robot(s) not shown: no
+transform to "<frame>"`, instead of blanking the whole map. The "No
+transform ... for the selected robot" banner -- and the map interactions it
+hides -- is shown only when the *selected* robot itself can't be placed.
+
+Name labels are drawn by the **Names** layer, on by default. Layer
+visibility is remembered per dashboard section, but there's no layers menu
+in the control bar yet to toggle it from the UI.
+
+Only the selected robot gets full detail -- lasers, paths, costmap -- and
+live MQTT updates. Every other robot is updated from the server at ingest
+rate, pose only.
+
 ## Switching maps in the Navigation widget
 
 When a robot can display two or more maps, a map switcher dropdown appears
