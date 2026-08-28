@@ -19,7 +19,7 @@ import { expect } from 'chai';
 import {
   normalizeMapAnnotation, invert3x3, findFrameTransform, fitRigidTransform2D,
   validateTransformMatrix, IDENTITY_3X3, mapsListQuery, transformLocalizationData,
-  inverseTransform, transformDelta, mapSummary,
+  inverseTransform, transformDelta, mapSummary, partitionByTransform,
 } from '../../shared/maps';
 import { transformPose } from '../../shared/geometry';
 import { resetDatabase } from './setup';
@@ -175,6 +175,19 @@ describe('shared/maps', () => {
     it('transformDelta rotates the translation only', () => {
       const d = transformDelta({ x: 1, y: 0, theta: 0.2 }, inverseTransform(t));
       near(d.x, 0); near(d.y, -1); near(d.theta, 0.2);
+    });
+  });
+
+  describe('partitionByTransform', () => {
+    const t = { frameId: 'map', aTb: { m: IDENTITY_3X3 } };
+    it('draws robots with a transform and skips the rest', () => {
+      expect(partitionByTransform({
+        robotIds: ['a', 'b', 'c'], toFrame: 'map', transforms: { a: t, b: null, c: t },
+      })).to.deep.equal({ drawn: ['a', 'c'], skipped: ['b'] });
+    });
+    it('draws everything when the map frame is not known yet', () => {
+      expect(partitionByTransform({ robotIds: ['a', 'b'], toFrame: undefined, transforms: {} }))
+        .to.deep.equal({ drawn: ['a', 'b'], skipped: [] });
     });
   });
 });

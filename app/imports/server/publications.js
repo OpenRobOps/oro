@@ -117,17 +117,19 @@ Meteor.publish('spatial_annotations.map', async function ({
 });
 
 /**
- * Publish frame transformations relevant to a robot: its own overrides and the system-wide set.
+ * Publish frame transformations relevant to a set of robots: each robot's overrides and the
+ * system-wide set. Accepts `robotId` (legacy) or `robotIds`.
  */
-Meteor.publish('spatial_transformations', async function ({ robotId }) {
-  if (!this.userId || !robotId) {
+Meteor.publish('spatial_transformations', async function ({ robotId, robotIds }) {
+  const ids = isArray(robotIds) ? robotIds : (robotId ? [robotId] : []);
+  if (!this.userId || ids.length === 0) {
     return this.ready();
   }
-  if (!await new OroRoles().canAccessRobot(this.userId, robotId, ACCESS_LEVEL_VIEW)) {
+  if (!await new OroRoles().canAccessRobots(this.userId, ids, ACCESS_LEVEL_VIEW)) {
     return this.error(new Meteor.Error('Unauthorized'));
   }
   return SpatialTransformations.find({
-    $or: [{ entityType: 'robot', entityId: robotId }, { entityType: 'system', entityId: '0' }],
+    $or: [{ entityType: 'robot', entityId: { $in: ids } }, { entityType: 'system', entityId: '0' }],
   });
 });
 
