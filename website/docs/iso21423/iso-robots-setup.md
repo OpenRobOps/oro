@@ -59,6 +59,7 @@ Add an `iso21423` block to `ingest/settings.json` (Terraform users: `iso21423_ro
 | `robots.imrfmId` | yes | The UUID ORO uses as its own IMRFM identity on the ISO network. |
 | `robots.mqtt.username/password` | yes | Broker login for this module's own ISO session (separate from ORO's wire connection and from robot credentials). Reusing the ingest master credential works for local setups. |
 | `robots.broker` | no | Defaults to ORO's own Mosquitto (`settings.mqtt.brokers[defaultBrokerId]`). Set only if ISO robots use another broker. |
+| `robots.softwareVersions` | no | Extra `{ moduleName, moduleVersion }` entries for ORO's IMRFM identity (`details.softwareVersions`, ISO Table 7). Ingest always lists itself first with its own version. |
 | `robots.docks` | no | Docking stations in ORO's map frame, keyed by the id operators use in `dock=<id>` actions (case-insensitive). |
 | `robots.commandTopics` | no | Which agent-bound MQTT subtopics ORO's actions publish to; defaults match the built-in Navigate/Cancel actions and `PublishToTopic`. |
 | `robots.attributeSources` | no | Rename the ORO attribute ids the ISO telemetry is written to (defaults: `agentOnline`, `pose`, `speedLinear`, `speedAngular`, `batteryPercentage`, `batteryVoltage`, `batteryIsCharging`). |

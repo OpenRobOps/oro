@@ -49,3 +49,4 @@ Not part of ISO 21423 today (and therefore not available from ISO robots): occup
 
 - [ISO Robots — setup guide](./iso-robots-setup.md): enable ISO mode, calibrate the CCS, admit robots, issue credentials, command mapping, limitations.
 - [Try it with the Flatland simulator](./flatland-simulator.md): a complete ISO 21423 fleet on your laptop in a few commands.
+- [ISO 21423 coverage](./coverage.md): clause-by-clause view of what is implemented, what is left, and ORO's extensions over the standard.

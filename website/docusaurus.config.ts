@@ -15,7 +15,7 @@ const config: Config = {
   },
 
   // Set the production url of your site here
-  url: 'https://ornate-croquembouche-cc5482.netlify.app',
+  url: 'https://openrobops.org',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
   baseUrl: '/',
@@ -91,13 +91,6 @@ const config: Config = {
       defaultMode: 'dark',
       disableSwitch: true
     },
-    announcementBar: {
-      id: 'pre-release',
-      content: '<b>OpenRobOps is currently in pre-release. Please report any issues <a href="https://github.com/OpenRobOps/oro/issues">here</a></b>',
-      backgroundColor: '#FFE3AD',
-      textColor: '#1A0F2E',
-      isCloseable: false,
-    },
     navbar: {
       title: 'OpenRobOps',
       logo: {
@@ -152,16 +145,16 @@ const config: Config = {
           title: 'Community',
           items: [
             {
+              label: 'Zulip',
+              href: 'https://openrobops.zulipchat.com/',
+            },
+            {
+              label: 'Report an issue',
+              href: 'https://github.com/OpenRobOps/oro/issues',
+            },
+            {
               label: 'Stack Overflow',
               href: 'https://stackoverflow.com/questions/tagged/openrobops',
-            },
-            {
-              label: 'Discord',
-              href: 'https://discordapp.com/invite/openrobops',
-            },
-            {
-              label: 'X',
-              href: 'https://x.com/openrobops',
             },
           ],
         },

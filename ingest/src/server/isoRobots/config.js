@@ -24,6 +24,7 @@
 import {
   parseShared, brokerFromOroMqtt, UUID_RE, DEFAULT_ATTRIBUTE_SOURCES,
 } from '../iso21423/sharedConfig';
+import { VERSION } from '../../lib/version';
 
 /** ORO subtopics whose agent-bound commands this module translates (decision 10). */
 const DEFAULT_COMMAND_TOPICS = {
@@ -99,6 +100,20 @@ const validateConfig = (raw, oroMqtt) => {
     }
   }
 
+  // ISO Table 7 requires `details.softwareVersions` on an IMRFM identity. Ingest always reports
+  // itself; deployments may append their own modules (e.g. a site integration) here.
+  const softwareVersions = [{ moduleName: 'openrobops', moduleVersion: VERSION }];
+  for (const [i, v] of (Array.isArray(robots.softwareVersions) ? robots.softwareVersions : []).entries()) {
+    if (!v || typeof v.moduleName !== 'string' || typeof v.moduleVersion !== 'string') {
+      errors.push(`iso21423.robots.softwareVersions[${i}] needs string moduleName and moduleVersion`);
+    } else {
+      softwareVersions.push({ moduleName: v.moduleName, moduleVersion: v.moduleVersion });
+    }
+  }
+  if (robots.softwareVersions !== undefined && !Array.isArray(robots.softwareVersions)) {
+    errors.push('iso21423.robots.softwareVersions must be an array of { moduleName, moduleVersion }');
+  }
+
   if (errors.length) return { config: null, errors };
 
   return {
@@ -106,6 +121,7 @@ const validateConfig = (raw, oroMqtt) => {
       enabled: true,
       imrfmId,
       manufacturerName: robots.manufacturerName || 'OpenRobOps',
+      softwareVersions,
       mqtt: {
         url: mqtt.url,
         tls: mqtt.tls || {},
