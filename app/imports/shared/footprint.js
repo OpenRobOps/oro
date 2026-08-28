@@ -28,9 +28,6 @@ const POSE_FIELDS = ['footprint', 'bufferFootprint', 'radius', 'primaryColor', '
 /** Written by `RobotFootprint` `apply` with `spec: null` (InOrbit semantics). */
 const SUPPRESSED_POSE = { footprint: null, bufferFootprint: null, radius: null };
 
-/** Client-only collection fed by the `robot_footprints` publication (resolved pose per robot). */
-const ROBOT_FOOTPRINTS_COLLECTION = 'robot_footprints';
-
 const pairsFromPoints = (points) => points.map(({ x, y }) => [x, y]);
 const pointsFromPairs = (pairs) => pairs.map(([x, y]) => ({ x, y }));
 
@@ -58,6 +55,6 @@ function resolveFootprint({ robotCfg = null, systemCfg = null, reported = null }
 }
 
 export {
-  POSE_FIELDS, SUPPRESSED_POSE, ROBOT_FOOTPRINTS_COLLECTION,
+  POSE_FIELDS, SUPPRESSED_POSE,
   pairsFromPoints, pointsFromPairs, isValidPolygon, resolveFootprint,
 };

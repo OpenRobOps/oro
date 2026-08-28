@@ -80,6 +80,7 @@ const KIND_SPATIAL_ANNOTATION = 'SpatialAnnotation';
 const KIND_TRAFFIC_ZONE = 'TrafficZone';
 const KIND_TRAFFIC_ZONE_TYPE = 'TrafficZoneType';
 const KIND_ROBOT_FOOTPRINT = 'RobotFootprint';
+const KIND_ROBOT_PATH = 'RobotPath';
 const KIND_PREFERENCES = 'Preferences';
 const KIND_SPATIAL_TRANSFORMATION = 'SpatialTransformation';
 const KIND_MISSION_SCHEDULE = 'MissionSchedule';
@@ -284,6 +285,7 @@ export {
   KIND_TRAFFIC_ZONE,
   KIND_TRAFFIC_ZONE_TYPE,
   KIND_ROBOT_FOOTPRINT,
+  KIND_ROBOT_PATH,
   KIND_PREFERENCES,
   KIND_SPATIAL_TRANSFORMATION,
   KIND_MISSION_SCHEDULE,

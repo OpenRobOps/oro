@@ -30,12 +30,13 @@ The two directions are independent modules with independent settings; enabling o
 | `odometry` | `pose` (converted from the facility CCS to ORO's map frame), `speedLinear`, `speedAngular` |
 | `batteryStatus` | `batteryPercentage`, `batteryVoltage`, `batteryIsCharging` |
 | `customData` *(ORO extension resource)* | Key-value data sources → attributes, statuses, incidents, Key-Values widget |
+| `globalPlan` / `localTrajectory` | Ingested as robot paths `"0"` / `"1"` (Navigation widget) |
 | ORO **Navigate to** action | ISO `move` request |
 | ORO **Cancel navigation** action | ISO `cancelRequest` (or a `move` to the current position) |
 | ORO **`dock`** / **`dock=<id>`** actions | Native ISO `dock` request with `dockActions: [CHARGE]` |
 | Any other **PublishToTopic** action | ORO's `customCommand` request (vendor action type), the robot republishes the message locally |
 
-Not part of ISO 21423 today (and therefore not available from ISO robots): occupancy-grid maps, laser scans, camera images, ROS diagnostics trees, and system vitals (CPU, disk, network). Paths (`globalPath`, `localTrajectory`) are in the standard and are on the roadmap.
+Not part of ISO 21423 today (and therefore not available from ISO robots): occupancy-grid maps, laser scans, camera images, ROS diagnostics trees, and system vitals (CPU, disk, network). ISO's `globalPath` (a NURBS curve, distinct from `globalPlan`) is in the standard but not used.
 
 ## Components
 

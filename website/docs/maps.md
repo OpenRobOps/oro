@@ -99,6 +99,31 @@ not yet drawn by the widget.
 Query the resolved footprint for one robot with
 [`GET /api/robots/{robotId}/footprint`](./api/robots.md#get-robot-footprint).
 
+## Robot paths
+
+The Navigation widget draws each robot's paths from
+`localization.paths.<pathId>`, one line/point set per path id, fading as the
+data ages. Style them with the
+[`RobotPath`](./api/configapikinds.md#robotpath) kind, at `system` scope
+(fleet default) or a robot id (per-robot override); a robot's entry for a
+path id replaces the `system` entry for that same id outright, not merged
+field by field.
+
+ISO 21423 robots populate two paths:
+
+| Path id | Source | Update rate |
+|---------|--------|-------------|
+| `"0"` | ISO `globalPlan` -- e.g. the flatland agent's `/plan` subscription, forwarding nav2's global plan | Ingest writes at most once per second per path (latest wins) |
+| `"1"` | ISO `localTrajectory` -- nav2's `/local_plan` | The agent publishes it at `ISO_LOCAL_TRAJECTORY_HZ` (2 Hz by default); ingest still caps writes to once per second |
+
+Path id `"0"` matches the id the InOrbit ROS2 agent uses for its own `/plan`
+topic, so one `RobotPath` config styles both wire and ISO robots. ISO's
+`globalPath` (a NURBS curve, distinct from `globalPlan`) is a separate
+resource and is not consumed -- see
+[ISO Robots setup: known limitations](./iso21423/iso-robots-setup.md#5-known-limitations-v1).
+Wire robots keep whatever path ids their own agent already uses;
+`RobotPath` styles by path id, independent of robot type.
+
 ## Switching maps in the Navigation widget
 
 When a robot can display two or more maps, a map switcher dropdown appears

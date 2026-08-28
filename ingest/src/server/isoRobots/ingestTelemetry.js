@@ -39,6 +39,11 @@ import { CUSTOM_DATA_RESOURCE, ISO_CUSTOM_FIELD, parseCustomData } from '../iso2
 const OFFLINE_STATES = new Set(['OFFLINE', 'LOST_CONNECTION']);
 const KV_RESERVED_KEYS = new Set(['robotId', '_id']);   // as in modules/customData.js
 
+/** ORO path ids for the ISO path resources: "0" matches the id the InOrbit ROS2 agent uses for nav2 `/plan`. */
+const ISO_PATH_IDS = { globalPlan: '0', localTrajectory: '1' };
+/** Minimum interval between `localization.paths.<id>` writes per robot and path (latest wins). */
+const ISO_PATH_MIN_MS = 1000;
+
 /**
  * Maps an ISO status message's `states` array onto ORO's online concept.
  *
@@ -58,7 +63,7 @@ class IsoTelemetryIngester {
    * @param {Object} opts.client the Iso21423Client (null in unit tests)
    * @param {Object} opts.attributesManager the AttributesManager singleton
    * @param {Object} opts.robotsColl the `robots` collection
-   * @param {Object} opts.converter a CcsConverter; uncalibrated suppresses pose only
+   * @param {Object} opts.converter a CcsConverter; uncalibrated suppresses pose and paths
    * @param {Object} opts.sources `config.attributeSources`
    * @param {Object} [opts.roster] an AdmittedRoster; when given, a callback for a uuid it no
    *   longer admits is a no-op — a safety net for a subscription that outlived a failed
@@ -82,6 +87,8 @@ class IsoTelemetryIngester {
     this._lastCcsPoint = new Map();  // uuid -> the last ISO LocationPoint seen, unconverted
     this._lastCcsYaw = new Map();    // uuid -> the last ISO yaw seen, unconverted
     this._warnedFootprint = new Set();   // uuids already warned about a malformed imrFootprint
+    this._pathTimers = new Map();    // `${uuid}/${pathId}` -> { timer, next }
+    this._pathLastWrite = new Map();   // `${uuid}/${pathId}` -> ts of the last write
   }
 
   /**
@@ -99,12 +106,12 @@ class IsoTelemetryIngester {
   _isRevoked = (uuid) => Boolean(this._roster) && !this._roster.isAdmitted(uuid);
 
   /**
-   * Subscribes to one admitted robot's status, odometry and battery.
+   * Subscribes to one admitted robot's status, odometry, battery and paths.
    *
    * Per-robot rather than one fleet-wide wildcard, so revoking a robot actually stops the traffic
    * (ND-17: the SDK unsubscribes on the last listener) instead of merely filtering it in ORO.
    *
-   * The five subscribes settle independently: if any rejects, every subscription that DID
+   * The seven subscribes settle independently: if any rejects, every subscription that DID
    * succeed is unsubscribed before rethrowing, so a failed `observe()` leaves nothing behind for
    * the roster's retry to pile duplicate handlers onto.
    *
@@ -124,6 +131,10 @@ class IsoTelemetryIngester {
       this._client.subscribeResource(CUSTOM_DATA_RESOURCE, filter,
         (ev) => this.onCustomData(ev.entityUuid, ev.message)),
       this._client.subscribeEntities(filter, (identity) => this.onIdentity(uuid, identity)),
+      this._client.subscribeResource('globalPlan', filter,
+        (ev) => this.onGlobalPlan(ev.entityUuid, ev.message)),
+      this._client.subscribeResource('localTrajectory', filter,
+        (ev) => this.onLocalTrajectory(ev.entityUuid, ev.message)),
     ]);
     const rejected = results.find((r) => r.status === 'rejected');
     if (rejected) {
@@ -140,6 +151,15 @@ class IsoTelemetryIngester {
     this._lastCcsPoint.delete(uuid);
     this._lastCcsYaw.delete(uuid);
     this._warnedFootprint.delete(uuid);
+    for (const key of [...this._pathTimers.keys()]) {
+      if (key.startsWith(`${uuid}/`)) {
+        clearTimeout(this._pathTimers.get(key).timer);
+        this._pathTimers.delete(key);
+      }
+    }
+    for (const key of [...this._pathLastWrite.keys()]) {
+      if (key.startsWith(`${uuid}/`)) this._pathLastWrite.delete(key);
+    }
     const subs = this._subs.get(uuid);
     if (!subs) return;
     this._subs.delete(uuid);
@@ -314,6 +334,59 @@ class IsoTelemetryIngester {
     }
   };
 
+  /** ISO `globalPlan` (nav2's global plan for the flatland agent) → ORO path "0". */
+  onGlobalPlan = async (uuid, msg) => this._savePath(
+    uuid, ISO_PATH_IDS.globalPlan, (msg && msg.globalPlan) || [], msg && msg.timestamp);
+
+  /** ISO `localTrajectory` (the controller's next few seconds) → ORO path "1". */
+  onLocalTrajectory = async (uuid, msg) => this._savePath(
+    uuid, ISO_PATH_IDS.localTrajectory, (msg && msg.localTrajectory) || [], msg && msg.timestamp);
+
+  /**
+   * Converts stamped CCS points into ORO's `map` frame and writes them in the same shape
+   * `modules/localization.js` `onPath` uses for wire robots, so the widget draws both alike.
+   * The stored `ts` is the ISO message's own `timestamp` (falling back to `Date.now()` when it
+   * fails to parse), NOT the write's wall-clock time: a retained `globalPlan` replayed on
+   * subscribe carries its original timestamp, and rendering it with "now" would make a stale
+   * plan look current. Writes are limited to one per `ISO_PATH_MIN_MS` per (robot, path), rate
+   * limited on wall-clock time; a burst keeps only the latest points (there is no live-MQTT
+   * channel for ISO paths, so Mongo IS the display path).
+   */
+  _savePath = async (uuid, pathId, stampedPoints, msgTimestamp) => {
+    if (this._isRevoked(uuid) || !this._localization || !this._converter.calibrated) return;
+    const points = [];
+    for (const sp of stampedPoints) {
+      const lp = sp && sp.locationPoint;
+      if (lp && Number.isFinite(lp.x) && Number.isFinite(lp.y)) points.push(this._converter.fromCcsPoint(lp));
+    }
+    const key = `${uuid}/${pathId}`;
+    const write = async () => {
+      this._pathLastWrite.set(key, Date.now());
+      const parsed = Date.parse(msgTimestamp);
+      const ts = Number.isFinite(parsed) ? parsed : Date.now();
+      try {
+        await this._localization.updateOne({ _id: uuid },
+          { $set: { [`paths.${pathId}`]: { points, ts, frameId: 'map' }, pathsUpdatedTs: ts } }, { upsert: true });
+      } catch (err) {
+        if (this._logging) console.warn(`ISO 21423 robots: path update failed for ${uuid}: ${err.message}`);
+      }
+    };
+    const elapsed = Date.now() - (this._pathLastWrite.get(key) || -Infinity);
+    const pending = this._pathTimers.get(key);
+    if (pending) { pending.next = write; return; }          // latest wins
+    if (elapsed >= ISO_PATH_MIN_MS) { await write(); return; }
+    const entry = { next: write, timer: null };
+    entry.timer = setTimeout(async () => { this._pathTimers.delete(key); await entry.next(); }, ISO_PATH_MIN_MS - elapsed);
+    this._pathTimers.set(key, entry);
+  };
+
+  /** Test hook: run every pending path write now. */
+  flushPendingPaths = async () => {
+    const entries = [...this._pathTimers.values()];
+    this._pathTimers.clear();
+    for (const e of entries) { clearTimeout(e.timer); await e.next(); }
+  };
+
   _save = async (robotId, attributeValues) => {
     if (!Object.keys(attributeValues).length) return;
     try {
@@ -326,4 +399,4 @@ class IsoTelemetryIngester {
   };
 }
 
-export { IsoTelemetryIngester, mapStatus, OFFLINE_STATES };
+export { IsoTelemetryIngester, mapStatus, OFFLINE_STATES, ISO_PATH_IDS, ISO_PATH_MIN_MS };

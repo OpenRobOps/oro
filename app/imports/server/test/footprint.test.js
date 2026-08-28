@@ -5,7 +5,7 @@ import {
 } from '../../shared/footprint';
 import { resetDatabase } from './setup';
 import { UIPreferences, Robots } from '../../lib/collections';
-import { resolvedFootprintFor, footprintDocsFor } from '../footprints';
+import { resolvedFootprintFor, uiPreferencesDocsFor } from '../robotUiPreferences';
 import { apiGetRobotFootprint } from '../rest/robots';
 
 if (!Meteor.isTest) throw new Error('This is TEST code only');
@@ -68,11 +68,21 @@ describe('shared/footprint', () => {
       expect(await resolvedFootprintFor('r1')).to.deep.equal({ radius: 0.3, primaryColor: '#222222' });
       expect(await resolvedFootprintFor('iso1')).to.deep.equal({ radius: 0.3, primaryColor: '#111111' });
     });
-    it('footprintDocsFor: reported polygon used when no radius/footprint is configured', async () => {
+    it('uiPreferencesDocsFor: reported polygon used when no radius/footprint is configured', async () => {
       await UIPreferences.updateAsync({ entityType: 'system', entityId: '0' }, { $set: { 'map.pose': { primaryColor: '#111111' } } });
-      const docs = await footprintDocsFor(['r1', 'iso1']);
-      expect(docs.iso1).to.deep.equal({ footprint: SQUARE, primaryColor: '#111111' });
-      expect(docs.r1).to.deep.equal({ primaryColor: '#222222' });
+      const docs = await uiPreferencesDocsFor(['r1', 'iso1']);
+      expect(docs.iso1.pose).to.deep.equal({ footprint: SQUARE, primaryColor: '#111111' });
+      expect(docs.r1.pose).to.deep.equal({ primaryColor: '#222222' });
+    });
+    it('uiPreferencesDocsFor: includes resolved robotPath (robot entry beats system per id)', async () => {
+      await UIPreferences.updateAsync({ entityType: 'system', entityId: '0' },
+        { $set: { 'map.robotPath': { elementList: ['0', '1'], elementValues: { 0: { lineWidth: 2 }, 1: { isDashed: true } } } } });
+      await UIPreferences.updateAsync({ entityType: 'robot', entityId: 'r1' },
+        { $set: { 'map.robotPath': { elementList: ['0'], elementValues: { 0: { lineWidth: 5 } } } } });
+      const docs = await uiPreferencesDocsFor(['r1', 'iso1']);
+      expect(docs.r1.robotPath).to.deep.equal({ elementValues: { 0: { lineWidth: 5 }, 1: { isDashed: true } } });
+      expect(docs.iso1.robotPath).to.deep.equal({ elementValues: { 0: { lineWidth: 2 }, 1: { isDashed: true } } });
+      expect(docs.r1.pose).to.deep.equal({ radius: 0.3, primaryColor: '#222222' });
     });
     it('REST: returns geometry only, {} when none', async () => {
       const [body] = await apiGetRobotFootprint({ robot: { getId: () => 'r1' } });

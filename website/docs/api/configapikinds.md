@@ -921,6 +921,72 @@ spec: null
 
 ---
 
+## RobotPath
+
+Styles the paths the Navigation widget draws for a robot -- the lines and
+points backing `localization.paths.<pathId>`: nav2's global plan and local
+trajectory for ISO 21423 robots (see
+[Maps: Robot paths](../maps.md#robot-paths)), and the equivalent topics for
+wire robots, whose agents keep their own path ids (the InOrbit ROS2 agent
+uses `"0"` for `/plan`, so one `RobotPath` config styles both transports).
+`metadata.id` is `system` (fleet default) or a robot id (per-robot
+override).
+
+### Schema
+
+`spec.paths` is a required, non-empty object map of path id (matching
+`^[a-zA-Z0-9_-]+$`) to style:
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `spec.paths.<id>.label` | string | No | Display label for the path |
+| `spec.paths.<id>.pointColor` | array | No | 1-3 hex colors (`#rrggbb`) for the path's points, by data age: current, recent, stale |
+| `spec.paths.<id>.lineColor` | array | No | 1-2 hex colors (`#rrggbb`) for the path's line segments, by data age: current, recent |
+| `spec.paths.<id>.pointWidth` | number | No | Point size (&gt;0) |
+| `spec.paths.<id>.lineWidth` | number | No | Line thickness (&gt;0) |
+| `spec.paths.<id>.isDashed` | boolean | No | Draw the line dashed |
+| `spec.paths.<id>.shouldPersist` | boolean | No | Never fade the path with age -- always render at the "current" color |
+
+`apply` replaces the whole `paths` map for that id -- include every path id
+and field you want kept, not just the one you're changing. `clear` removes
+the id's entire path style document (every path id configured under that
+scope), not one path id at a time. A robot-scope entry for a given path id
+replaces the `system` entry for that same id outright: the two entries are
+not merged field by field (unlike `RobotFootprint`'s per-field resolution
+above), so styling a path at both scopes means the robot's entry wins in
+full. `list` (short format) returns one `{id, label}` pair per entity that
+has any path styled (`label` equals `id`, the scope id -- not a path's own
+`label` field); the full format round-trips as a re-appliable object.
+Requires fleet configure access.
+
+### Example
+
+Fleet-wide default, styling both ISO paths (path `"0"` also matches the
+InOrbit ROS2 agent's `/plan`, so this same config styles wire robots too):
+
+```yaml
+apiVersion: v0.1
+kind: RobotPath
+metadata:
+  id: system
+spec:
+  paths:
+    "0":
+      label: Global plan
+      pointColor: ["#2A3C98", "#7F8CC7", "#C7CCE5"]
+      lineColor: ["#2A3C98", "#7F8CC7"]
+      pointWidth: 3
+      lineWidth: 2
+      isDashed: false
+    "1":
+      label: Local trajectory
+      lineColor: ["#B4622A", "#D9A47F"]
+      lineWidth: 3
+      isDashed: true
+```
+
+---
+
 ## See Also
 
 - [Config API](./configapi.md) -- API endpoints for apply, clear, and list operations

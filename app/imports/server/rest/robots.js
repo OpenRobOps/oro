@@ -25,7 +25,7 @@ import OroRoles, { ACCESS_LEVEL_VIEW } from '../roles';
 import { Robots } from '../../lib/collections';
 import { ROLE_VIEWER } from '../../shared/roles';
 import { badRequestApiError, unauthorizedApiError } from '../rest_api_common';
-import { resolvedFootprintFor } from '../footprints';
+import { resolvedFootprintFor } from '../robotUiPreferences';
 
 // Query filters for getRobots API
 const QUERY_ARG_IS_ONLINE = 'isOnline'; // Filter robots by online status
