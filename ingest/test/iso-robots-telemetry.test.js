@@ -273,3 +273,53 @@ describe('iso-robots IsoTelemetryIngester onIdentity', () => {
     assert.strictEqual(robotsColl.updates.length, 0);
   });
 });
+
+describe('paths', () => {
+  const plan = (pts) => ({ timestamp: new Date().toISOString(),
+    globalPlan: pts.map(([x, y]) => ({ timestamp: new Date().toISOString(), locationPoint: { ccsId: CCS_ID, x, y, z: 0 } })) });
+  it('onGlobalPlan converts CCS points into the map frame and writes paths["0"]', async () => {
+    const localizationColl = fakeKeyValuesColl();
+    const { ingester } = ingesterFor({ localizationColl });
+    await ingester.onGlobalPlan(UUID, plan([[11, 12], [12, 12]]));   // TRANSLATION converter: ccs = map + 10
+    assert.strictEqual(localizationColl.updates.length, 1);
+    const { q, u, o } = localizationColl.updates[0];
+    assert.deepStrictEqual(q, { _id: UUID }); assert.deepStrictEqual(o, { upsert: true });
+    const path = u.$set['paths.0'];
+    assert.deepStrictEqual(path.points, [{ x: 1, y: 2 }, { x: 2, y: 2 }]);
+    assert.strictEqual(path.frameId, 'map');
+    assert.strictEqual(path.ts, u.$set.pathsUpdatedTs);
+    assert.ok(Number.isFinite(path.ts));
+  });
+  it('onLocalTrajectory writes paths["1"]; an empty trajectory clears it', async () => {
+    const localizationColl = fakeKeyValuesColl();
+    const { ingester } = ingesterFor({ localizationColl });
+    await ingester.onLocalTrajectory(UUID, { timestamp: new Date().toISOString(), localTrajectory: [] });
+    assert.deepStrictEqual(localizationColl.updates[0].u.$set['paths.1'].points, []);
+  });
+  it('drops non-finite points and does nothing when uncalibrated', async () => {
+    const a = fakeKeyValuesColl();
+    const { ingester } = ingesterFor({ localizationColl: a });
+    await ingester.onGlobalPlan(UUID, { timestamp: 't', globalPlan: [
+      { timestamp: 't', locationPoint: { ccsId: CCS_ID, x: 11, y: 12, z: 0 } },
+      { timestamp: 't', locationPoint: { ccsId: CCS_ID, x: NaN, y: 12, z: 0 } }] });
+    assert.deepStrictEqual(a.updates[0].u.$set['paths.0'].points, [{ x: 1, y: 2 }]);
+    const b = fakeKeyValuesColl();
+    const { ingester: unc } = ingesterFor({ localizationColl: b, converter: { calibrated: false, reason: 'no points' } });
+    await unc.onGlobalPlan(UUID, plan([[11, 12]]));
+    assert.strictEqual(b.updates.length, 0);
+  });
+  it('rate-limits writes per (robot, path) to one per ISO_PATH_MIN_MS, latest wins', async () => {
+    const localizationColl = fakeKeyValuesColl();
+    const { ingester } = ingesterFor({ localizationColl });
+    const realNow = Date.now; let now = 1_000_000; Date.now = () => now;
+    try {
+      await ingester.onGlobalPlan(UUID, plan([[11, 12]]));        // written immediately
+      now += 100; await ingester.onGlobalPlan(UUID, plan([[12, 12]]));  // deferred
+      now += 100; await ingester.onGlobalPlan(UUID, plan([[13, 12]]));  // replaces the deferred one
+      assert.strictEqual(localizationColl.updates.length, 1);
+      await ingester.flushPendingPaths();                           // test hook: fire pending timers now
+      assert.strictEqual(localizationColl.updates.length, 2);
+      assert.deepStrictEqual(localizationColl.updates[1].u.$set['paths.0'].points, [{ x: 3, y: 2 }]);
+    } finally { Date.now = realNow; ingester.flushPendingPaths(); }
+  });
+});
