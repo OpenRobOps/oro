@@ -63,7 +63,7 @@ class IsoTelemetryIngester {
    * @param {Object} opts.client the Iso21423Client (null in unit tests)
    * @param {Object} opts.attributesManager the AttributesManager singleton
    * @param {Object} opts.robotsColl the `robots` collection
-   * @param {Object} opts.converter a CcsConverter; uncalibrated suppresses pose only
+   * @param {Object} opts.converter a CcsConverter; uncalibrated suppresses pose and paths
    * @param {Object} opts.sources `config.attributeSources`
    * @param {Object} [opts.roster] an AdmittedRoster; when given, a callback for a uuid it no
    *   longer admits is a no-op — a safety net for a subscription that outlived a failed
@@ -156,6 +156,9 @@ class IsoTelemetryIngester {
         clearTimeout(this._pathTimers.get(key).timer);
         this._pathTimers.delete(key);
       }
+    }
+    for (const key of [...this._pathLastWrite.keys()]) {
+      if (key.startsWith(`${uuid}/`)) this._pathLastWrite.delete(key);
     }
     const subs = this._subs.get(uuid);
     if (!subs) return;
@@ -332,18 +335,24 @@ class IsoTelemetryIngester {
   };
 
   /** ISO `globalPlan` (nav2's global plan for the flatland agent) → ORO path "0". */
-  onGlobalPlan = async (uuid, msg) => this._savePath(uuid, ISO_PATH_IDS.globalPlan, (msg && msg.globalPlan) || []);
+  onGlobalPlan = async (uuid, msg) => this._savePath(
+    uuid, ISO_PATH_IDS.globalPlan, (msg && msg.globalPlan) || [], msg && msg.timestamp);
 
   /** ISO `localTrajectory` (the controller's next few seconds) → ORO path "1". */
-  onLocalTrajectory = async (uuid, msg) => this._savePath(uuid, ISO_PATH_IDS.localTrajectory, (msg && msg.localTrajectory) || []);
+  onLocalTrajectory = async (uuid, msg) => this._savePath(
+    uuid, ISO_PATH_IDS.localTrajectory, (msg && msg.localTrajectory) || [], msg && msg.timestamp);
 
   /**
    * Converts stamped CCS points into ORO's `map` frame and writes them in the same shape
    * `modules/localization.js` `onPath` uses for wire robots, so the widget draws both alike.
-   * Writes are limited to one per `ISO_PATH_MIN_MS` per (robot, path); a burst keeps only the
-   * latest points (there is no live-MQTT channel for ISO paths, so Mongo IS the display path).
+   * The stored `ts` is the ISO message's own `timestamp` (falling back to `Date.now()` when it
+   * fails to parse), NOT the write's wall-clock time: a retained `globalPlan` replayed on
+   * subscribe carries its original timestamp, and rendering it with "now" would make a stale
+   * plan look current. Writes are limited to one per `ISO_PATH_MIN_MS` per (robot, path), rate
+   * limited on wall-clock time; a burst keeps only the latest points (there is no live-MQTT
+   * channel for ISO paths, so Mongo IS the display path).
    */
-  _savePath = async (uuid, pathId, stampedPoints) => {
+  _savePath = async (uuid, pathId, stampedPoints, msgTimestamp) => {
     if (this._isRevoked(uuid) || !this._localization || !this._converter.calibrated) return;
     const points = [];
     for (const sp of stampedPoints) {
@@ -352,8 +361,9 @@ class IsoTelemetryIngester {
     }
     const key = `${uuid}/${pathId}`;
     const write = async () => {
-      const ts = Date.now();
-      this._pathLastWrite.set(key, ts);
+      this._pathLastWrite.set(key, Date.now());
+      const parsed = Date.parse(msgTimestamp);
+      const ts = Number.isFinite(parsed) ? parsed : Date.now();
       try {
         await this._localization.updateOne({ _id: uuid },
           { $set: { [`paths.${pathId}`]: { points, ts, frameId: 'map' }, pathsUpdatedTs: ts } }, { upsert: true });

@@ -290,6 +290,28 @@ describe('paths', () => {
     assert.strictEqual(path.ts, u.$set.pathsUpdatedTs);
     assert.ok(Number.isFinite(path.ts));
   });
+  it('onGlobalPlan stores ts from the ISO message timestamp, not the write time', async () => {
+    const localizationColl = fakeKeyValuesColl();
+    const { ingester } = ingesterFor({ localizationColl });
+    const msg = plan([[11, 12]]);
+    msg.timestamp = '2026-01-01T00:00:00.000Z';
+    await ingester.onGlobalPlan(UUID, msg);
+    const { u } = localizationColl.updates[0];
+    assert.strictEqual(u.$set['paths.0'].ts, Date.parse('2026-01-01T00:00:00.000Z'));
+    assert.strictEqual(u.$set.pathsUpdatedTs, Date.parse('2026-01-01T00:00:00.000Z'));
+  });
+  it('onGlobalPlan falls back to Date.now() when the ISO timestamp fails to parse', async () => {
+    const localizationColl = fakeKeyValuesColl();
+    const { ingester } = ingesterFor({ localizationColl });
+    const before = Date.now();
+    const msg = plan([[11, 12]]);
+    msg.timestamp = 'garbage';
+    await ingester.onGlobalPlan(UUID, msg);
+    const { u } = localizationColl.updates[0];
+    const ts = u.$set['paths.0'].ts;
+    assert.ok(Number.isFinite(ts));
+    assert.ok(ts >= before && ts <= Date.now());
+  });
   it('onLocalTrajectory writes paths["1"]; an empty trajectory clears it', async () => {
     const localizationColl = fakeKeyValuesColl();
     const { ingester } = ingesterFor({ localizationColl });
