@@ -47,6 +47,7 @@ import '../imports/server/test/isoMqttConfig.test'
 import '../imports/server/test/isoRobots.test'
 import '../imports/server/test/maps.test.js'
 import '../imports/server/test/footprint.test.js'
+import '../imports/server/test/robotPath.test.js'
 
 describe("app", function () {
   it("package.json has correct name", async function () {
