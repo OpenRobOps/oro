@@ -20,6 +20,7 @@ import PropTypes from 'prop-types';
 import { makeStyles } from 'tss-react/mui';
 import { Paper, Typography } from '@mui/material';
 import AnchoredOverlayLayer from '../Map/AnchoredOverlay';
+import { PALETTE } from '../utils/utils';
 
 const useStyles = makeStyles()((theme) => ({
   container: {
@@ -27,7 +28,7 @@ const useStyles = makeStyles()((theme) => ({
     boxShadow: '0px 2px 6px rgba(0,0,0,0.3)', padding: '2px 6px', borderRadius: 4, opacity: 0.85,
   },
   selected: {
-    '&&': { backgroundColor: theme.palette.primary.main, color: theme.palette.primary.contrastText, opacity: 0.95 },
+    '&&': { backgroundColor: PALETTE.robotPoseSelectedPrimary, color: '#fff', opacity: 0.95 },
   },
   name: { fontWeight: 500, fontSize: 12, whiteSpace: 'nowrap', color: 'inherit' },
 }));
