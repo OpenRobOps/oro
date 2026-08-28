@@ -26,8 +26,10 @@ const useStyles = makeStyles()((theme) => ({
     backgroundColor: theme.palette.background.paper, color: theme.palette.text.primary,
     boxShadow: '0px 2px 6px rgba(0,0,0,0.3)', padding: '2px 6px', borderRadius: 4, opacity: 0.85,
   },
-  selected: { backgroundColor: theme.palette.primary.main, color: theme.palette.primary.contrastText, opacity: 0.95 },
-  name: { fontWeight: 500, fontSize: 12, whiteSpace: 'nowrap' },
+  selected: {
+    '&&': { backgroundColor: theme.palette.primary.main, color: theme.palette.primary.contrastText, opacity: 0.95 },
+  },
+  name: { fontWeight: 500, fontSize: 12, whiteSpace: 'nowrap', color: 'inherit' },
 }));
 
 const RobotName = ({ robotPose = {}, robotDetails = {}, robotId, selected }) => {
@@ -35,7 +37,7 @@ const RobotName = ({ robotPose = {}, robotDetails = {}, robotId, selected }) => 
   if (!Number.isFinite(robotPose.x) || !Number.isFinite(robotPose.y)) return null;
   return (
     <AnchoredOverlayLayer x={robotPose.x} y={robotPose.y} sizeY={0.7}>
-      <Paper className={cx(classes.container, { [classes.selected]: selected })}>
+      <Paper elevation={0} className={cx(classes.container, { [classes.selected]: selected })}>
         <Typography className={classes.name}>{robotDetails.name || robotId}</Typography>
       </Paper>
     </AnchoredOverlayLayer>
