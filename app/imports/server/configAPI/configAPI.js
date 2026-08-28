@@ -33,6 +33,7 @@ import IsoRobotConfigAPIHandler from './isoRobots';
 import SpatialAnnotationConfigAPIHandler from './spatialAnnotation';
 // import MissionTrackingAPIHandler from './missionTracking';
 import RobotFootprintConfigAPIHandler from './robotFootprint';
+import RobotPathConfigAPIHandler from './robotPath';
 import SpatialTransformationConfigAPIHandler from './spatialTransformation';
 // import PreferencesConfigAPIHandler from './preferences';
 import {
@@ -48,6 +49,7 @@ import {
   KIND_NOTIFICATION_CHANNEL,
   KIND_MISSION_TRACKING,
   KIND_ROBOT_FOOTPRINT,
+  KIND_ROBOT_PATH,
   KIND_PREFERENCES,
   CONFIG_API_GLOBAL_ID,
   buildConfigObjectApplySchema,
@@ -118,6 +120,7 @@ export default class ConfigAPI {
       [KIND_SPATIAL_TRANSFORMATION]: new SpatialTransformationConfigAPIHandler(this),
       // [KIND_MISSION_TRACKING]: new MissionTrackingAPIHandler(this),
       [KIND_ROBOT_FOOTPRINT]: new RobotFootprintConfigAPIHandler(this),
+      [KIND_ROBOT_PATH]: new RobotPathConfigAPIHandler(this),
       // [KIND_PREFERENCES]: new PreferencesConfigAPIHandler(this),
     };
     isObject(peerApiKinds) && Object.keys(peerApiKinds).forEach((kind) => {
