@@ -71,6 +71,17 @@ const useStyles = makeStyles()(theme => ({
     padding: '4px 12px',
     borderRadius: 4,
   },
+  skippedNote: {
+    position: 'absolute',
+    bottom: 8,
+    left: 8,
+    zIndex: 1,
+    backgroundColor: theme.palette.background?.paper,
+    opacity: 0.85,
+    color: theme.palette.text.secondary,
+    padding: '4px 12px',
+    borderRadius: 4,
+  },
   mapContainer: {
     contain: 'content',
     height: 'inherit',
@@ -215,7 +226,7 @@ function Localization({
               tilesetKey={tilesetKey}
             />
           )}
-        {!map.noTransform && Object.keys(robotsLocalizationData).map(rId => (
+        {Object.keys(robotsLocalizationData).map(rId => (
           <RobotLayer
             key={rId}
             map={mapToRender}
@@ -245,7 +256,12 @@ function Localization({
       </Layers>
       {map.noTransform && (
         <div className={classes.noTransformBanner}>
-          No transform from frame “{map.robotFrameId}” to “{map.frameId}” for this robot
+          No transform from frame “{map.robotFrameId}” to “{map.frameId}” for the selected robot
+        </div>
+      )}
+      {map.skippedRobots > 0 && (
+        <div className={classes.skippedNote}>
+          {map.skippedRobots} robot{map.skippedRobots > 1 ? 's' : ''} not shown: no transform to “{map.frameId}”
         </div>
       )}
     </MapComponent>

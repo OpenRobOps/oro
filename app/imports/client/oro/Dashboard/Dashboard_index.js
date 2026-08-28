@@ -34,6 +34,7 @@ import ListData from '../robotWidgets/ListDataWidget';
 // import DataBagsToolbar from './widgetToolbars/DataBagsToolbar';
 import IncidentsFilter from './widgetToolbars/ToolbarFilters/IncidentsFilter';
 import LocalizationAdapter from '../robotWidgets/LocalizationWidget/LocalizationAdapter';
+import { useFleetRobotIds } from '../hooks/useFleetRobotIds';
 import CustomDataWidget from '../robotWidgets/CustomDataWidget';
 // import ImageWidget from '../robotWidgets/ImageWidget';
 import { WIDGET_TYPES, WIDGET_TYPES_IDS } from '../../../lib/uiPreferences';
@@ -320,14 +321,14 @@ const LocalizationWidgetWithContext = ({
   config
   /* eslint-enable react/prop-types */
 }) => {
-  const localizationFilter = {};
+  const fleetRobotIds = useFleetRobotIds();
   return (
     <RobotsDataProvider dataSources={DEFAULT_DATA_SOURCES}>
       <LocalizationAdapter
         variant={LOCALIZATION_VARIANTS.MAP_WIDGET}
         selectedRobotId={getRobotId(context, scope)}
         selectRobotCallback={setRobotId(setContext, scope)}
-        options={localizationFilter}
+        robotIds={fleetRobotIds}
         // eslint-disable-next-line react/prop-types
         mapLabel={config?.mapId || getNavigationMap(context, scope)}
         isZeroData={isZeroData}
