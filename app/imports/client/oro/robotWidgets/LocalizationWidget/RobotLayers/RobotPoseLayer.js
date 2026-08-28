@@ -231,7 +231,10 @@ const RobotPoseLayer = ({
     posePreferences.footprint,
     posePreferences.primaryColor,
     posePreferences.secondaryColor,
-    selected
+    selected,
+    // The first render usually happens before the pose (and its theta) arrives; without this dep a
+    // polygon footprint stayed as the non-oriented circumscribed circle forever.
+    oriented
   ]);
 
   // Update the features on the source each time the robotPose changes

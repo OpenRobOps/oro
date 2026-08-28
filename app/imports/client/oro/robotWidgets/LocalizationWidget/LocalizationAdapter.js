@@ -40,6 +40,7 @@ import Map from './Map';
 import {
   useRobotMapsList, useFrameTransform, parseMapRef, mapRefFor, findMapRef,
 } from '../../hooks/useRobotMaps';
+import { useRobotsFootprints } from '../../hooks/useRobotsFootprints';
 import { transformLocalizationData, DEFAULT_FRAME_ID } from '../../../../shared/maps';
 
 // Constant arrays to avoid new objects and re-renders
@@ -161,9 +162,9 @@ function LocalizationAdapter({
     [state.robotDetails]
   );
 
-  // TODO: Implement useRobotsUiPreferences for ORO (not available yet)
-  // UI preferences control robot avatar and map visualization per robot.
-  const robotsUiPreferences = {};
+  // Per-robot avatar/footprint preferences (resolved server-side from RobotFootprint config and
+  // ISO-reported footprints); RobotPoseLayer reads `map.pose`.
+  const robotsUiPreferences = useRobotsFootprints(robotIdsToQuery);
 
   const robotIdsToDisplay = useMemo(() => {
     let filteredRobotIds = robotIdsToQuery;

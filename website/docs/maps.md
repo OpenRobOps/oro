@@ -62,6 +62,43 @@ described in the
 lets ORO place ISO robots (whose poses arrive in the CCS) on a map drawn in
 the `map` frame, or vice versa.
 
+## Robot footprint
+
+The Navigation widget draws every robot as an outline: a polygon, a plain
+circle sized by a radius, or a default 0.45 m ring when nothing else is
+configured or reported. Configure it with the
+[`RobotFootprint`](./api/configapikinds.md#robotfootprint) kind, at
+`system` scope (fleet default) or a robot id (per-robot override).
+
+`resolveFootprint` resolves each field (`footprint`, `bufferFootprint`,
+`radius`, `primaryColor`, `secondaryColor`, `opacity`) independently:
+
+1. The robot's own `RobotFootprint` entry, when that field is defined there
+   (a `null` counts as defined -- see suppression below).
+2. Otherwise the `system` entry's value for that field.
+3. If, after that merge, neither `footprint` nor `radius` is defined at all
+   (left unset by both entries, not merely `null`), the robot's own
+   reported outline is used instead, when it has reported one --
+   currently only ISO 21423 robots, from `identity.details.imrFootprint`
+   (see [ISO Robots setup](./iso21423/iso-robots-setup.md)). Otherwise the
+   widget falls back to its default ring.
+
+A robot can hide a fleet-wide footprint by applying `spec: null` for its
+own id: this writes `footprint`, `bufferFootprint` and `radius` as `null`,
+which step 1 treats as defined (so the `system` value is skipped for those
+fields) but which is dropped before rendering -- landing the robot on the
+widget's default ring, **not** its reported outline (step 3 only applies
+when a field is left undefined, and suppression defines it as `null`).
+Removing the entry entirely with `clear`, instead of suppressing it, is
+what restores the `system` → reported → default chain.
+`primaryColor`/`secondaryColor`/`opacity` are unaffected by suppression.
+
+`bufferFootprint` is stored and returned by the REST endpoint below, but
+not yet drawn by the widget.
+
+Query the resolved footprint for one robot with
+[`GET /api/robots/{robotId}/footprint`](./api/robots.md#get-robot-footprint).
+
 ## Switching maps in the Navigation widget
 
 When a robot can display two or more maps, a map switcher dropdown appears

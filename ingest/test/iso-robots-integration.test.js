@@ -49,13 +49,15 @@ const settle = () => new Promise((r) => setTimeout(r, 40));
 const coll = (name) => new MongoManager().getCollection(name);
 
 /** Registers a simulated ISO robot that publishes its own identity, as a real IMR does. */
-async function simulatedRobot(broker, uuid, accepts = ['move', 'pauseImr', 'resumeImr', 'cancelRequest']) {
+async function simulatedRobot(broker, uuid, accepts = ['move', 'pauseImr', 'resumeImr', 'cancelRequest'],
+  details = {}) {
   const client = await Iso21423Client.connect({ transport: broker.createTransport() });
   const handle = await client.registerSelfEntity({
     entityUuid: uuid,
     entityType: 'IMR',
     manufacturerName: 'Acme',
     capabilities: { provides: [], accepts },
+    details,
   });
   return { client, handle };
 }
@@ -289,6 +291,37 @@ describe('iso-robots integration', () => {
     await preConnected.client.close();
     await freshModule.shutdown();
   });
+
+  it('stores the footprint from a retained identity that was warm before the robot was admitted',
+    async () => {
+      const freshBroker = new MemoryBroker();
+      const preAdmitted = 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee';
+      await coll(COLLECTIONS.ROBOTS).insertOne({
+        _id: preAdmitted, name: 'Pre-connected footprint', version: 'iso-21423-v1', updateStamp: Date.now(),
+        status: { agentOnline: false },
+      });
+      // Same "warm before admission" scenario as the test above: the identity (with a footprint)
+      // is retained on the broker before ORO's module connects, so subscribeEntities replays it
+      // synchronously as soon as the robot is admitted.
+      const preConnected = await simulatedRobot(freshBroker, preAdmitted, undefined, {
+        imrFootprint: [{ x: -0.2, y: -0.2 }, { x: 0.2, y: -0.2 }, { x: 0.2, y: 0.2 }, { x: -0.2, y: 0.2 }],
+        imrHeight: 0.4,
+      });
+
+      const freshModule = new IsoRobotsModule({
+        mongo: new MongoManager(), mqtt: oroMqtt, workerQueue: queue,
+      });
+      await freshModule.load(SETTINGS, { transport: freshBroker.createTransport() });
+      await settle();
+
+      const doc = await coll(COLLECTIONS.ROBOTS).findOne({ _id: preAdmitted });
+      assert.deepStrictEqual(doc.footprint.points, [[-0.2, -0.2], [0.2, -0.2], [0.2, 0.2], [-0.2, 0.2]]);
+      assert.strictEqual(doc.footprint.height, 0.4);
+      assert.strictEqual(doc.footprint.source, 'iso21423');
+
+      await preConnected.client.close();
+      await freshModule.shutdown();
+    });
 
   it('closes the client when load() fails after connecting, instead of leaking the session', async () => {
     const freshBroker = new MemoryBroker();

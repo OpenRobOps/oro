@@ -832,6 +832,95 @@ spec:
 
 ---
 
+## RobotFootprint
+
+Configures the outline the Navigation widget draws for a robot: a polygon
+(and optionally a second "buffer" polygon), or a plain circle sized by
+`radius`, plus display colors and opacity. `metadata.id` is `system` (fleet
+default) or a robot id (per-robot override). See
+[Maps: Robot footprint](../maps.md#robot-footprint) for how a robot's
+footprint is resolved from the system entry, its own entry, and its
+reported outline.
+
+Same spec shape as InOrbit's `RobotFootprint` kind; only `metadata.id`
+differs -- InOrbit scopes with `all` plus a scope string, ORO has a single
+fleet so the id is directly `system` or the robot id.
+
+### Schema
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `spec.footprint` | array | No | The robot's outline: &ge;3 `{x, y}` points, in metres, in the robot's own frame (+x forward) |
+| `spec.bufferFootprint` | array | No | A second polygon, same shape as `footprint` (e.g. a safety buffer). Stored and served by the REST endpoint, but not drawn by the widget yet |
+| `spec.radius` | number | No | Circular footprint radius in metres (&ge;0). Also sizes the orientation arrow. `0` degenerates to a zero-size ring while the orientation arrow keeps its default size -- use `spec: null` to hide a footprint, not `radius: 0` |
+| `spec.primaryColor` | string | No | Hex color (`#rrggbb`) |
+| `spec.secondaryColor` | string | No | Hex color (`#rrggbb`) |
+| `spec.opacity` | number | No | Opacity of the whole avatar (fill, outline and orientation arrow), 0-1. A *selected* robot always renders at full opacity, regardless of this value |
+
+`spec` itself is optional: `spec: null` suppresses `footprint`,
+`bufferFootprint` and `radius` (writes them as `null`), which is how a robot
+hides a fleet-wide (`system`) footprint without having to redefine its own
+colors. A suppressed field lands the robot on the widget's default ring, not
+its reported outline: the reported-outline fallback only kicks in when a
+field is left undefined, and suppression defines it as `null`.
+`primaryColor`/`secondaryColor`/`opacity` are not part of that suppression
+and still fall through to the `system` entry.
+
+`apply` replaces the whole footprint document for that id -- include every
+field you want kept, not just the one you're changing. `clear` removes the
+id's footprint document entirely -- unlike suppression, this restores the
+full chain: the robot falls back to the `system` entry, then to its own
+reported outline, then to the widget's default ring. `list` (short format)
+returns one `{id, label}` pair per entity that has a footprint configured
+(`label` equals `id`); the full format round-trips as a re-appliable
+object. Requires fleet configure access.
+
+### Example
+
+Fleet-wide default:
+
+```yaml
+apiVersion: v0.1
+kind: RobotFootprint
+metadata:
+  id: system
+spec:
+  footprint:
+    - { x: 0.3, y: 0.2 }
+    - { x: 0.3, y: -0.2 }
+    - { x: -0.3, y: -0.2 }
+    - { x: -0.3, y: 0.2 }
+  primaryColor: "#2A3C98"
+  secondaryColor: "#CCCCCC"
+  opacity: 1
+```
+
+A robot override (a larger robot, drawn as a plain circle):
+
+```yaml
+apiVersion: v0.1
+kind: RobotFootprint
+metadata:
+  id: robot_abc123
+spec:
+  radius: 0.35
+  primaryColor: "#E67E22"
+```
+
+A robot that opts out of the system default, falling back to the widget's
+default ring (not its reported outline -- use `clear` instead of `spec: null`
+to fall through to a reported outline):
+
+```yaml
+apiVersion: v0.1
+kind: RobotFootprint
+metadata:
+  id: robot_def456
+spec: null
+```
+
+---
+
 ## See Also
 
 - [Config API](./configapi.md) -- API endpoints for apply, clear, and list operations

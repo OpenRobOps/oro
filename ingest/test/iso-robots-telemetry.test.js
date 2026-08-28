@@ -229,3 +229,47 @@ describe('iso-robots IsoTelemetryIngester customData', () => {
     assert.strictEqual(attributesManager.keyValues.length + revoked.attributesManager.keyValues.length, 0);
   });
 });
+
+describe('iso-robots IsoTelemetryIngester observe', () => {
+  it('unsubscribes every fulfilled subscription and rethrows when one subscribe rejects', async () => {
+    const unsubscribeCalls = { status: 0, odometry: 0, batteryStatus: 0 };
+    const spy = (name) => ({ unsubscribe: async () => { unsubscribeCalls[name] += 1; } });
+    const client = {
+      sdk: { EntityFilter: { entity: (u) => u } },
+      subscribeResource: async (resource) => {
+        if (resource === 'batteryStatus') throw new Error('subscribe failed');
+        if (resource === 'status' || resource === 'odometry') return spy(resource);
+        return spy('other');
+      },
+      subscribeEntities: async () => spy('other'),
+    };
+    const { ingester } = ingesterFor({ client });
+    await assert.rejects(ingester.observe(UUID), /subscribe failed/);
+    assert.strictEqual(unsubscribeCalls.status, 1);
+    assert.strictEqual(unsubscribeCalls.odometry, 1);
+    assert.strictEqual(ingester._subs.has(UUID), false);
+  });
+});
+
+describe('iso-robots IsoTelemetryIngester onIdentity', () => {
+  it('onIdentity: stores a valid imrFootprint as robots.footprint', async () => {
+    const { ingester, robotsColl } = ingesterFor();
+    await ingester.onIdentity(UUID, { id: UUID, entityType: 'IMR', details: {
+      imrFootprint: [{ x: -0.2, y: -0.2 }, { x: 0.2, y: -0.2 }, { x: 0.2, y: 0.2 }, { x: -0.2, y: 0.2 }], imrHeight: 0.4 } });
+    assert.strictEqual(robotsColl.updates.length, 1);
+    assert.deepStrictEqual(robotsColl.updates[0].q, { _id: UUID });
+    const fp = robotsColl.updates[0].u.$set.footprint;
+    assert.deepStrictEqual(fp.points, [[-0.2, -0.2], [0.2, -0.2], [0.2, 0.2], [-0.2, 0.2]]);
+    assert.strictEqual(fp.height, 0.4);
+    assert.strictEqual(fp.source, 'iso21423');
+    assert.ok(Number.isFinite(fp.ts));
+  });
+
+  it('onIdentity: ignores missing or malformed footprints', async () => {
+    const { ingester, robotsColl } = ingesterFor();
+    await ingester.onIdentity(UUID, { id: UUID, details: {} });
+    await ingester.onIdentity(UUID, { id: UUID, details: { imrFootprint: [{ x: 0, y: 0 }, { x: 1, y: 1 }] } });
+    await ingester.onIdentity(UUID, { id: UUID, details: { imrFootprint: [{ x: 0, y: 0 }, { x: 1 }, { x: 2, y: 2 }] } });
+    assert.strictEqual(robotsColl.updates.length, 0);
+  });
+});

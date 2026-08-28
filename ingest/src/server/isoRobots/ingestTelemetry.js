@@ -81,6 +81,7 @@ class IsoTelemetryIngester {
     this._subs = new Map();        // uuid -> Subscription[]
     this._lastCcsPoint = new Map();  // uuid -> the last ISO LocationPoint seen, unconverted
     this._lastCcsYaw = new Map();    // uuid -> the last ISO yaw seen, unconverted
+    this._warnedFootprint = new Set();   // uuids already warned about a malformed imrFootprint
   }
 
   /**
@@ -103,13 +104,17 @@ class IsoTelemetryIngester {
    * Per-robot rather than one fleet-wide wildcard, so revoking a robot actually stops the traffic
    * (ND-17: the SDK unsubscribes on the last listener) instead of merely filtering it in ORO.
    *
+   * The five subscribes settle independently: if any rejects, every subscription that DID
+   * succeed is unsubscribed before rethrowing, so a failed `observe()` leaves nothing behind for
+   * the roster's retry to pile duplicate handlers onto.
+   *
    * @param {string} uuid the robot's ISO entity uuid, which is also its ORO robot id
    */
   observe = async (uuid) => {
     if (this._subs.has(uuid)) return;
     const { EntityFilter } = this._client.sdk;
     const filter = EntityFilter.entity(uuid);
-    const subs = await Promise.all([
+    const results = await Promise.allSettled([
       this._client.subscribeResource('status', filter,
         (ev) => this.onStatus(ev.entityUuid, ev.message)),
       this._client.subscribeResource('odometry', filter,
@@ -118,8 +123,15 @@ class IsoTelemetryIngester {
         (ev) => this.onBattery(ev.entityUuid, ev.message)),
       this._client.subscribeResource(CUSTOM_DATA_RESOURCE, filter,
         (ev) => this.onCustomData(ev.entityUuid, ev.message)),
+      this._client.subscribeEntities(filter, (identity) => this.onIdentity(uuid, identity)),
     ]);
-    this._subs.set(uuid, subs);
+    const rejected = results.find((r) => r.status === 'rejected');
+    if (rejected) {
+      const fulfilled = results.filter((r) => r.status === 'fulfilled');
+      await Promise.all(fulfilled.map((r) => r.value.unsubscribe().catch(() => {})));
+      throw rejected.reason;
+    }
+    this._subs.set(uuid, results.map((r) => r.value));
     if (this._logging) console.log(`ISO 21423 robots: observing ${uuid}`);
   };
 
@@ -127,6 +139,7 @@ class IsoTelemetryIngester {
   unobserve = async (uuid) => {
     this._lastCcsPoint.delete(uuid);
     this._lastCcsYaw.delete(uuid);
+    this._warnedFootprint.delete(uuid);
     const subs = this._subs.get(uuid);
     if (!subs) return;
     this._subs.delete(uuid);
@@ -242,6 +255,41 @@ class IsoTelemetryIngester {
       await this._keyValues.updateOne({ _id: uuid }, { $set }, { upsert: true });
     } catch (err) {
       if (this._logging) console.warn(`ISO 21423 robots: robot_key_values update failed for ${uuid}: ${err.message}`);
+    }
+  };
+
+  /**
+   * Handles an ISO `identity` (retained; replayed on subscribe). The only field ORO uses is the
+   * robot's physical outline, `details.imrFootprint` (+ `imrHeight`), stored as the robot's
+   * REPORTED footprint. A configured `RobotFootprint` overrides it (spec decision 1). Malformed
+   * footprints are ignored with one warning per robot.
+   *
+   * @param {string} uuid
+   * @param {Object} identity an ISO EntityIdentity
+   */
+  onIdentity = async (uuid, identity) => {
+    if (this._isRevoked(uuid)) return;
+    const details = (identity && identity.details) || {};
+    const pts = details.imrFootprint;
+    const valid = Array.isArray(pts) && pts.length >= 3
+      && pts.every((p) => p && Number.isFinite(p.x) && Number.isFinite(p.y));
+    if (!valid) {
+      if (pts !== undefined && !this._warnedFootprint.has(uuid)) {
+        this._warnedFootprint.add(uuid);
+        console.warn(`ISO 21423 robots: ignoring malformed imrFootprint for ${uuid}`);
+      }
+      return;
+    }
+    const footprint = {
+      points: pts.map(({ x, y }) => [x, y]),
+      height: Number.isFinite(details.imrHeight) ? details.imrHeight : null,
+      ts: Date.now(),
+      source: 'iso21423',
+    };
+    try {
+      await this._robots.updateOne({ _id: uuid }, { $set: { footprint } });
+    } catch (err) {
+      if (this._logging) console.warn(`ISO 21423 robots: footprint update failed for ${uuid}: ${err.message}`);
     }
   };
 

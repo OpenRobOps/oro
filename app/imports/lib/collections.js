@@ -55,6 +55,8 @@ Schemas.robot = new SimpleSchema({
   lock: { type: Object, blackbox: true, optional: true },
   // optional per-robot key. By default the account key is used
   robotKey: { type: String, optional: true },
+  // ISO 21423 reported footprint (points), merged with configured footprint by resolveFootprint()
+  footprint: { type: Object, blackbox: true, optional: true },
 }, { requiredByDefault: true });
 if (Meteor.isDevelopment) {
   Robots.attachSchema(Schemas.robot);
