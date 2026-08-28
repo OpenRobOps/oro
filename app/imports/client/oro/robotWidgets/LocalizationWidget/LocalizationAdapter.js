@@ -184,7 +184,8 @@ function LocalizationAdapter({
   }), [map, transforms, robotFrames, mainRobotId, selectedHasNoTransform, skipped.length]);
 
   const filteredRobotLocalizationData = useMemo(() => Object.fromEntries(
-    drawn.map((rId) => [rId, transformLocalizationData(robotsLocalizationData[rId], transforms[rId])])
+    drawn.filter((rId) => robotsLocalizationData[rId])
+      .map((rId) => [rId, transformLocalizationData(robotsLocalizationData[rId], transforms[rId])])
   ), [drawn, robotsLocalizationData, transforms]);
 
   // Load keys for outdoor map tiles services

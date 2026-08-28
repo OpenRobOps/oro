@@ -139,7 +139,7 @@ const computeLayersZIndex = (topmostLayersPref) => {
 };
 
 function RobotLayer({
-  localizationData,
+  localizationData = {},
   uiPreferences = {},
   dimmed = false,
   showCostmap = true,
