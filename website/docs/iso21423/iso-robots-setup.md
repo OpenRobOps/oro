@@ -124,6 +124,8 @@ Standard resources, on `/ISO_21423/v1/IMR/<uuid>/<resource>`: `identity` (retain
 
 `identity.details.imrFootprint` (a &ge;3-point polygon) and `imrHeight`, when present, are stored as the robot's reported footprint and used as its default outline on the map -- see [Maps: Robot footprint](../maps.md#robot-footprint). A configured [`RobotFootprint`](../api/configapikinds.md#robotfootprint) overrides it. Malformed footprints are ignored, with one warning logged per robot.
 
+`globalPlan` (nav2's global plan) and `localTrajectory` (nav2's local plan) are ingested into the Navigation widget's paths, styled by a configured [`RobotPath`](../api/configapikinds.md#robotpath) -- see [Maps: Robot paths](../maps.md#robot-paths).
+
 **Key-value data — ORO's `customData` extension resource.** ISO 21423 has no key-value message but leaves the resource catalog open, so ORO defines one:
 
 ```
@@ -151,7 +153,7 @@ ORO's `sendRequest` only sends action types the robot advertises in `capabilitie
 - The robot's ISO UUID is its ORO robot id, visible in URLs.
 - Request outcomes (SUCCEEDED/ABORTED) are not surfaced in ORO's action-status API; a navigation goal is acknowledged on receipt, not on arrival.
 - No map, laser, camera, diagnostics or system vitals — ISO 21423 has no such resources.
-- `undock` and `globalPath`/`localTrajectory` are not yet used. The live `footprint` resource is also not yet used -- only the retained `identity`'s `imrFootprint`/`imrHeight` (see below).
+- `undock` and `globalPath` (a NURBS curve, distinct from `globalPlan`) are not yet used. The live `footprint` resource is also not yet used -- only the retained `identity`'s `imrFootprint`/`imrHeight` (see below).
 
 ## 6. Rollback
 
