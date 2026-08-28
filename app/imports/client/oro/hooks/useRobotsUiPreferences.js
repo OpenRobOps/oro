@@ -14,26 +14,26 @@
  *    limitations under the License.
  */
 
-/** Resolved footprint (`map.pose` shape) per robot, from the `robot_footprints` publication. */
+/** Resolved `{ pose, robotPath }` UI preferences per robot, from the `robot_ui_preferences` publication. */
 import { useMemo } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { Mongo } from 'meteor/mongo';
 import { useTracker } from 'meteor/react-meteor-data';
-import { ROBOT_FOOTPRINTS_COLLECTION } from '../../../shared/footprint';
+import { ROBOT_UI_PREFERENCES_COLLECTION } from '../../../shared/robotPath';
 
 const clientCollections = (globalThis.__oroClientCollections ||= {});
-const RobotFootprints = (clientCollections[ROBOT_FOOTPRINTS_COLLECTION]
-  ||= new Mongo.Collection(ROBOT_FOOTPRINTS_COLLECTION));
+const RobotUiPreferences = (clientCollections[ROBOT_UI_PREFERENCES_COLLECTION]
+  ||= new Mongo.Collection(ROBOT_UI_PREFERENCES_COLLECTION));
 
 const EMPTY = {};
 
-export function useRobotsFootprints(robotIds) {
+export function useRobotsUiPreferences(robotIds) {
   const key = (robotIds || []).join(',');
   const docs = useTracker(() => {
     if (!robotIds || robotIds.length === 0) return [];
-    Meteor.subscribe('robot_footprints', { robotIds });
-    return RobotFootprints.find({ _id: { $in: robotIds } }).fetch();
+    Meteor.subscribe('robot_ui_preferences', { robotIds });
+    return RobotUiPreferences.find({ _id: { $in: robotIds } }).fetch();
   }, [key]);
   return useMemo(() => (docs.length === 0 ? EMPTY
-    : Object.fromEntries(docs.map((d) => [d._id, { map: { pose: d.pose } }]))), [docs]);
+    : Object.fromEntries(docs.map((d) => [d._id, { map: { pose: d.pose, robotPath: d.robotPath } }]))), [docs]);
 }

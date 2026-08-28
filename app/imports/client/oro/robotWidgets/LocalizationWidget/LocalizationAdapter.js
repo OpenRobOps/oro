@@ -40,7 +40,7 @@ import Map from './Map';
 import {
   useRobotMapsList, useFrameTransform, parseMapRef, mapRefFor, findMapRef,
 } from '../../hooks/useRobotMaps';
-import { useRobotsFootprints } from '../../hooks/useRobotsFootprints';
+import { useRobotsUiPreferences } from '../../hooks/useRobotsUiPreferences';
 import { transformLocalizationData, DEFAULT_FRAME_ID } from '../../../../shared/maps';
 
 // Constant arrays to avoid new objects and re-renders
@@ -162,9 +162,9 @@ function LocalizationAdapter({
     [state.robotDetails]
   );
 
-  // Per-robot avatar/footprint preferences (resolved server-side from RobotFootprint config and
-  // ISO-reported footprints); RobotPoseLayer reads `map.pose`.
-  const robotsUiPreferences = useRobotsFootprints(robotIdsToQuery);
+  // Per-robot avatar/footprint and path-styling preferences (resolved server-side from config
+  // and ISO-reported footprints); RobotPoseLayer reads `map.pose`, PathLayer reads `map.robotPath`.
+  const robotsUiPreferences = useRobotsUiPreferences(robotIdsToQuery);
 
   const robotIdsToDisplay = useMemo(() => {
     let filteredRobotIds = robotIdsToQuery;

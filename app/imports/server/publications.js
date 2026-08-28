@@ -29,8 +29,8 @@ import { VITAL_PING_RTT_AVG, VITAL_PING_RTT_LAST } from '../shared/attributes';
 import ConfigManager from '../lib/configManagerAsync';
 import RttManager from './rttManager';
 import { mapsListQuery, mapSummary, ROBOT_MAPS_COLLECTION } from '../shared/maps';
-import { footprintDocsFor } from './footprints';
-import { ROBOT_FOOTPRINTS_COLLECTION } from '../shared/footprint';
+import { uiPreferencesDocsFor } from './robotUiPreferences';
+import { ROBOT_UI_PREFERENCES_COLLECTION } from '../shared/robotPath';
 
 /**
  * Publish localization data (pose, map metadata + URL) for one or more robots.
@@ -132,12 +132,13 @@ Meteor.publish('spatial_transformations', async function ({ robotId }) {
 });
 
 /**
- * Publish each robot's RESOLVED footprint pose (configured over ISO-reported) into the
- * client-only `robot_footprints` collection. Resolution runs server-side so the widget stays a
- * plain renderer; recomputed for the whole set whenever a relevant ui_preferences or robots
- * document changes (footprints change rarely, so a full recompute per change is fine).
+ * Publish each robot's RESOLVED `{ pose, robotPath }` UI preferences (configured over
+ * ISO-reported) into the client-only `robot_ui_preferences` collection. Resolution runs
+ * server-side so the widget stays a plain renderer; recomputed for the whole set whenever a
+ * relevant ui_preferences or robots document changes (these change rarely, so a full recompute
+ * per change is fine).
  */
-Meteor.publish('robot_footprints', async function ({ robotIds }) {
+Meteor.publish('robot_ui_preferences', async function ({ robotIds }) {
   if (!this.userId || !isArray(robotIds) || robotIds.length === 0) {
     return this.ready();
   }
@@ -146,10 +147,10 @@ Meteor.publish('robot_footprints', async function ({ robotIds }) {
   }
   let published = {};
   const refresh = async () => {
-    const docs = await footprintDocsFor(robotIds);
-    Object.entries(docs).forEach(([id, pose]) => {
-      if (published[id]) this.changed(ROBOT_FOOTPRINTS_COLLECTION, id, { pose });
-      else this.added(ROBOT_FOOTPRINTS_COLLECTION, id, { pose });
+    const docs = await uiPreferencesDocsFor(robotIds);
+    Object.entries(docs).forEach(([id, doc]) => {
+      if (published[id]) this.changed(ROBOT_UI_PREFERENCES_COLLECTION, id, doc);
+      else this.added(ROBOT_UI_PREFERENCES_COLLECTION, id, doc);
     });
     published = docs;
   };
@@ -157,7 +158,7 @@ Meteor.publish('robot_footprints', async function ({ robotIds }) {
   const onChange = { added: refresh, changed: refresh, removed: refresh };
   const handles = await Promise.all([
     UIPreferences.find({ $or: [{ entityType: 'system', entityId: '0' }, { entityType: 'robot', entityId: { $in: robotIds } }] },
-      { fields: { 'map.pose': 1 } }).observeChangesAsync(onChange),
+      { fields: { 'map.pose': 1, 'map.robotPath': 1 } }).observeChangesAsync(onChange),
     Robots.find({ _id: { $in: robotIds } }, { fields: { footprint: 1 } }).observeChangesAsync(onChange),
   ]);
   await refresh();
