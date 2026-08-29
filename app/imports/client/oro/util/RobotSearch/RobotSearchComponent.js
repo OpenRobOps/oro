@@ -26,7 +26,7 @@ import React, { useCallback, useContext, useEffect, useRef, useState } from 'rea
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import { makeStyles } from 'tss-react/mui';
-import { TextField, Typography, Chip, Autocomplete } from '@mui/material';
+import { TextField, Typography, Chip, Autocomplete, Backdrop } from '@mui/material';
 import { Bot, CircleX } from 'lucide-react';
 // ORO modules
 import { ID_TYPE_ROBOT } from '../../../../shared/constants';
@@ -267,6 +267,8 @@ const RobotSearch = (props) => {
         )
       }
     >
+      {/* Same modal behaviour as Select/Popover: while open, clicks outside only close the list */}
+      <Backdrop invisible open={optionsOpened} onClick={handleOptionsClose} sx={{ zIndex: 1299 }} />
       {(selectedRobot || !isRobotLoading) && (
         <Autocomplete
           open={optionsOpened}
