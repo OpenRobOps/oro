@@ -24,7 +24,8 @@ import {
   Button, ButtonGroup, MenuItem
 } from '@mui/material';
 import { withStyles } from 'tss-react/mui';
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import { Play, ChevronDown } from 'lucide-react';
+import { toolbarControl, toolbarControlIcon } from '../../util/toolbarControlStyles';
 import classNames from 'classnames';
 import useMediaQuery from '@mui/material/useMediaQuery';
 // ORO Modules
@@ -36,28 +37,6 @@ import ActionIcon from '../../graphics/op/ActionIcon';
 import { createActionGroups } from '../ActionsWidget/util';
 
 const styles = theme => ({
-  remoteAction: {
-    backgroundColor: theme.palette.background.white,
-    fontSize: '0.875rem',
-    display: 'flex',
-    alignItems: 'center',
-    // Make the height of the submenu options the same as the menu options
-    maxHeight: '32px',
-    textTransform: 'uppercase',
-    fontWeight: theme.fontWeight.medium,
-    color: theme.palette.background.black,
-    '&:hover': {
-      backgroundColor: theme.palette.background.onHoverGray,
-      color: theme.palette.background.black,
-    }
-  },
-  remoteActionDark: {
-    backgroundColor: theme.palette.background.black,
-    color: theme.palette.background.white,
-    '&:hover': {
-      color: theme.palette.secondary.main,
-    }
-  },
   accentOnHover: {
     '&:hover': {
       color: theme.palette.secondary.main,
@@ -69,6 +48,32 @@ const styles = theme => ({
   buttonText: {
     whiteSpace: 'nowrap'
   },
+  group: {
+    ...toolbarControl(theme),
+    padding: 0,
+    display: 'inline-flex',
+    alignItems: 'stretch',
+    // The group owns the border; keep the child text buttons flat
+    '& .MuiButton-root': {
+      minWidth: 0,
+      height: '100%',
+      fontSize: '14px',
+      fontWeight: 400,
+      textTransform: 'none',
+      color: 'inherit',
+      border: 'none !important',
+      borderRadius: 0,
+    },
+  },
+  mainButton: {
+    padding: '0 4px 0 8px',
+  },
+  dropdownButton: {
+    padding: '0 2px',
+    borderLeft: `1px solid ${theme.palette.background.borderLight} !important`,
+  },
+  playIcon: toolbarControlIcon(theme),
+  chevron: { color: theme.palette.secondary.main },
   actionsMenuContainer: {
     padding: '0 5px'
   },
@@ -82,16 +87,6 @@ const styles = theme => ({
     justifyContent: 'start',
     fontSize: '13px',
     textTransform: 'capitalize'
-  },
-  iconProp: {
-    color: theme.palette.background.black,
-    marginRight: '4px'
-  },
-  iconPropDark: {
-    color: theme.palette.background.white,
-    '&:hover': {
-      color: theme.palette.background.black,
-    }
   },
   actionsMobileLabel: {
     padding: 0
@@ -139,8 +134,6 @@ const ActionsMenu = (props) => {
   const anchorRef = useRef(null);
   // MenuList `open` state
   const [openMenu, setOpenMenu] = useState(false);
-  // Darkmode context
-  const isDarkMode = true; // hardcoded for now
 
   const handleClickAction = ({ action }) => {
     if (action && action._id && executeAction) {
@@ -160,11 +153,7 @@ const ActionsMenu = (props) => {
           <MenuItem
             key={action._id || ix}
             onClick={() => handleClickAction({ action })}
-            className={classNames(
-              { [classes.remoteAction]: action && !action.client },
-              { [classes.actionsMobileLabel]: isMobile },
-              { [classes.remoteActionDark]: isDarkMode }
-            )}
+            className={classNames({ [classes.actionsMobileLabel]: isMobile })}
           >
             {action.label}
           </MenuItem>
@@ -177,7 +166,7 @@ const ActionsMenu = (props) => {
       <ButtonGroup
         ref={anchorRef}
         variant="text"
-        className={classNames({ [classes.mobileActionsMenuContainer]: isMobile })}
+        className={classNames(classes.group, { [classes.mobileActionsMenuContainer]: isMobile })}
       >
         {WrapWithTooltip(getActionTooltip(firstAction), (
           <Button
@@ -190,8 +179,9 @@ const ActionsMenu = (props) => {
             data-test="actions-menu-button-1"
             classes={textClasses}
             style={{ borderRight: 'initial' }}
-            className={classNames(classes.accentOnHover, { [classes.mobileButtonAction]: isMobile })}
+            className={classNames(classes.accentOnHover, classes.mainButton, { [classes.mobileButtonAction]: isMobile })}
           >
+            <Play className={classes.playIcon} />
             {firstAction?.label ?? 'Actions'}
           </Button>
         ))}
@@ -204,9 +194,9 @@ const ActionsMenu = (props) => {
           data-test="actions-menu-button-2"
           classes={textClasses}
           style={{ borderRight: 'initial' }}
-          className={classNames(classes.accentOnHover, { [classes.dropdownMobileButton]: isMobile })}
+          className={classNames(classes.accentOnHover, classes.dropdownButton, { [classes.dropdownMobileButton]: isMobile })}
         >
-          <ArrowDropDownIcon />
+          <ChevronDown className={classes.chevron} />
         </Button>
       </ButtonGroup>
       <MenuPopper

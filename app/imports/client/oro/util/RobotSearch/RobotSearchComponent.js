@@ -22,11 +22,11 @@
  * The queries will always be limited in the backend to what a user
  * can see.
  */
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import { makeStyles } from 'tss-react/mui';
-import { TextField, Typography, Chip, Autocomplete } from '@mui/material';
+import { TextField, Typography, Chip, Autocomplete, Backdrop } from '@mui/material';
 import { Bot, CircleX } from 'lucide-react';
 // ORO modules
 import { ID_TYPE_ROBOT } from '../../../../shared/constants';
@@ -49,17 +49,6 @@ const useStyles = makeStyles()(theme => ({
       backgroundColor: theme.palette.background.black,
       border: `1px solid ${theme.palette.background.white}`
     }
-  },
-  listboxFullScreen: {
-    backgroundColor: theme.palette.background.black,
-    color: theme.palette.background.lightGray
-  },
-  optionFullScreen: {
-    '&[data-focus="true"]': {
-      backgroundColor: theme.palette.background.lightGray,
-      color: theme.palette.text.content,
-      fontSize: '14px'
-    },
   },
   popupIndicator: {
     color: theme.palette.background.white
@@ -130,7 +119,7 @@ const useStyles = makeStyles()(theme => ({
   showTextInputRoot: {
     width: '100%',
     minWidth: '175px',
-    padding: '0 10px',
+    padding: '0 0 0 10px', // no right padding: keeps the chevron in place when opened
   },
   showTextInputInput: {
     fontSize: '14px',
@@ -170,9 +159,6 @@ const useStyles = makeStyles()(theme => ({
   outlinedInput: {
     padding: '6px !important'
   },
-  optionTypography: {
-    fontSize: '14px',
-  }
 }));
 
 const RobotSearch = (props) => {
@@ -186,6 +172,14 @@ const RobotSearch = (props) => {
 
   const [robots, setRobots] = useState([]);
   const [optionsOpened, setOptionsOpened] = useState(false);
+  const inputRef = useRef(null);
+
+  // Autocomplete closes on input blur. When opened from the chip the input is hidden
+  // (display: none) until this re-render, so focus it here; otherwise there is never a
+  // blur and the list stays open while clicking elsewhere.
+  useEffect(() => {
+    if (optionsOpened) inputRef.current?.focus();
+  }, [optionsOpened]);
 
   /**
    * Given a string, it dispatches a query to find robots whose name or id
@@ -273,6 +267,8 @@ const RobotSearch = (props) => {
         )
       }
     >
+      {/* Same modal behaviour as Select/Popover: while open, clicks outside only close the list */}
+      <Backdrop invisible open={optionsOpened} onClick={handleOptionsClose} sx={{ zIndex: 1299 }} />
       {(selectedRobot || !isRobotLoading) && (
         <Autocomplete
           open={optionsOpened}
@@ -289,25 +285,17 @@ const RobotSearch = (props) => {
           options={robots}
           getOptionLabel={option => ((option && option.label) || '')}
           onChange={setSelectedRobotId}
-          isOptionEqualToValue={(option, value) => option?._id == value?._id}
+          isOptionEqualToValue={(option, value) => option?.entityId == value?.entityId}
           classes={
             isDarkMode ? {
               inputRoot: classes.autocompleteInputFullscreen,
               popupIndicator: classes.popupIndicator,
-              listbox: classes.listboxFullScreen,
-              option: classes.optionFullScreen,
               popper: classes.popper,
             } : {
               inputRoot: classes.autocompleteInput,
-              option: classes.optionTypography,
               popper: classes.popper,
             }
           }
-          renderOption={(props, option) => (
-            <Typography {...props}>
-              {option.label}
-            </Typography>
-          )}
           renderInput={params => (
             <div className={classes.chipTagContainer}>
               {/*activeFilter*/ true ? (
@@ -333,6 +321,7 @@ const RobotSearch = (props) => {
                   )}
                   <TextField
                     {...params}
+                    inputRef={inputRef}
                     label={label}
                     variant="standard"
                     InputProps={{

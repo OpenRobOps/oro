@@ -18,9 +18,54 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { MenuItem, Select } from '@mui/material';
+import { makeStyles } from 'tss-react/mui';
+import { Map as MapIcon, ChevronDown } from 'lucide-react';
+import classNames from 'classnames';
+import { toolbarControl, toolbarControlIcon } from './toolbarControlStyles';
 import { useRobotMapsList, mapRefFor, findMapRef } from '../hooks/useRobotMaps';
 
+const useStyles = makeStyles()(theme => ({
+  control: {
+    ...toolbarControl(theme),
+    padding: 0,
+    '& .MuiSelect-select': {
+      display: 'flex',
+      alignItems: 'center',
+      padding: '0 32px 0 8px !important',
+      height: '100%',
+      minHeight: 0,
+    },
+    '& .MuiOutlinedInput-notchedOutline': { border: 'initial' },
+    // Same chevron as the robot selector (MuiAutocomplete popupIndicator), centered on the control,
+    // with the squared hover of the Actions dropdown button. MUI renders the icon with
+    // pointer-events: none; re-enable it so it can hover, and forward mousedown (see ChevronIcon).
+    '& .MuiSelect-icon': {
+      color: theme.palette.secondary.main,
+      top: 'calc(50% - 14px)',
+      right: '2px',
+      padding: '2px',
+      boxSizing: 'content-box',
+      pointerEvents: 'auto',
+      '&:hover': { backgroundColor: theme.palette.background.onHoverGray },
+    },
+  },
+  icon: { ...toolbarControlIcon(theme), marginLeft: '8px' },
+}));
+
+/** Select's icon; opens the menu when pressed by forwarding mousedown to the select element. */
+const ChevronIcon = (props) => (
+  <ChevronDown
+    {...props}
+    onMouseDown={(e) => {
+      e.preventDefault();
+      e.currentTarget.parentElement.querySelector('.MuiSelect-select')
+        ?.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, button: 0 }));
+    }}
+  />
+);
+
 const MapSelector = ({ robotId, mapSelected, onChange, className }) => {
+  const { classes } = useStyles();
   const { maps, defaultMap } = useRobotMapsList(robotId);
   if (maps.length < 2) return null;
 
@@ -32,15 +77,18 @@ const MapSelector = ({ robotId, mapSelected, onChange, className }) => {
   return (
     <Select
       size="small"
-      variant="standard"
-      className={className}
+      variant="outlined"
+      className={classNames(classes.control, className)}
+      startAdornment={<MapIcon className={classes.icon} />}
+      IconComponent={ChevronIcon}
+      MenuProps={{
+        anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
+        transformOrigin: { vertical: 'top', horizontal: 'left' },
+      }}
       value={value}
       onChange={(e) => onChange && onChange(e.target.value)}
       data-test="navdet-controls-map-switcher"
       disabled={!onChange}
-      // MUI places the 24px chevron at `top: calc(50% - .5em)`, which sits ~4px low in the
-      // standard variant; center it on the control like the robot selector's arrow.
-      sx={{ '& .MuiSelect-icon': { top: 'calc(50% - 12px)' } }}
     >
       {maps.map((m) => (
         <MenuItem key={mapRefFor(m)} value={mapRefFor(m)}>

@@ -23,33 +23,30 @@
  */
 import React from 'react';
 import PropTypes from 'prop-types';
+import classNames from 'classnames';
 import { LockKeyhole } from 'lucide-react';
 import { makeStyles, withStyles } from 'tss-react/mui';
 import { alpha } from '@mui/material/styles';
 import { Button, Tooltip, Box, Typography } from '@mui/material';
+import { toolbarControl, toolbarControlIcon } from '../../util/toolbarControlStyles';
 
 const useStyles = makeStyles()(theme => ({
   buttonText: {
-    color: theme.palette.text.muted,
-    fontSize: '12px',
-    fontWeight: '400',
+    color: 'inherit',
+    fontSize: '14px',
+    fontWeight: 400,
     lineHeight: 'normal',
     whiteSpace: 'nowrap',
   },
+  button: {
+    ...toolbarControl(theme),
+    minWidth: 0,
+  },
   buttonLocked: {
-    borderRadius: '5px',
-    border: `1px solid ${alpha(theme.palette.text.secondary, 0.3)}`,
     background: alpha(theme.palette.background.white, 0.2),
+    '&:hover': { background: alpha(theme.palette.background.white, 0.25) },
   },
-  buttonUnlocked: {
-    backgroundColor: theme.palette.background.default,
-  },
-  lockIcon: {
-    color: theme.palette.text.muted,
-    height: '20px',
-    width: '20px',
-    marginRight: '4px',
-  },
+  lockIcon: toolbarControlIcon(theme),
 }));
 
 const tooltipStyles = theme => ({
@@ -76,8 +73,8 @@ const LockComponent = (props) => {
   const lockButton = (
     <Button
       size="small"
-      variant={locked ? 'contained' : 'text'}
-      className={locked ? classes.buttonLocked : classes.buttonUnlocked}
+      variant="text"
+      className={classNames(classes.button, { [classes.buttonLocked]: locked })}
       onClick={onToggleLock}
       disabled={disabled}
       title={lockedBy}

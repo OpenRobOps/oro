@@ -239,7 +239,7 @@ const buildTheme = (tokens) => responsiveFontSizes(createTheme({
           '&.Mui-selected': {
             backgroundColor: tokens.background.chip,
           },
-          '&.Mui-selected:hover': {
+          '&.Mui-selected:hover, &.Mui-selected.Mui-focusVisible': {
             backgroundColor: tokens.background.chip,
           },
         },
@@ -261,8 +261,8 @@ const buildTheme = (tokens) => responsiveFontSizes(createTheme({
         popper: {
           zIndex: 1300,
         },
+        // Options styled like MenuItem so Autocomplete and Select dropdowns match
         option: {
-          fontSize: '14px',
           backgroundColor: tokens.background.paper,
           '&:hover': {
             backgroundColor: `${tokens.background.onHoverGray} !important`,
@@ -273,6 +273,11 @@ const buildTheme = (tokens) => responsiveFontSizes(createTheme({
         },
         popupIndicator: {
           color: tokens.secondary.main,
+          // Squared hover, same as the Actions dropdown button in the navigation control bar
+          borderRadius: 0,
+          '&:hover': {
+            backgroundColor: tokens.background.onHoverGray,
+          },
         },
         clearIndicator: {
           color: tokens.text.secondary,
