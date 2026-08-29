@@ -23,7 +23,7 @@
  * import the theme singleton directly would show the active theme instead of
  * the previewed one.
  */
-import React from 'react';
+import React, { useState } from 'react';
 import { Box, Paper, Typography, TextField, Button } from '@mui/material';
 import { ICM_SEV_ALL } from '../../../../shared/alerts';
 
@@ -32,102 +32,106 @@ const FLEET_STATUS = [['Err', 'error'], ['Warn', 'warning'], ['OK', 'ok'], ['--'
 // Open / resolved incident colors, as used in the incident list
 const INCIDENT_KEYS = ['error', 'resolved'];
 
-const SampleThemeWidget = () => (
-  <Box sx={{ bgcolor: 'background.default', p: 1.5, pointerEvents: 'none' }}>
-    <Paper
-      elevation={0}
-      sx={(theme) => ({
-        p: 1.5,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 1,
-        border: `1px solid ${theme.palette.background.borderLight}`,
-        borderRadius: '6px',
-      })}
-    >
-      <Box>
-        <Typography sx={{ fontSize: '14px', fontWeight: 600, color: 'text.heading' }}>
-          Fleet status
-        </Typography>
-        <Typography sx={{ fontSize: '11px', color: 'text.secondary' }}>
-          4 robots · 2 on mission
-        </Typography>
-      </Box>
-      <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center' }}>
-        {FLEET_STATUS.map(([label, key]) => (
-          <Box
-            key={key}
-            component="span"
-            sx={(theme) => ({
-              backgroundColor: theme.palette.incidents[key],
-              color: theme.palette.getContrastText(theme.palette.incidents[key]),
-              fontSize: '9px',
-              fontWeight: 500,
-              borderRadius: '2px',
-              padding: '3px 5px',
-              lineHeight: 1,
-              display: 'inline-flex',
-              alignItems: 'center',
-            })}
-          >
-            {label}
-          </Box>
-        ))}
-        <Box sx={{ display: 'flex', gap: 0.75, alignItems: 'center', marginLeft: 'auto' }}>
-          {INCIDENT_KEYS.map((key) => (
+const SampleThemeWidget = () => {
+  // Today's local date (yyyy-mm-dd) for the read-only sample date field; computed once on mount
+  const [today] = useState(() => new Date().toLocaleDateString('sv-SE'));
+  return (
+    <Box sx={{ bgcolor: 'background.default', p: 1.5, pointerEvents: 'none' }}>
+      <Paper
+        elevation={0}
+        sx={(theme) => ({
+          p: 1.5,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 1,
+          border: `1px solid ${theme.palette.background.borderLight}`,
+          borderRadius: '6px',
+        })}
+      >
+        <Box>
+          <Typography sx={{ fontSize: '14px', fontWeight: 600, color: 'text.heading' }}>
+            Fleet status
+          </Typography>
+          <Typography sx={{ fontSize: '11px', color: 'text.secondary' }}>
+            4 robots · 2 on mission
+          </Typography>
+        </Box>
+        <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center' }}>
+          {FLEET_STATUS.map(([label, key]) => (
             <Box
               key={key}
+              component="span"
               sx={(theme) => ({
-                width: 10,
-                height: 10,
-                borderRadius: '50%',
                 backgroundColor: theme.palette.incidents[key],
+                color: theme.palette.getContrastText(theme.palette.incidents[key]),
+                fontSize: '9px',
+                fontWeight: 500,
+                borderRadius: '2px',
+                padding: '3px 5px',
+                lineHeight: 1,
+                display: 'inline-flex',
+                alignItems: 'center',
               })}
-            />
+            >
+              {label}
+            </Box>
+          ))}
+          <Box sx={{ display: 'flex', gap: 0.75, alignItems: 'center', marginLeft: 'auto' }}>
+            {INCIDENT_KEYS.map((key) => (
+              <Box
+                key={key}
+                sx={(theme) => ({
+                  width: 10,
+                  height: 10,
+                  borderRadius: '50%',
+                  backgroundColor: theme.palette.incidents[key],
+                })}
+              />
+            ))}
+          </Box>
+        </Box>
+        <Box sx={{ display: 'flex', gap: 0.5 }}>
+          {ICM_SEV_ALL.map((sev) => (
+            <Box
+              key={sev}
+              component="span"
+              sx={(theme) => ({
+                backgroundColor: theme.palette.severityColor[sev],
+                color: theme.palette.getContrastText(theme.palette.severityColor[sev]),
+                fontSize: '10px',
+                fontWeight: 500,
+                borderRadius: '5px',
+                padding: '2px 6px',
+                lineHeight: 1.2,
+              })}
+            >
+              {sev}
+            </Box>
           ))}
         </Box>
-      </Box>
-      <Box sx={{ display: 'flex', gap: 0.5 }}>
-        {ICM_SEV_ALL.map((sev) => (
-          <Box
-            key={sev}
-            component="span"
-            sx={(theme) => ({
-              backgroundColor: theme.palette.severityColor[sev],
-              color: theme.palette.getContrastText(theme.palette.severityColor[sev]),
-              fontSize: '10px',
-              fontWeight: 500,
-              borderRadius: '5px',
-              padding: '2px 6px',
-              lineHeight: 1.2,
-            })}
-          >
-            {sev}
-          </Box>
-        ))}
-      </Box>
-      <TextField
-        type="date"
-        size="small"
-        defaultValue="2026-08-07"
-        slotProps={{ htmlInput: { readOnly: true, tabIndex: -1 } }}
-      />
-      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-        <Button
+        <TextField
+          type="date"
           size="small"
-          variant="contained"
-          color="secondary"
-          tabIndex={-1}
-          sx={{ textTransform: 'none', fontSize: '11px', padding: '2px 10px', minWidth: 0 }}
-        >
-          Approve
-        </Button>
-        <Typography sx={{ fontSize: '11px', color: 'text.darkBlue' }}>
-          Details
-        </Typography>
-      </Box>
-    </Paper>
-  </Box>
-);
+          defaultValue={today}
+          slotProps={{ htmlInput: { readOnly: true, tabIndex: -1 } }}
+        />
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+          <Button
+            size="small"
+            variant="contained"
+            color="secondary"
+            tabIndex={-1}
+            sx={{ textTransform: 'none', fontSize: '11px', padding: '2px 10px', minWidth: 0 }}
+          >
+            Approve
+          </Button>
+          <Typography sx={{ fontSize: '11px', color: 'text.darkBlue' }}>
+            Details
+          </Typography>
+        </Box>
+      </Paper>
+    </Box>
+  );
+};
 
 export default SampleThemeWidget;
