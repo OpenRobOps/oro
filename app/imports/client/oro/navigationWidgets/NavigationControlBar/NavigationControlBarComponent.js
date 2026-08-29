@@ -102,6 +102,8 @@ const useStyles = makeStyles()(theme => ({
   },
   actionButtonsContainer: {
     display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
     padding: '0 10px'
   },
   // transparent container that shows in the space where the toolbar would be if it was not hidden

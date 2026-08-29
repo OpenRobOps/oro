@@ -22,18 +22,16 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { MenuList, Popover, MenuItem, Divider } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
-import { useDarkModeContext } from '../contexts/DarkModeContext';
 
 // TODO jss-to-tss-react codemod: Unable to handle style definition reliably. ArrowFunctionExpression in CSS prop.
 const useStyles = makeStyles()((theme, { subMenuHeader }) => ({
   popperWidth: {
     // Popper minWidth same as anchorRef
-    borderRadius: '10px',
+    border: `1px solid ${theme.palette.background.borderLight}`,
+    // No dark-mode elevation overlay: same flat paper as Menu/Autocomplete dropdowns
+    backgroundImage: 'none',
     minWidth: ({ anchorRef }) => (anchorRef.current
       && anchorRef.current.clientWidth) || null
-  },
-  popperWidthDark: {
-    border: `1px solid ${theme.palette.text.notesLight}`
   },
   popper: {
     //  Make sure popper appear above everything
@@ -46,20 +44,6 @@ const useStyles = makeStyles()((theme, { subMenuHeader }) => ({
     backgroundColor: (subMenuHeader && subMenuHeader.color) || theme.palette.background.white,
     height: theme.spacing(0.25)
   },
-  menuItem: {
-    fontSize: '0.875rem',
-    textTransform: 'capitalize',
-    '&:hover': {
-      backgroundColor: theme.palette.background.onHoverGray,
-    }
-  },
-  menuItemDark: {
-    backgroundColor: theme.palette.background.black,
-    color: theme.palette.background.white,
-    '&:hover': {
-      color: theme.palette.background.black,
-    }
-  },
 }));
 
 const MenuPopper = (props) => {
@@ -68,11 +52,9 @@ const MenuPopper = (props) => {
   } = props; /** @see MenuPopper.propTypes */
 
   // Pass anchorRef to useStyles as prop to calculate style
-  const { classes, cx } = useStyles({ anchorRef, subMenuHeader });
+  const { classes } = useStyles({ anchorRef, subMenuHeader });
   const subMenuRef = React.useRef(null);
   const [openMenu, setOpenMenu] = useState(false);
-  // Darkmode context
-  const { isDarkMode } = useDarkModeContext();
   const handleCloseMenu = () => {
     setOpenMenu(false);
     if (callback) {
@@ -100,7 +82,6 @@ const MenuPopper = (props) => {
         key={subMenuHeader.label}
         ref={subMenuRef}
         onClick={handleClickSubMenu}
-        className={cx({ [classes.menuItemDark]: isDarkMode }, classes.menuItem)}
       >
         {subMenuHeader.label}
       </MenuItem>
@@ -118,8 +99,7 @@ const MenuPopper = (props) => {
       key={`${subMenuHeader && subMenuHeader.label}-popper`}
       className={classes.popper}
       classes={{
-        paper: cx(classes.popperWidth,
-          { [classes.popperWidthDark]: isDarkMode })
+        paper: classes.popperWidth
       }}
       open={subMenu ? openMenu : open}
       anchorEl={subMenu ? subMenuRef.current : anchorRef.current}

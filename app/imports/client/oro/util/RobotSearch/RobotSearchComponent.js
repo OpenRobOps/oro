@@ -50,17 +50,6 @@ const useStyles = makeStyles()(theme => ({
       border: `1px solid ${theme.palette.background.white}`
     }
   },
-  listboxFullScreen: {
-    backgroundColor: theme.palette.background.black,
-    color: theme.palette.background.lightGray
-  },
-  optionFullScreen: {
-    '&[data-focus="true"]': {
-      backgroundColor: theme.palette.background.lightGray,
-      color: theme.palette.text.content,
-      fontSize: '14px'
-    },
-  },
   popupIndicator: {
     color: theme.palette.background.white
   },
@@ -130,7 +119,7 @@ const useStyles = makeStyles()(theme => ({
   showTextInputRoot: {
     width: '100%',
     minWidth: '175px',
-    padding: '0 10px',
+    padding: '0 0 0 10px', // no right padding: keeps the chevron in place when opened
   },
   showTextInputInput: {
     fontSize: '14px',
@@ -170,9 +159,6 @@ const useStyles = makeStyles()(theme => ({
   outlinedInput: {
     padding: '6px !important'
   },
-  optionTypography: {
-    fontSize: '14px',
-  }
 }));
 
 const RobotSearch = (props) => {
@@ -289,25 +275,17 @@ const RobotSearch = (props) => {
           options={robots}
           getOptionLabel={option => ((option && option.label) || '')}
           onChange={setSelectedRobotId}
-          isOptionEqualToValue={(option, value) => option?._id == value?._id}
+          isOptionEqualToValue={(option, value) => option?.entityId == value?.entityId}
           classes={
             isDarkMode ? {
               inputRoot: classes.autocompleteInputFullscreen,
               popupIndicator: classes.popupIndicator,
-              listbox: classes.listboxFullScreen,
-              option: classes.optionFullScreen,
               popper: classes.popper,
             } : {
               inputRoot: classes.autocompleteInput,
-              option: classes.optionTypography,
               popper: classes.popper,
             }
           }
-          renderOption={(props, option) => (
-            <Typography {...props}>
-              {option.label}
-            </Typography>
-          )}
           renderInput={params => (
             <div className={classes.chipTagContainer}>
               {/*activeFilter*/ true ? (
