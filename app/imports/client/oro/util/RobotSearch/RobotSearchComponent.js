@@ -22,7 +22,7 @@
  * The queries will always be limited in the backend to what a user
  * can see.
  */
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import { makeStyles } from 'tss-react/mui';
@@ -172,6 +172,14 @@ const RobotSearch = (props) => {
 
   const [robots, setRobots] = useState([]);
   const [optionsOpened, setOptionsOpened] = useState(false);
+  const inputRef = useRef(null);
+
+  // Autocomplete closes on input blur. When opened from the chip the input is hidden
+  // (display: none) until this re-render, so focus it here; otherwise there is never a
+  // blur and the list stays open while clicking elsewhere.
+  useEffect(() => {
+    if (optionsOpened) inputRef.current?.focus();
+  }, [optionsOpened]);
 
   /**
    * Given a string, it dispatches a query to find robots whose name or id
@@ -311,6 +319,7 @@ const RobotSearch = (props) => {
                   )}
                   <TextField
                     {...params}
+                    inputRef={inputRef}
                     label={label}
                     variant="standard"
                     InputProps={{
