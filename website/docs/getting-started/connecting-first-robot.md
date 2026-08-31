@@ -62,8 +62,7 @@ Once the agent connects, you can verify connectivity by checking that the robot 
 You can also query the [REST API](../api/overview):
 
 ```bash
-curl -H "x-auth-api-key: your-api-key" \
-  http://localhost:3000/api/robots
+curl -H "x-auth-api-key: your-api-key" http://localhost:3000/api/robots
 ```
 
 A successful response returns a JSON array of registered robots:
