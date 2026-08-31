@@ -1,0 +1,58 @@
+---
+slug: openrobops-v1
+title: "Announcing OpenRobOps 1.0: Open-Source Robot Operations, Ready for Production"
+authors: [herchu, florian]
+tags: [openrobops, announcement, open-source]
+---
+
+Autonomous mobile robots are showing up everywhere — in warehouses, hospitals, airports, sidewalks. The robots themselves have gotten remarkably capable, but the way we operate fleets hasn't kept up: every vendor ships its own proprietary dashboard, every mixed fleet means disconnected views, and switching platforms means starting from scratch.
+
+This is a familiar pattern in technology, and it's one open source has solved before. Linux gave servers a common foundation. ROS gave robot developers a shared framework. Robot operations deserves the same.
+
+Today, we're thrilled to announce **OpenRobOps 1.0** — the first stable release of an open-source, vendor-agnostic platform for robot fleet management and operations. Fully self-hostable, Apache 2.0 licensed, and ready for production fleets.
+
+{/* truncate */}
+
+## Why 1.0 matters
+
+A 1.0 release is a promise. It says the core is stable, the APIs are ones we'll stand behind, and the platform is ready to run real robots doing real work. OpenRobOps is rooted in production-proven technology from [InOrbit.AI](https://www.inorbit.ai/) — the same foundation used to manage thousands of robots in real-world deployments — now available to everyone, in the open.
+
+It marks something bigger, too: for the first time, there is a production-ready, fully open-source foundation for robot fleet operations. No license fees, no lock-in, no black boxes. Your robots, your servers, your data.
+
+## What's in 1.0
+
+**Your entire fleet in one place.** Real-time telemetry, customizable dashboards, live camera feeds, historical time-series charts, ROS diagnostics, and incident tracking across your robots — regardless of who manufactured them. One platform, one view, any vendor.
+
+**Maps and navigation, fleet-wide.** Live maps show every robot in your fleet at once — poses, paths, planned trajectories, and footprints. Send a robot to a waypoint with a click, watch its global plan and local trajectory in real time, and switch between robot-reported and shared facility maps.
+
+**Connect robots your way.** ROS and ROS 2 robots are first-class citizens: install the InOrbit agent and they join your fleet with essentially zero effort — telemetry, maps, and actions just work. An Open-RMF connector is built in as well, so RMF-managed fleets plug straight into the same operational view.
+
+**Native ISO 21423 support.** OpenRobOps also speaks the new [ISO 21423](/docs/iso21423/overview) interoperability standard for industrial mobile robots. Any ISO-native robot can join your fleet — no agent, no vendor SDK required. It gets the same dashboards, incidents, actions, and audit trail as every other robot. We believe standards are how this industry scales, and we're proud to ship one of the first open implementations.
+
+**Incidents, alerts, and automation.** Define incidents as code, trigger notifications, and wire up automatic actions when things go wrong — so your team responds to problems, not dashboards.
+
+**Operations you can trust.** Role-based access control, per-robot view permissions, robot locks for safe exclusive control, self-service API keys, and a full audit log of every action taken on every robot.
+
+**Extend and customize freely.** Pluggable ingest modules process any telemetry. Custom widgets build the exact operational view your team needs. A declarative configuration API defines dashboards, attributes, and incidents as code. And a complete theming system lets you brand the entire UI — because the platform running your operation should feel like *yours*.
+
+**Ready to deploy.** Versioned container images on GHCR, a documented release process, Kubernetes deployment guidance, and Terraform-based configuration management — on a stack you already know: Node.js, React, MongoDB, and MQTT with Protocol Buffers.
+
+## Try it — you're 10 minutes away
+
+This is the part we're most excited about. You don't need a sales call, a license, or even a robot to see OpenRobOps in action:
+
+1. Follow the [quick start guide](/docs/getting-started/quick-start) — a full fleet management platform running locally in about 10 minutes.
+2. [Connect your first robot](/docs/getting-started/connecting-first-robot), or spin up the simulator and watch a fleet come alive on the map.
+3. Make it yours — [build a custom widget](/docs/extending/custom-widgets), [add a data source](/docs/extending/custom-data-sources), or [theme the UI](/docs/extending/theming-ui).
+
+## Join us
+
+OpenRobOps is built in the open, and 1.0 is just the beginning. Whether you're running a fleet of warehouse robots, developing the next generation of AMRs, or just believe that robot operations infrastructure should be transparent and community-driven — there's a place for you here:
+
+- **Star the repo** on [GitHub](https://github.com/OpenRobOps/oro) — it genuinely helps the project grow
+- **Join the community** on [Zulip](https://openrobops.zulipchat.com/)
+- **Contribute** — the [contributing guide](/docs/contributing/contributing-guide) has good first issues waiting
+
+Robot operations is open now. Let's put it to work.
+
+— The OpenRobOps team

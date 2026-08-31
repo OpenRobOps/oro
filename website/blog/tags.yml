@@ -2,3 +2,11 @@ openrobops:
   label: OpenRobOps
   permalink: /oro
   description: OpenRobOps platform
+announcement:
+  label: Announcement
+  permalink: /announcement
+  description: Project announcements and news
+open-source:
+  label: Open Source
+  permalink: /open-source
+  description: Open source releases and community
