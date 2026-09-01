@@ -55,6 +55,17 @@ linking the two frames (either an explicit matrix or ≥3 reference point
 pairs). Without one, the map is still shown but the robot is hidden and a
 banner explains that no transform links the two frames.
 
+To obtain that transform for a floor plan drawn outside of SLAM, either pick
+three or more landmarks visible in both images and give their coordinates as
+reference points, or let
+[`tools/align_maps.py`](https://github.com/OpenRobOps/oro/blob/main/tools/align_maps.py)
+fit it: it registers the walls of the robot's grid onto the plan (coarse
+search plus ICP) and prints the `SpatialTransformation` document, fit
+statistics and an overlay image to check by eye. The step-by-step guide,
+including the `formatVersion` y-axis convention that must match each image,
+is in
+[`docs/map-alignment.md`](https://github.com/OpenRobOps/oro/blob/main/docs/map-alignment.md).
+
 This is exactly how the ISO 21423 facility coordinate system (CCS) works: the
 CCS is a frame in its own right, and the system `map → <ccs.id>` transform —
 described in the
