@@ -83,16 +83,21 @@ class IsoRobotsModule {
     this._roster = null;
     this._ingester = null;
     this._commands = null;
+    this._retryTimer = null;
+    this._stopped = false;
   }
 
   /**
    * Validates settings, loads the SDK, connects the client and registers ORO's IMRFM identity.
-   * Never throws: any failure logs and leaves the module inert so ingest keeps serving.
+   * Never throws: a misconfiguration or missing SDK logs and leaves the module inert so ingest
+   * keeps serving; a connection-era failure (e.g. ingest booted before the broker) logs and
+   * retries every 5s until it succeeds or `shutdown()` is called.
    *
    * @param {Object|undefined} settings the whole `iso21423` block of settings.json
    * @param {Object} [opts] test-only overrides
    * @param {Object} [opts.transport] an MqttTransport to use instead of a real mqtt client.
    *   TEST ONLY — production always builds its own session from `settings.iso21423`.
+   * @param {number} [opts.retryMs] the connect-failure retry delay. TEST ONLY.
    * @returns {Promise<this>}
    */
   load = async (settings, opts = {}) => {
@@ -230,12 +235,25 @@ class IsoRobotsModule {
       const client = this._client;
       this._client = null;
       if (client) await client.close({ timeout: 2000 }).catch(() => {});
+      // Ingest often boots before the broker (the SDK transport rejects on the first connect
+      // error, with no reconnect of its own), and OroMqtt retries its connection forever — this
+      // module must not be the only piece that gives up. load() rebuilds everything fresh, so
+      // retrying it is safe for post-connect failures too. Unref'd like the roster timer.
+      if (!this._stopped) {
+        const retryMs = Number.isFinite(opts.retryMs) ? opts.retryMs : 5000;
+        console.warn(`ISO 21423 robots: retrying in ${retryMs / 1000}s`);
+        this._retryTimer = setTimeout(() => { this.load(settings, opts); }, retryMs);
+        if (this._retryTimer.unref) this._retryTimer.unref();
+      }
     }
     return this;
   };
 
   /** Closes the ISO client and therefore its MQTT session. Safe when the module never started. */
   shutdown = async () => {
+    this._stopped = true;
+    if (this._retryTimer) clearTimeout(this._retryTimer);
+    this._retryTimer = null;
     this._roster && this._roster.stop();
     if (this._ingester) await this._ingester.stop();
     if (!this._client) return;
