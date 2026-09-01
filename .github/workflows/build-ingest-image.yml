@@ -100,6 +100,9 @@ jobs:
           push: false
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          # Registry auth for @openrobops/iso21423 (see ingest/Dockerfile).
+          secrets: |
+            gh_token=${{ secrets.GITHUB_TOKEN }}
           cache-from: type=registry,ref=ghcr.io/openrobops/oro-ingest:buildcache
           cache-to: ${{ github.event_name != 'pull_request' && 'type=registry,ref=ghcr.io/openrobops/oro-ingest:buildcache,mode=max,image-manifest=true' || '' }}
 

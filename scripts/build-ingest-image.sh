@@ -33,8 +33,14 @@ TAG="${IMAGE_TAG:-oro-ingest:${SHA}${DIRTY}}"
 # as the source of truth — see ingest/import.sh.
 ( cd ingest && ./import.sh )
 
+# Registry auth for @openrobops/iso21423 (see ingest/Dockerfile): reuse the
+# dev's npm token for npm.pkg.github.com unless GH_TOKEN is already set.
+# (npm refuses `config get` on _authToken options, so read ~/.npmrc directly.)
+export GH_TOKEN="${GH_TOKEN:-$(sed -n 's|^//npm\.pkg\.github\.com/:_authToken=||p' ~/.npmrc)}"
+
 docker build \
   -f ingest/Dockerfile \
+  --secret id=gh_token,env=GH_TOKEN \
   -t "$TAG" \
   ingest
 

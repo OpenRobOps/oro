@@ -18,6 +18,7 @@
     "@babel/node": "^7.29.0",
     "@babel/preset-env": "^7.29.0",
     "@babel/preset-flow": "^7.27.1",
+    "@openrobops/iso21423": "^0.1.0",
     "axios": "^1.13.6",
     "convert-units": "^2.3.4",
     "expr-eval": "^2.0.2",
@@ -40,8 +41,5 @@
     "mongo-unit": "^3.4.0",
     "nodemon": "^3.1.14",
     "sinon": "^21.0.0"
-  },
-  "optionalDependencies": {
-    "@openrobops/iso21423": "^0.1.0"
   }
 }
