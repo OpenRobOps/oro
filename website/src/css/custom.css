@@ -18,7 +18,9 @@ Notes:
 */
 
 /* ===== THEMES =====
-   Default (no attribute) is ORO. `data-oro-theme` on <html> selects an
+   No attribute is the ORO palette; the site default for new visitors is
+   monokai (set pre-paint by the init script, which defaults the stored
+   choice to 'monokai'). `data-oro-theme` on <html> selects an
    alternate palette; it is set pre-paint by the inline script injected from
    docusaurus.config.ts and toggled by the navbar OroThemePicker.
    Palettes mirror app/imports/client/themes/<name>.js.
@@ -199,6 +201,15 @@ html {
 
 .navbar__logo {
   padding: 0 40px 0 60px;
+  /* inline SVG logo is shorter than the 2rem logo box; center it */
+  display: flex;
+  align-items: center;
+}
+
+/* ORO theme only (default = no data-oro-theme attribute): darker navbar
+   so it stands out against the void background. */
+html:not([data-oro-theme]) .navbar {
+  background-color: var(--oro-color-raised);
 }
 
 .navbar__items {
@@ -223,8 +234,20 @@ html {
 
 .footer--dark {
   background-color: var(--oro-color-void);
+  /* footer style is 'dark' but the bg follows the oro theme, so the
+     Infima light-on-dark text must follow it too (light themes). */
+  --ifm-footer-color: var(--oro-color-text-faint);
+  --ifm-footer-link-color: var(--oro-color-text-muted);
+  --ifm-footer-title-color: var(--oro-color-text);
 }
 
+.footer--dark .footer__link-item:hover {
+  color: var(--oro-color-accent-softer);
+}
+
+.footer__bottom {
+  margin-top: 1.5rem;
+}
 /* ===== BLOG PAGE ===== */
 
 h1 a, h2 a, h3 a, h4 a, h5 a, h6 a {
