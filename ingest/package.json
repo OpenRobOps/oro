@@ -42,6 +42,6 @@
     "sinon": "^21.0.0"
   },
   "optionalDependencies": {
-    "@openrobops/iso21423": "file:../../iso21423/ts-sdk"
+    "@openrobops/iso21423": "^0.1.0"
   }
 }
