@@ -13,7 +13,7 @@ const THEMES: Record<string, {label: string; mode: ColorMode}> = {
 
 export default function OroThemePicker(): ReactNode {
   const {setColorMode} = useColorMode();
-  const [theme, setTheme] = useState('oro');
+  const [theme, setTheme] = useState('monokai');
 
   useEffect(() => {
     setTheme(document.documentElement.getAttribute('data-oro-theme') ?? 'oro');

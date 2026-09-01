@@ -53,8 +53,8 @@ This diagram describes the scenario where the robot runs the ORO Agent. In an [I
 │  ├── localization                    │  │
 │  ├── attr_values                     │  │
 │  ├── module_states                   │  │
-│  ├── incidents / notifications      │  │
-│  └── per-kind config (attr_defs, …) │  │
+│  ├── incidents / notifications       │  │
+│  └── per-kind config (attr_defs, …)  │  │
 └──────────┬───────────────────────────┘  │
            │ Reactive queries             │
            ▼                              │
