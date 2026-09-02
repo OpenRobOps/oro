@@ -4,9 +4,9 @@
   "private": true,
   "scripts": {
     "start": "meteor run --settings settings.json",
-    "test": "TEST_CLIENT=0 meteor test --once --driver-package meteortesting:mocha",
-    "test:watch": "TEST_CLIENT=0 meteor test --driver-package meteortesting:mocha",
-    "test-app": "TEST_WATCH=1 meteor test --full-app --driver-package meteortesting:mocha",
+    "test": "TEST_CLIENT=0 meteor test --once --driver-package meteortesting:mocha --port ${TEST_PORT:-3100}",
+    "test:watch": "TEST_CLIENT=0 meteor test --driver-package meteortesting:mocha --port ${TEST_PORT:-3100}",
+    "test-app": "TEST_WATCH=1 meteor test --full-app --driver-package meteortesting:mocha --port ${TEST_PORT:-3100}",
     "visualize": "meteor --production --extra-packages bundle-visualizer"
   },
   "dependencies": {
