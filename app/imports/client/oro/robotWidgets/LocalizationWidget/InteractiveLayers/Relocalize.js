@@ -26,6 +26,7 @@ import React, { useMemo } from 'react';
 import Polygon from 'ol/geom/Polygon';
 import Point from 'ol/geom/Point';
 // ORO Modules
+import theme from '../../../../Styles';
 import { useActiveInteraction } from '../../../contexts/ActiveInteractionContext';
 import { createFeature, PALETTE } from '../utils/utils';
 import { noStyle, markerStyle } from '../Map/Styles';
@@ -92,13 +93,6 @@ const relocalizeRotatePolygon = () => {
   return new Polygon([points]);
 };
 
-const [dragStyle, rotateStyle, arrowColor, arrowBkg] = [
-  PALETTE.relocalizeDrag,
-  PALETTE.relocalizeRotate,
-  PALETTE.robotPoseNormalPrimary,
-  PALETTE.robotPoseNormalSecondary
-];
-
 /**
  * Creates the relocalize control features.
  *
@@ -118,14 +112,16 @@ const createFeatures = ({
   uiPreferences = {}
 }) => {
   const features = [];
+  // Same accent as the Nav to Goal waypoint (read at call time so theme switches apply)
+  const accent = theme.palette.teleop.waypointAvatar;
 
-  // Feature: main green background square
+  // Feature: main background square
   let feature = createFeature(relocalizeDragPolygon.clone(), 'translate', 0);
-  feature.setStyle(markerStyle(dragStyle.color, dragStyle.stroke, dragStyle.strokeWidth));
+  feature.setStyle(markerStyle(`${accent}4D`, accent, 5));
   feature.setId('translateFeature');
   features.push(feature);
 
-  // Feature: lavender frame around mint square
+  // Feature: frame around the background square
   feature = createFeature(relocalizeRotateOffset.clone(), 'translateOffset', 0);
   feature.setStyle(markerStyle('transparent', PALETTE.relocalizeInnerFrame, 3));
   feature.setId('translateFeatureOffset');
@@ -134,7 +130,7 @@ const createFeatures = ({
   // Feature: grab handle on the top
   feature = createFeature(relocalizeRotatePolygon(), 'rotate', 0);
   feature.setId('rotateFeature');
-  feature.setStyle(markerStyle(rotateStyle.color, rotateStyle.stroke));
+  feature.setStyle(markerStyle(accent, accent));
   features.push(feature);
 
   // Feature: virtual, invisible center used to keep track of the translated robot center
@@ -205,8 +201,8 @@ const Relocalize = ({ robotLocalizationData = {}, uiPreferences = {} }) => {
       centerFeature,
       features
     } = createFeatures({
-      primaryColor: arrowColor,
-      secondaryColor: arrowBkg,
+      primaryColor: PALETTE.robotPoseNormalPrimary,
+      secondaryColor: PALETTE.robotPoseNormalSecondary,
       robotRotation: initialPose.theta,
       laserConfig,
       laserRanges,

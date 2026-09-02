@@ -169,14 +169,6 @@ const rosePineMoon = merge(cloneDeep(oro), {
     point: `${ROSE}E6`,
     pointOutline: HIGHLIGHT_MED,
     selected: FOAM,
-    relocalizeDrag: {
-      color: `${FOAM}4D`,
-      stroke: FOAM,
-    },
-    relocalizeRotate: {
-      color: FOAM,
-      stroke: FOAM,
-    },
     relocalizeInnerFrame: ROSE,
     // Rose robot pose (iris would read as the default theme)
     selectedOutline: ROSE,

@@ -177,14 +177,6 @@ const catppuccinMocha = merge(cloneDeep(oro), {
     point: `${BLUE}E6`,
     pointOutline: SURFACE1,
     selected: SKY,
-    relocalizeDrag: {
-      color: `${GREEN}4D`,
-      stroke: GREEN,
-    },
-    relocalizeRotate: {
-      color: GREEN,
-      stroke: GREEN,
-    },
     relocalizeInnerFrame: BLUE,
     selectedOutline: LAVENDER,
     // Blue robot pose (mauve would read as the default theme)

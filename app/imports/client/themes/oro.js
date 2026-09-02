@@ -158,16 +158,6 @@ const oro = {
     point: '#8080FFE6',
     pointOutline: '#404080',
     selected: '#71BAE1',
-    relocalizeDrag: {
-      color: '#5ECFA84D',
-      stroke: '#5ECFA8',
-      strokeWidth: '5',
-    },
-    relocalizeRotate: {
-      color: '#5ECFA8',
-      stroke: '#5ECFA8',
-      strokeWidth: '3',
-    },
     relocalizeInnerFrame: '#BE9AFF',
     selectedOutline: '#8080FF',
     robotPoseNormalPrimary: '#BE9AFF',
