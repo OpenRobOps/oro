@@ -177,14 +177,6 @@ const tokyoDay = merge(cloneDeep(oro), {
     point: `${BLUE}E6`,
     pointOutline: FG_GUTTER,
     selected: CYAN,
-    relocalizeDrag: {
-      color: `${TEAL}4D`,
-      stroke: TEAL,
-    },
-    relocalizeRotate: {
-      color: TEAL,
-      stroke: TEAL,
-    },
     relocalizeInnerFrame: BLUE,
     selectedOutline: BLUE,
     robotPoseNormalPrimary: BLUE,
