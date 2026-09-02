@@ -412,8 +412,8 @@ export default class StatusConfigAPIHandler {
     }
     const { id } = configObject.metadata;
     // Permissions validation
-    if (!await new OroRoles().canAccessSystemElement(
-      user._id, 
+    if (!isSystemUser(user) && !await new OroRoles().canAccessSystemElement(
+      user._id,
       RESOURCE_SINGLETONS.DATASOURCES,
       ACCESS_LEVEL_CONFIGURE)) {
       throw new AuthorizationError('Unauthorized');

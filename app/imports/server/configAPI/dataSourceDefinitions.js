@@ -377,7 +377,7 @@ export default class DataSourcesConfigAPI {
     // TODO: It should be possible to grant access to the data source
     // singleton at the tag or robot level, but currently our roles implementation
     // does not support that.
-    if (!await new OroRoles().canAccessSystemElement(
+    if (!isSystemUser(user) && !await new OroRoles().canAccessSystemElement(
       user._id,
       RESOURCE_SINGLETONS.DATASOURCES,
       ACCESS_LEVEL_CONFIGURE

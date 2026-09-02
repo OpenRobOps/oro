@@ -28,6 +28,7 @@ import { KIND_NOTIFICATION_CHANNEL, LIST_FORMAT_FULL } from '../../../shared/con
 import { NotificationChannels } from '../../../lib/alerts';
 import { createUser } from '../configAPI';
 import { ROLE_ADMIN, ROLE_VIEWER } from '../../../lib/roles';
+import { getSystemUser } from '../../../shared/roles';
 
 if (!Meteor.isTest) {
   throw new Error('This is TEST code only');
@@ -158,6 +159,18 @@ describe('configAPI:NotificationChannel', () => {
 
   it('clear: removes the channel', async () => {
     const user = await createUser({ role: ROLE_ADMIN });
+    new ConfigAPI().init();
+    await new ConfigAPI().apply(
+      { configObject: makeConfigObject('ops-webhook', VALID_SPEC), user });
+    await new ConfigAPI().clear(
+      { configObject: makeConfigObject('ops-webhook'), user });
+
+    const doc = await NotificationChannels.findOneAsync({ _id: 'ops-webhook' });
+    expect(doc).to.not.be.ok;
+  });
+
+  it('clear: accepts the peer (system) user like apply does', async () => {
+    const user = getSystemUser();
     new ConfigAPI().init();
     await new ConfigAPI().apply(
       { configObject: makeConfigObject('ops-webhook', VALID_SPEC), user });
