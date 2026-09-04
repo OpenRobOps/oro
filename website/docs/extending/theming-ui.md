@@ -14,13 +14,13 @@ user, and switching applies live — no page reload.
 |-------|------|-------------|
 | **ORO Moon** (default) | dark | The ORO brand palette: slate, gold, teal |
 | **ORO Sun** | light | ORO Moon's light scheme for bright floors and printed reports |
-| **Monokai** | dark | The classic editor palette |
 | **Tokyo Night** | dark | [folke/tokyonight.nvim](https://github.com/folke/tokyonight.nvim) |
 | **Tokyo Day** | light | Tokyo Night's day style |
 | **Catppuccin Mocha** | dark | [catppuccin/palette](https://github.com/catppuccin/palette) |
 | **Catppuccin Latte** | light | Catppuccin's light flavor |
 | **Rosé Pine Moon** | dark | [rose-pine/palette](https://github.com/rose-pine/palette) |
 | **Rosé Pine Dawn** | light | Rosé Pine's light variant |
+| **Monokai** | dark | The classic editor palette |
 
 ## Selecting a theme
 
