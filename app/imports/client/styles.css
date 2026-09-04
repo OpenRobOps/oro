@@ -17,14 +17,14 @@
 /* this file is imported in client/main.jsx */
 
 :root {
-  /* Colors — Deep Navy */
-  --color-background: #1A0F2E;
-  --color-foreground: #FAF0F0;
-  --color-card: #170E28;
-  --color-primary: #9E6FF3;
-  --color-primary-hover: #5C35A8;
-  --color-muted: #BEAEDD;
-  --color-border: #3E3155;
+  /* Colors — ORO Moon pre-JS fallbacks (themes/oro.js is the source) */
+  --color-background: #151824;
+  --color-foreground: #EDF0F6;
+  --color-card: #1B1F2D;
+  --color-primary: #E0A526;
+  --color-primary-hover: #1E5560;
+  --color-muted: #AEB6C6;
+  --color-border: #2F3546;
 
   /* Shadows */
   --shadow-card: 0 1px 3px 0 hsl(220 20% 15% / 0.04),

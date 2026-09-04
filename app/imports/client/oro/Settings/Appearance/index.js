@@ -81,15 +81,18 @@ const themeLabel = (name) => {
     return 'Auto (match browser)';
   }
   if (name === 'oro') {
-    return 'ORO';
+    return 'ORO Moon';
   }
-  return name.split('-').map(capitalize).join(' ').replace(/^Rose Pine/, 'Rosé Pine');
+  return name.split('-').map(capitalize).join(' ').replace(/^Oro/, 'ORO').replace(/^Rose Pine/, 'Rosé Pine');
 };
 
 // Taglines from each theme's own project; links go to the original source
 const THEME_INFO = {
   oro: {
-    phrase: 'The ORO default: a deep navy control-room look.',
+    phrase: 'The ORO default: cool slate, with gold held back for the mark.',
+  },
+  'oro-sun': {
+    phrase: 'ORO for bright floors and printed reports.',
   },
   monokai: {
     phrase: 'The classic warm editor palette by Wimer Hazenberg.',

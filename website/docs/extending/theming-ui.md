@@ -12,7 +12,8 @@ user, and switching applies live — no page reload.
 
 | Theme | Mode | Inspired by |
 |-------|------|-------------|
-| **ORO** (default) | dark | The original "Deep Navy" look |
+| **ORO Moon** (default) | dark | The ORO brand palette: slate, gold, teal |
+| **ORO Sun** | light | ORO Moon's light scheme for bright floors and printed reports |
 | **Monokai** | dark | The classic editor palette |
 | **Tokyo Night** | dark | [folke/tokyonight.nvim](https://github.com/folke/tokyonight.nvim) |
 | **Tokyo Day** | light | Tokyo Night's day style |
@@ -42,7 +43,7 @@ The theme is resolved with the following precedence:
 3. **Auto** — the default when the user hasn't picked a theme (or picked
    "Auto"): the browser's `prefers-color-scheme` chooses between the dark and
    light defaults, live (changing the OS scheme re-themes the app). The
-   defaults are `oro` (dark) and `rose-pine-dawn` (light), optionally
+   defaults are `oro` (dark) and `oro-sun` (light), optionally
    overridden per deployment in `settings.json`:
 
    ```json
@@ -55,7 +56,7 @@ The theme is resolved with the following precedence:
    ```
 
 Valid theme names are the keys of the `THEMES` registry in
-`app/imports/client/Styles.js`: `oro`, `monokai`, `tokyo-night`, `tokyo-day`,
+`app/imports/client/Styles.js`: `oro`, `oro-sun`, `monokai`, `tokyo-night`, `tokyo-day`,
 `catppuccin-mocha`, `catppuccin-latte`, `rose-pine-moon`, `rose-pine-dawn`.
 
 ## How theming works

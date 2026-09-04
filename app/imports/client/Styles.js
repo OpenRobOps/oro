@@ -30,6 +30,7 @@ import { Meteor } from 'meteor/meteor';
 import { createTheme, responsiveFontSizes } from '@mui/material/styles';
 import { ChevronDown } from 'lucide-react';
 import oro from './themes/oro';
+import oroSun from './themes/oroSun';
 import monokai from './themes/monokai';
 import tokyoNight from './themes/tokyoNight';
 import tokyoDay from './themes/tokyoDay';
@@ -38,15 +39,19 @@ import catppuccinLatte from './themes/catppuccinLatte';
 import rosePineMoon from './themes/rosePineMoon';
 import rosePineDawn from './themes/rosePineDawn';
 
+// Key order is display order in Settings > Appearance (split by mode into a
+// dark and a light row), so dark/light pairs stay vertically aligned and the
+// unpaired Monokai goes last.
 const THEMES = {
   oro,
-  monokai,
+  'oro-sun': oroSun,
   'tokyo-night': tokyoNight,
   'tokyo-day': tokyoDay,
   'catppuccin-mocha': catppuccinMocha,
   'catppuccin-latte': catppuccinLatte,
   'rose-pine-moon': rosePineMoon,
   'rose-pine-dawn': rosePineDawn,
+  monokai,
 };
 export const THEME_NAMES = Object.keys(THEMES);
 export const themeMode = (name) => THEMES[name]?.mode || 'dark';
@@ -58,7 +63,7 @@ export const AUTO_THEME = 'auto';
 const configuredDark = Meteor.settings?.public?.defaultTheme;
 const configuredLight = Meteor.settings?.public?.defaultLightTheme;
 export const DEFAULT_DARK = THEMES[configuredDark] ? configuredDark : 'oro';
-export const DEFAULT_LIGHT = THEMES[configuredLight] ? configuredLight : 'rose-pine-dawn';
+export const DEFAULT_LIGHT = THEMES[configuredLight] ? configuredLight : 'oro-sun';
 
 const prefersLight = typeof window !== 'undefined' && window.matchMedia
   ? window.matchMedia('(prefers-color-scheme: light)')
