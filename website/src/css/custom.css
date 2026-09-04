@@ -13,7 +13,8 @@ Notes:
    script injected from docusaurus.config.ts and toggled by the navbar
    OroThemePicker. Palettes mirror app/imports/client/themes/<name>.js.
    The accent scale runs toward MORE contrast against the void: lighter steps
-   on dark themes, darker steps on the light ones (oro-sun, rose-pine-dawn).
+   on dark themes, darker steps on the light ones (oro-sun, tokyo-day,
+   catppuccin-latte, rose-pine-dawn).
    On the ORO palettes the scale changes hue: gold is the brand accent (CTA,
    logo wedge, inline links) and teal carries the softer interactive steps
    (nav, sidebar, tags), as on the brand canvas. */
@@ -76,6 +77,100 @@ html[data-oro-theme='oro-sun'] {
   --oro-illo-shade: #A6741A;
   --oro-illo-dark: #6B4A0F;
   --oro-illo-ink: #171B26;
+}
+
+html[data-oro-theme='tokyo-night'] {
+  --oro-color-void: #1a1b26;
+  --oro-color-surface: #16161e;
+  --oro-color-raised: #0C0E14;
+  --oro-color-border: #292e42;
+  --oro-color-border-strong: #3b4261;
+  --oro-color-border-muted: #545c7e;
+  --oro-color-accent: #7aa2f7;
+  --oro-color-accent-soft: #9bb8f9;
+  --oro-color-accent-softer: #bdd0fb;
+  --oro-color-text: #c0caf5;
+  --oro-color-text-muted: #a9b1d6;
+  --oro-color-text-faint: #737aa2;
+  --oro-color-cream: #c0caf5;
+  --oro-illo-pale: #E3EBFD;
+  --oro-illo-tint: #B4CAFB;
+  --oro-illo-accent: #7aa2f7;
+  --oro-illo-shade: #4E74C4;
+  --oro-illo-dark: #2E4A88;
+  --oro-illo-ink: #0C0E14;
+}
+
+/* Light theme: pairs with data-theme='light' (the picker sets both). */
+html[data-oro-theme='tokyo-day'] {
+  --oro-color-void: #e1e2e7;
+  --oro-color-surface: #eff0f4;
+  --oro-color-raised: #d0d5e3;
+  --oro-color-border: #c4c8da;
+  --oro-color-border-strong: #a8aecb;
+  --oro-color-border-muted: #8990b3;
+  --oro-color-accent: #2e7de9;
+  --oro-color-accent-soft: #1f5fc0;
+  --oro-color-accent-softer: #16468f;
+  --oro-color-text: #3760bf;
+  --oro-color-text-muted: #6172b0;
+  --oro-color-text-faint: #848cb5;
+  --oro-color-cream: #24325f;
+  --oro-color-white: #1a2545;
+  --oro-color-hover-bg: rgba(0, 0, 0, 0.05);
+  --oro-illo-pale: #DCE6FA;
+  --oro-illo-tint: #A9C2F3;
+  --oro-illo-accent: #2e7de9;
+  --oro-illo-shade: #1F58A8;
+  --oro-illo-dark: #163B70;
+  --oro-illo-ink: #24325f;
+}
+
+html[data-oro-theme='catppuccin-mocha'] {
+  --oro-color-void: #1E1E2E;
+  --oro-color-surface: #181825;
+  --oro-color-raised: #11111B;
+  --oro-color-border: #313244;
+  --oro-color-border-strong: #45475A;
+  --oro-color-border-muted: #6C7086;
+  --oro-color-accent: #CBA6F7;
+  --oro-color-accent-soft: #DBBFF9;
+  --oro-color-accent-softer: #E8D5FB;
+  --oro-color-text: #CDD6F4;
+  --oro-color-text-muted: #BAC2DE;
+  --oro-color-text-faint: #9399B2;
+  --oro-color-cream: #CDD6F4;
+  --oro-illo-pale: #EEE4FD;
+  --oro-illo-tint: #DBBFF9;
+  --oro-illo-accent: #CBA6F7;
+  --oro-illo-shade: #9A72D0;
+  --oro-illo-dark: #5F4390;
+  --oro-illo-ink: #11111B;
+}
+
+/* Light theme: pairs with data-theme='light' (the picker sets both). */
+html[data-oro-theme='catppuccin-latte'] {
+  --oro-color-void: #EFF1F5;
+  --oro-color-surface: #F7F8FA;
+  --oro-color-raised: #DCE0E8;
+  --oro-color-border: #CCD0DA;
+  --oro-color-border-strong: #BCC0CC;
+  --oro-color-border-muted: #9CA0B0;
+  --oro-color-accent: #8839EF;
+  --oro-color-accent-soft: #6C2BC4;
+  --oro-color-accent-softer: #521F96;
+  --oro-color-text: #4C4F69;
+  --oro-color-text-muted: #6C6F85;
+  --oro-color-text-faint: #8C8FA1;
+  --oro-color-cream: #3C3F57;
+  --oro-color-white: #2A2C3D;
+  --oro-color-hover-bg: rgba(0, 0, 0, 0.05);
+  --oro-illo-pale: #E9DCFC;
+  --oro-illo-tint: #C7A5F6;
+  --oro-illo-accent: #8839EF;
+  --oro-illo-shade: #6A2BC0;
+  --oro-illo-dark: #47197F;
+  --oro-illo-ink: #4C4F69;
 }
 
 html[data-oro-theme='monokai'] {

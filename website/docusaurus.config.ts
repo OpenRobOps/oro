@@ -48,7 +48,7 @@ const config: Config = {
           preBodyTags: [
             {
               tagName: 'script',
-              innerHTML: `(function(){try{var t=localStorage.getItem('oro-theme')||'oro';if(t!=='oro'){document.documentElement.setAttribute('data-oro-theme',t);}var m=(t==='oro-sun'||t==='rose-pine-dawn')?'light':'dark';document.documentElement.setAttribute('data-theme',m);document.documentElement.setAttribute('data-theme-choice',m);}catch(e){}})();`,
+              innerHTML: `(function(){try{var t=localStorage.getItem('oro-theme')||'oro';if(t!=='oro'){document.documentElement.setAttribute('data-oro-theme',t);}var m=/^(oro-sun|tokyo-day|catppuccin-latte|rose-pine-dawn)$/.test(t)?'light':'dark';document.documentElement.setAttribute('data-theme',m);document.documentElement.setAttribute('data-theme-choice',m);}catch(e){}})();`,
             },
           ],
         }),
