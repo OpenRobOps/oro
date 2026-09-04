@@ -15,47 +15,52 @@
  */
 
 /**
- * OroLogo: the ORO lockup, drawn from the active theme.
+ * OroLogo: the ORO lockup.
  *
- * Replaces the /images/oro-logo.svg + /images/oro-logo-light.svg pair and the
- * `theme.palette.mode === 'light' ? … : …` switch at each call site. There is no
- * light or dark variant of the mark — there is the mark, and whatever palette is
- * mounted. Ink follows text.primary; the wedge follows secondary.main (the
- * graphic accent, deliberately NOT background.accentSolid, which exists only for
- * fills that carry text).
+ * Brand colors are fixed, not themed: the wedge is always amber gold, and the
+ * letters are brand dark on light themes / brand cream on dark themes (picked by
+ * theme.palette.mode). Both can be overridden per call site via `ink` / `accent`.
  *
- * Geometry is byte-identical to the shipped oro-logo.svg.
+ * Geometry is byte-identical to website/static/img/full-logo-small-size.svg
+ * (the 2026 golden-brand lockup; the mark matches the oro-icon asset).
  *
  *   <OroLogo height={22} onClick={…} />   // header lockup
  *   <OroLogo height={44} title="ORO" />   // login, named for screen readers
  *   <OroLogo mark height={28} />          // bracket only, collapsed nav
  *   <OroLogo height={22} ink="currentColor" />  // inherit on a colored surface
+ *   <OroLogo height={22} accent={theme.palette.secondary.main} />  // themed wedge
  *
  * public/images/favicon.svg stays a static file — it can't read the theme.
  */
 import PropTypes from 'prop-types';
 import { useTheme } from '@mui/material/styles';
 
-const VIEWBOX = { full: '0 0 207 85', mark: '0 0 86 86' };
-const ASPECT = { full: 207 / 85, mark: 1 };
+/** Brand palette — matches favicon.svg and the website lockup. */
+export const BRAND_GOLD = '#E0A526';
+export const BRAND_INK_DARK = '#1A0F2E'; // letters on light backgrounds
+export const BRAND_INK_LIGHT = '#F4F1FA'; // letters on dark backgrounds
 
-// Full lockup: two brackets + the R.
+const VIEWBOX = { full: '0 0 327 133', mark: '-16 -16 164.444 165' };
+const ASPECT = { full: 327 / 133, mark: 164.444 / 165 };
+
+// Full lockup: two brackets + the R (with its wedge notch).
 const FULL_INK = [
-  'M35.6381 83.0886L3.08392 50.5498C1.10911 48.571 0 45.8895 0 43.0939C0 40.2983 1.10911 37.6169 3.08392 35.6381L35.6381 3.08392C37.6169 1.10911 40.2983 0 43.0939 0C45.8895 0 48.571 1.10911 50.5498 3.08392L83.0886 35.6381L72.8866 45.84L43.0939 16.0473L16.0473 43.0939L45.84 72.8866L35.6381 83.0886Z',
-  'M158.813 83.0886L126.274 50.5498C124.299 48.571 123.19 45.8896 123.19 43.094C123.19 40.2984 124.299 37.6169 126.274 35.6381L158.813 3.08398C160.792 1.10917 163.473 6.10352e-05 166.269 6.10352e-05C169.065 6.10352e-05 171.746 1.10917 173.725 3.08398L206.264 35.6228L196.062 45.8247L166.269 16.0473L139.222 43.094L169.015 72.8867L158.813 83.0886Z',
-  'M126.428 4.61816H109.307C106.971 4.61815 104.658 5.07929 102.5 5.97514C100.342 6.87098 98.383 8.18392 96.734 9.83865C95.085 11.4934 93.7788 13.4574 92.8904 15.6179C92.002 17.7785 91.5489 20.0933 91.5569 22.4294V83.7944H106.898V20.1435H126.428V4.61816Z',
+  'M251.028 132.444L199.136 80.5769C195.988 77.4227 194.22 73.1484 194.22 68.6922C194.22 64.2359 195.988 59.9617 199.136 56.8075L251.028 4.91581C254.182 1.76793 258.456 0 262.913 0C267.369 0 271.643 1.76793 274.797 4.91581L326.664 56.8075L310.402 73.0695L262.913 25.5795L219.8 68.6922L267.29 116.182L251.028 132.444Z',
+  'M56.8075 132.444L4.91581 80.5769C1.76793 77.4227 0 73.1484 0 68.6922C0 64.2359 1.76793 59.9617 4.91581 56.8075L56.8075 4.91581C59.9617 1.76793 64.2359 0 68.6922 0C73.1484 0 77.4227 1.76793 80.5769 4.91581L132.444 56.8075L116.182 73.0695L68.6922 25.5795L25.5795 68.6922L73.0695 116.182L56.8075 132.444Z',
+  'M204.716 6.23633H177.425C173.701 6.23631 170.014 6.97137 166.575 8.39936C163.136 9.82735 160.012 11.9202 157.384 14.5578C154.755 17.1955 152.673 20.3261 151.257 23.7701C149.841 27.2141 149.118 30.9038 149.131 34.6276V132.444H173.585V30.9839H204.716V6.23633Z',
 ];
 const FULL_ACCENT = [
-  'M73.033 45.5995L44.5898 74.0427L54.7868 84.2397L83.23 55.7965L73.033 45.5995Z',
-  'M196.214 45.6091L167.771 74.0523L177.968 84.2493L206.411 55.8061L196.214 45.6091Z',
+  'M310.396 73.0513L267.271 116.176L283.462 132.368L326.587 89.2427L310.396 73.0513Z',
+  'M116.175 73.0513L73.0505 116.176L89.2419 132.368L132.367 89.2427L116.175 73.0513Z',
+  'M184.716 6.23633H204.716V30.9839H184.716Z',
 ];
 
-// Single bracket, 8px inset in an 86 box — the app-icon / collapsed-nav form.
+// Single bracket with 16-unit padding — the app-icon / collapsed-nav form.
 const MARK_INK = [
-  'M35.6381 75.0886L11.0839 50.5498C9.10911 48.571 8 45.8895 8 43.0939C8 40.2983 9.10911 37.6169 11.0839 35.6381L35.6381 11.0839C37.6169 9.10911 40.2983 8 43.0939 8C45.8895 8 48.571 9.10911 50.5498 11.0839L75.0886 35.6381L64.8866 45.84L43.0939 24.0473L24.0473 43.0939L45.84 64.8866L35.6381 75.0886Z',
+  'M56.8075 132.444L4.91581 80.5769C1.76793 77.4227 0 73.1484 0 68.6922C0 64.2359 1.76793 59.9617 4.91581 56.8075L56.8075 4.91581C59.9617 1.76793 64.2359 0 68.6922 0C73.1484 0 77.4227 1.76793 80.5769 4.91581L132.444 56.8075L116.182 73.0695L68.6922 25.5795L25.5795 68.6922L73.0695 116.182L56.8075 132.444Z',
 ];
 const MARK_ACCENT = [
-  'M65.033 45.5995L44.5898 66.0427L54.7868 76.2397L75.23 55.7965L65.033 45.5995Z',
+  'M116.175 73.0513L73.0505 116.176L89.2419 132.368L132.367 89.2427L116.175 73.0513Z',
 ];
 
 const OroLogo = ({
@@ -68,8 +73,8 @@ const OroLogo = ({
 }) => {
   const theme = useTheme();
   const kind = mark ? 'mark' : 'full';
-  const inkFill = ink || theme.palette.text.primary;
-  const accentFill = accent || theme.palette.secondary.main;
+  const inkFill = ink || (theme.palette.mode === 'light' ? BRAND_INK_DARK : BRAND_INK_LIGHT);
+  const accentFill = accent || BRAND_GOLD;
 
   return (
     <svg
@@ -93,13 +98,13 @@ const OroLogo = ({
 };
 
 OroLogo.propTypes = {
-  /** Rendered height in px; width is derived (lockup 207:85, mark 1:1). */
+  /** Rendered height in px; width is derived (lockup 327:133, mark ~1:1). */
   height: PropTypes.number,
   /** Bracket only, no wordmark. Use below ~96px of available width. */
   mark: PropTypes.bool,
-  /** Override the ink. Pass 'currentColor' to inherit from a colored surface. */
+  /** Override the letters (default: brand dark/cream by palette mode). Pass 'currentColor' to inherit. */
   ink: PropTypes.string,
-  /** Override the wedge. */
+  /** Override the wedge (defaults to the brand gold). */
   accent: PropTypes.string,
   /** Accessible name. Omit inside a link or button that already names itself. */
   title: PropTypes.string,

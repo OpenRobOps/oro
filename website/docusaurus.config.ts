@@ -86,7 +86,7 @@ const config: Config = {
   ],
 
   themeConfig: {
-    image: 'img/logo.svg',
+    image: 'img/full-logo-small-size.svg',
     colorMode: {
       defaultMode: 'dark',
       disableSwitch: true

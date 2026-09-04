@@ -4,23 +4,25 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
 import {useThemeConfig} from '@docusaurus/theme-common';
 
 /**
- * Theme-aware ORO lockup: ink and wedge come from the active palette's CSS
- * vars (see src/css/custom.css), so Monokai gets its green wedge, Rosé Pine
- * its rose, and Dawn a dark ink — no per-theme image files. Geometry is
- * byte-identical to static/img/full-logo-small-size.svg.
+ * ORO lockup. Brand colors are fixed, not themed: the wedge is always amber
+ * gold; the letters use --oro-logo-ink (brand cream, or brand dark under
+ * data-theme='light' — see src/css/custom.css). Geometry is byte-identical to
+ * static/img/full-logo-small-size.svg.
  *
  * Swizzled (wrapped) from @docusaurus/theme-classic Logo; keeps the config's
  * navbar.logo href/alt and the navbar title, drops src/srcDark.
  */
 
 const INK = [
-  'M9.30616 21.6969L0.805304 13.2001C0.289621 12.6833 0 11.9831 0 11.2531C0 10.5231 0.289621 9.82288 0.805304 9.30616L9.30616 0.805304C9.82288 0.289621 10.5231 0 11.2531 0C11.9831 0 12.6833 0.289621 13.2001 0.805304L21.6969 9.30616L19.0329 11.9702L11.2531 4.19042L4.19042 11.2531L11.9702 19.0329L9.30616 21.6969Z',
-  'M41.4708 21.6969L32.974 13.2001C32.4583 12.6833 32.1687 11.9831 32.1687 11.2531C32.1687 10.5231 32.4583 9.82288 32.974 9.30616L41.4708 0.805304C41.9875 0.289621 42.6877 0 43.4178 0C44.1478 0 44.848 0.289621 45.3647 0.805304L53.8616 9.30216L51.1975 11.9662L43.4178 4.19042L36.3551 11.2531L44.1349 19.0329L41.4708 21.6969Z',
-  'M33.014 1.20593H28.5433C27.9332 1.20593 27.3292 1.32635 26.7658 1.56028C26.2024 1.79421 25.6907 2.13706 25.2601 2.56916C24.8295 3.00126 24.4884 3.51411 24.2565 4.0783C24.0245 4.6425 23.9061 5.24694 23.9082 5.85697V21.8812H27.9143V5.26006H33.014V1.20593Z',
+  'M251.028 132.444L199.136 80.5769C195.988 77.4227 194.22 73.1484 194.22 68.6922C194.22 64.2359 195.988 59.9617 199.136 56.8075L251.028 4.91581C254.182 1.76793 258.456 0 262.913 0C267.369 0 271.643 1.76793 274.797 4.91581L326.664 56.8075L310.402 73.0695L262.913 25.5795L219.8 68.6922L267.29 116.182L251.028 132.444Z',
+  'M56.8075 132.444L4.91581 80.5769C1.76793 77.4227 0 73.1484 0 68.6922C0 64.2359 1.76793 59.9617 4.91581 56.8075L56.8075 4.91581C59.9617 1.76793 64.2359 0 68.6922 0C73.1484 0 77.4227 1.76793 80.5769 4.91581L132.444 56.8075L116.182 73.0695L68.6922 25.5795L25.5795 68.6922L73.0695 116.182L56.8075 132.444Z',
+  'M204.716 6.23633H177.425C173.701 6.23631 170.014 6.97137 166.575 8.39936C163.136 9.82735 160.012 11.9202 157.384 14.5578C154.755 17.1955 152.673 20.3261 151.257 23.7701C149.841 27.2141 149.118 30.9038 149.131 34.6276V132.444H173.585V30.9839H204.716V6.23633Z',
 ];
+const BRAND_GOLD = '#E0A526';
 const ACCENT = [
-  'M19.0711 11.9073L11.6437 19.3347L14.3065 21.9975L21.7338 14.5701L19.0711 11.9073Z',
-  'M51.2373 11.9099L43.8099 19.3373L46.4726 22L53.9 14.5727L51.2373 11.9099Z',
+  'M310.396 73.0513L267.271 116.176L283.462 132.368L326.587 89.2427L310.396 73.0513Z',
+  'M116.175 73.0513L73.0505 116.176L89.2419 132.368L132.367 89.2427L116.175 73.0513Z',
+  'M184.716 6.23633H204.716V30.9839H184.716Z',
 ];
 
 export default function Logo(props: ComponentProps<'a'> & {
@@ -37,15 +39,15 @@ export default function Logo(props: ComponentProps<'a'> & {
     <svg
       width="54"
       height="22"
-      viewBox="0 0 54 22"
+      viewBox="0 0 327 133"
       fill="none"
       role={logo?.alt ? 'img' : 'presentation'}
       aria-label={logo?.alt || undefined}>
       {INK.map((d) => (
-        <path key={d.slice(0, 24)} d={d} fill="var(--oro-color-cream)" />
+        <path key={d.slice(0, 24)} d={d} fill="var(--oro-logo-ink)" />
       ))}
       {ACCENT.map((d) => (
-        <path key={d.slice(0, 24)} d={d} fill="var(--oro-color-accent)" />
+        <path key={d.slice(0, 24)} d={d} fill={BRAND_GOLD} />
       ))}
     </svg>
   );
