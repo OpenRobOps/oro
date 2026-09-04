@@ -4,9 +4,10 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
 import {useThemeConfig} from '@docusaurus/theme-common';
 
 /**
- * ORO lockup. The wedge is always the brand gold (theme-independent); the ink
- * follows --oro-color-cream so it stays legible on light themes such as Dawn.
- * Geometry is byte-identical to static/img/full-logo-small-size.svg.
+ * ORO lockup. Brand colors are fixed, not themed: the wedge is always amber
+ * gold; the letters use --oro-logo-ink (brand cream, or brand dark under
+ * data-theme='light' — see src/css/custom.css). Geometry is byte-identical to
+ * static/img/full-logo-small-size.svg.
  *
  * Swizzled (wrapped) from @docusaurus/theme-classic Logo; keeps the config's
  * navbar.logo href/alt and the navbar title, drops src/srcDark.
@@ -43,7 +44,7 @@ export default function Logo(props: ComponentProps<'a'> & {
       role={logo?.alt ? 'img' : 'presentation'}
       aria-label={logo?.alt || undefined}>
       {INK.map((d) => (
-        <path key={d.slice(0, 24)} d={d} fill="var(--oro-color-cream)" />
+        <path key={d.slice(0, 24)} d={d} fill="var(--oro-logo-ink)" />
       ))}
       {ACCENT.map((d) => (
         <path key={d.slice(0, 24)} d={d} fill={BRAND_GOLD} />

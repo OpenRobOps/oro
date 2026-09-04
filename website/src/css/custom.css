@@ -27,6 +27,10 @@ Notes:
    The accent scale runs toward MORE contrast against the void: lighter steps
    on dark themes, darker steps on the light one (rose-pine-dawn). */
 
+/* Brand logo letters: fixed brand colors, not part of any palette. */
+:root { --oro-logo-ink: #F4F1FA; }
+html[data-theme='light'] { --oro-logo-ink: #1A0F2E; }
+
 :root {
   /* Backgrounds */
   --oro-color-void: #1A0F2E;
