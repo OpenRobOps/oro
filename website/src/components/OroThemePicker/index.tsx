@@ -7,9 +7,13 @@ import {useColorMode, type ColorMode} from '@docusaurus/theme-common';
 const THEMES: Record<string, {label: string; mode: ColorMode}> = {
   'oro': {label: 'ORO Moon', mode: 'dark'},
   'oro-sun': {label: 'ORO Sun', mode: 'light'},
-  'monokai': {label: 'Monokai', mode: 'dark'},
+  'tokyo-night': {label: 'Tokyo Night', mode: 'dark'},
+  'tokyo-day': {label: 'Tokyo Day', mode: 'light'},
+  'catppuccin-mocha': {label: 'Catppuccin Mocha', mode: 'dark'},
+  'catppuccin-latte': {label: 'Catppuccin Latte', mode: 'light'},
   'rose-pine-moon': {label: 'Rosé Pine Moon', mode: 'dark'},
   'rose-pine-dawn': {label: 'Rosé Pine Dawn', mode: 'light'},
+  'monokai': {label: 'Monokai', mode: 'dark'},
 };
 
 export default function OroThemePicker(): ReactNode {
