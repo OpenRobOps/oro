@@ -4,10 +4,9 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
 import {useThemeConfig} from '@docusaurus/theme-common';
 
 /**
- * Theme-aware ORO lockup: ink and wedge come from the active palette's CSS
- * vars (see src/css/custom.css), so Monokai gets its green wedge, Rosé Pine
- * its rose, and Dawn a dark ink — no per-theme image files. Geometry is
- * byte-identical to static/img/full-logo-small-size.svg.
+ * ORO lockup. The wedge is always the brand gold (theme-independent); the ink
+ * follows --oro-color-cream so it stays legible on light themes such as Dawn.
+ * Geometry is byte-identical to static/img/full-logo-small-size.svg.
  *
  * Swizzled (wrapped) from @docusaurus/theme-classic Logo; keeps the config's
  * navbar.logo href/alt and the navbar title, drops src/srcDark.
@@ -18,6 +17,7 @@ const INK = [
   'M56.8075 132.444L4.91581 80.5769C1.76793 77.4227 0 73.1484 0 68.6922C0 64.2359 1.76793 59.9617 4.91581 56.8075L56.8075 4.91581C59.9617 1.76793 64.2359 0 68.6922 0C73.1484 0 77.4227 1.76793 80.5769 4.91581L132.444 56.8075L116.182 73.0695L68.6922 25.5795L25.5795 68.6922L73.0695 116.182L56.8075 132.444Z',
   'M204.716 6.23633H177.425C173.701 6.23631 170.014 6.97137 166.575 8.39936C163.136 9.82735 160.012 11.9202 157.384 14.5578C154.755 17.1955 152.673 20.3261 151.257 23.7701C149.841 27.2141 149.118 30.9038 149.131 34.6276V132.444H173.585V30.9839H204.716V6.23633Z',
 ];
+const BRAND_GOLD = '#E0A526';
 const ACCENT = [
   'M310.396 73.0513L267.271 116.176L283.462 132.368L326.587 89.2427L310.396 73.0513Z',
   'M116.175 73.0513L73.0505 116.176L89.2419 132.368L132.367 89.2427L116.175 73.0513Z',
@@ -46,7 +46,7 @@ export default function Logo(props: ComponentProps<'a'> & {
         <path key={d.slice(0, 24)} d={d} fill="var(--oro-color-cream)" />
       ))}
       {ACCENT.map((d) => (
-        <path key={d.slice(0, 24)} d={d} fill="var(--oro-color-accent)" />
+        <path key={d.slice(0, 24)} d={d} fill={BRAND_GOLD} />
       ))}
     </svg>
   );

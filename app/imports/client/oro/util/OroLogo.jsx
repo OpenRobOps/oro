@@ -15,12 +15,12 @@
  */
 
 /**
- * OroLogo: the ORO lockup, drawn from the active theme.
+ * OroLogo: the ORO lockup.
  *
  * There is no light or dark variant of the mark — there is the mark, and
- * whatever palette is mounted. Ink follows text.primary; the wedge follows
- * secondary.main (the graphic accent, deliberately NOT background.accentSolid,
- * which exists only for fills that carry text).
+ * whatever palette is mounted. Ink follows text.primary so it stays legible on
+ * light and dark themes; the wedge is always the brand gold (theme-independent).
+ * Both can be overridden per call site via `ink` / `accent`.
  *
  * Geometry is byte-identical to website/static/img/full-logo-small-size.svg
  * (the 2026 golden-brand lockup; the mark matches the oro-icon asset).
@@ -29,11 +29,15 @@
  *   <OroLogo height={44} title="ORO" />   // login, named for screen readers
  *   <OroLogo mark height={28} />          // bracket only, collapsed nav
  *   <OroLogo height={22} ink="currentColor" />  // inherit on a colored surface
+ *   <OroLogo height={22} accent={theme.palette.secondary.main} />  // themed wedge
  *
  * public/images/favicon.svg stays a static file — it can't read the theme.
  */
 import PropTypes from 'prop-types';
 import { useTheme } from '@mui/material/styles';
+
+/** Brand gold — matches the wedge in favicon.svg and the website lockup. */
+export const BRAND_GOLD = '#E0A526';
 
 const VIEWBOX = { full: '0 0 327 133', mark: '-16 -16 164.444 165' };
 const ASPECT = { full: 327 / 133, mark: 164.444 / 165 };
@@ -69,7 +73,7 @@ const OroLogo = ({
   const theme = useTheme();
   const kind = mark ? 'mark' : 'full';
   const inkFill = ink || theme.palette.text.primary;
-  const accentFill = accent || theme.palette.secondary.main;
+  const accentFill = accent || BRAND_GOLD;
 
   return (
     <svg
@@ -99,7 +103,7 @@ OroLogo.propTypes = {
   mark: PropTypes.bool,
   /** Override the ink. Pass 'currentColor' to inherit from a colored surface. */
   ink: PropTypes.string,
-  /** Override the wedge. */
+  /** Override the wedge (defaults to the brand gold). */
   accent: PropTypes.string,
   /** Accessible name. Omit inside a link or button that already names itself. */
   title: PropTypes.string,
