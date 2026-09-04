@@ -5,7 +5,8 @@ import {useColorMode, type ColorMode} from '@docusaurus/theme-common';
 // The inline script in docusaurus.config.ts applies the stored choice
 // pre-paint; this component only reflects and changes it.
 const THEMES: Record<string, {label: string; mode: ColorMode}> = {
-  'oro': {label: 'ORO', mode: 'dark'},
+  'oro': {label: 'ORO Moon', mode: 'dark'},
+  'oro-sun': {label: 'ORO Sun', mode: 'light'},
   'monokai': {label: 'Monokai', mode: 'dark'},
   'rose-pine-moon': {label: 'Rosé Pine Moon', mode: 'dark'},
   'rose-pine-dawn': {label: 'Rosé Pine Dawn', mode: 'light'},
@@ -13,7 +14,7 @@ const THEMES: Record<string, {label: string; mode: ColorMode}> = {
 
 export default function OroThemePicker(): ReactNode {
   const {setColorMode} = useColorMode();
-  const [theme, setTheme] = useState('monokai');
+  const [theme, setTheme] = useState('oro');
 
   useEffect(() => {
     setTheme(document.documentElement.getAttribute('data-oro-theme') ?? 'oro');

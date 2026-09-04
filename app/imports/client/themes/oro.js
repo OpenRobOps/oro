@@ -15,169 +15,206 @@
  */
 
 /**
- * ORO theme tokens (default theme, "Deep Navy" look).
+ * ORO Moon theme tokens (default theme, dark).
+ *
+ * From the "ORO Product Theme" brand canvas: cool slate neutrals carry every
+ * surface; gold is the brand accent and is held back for the mark, selected
+ * state and the one primary action on a screen; teal does the interactive
+ * work (links, section headings, chevrons); violet carries second-position
+ * data; status owns green, blue, orange and red.
  *
  * This object is the design-token contract for the app: every color used by
  * components must come from here (through the MUI theme palette). Other themes
- * (see ./monokai.js) override these values keeping the same shape.
+ * (see ./oroSun.js, ./monokai.js) override these values keeping the same shape.
  */
+
+// Surfaces
+const BG = '#151824';
+const PAPER = '#1B1F2D';
+const DEEP = '#0F1119';
+const SIDEBAR = '#191D29';
+const CHIP = '#262B3B';
+const BORDER = '#2F3546';
+const BORDER_STRONG = '#3D445A';
+// Text
+const FG = '#EDF0F6';
+const FG_SOFT = '#CBD2DE';
+const FG2 = '#AEB6C6';
+const MUTED = '#909AAE';
+const MUTED_DARK = '#5E6777';
+// Brand accent (mark, selected, primary action) and its hover/ink
+const GOLD = '#E0A526';
+const GOLD_HOVER = '#EAB84A';
+const GOLD_PALE = '#F2CB7A';
+const ON_GOLD = '#241703';
+// Supporting accents
+const TEAL = '#3FB6C4';
+const VIOLET = '#8B7DE8';
+// Status
+const GREEN = '#45B87A';
+const GREEN_DEEP = '#2E9C63';
+const BLUE = '#5B8DEF';
+const ORANGE = '#E8763C';
+const RED = '#E4526A';
+
 const oro = {
   mode: 'dark',
   text: {
     // MUI reads these for Typography color="text.primary" / "text.secondary"
-    primary: '#FAF0F0',
-    secondary: '#BEAEDD',
+    primary: FG,
+    secondary: FG2,
     // Default color for body text/table cells (brightest text in the theme)
-    bright: '#FFFFFF',
-    icon: '#BEAEDD',
-    notesLight: '#BEAEDD',
-    title: '#D6CCE8',
-    notesMedium: '#BEAEDD',
-    notesDark: '#FAF0F0',
-    content: '#C2C2C2',
-    contrastText: '#FAF0F0',
-    darkBlue: '#9E6FF3',
-    robotAvatar: '#BE9AFF',
-    statusError: '#FB7188',
-    lightGray: '#C2C2C2',
-    mediumDarkGray: '#BEAEDD',
-    muted: '#AAAAAA',
-    mutedDark: '#585858',
-    subtle: '#D0D0D0',
-    buttonText: '#D9D9D9',
-    inactive: '#9488AA',
-    inputLabel: '#757575',
-    detailsLabel: '#CAC4D6',
-    detailsValue: '#E6E1EE',
-    pendingDot: '#EFB8C8',
-    onApprove: '#1A004A',
+    bright: FG,
+    icon: FG2,
+    notesLight: FG2,
+    title: FG_SOFT,
+    notesMedium: FG2,
+    notesDark: FG,
+    content: FG2,
+    contrastText: FG,
+    darkBlue: TEAL,
+    robotAvatar: VIOLET,
+    statusError: RED,
+    lightGray: FG2,
+    mediumDarkGray: MUTED,
+    muted: MUTED,
+    mutedDark: MUTED_DARK,
+    subtle: FG_SOFT,
+    buttonText: FG2,
+    inactive: MUTED,
+    inputLabel: MUTED,
+    detailsLabel: FG2,
+    detailsValue: FG,
+    pendingDot: '#F2A98A',
+    onApprove: ON_GOLD,
     // Ink for text/icons on background.accentSolid. Every theme must define this
     // explicitly: it is not derivable from the accent (a light theme needs light
     // ink on a saturated fill, a pastel-accent dark theme needs dark ink).
-    onAccent: '#1A004A',
-    heading: '#E2D8F0',
-    subheading: '#A898C4',
+    onAccent: ON_GOLD,
+    heading: FG,
+    subheading: FG2,
     black: '#000000',
   },
   background: {
-    default: '#1A0F2E',
-    paper: '#170E28',
-    blueLightBackground: '#1A0F2E',
-    lightBackground: '#1A0F2E',
-    tabSelected: '#9E6FF3',
-    titleBar: '#170E28',
-    spaceIntelligence: '#251A38',
-    navLight: '#1A0F2E',
-    navMedium: '#170E28',
-    navDark: '#0E0918',
+    default: BG,
+    paper: PAPER,
+    blueLightBackground: BG,
+    lightBackground: BG,
+    tabSelected: GOLD,
+    titleBar: PAPER,
+    spaceIntelligence: CHIP,
+    navLight: BG,
+    navMedium: PAPER,
+    navDark: DEEP,
     white: '#FFFFFF',
-    surface: '#170E28',
-    mintAccent: '#5ECFA8',
-    mintAccentDim: '#1D4942',
-    orangeAccent: '#F4935A',
-    orangeAccentDim: '#5F3021',
-    lightBlue: '#1A0F2E',
-    veryLightGray: '#1A0F2E',
-    lightGray: '#251A38',
-    gray: '#251A38',
-    darkGray: '#251A38',
-    black: '#0E0918',
-    brightBlue: '#9E6FF3',
-    devMagenta: '#9E6FF3',
-    loadingBarGray: '#251A38',
-    loadingBarTransparentGray: '#251A3800',
-    onHoverGray: '#251A38',
-    zeroData: '#251A38',
-    robOpsCopilotTable: '#1A0F2E',
-    softGray: '#1A0F2E',
-    borderGray: '#251A38',
-    borderLight: '#3E3155',
-    borderMedium: '#4A3570',
-    chip: '#3A285A',
-    selected: '#5C35A8',
-    offlineBar: '#F4935A',
-    zoneDefaultColor: '#FFCD87',
-    accentPurpleHover: '#A78BFA',
-    sidebar: '#201533',
-    sidebarBorder: '#382B51',
-    userCardBg: '#1D1231',
-    detailsBorder: '#4A4557',
-    pendingBg: 'rgba(99, 59, 72, 0.3)',
-    rejectBorder: '#938E9F',
-    approveBtn: '#9E6FF3',
+    surface: PAPER,
+    mintAccent: GREEN,
+    mintAccentDim: '#1C4A34',
+    orangeAccent: ORANGE,
+    orangeAccentDim: '#5A2E18',
+    lightBlue: BG,
+    veryLightGray: BG,
+    lightGray: CHIP,
+    gray: CHIP,
+    darkGray: CHIP,
+    black: DEEP,
+    brightBlue: TEAL,
+    devMagenta: VIOLET,
+    loadingBarGray: CHIP,
+    loadingBarTransparentGray: `${CHIP}00`,
+    onHoverGray: CHIP,
+    zeroData: CHIP,
+    robOpsCopilotTable: BG,
+    softGray: BG,
+    borderGray: CHIP,
+    borderLight: BORDER,
+    borderMedium: BORDER_STRONG,
+    chip: CHIP,
+    // Dim teal: selected toolbar/segment background behind light text
+    selected: '#1E5560',
+    offlineBar: ORANGE,
+    zoneDefaultColor: GOLD_PALE,
+    accentPurpleHover: GOLD_HOVER,
+    sidebar: SIDEBAR,
+    sidebarBorder: BORDER,
+    userCardBg: PAPER,
+    detailsBorder: BORDER_STRONG,
+    pendingBg: 'rgba(232, 118, 60, 0.15)',
+    rejectBorder: MUTED,
+    approveBtn: GOLD,
     // Fill for accent surfaces that carry text. Usually === secondary.main;
     // overridden where the graphic accent is too light to pass AA behind text
     // (see tokyoDay). NOT for strokes, icons or the logo wedge — those use
     // secondary.main, which stays at full brightness.
-    accentSolid: '#9E6FF3',
-    selectedNav: '#341F5A',
+    accentSolid: GOLD,
+    selectedNav: CHIP,
   },
   modes: {
-    mission: '#5ECFA8',
-    idle: '#A139C3',
-    error: '#B41270',
-    charging: '#BA8A27',
-    others: '#BCBCBC',
-    modeBrown: '#BB8900',
-    modeBlue: '#507CCF'
+    mission: GREEN,
+    idle: VIOLET,
+    error: RED,
+    charging: '#C9931F',
+    others: MUTED,
+    modeBrown: '#B07A10',
+    modeBlue: BLUE,
   },
   incidents: {
-    ok: '#3F93FF',
-    resolved: '#4CAF50',
-    warning: '#FFBB32',
-    error: '#FB7188',
-    inactive: '#BCBCBC',
-    staleOk: '#B2D3FF',
-    staleWarning: '#FFE3AD',
-    staleError: '#EAAD9A',
-    staleInactive: '#E4E4E4',
+    ok: GREEN,
+    resolved: GREEN_DEEP,
+    warning: ORANGE,
+    error: RED,
+    inactive: MUTED,
+    staleOk: '#A3D9BB',
+    staleWarning: '#F3BBA0',
+    staleError: '#F0A9B5',
+    staleInactive: '#C8CED9',
     // Used for disabling data sources according to mode.
     disabled: '#f3f3f3',
     disabledSelected: '#2b2e82',
-    selectedBorder: '#2A3C98',
+    selectedBorder: TEAL,
   },
   // ROS diagnostics status colors (see graphics/ROSDiagnosticIcon)
   diagnostics: {
-    ok: '#3F93FF',
-    warning: '#FFBB32',
-    stale: '#BCBCBC',
-    error: '#CB3303',
+    ok: GREEN,
+    warning: ORANGE,
+    stale: MUTED,
+    error: RED,
   },
   teleop: {
-    actionButton: '#F05523',
-    actionButtonLight: '#F5834E',
-    hoverActionButton: '#C14821',
-    planedPath: '#88BF2D',
-    wayPoint: '#006B00',
-    completedPath: '#2A3C98',
-    openTeleop: '#F05523',
-    waypointAvatar: '#CFFAEC'
+    actionButton: ORANGE,
+    actionButtonLight: '#F0956A',
+    hoverActionButton: '#C45E2C',
+    planedPath: GREEN,
+    wayPoint: GREEN_DEEP,
+    completedPath: '#3B62B8',
+    openTeleop: ORANGE,
+    waypointAvatar: '#CFF5E2',
   },
   // Localization map layers (see LocalizationWidget)
   map: {
-    point: '#8080FFE6',
-    pointOutline: '#404080',
-    selected: '#71BAE1',
-    relocalizeInnerFrame: '#BE9AFF',
-    selectedOutline: '#8080FF',
-    robotPoseNormalPrimary: '#BE9AFF',
-    robotPoseNormalSecondary: '#3E3155',
-    robotPoseNormalOutline: '#BE9AFF',
-    robotPoseSelectedPrimary: '#BE9AFF',
-    robotPoseSelectedSecondary: '#3E3155',
-    robotPoseSelectedArrow: '#BE9AFF'
+    point: `${VIOLET}E6`,
+    pointOutline: '#4A4390',
+    selected: TEAL,
+    relocalizeInnerFrame: TEAL,
+    selectedOutline: VIOLET,
+    robotPoseNormalPrimary: TEAL,
+    robotPoseNormalSecondary: BORDER,
+    robotPoseNormalOutline: TEAL,
+    robotPoseSelectedPrimary: GOLD,
+    robotPoseSelectedSecondary: BORDER,
+    robotPoseSelectedArrow: GOLD,
   },
   // Teleop joystick gradients (see NavigationJoystick)
   joystick: {
     light: 'radial-gradient(113.54% 113.54% at 40.33% 15.25%, #FFFFFF 0%, #FAFAFA 26.38%, #ECECEC 57.1%, #D5D5D5 89.86%, #CCCCCC 100%)',
-    darkInner: 'radial-gradient(113.31% 113.31% at 59.66% 84.68%, #1A1230 0%, #150E26 21.38%, #110B1F 40.82%, #0E0918 59.53%, #0E0918 100%)',
+    darkInner: `radial-gradient(113.31% 113.31% at 59.66% 84.68%, ${PAPER} 0%, ${BG} 21.38%, #12141F 40.82%, ${DEEP} 59.53%, ${DEEP} 100%)`,
     lightInner: 'radial-gradient(113.31% 113.31% at 59.66% 84.68%, #FFFFFF 0%, #FBFBFB 21.38%, #F0F0F0 40.82%, #DEDEDE 59.53%, #C4C4C4 77.77%, #A3A3A3 95.52%, #999999 100%)',
   },
   severityColor: {
-    'SEV 0': '#700893',
-    'SEV 1': '#A335C8',
-    'SEV 2': '#DA80F9',
-    'SEV 3': '#F1CAFF',
+    'SEV 0': '#4A3FA8',
+    'SEV 1': VIOLET,
+    'SEV 2': '#B3A9F2',
+    'SEV 3': '#DAD5FA',
   },
   tags: {
     skyBlue: '#63B1DC',
@@ -193,61 +230,62 @@ const oro = {
     lightBackground: '#ECECEC',
     baseArrow: '#B9B9B9',
     darkModeArrow: '#696969',
-    stepwise: '#88BF2D',
-    teleop: '#F4935A'
+    stepwise: GREEN,
+    teleop: ORANGE,
   },
   cameras: {
-    delayTime: '#FFBB32'
+    delayTime: ORANGE,
   },
   icons: {
-    lightGray: '#BEAEDD',
-    neutral: '#666666',
+    lightGray: FG2,
+    neutral: MUTED_DARK,
     bigIcon: '60px',
     mediumIcon: '40px',
     smallIcon: '20px'
   },
   primary: {
-    lighter: '#1A0F2E',
-    light: '#251A38',
-    main: '#170E28',
-    dark: '#0E0918',
+    lighter: BG,
+    light: CHIP,
+    main: PAPER,
+    dark: DEEP,
     contrastDefaultColor: 'light',
-    contrastText: '#FAF0F0'
+    contrastText: FG,
   },
+  // Graphic accent: strokes, icons, selected borders and the logo wedge.
   secondary: {
-    main: '#9E6FF3',
+    main: GOLD,
   },
   laserPoints: {
-    primary: '#3993FFCC',
-    secondary: '#B41270CC',
-    tertiary: '#BB8900CC'
+    primary: `${TEAL}CC`,
+    secondary: `${VIOLET}CC`,
+    tertiary: `${GOLD}CC`,
   },
   zeroData: {
-    softBlue: '#9AC2F7',
-    gray: '#E1E1E1',
-    softPink: '#DB90C0',
-    softOrange: '#FDC6B0',
-    darkBlue: '#2678B2',
-    lightBlue: '#C3C4E0',
-    orangeLighter: '#F7D69B'
+    softBlue: '#9AB8F5',
+    gray: '#DDE1E8',
+    softPink: '#D9A0C9',
+    softOrange: '#F5C4A8',
+    darkBlue: BLUE,
+    lightBlue: '#C3CBE0',
+    orangeLighter: GOLD_PALE,
   },
   boxShadow: {
     light: '#0000007f',
-    white: '#faf0f019'
+    white: `${FG}19`,
   },
   zone: {
-    defaultColor: '#FFCD87'
+    defaultColor: GOLD_PALE,
   },
   snackbar: {
-    success: '#43A047',
-    error: '#e53935',
-    info: '#1E88E5',
-    warning: '#FFA000',
+    success: GREEN,
+    error: RED,
+    info: BLUE,
+    warning: ORANGE,
   },
   copilotContextChips: {
-    color: '#9E6FF3',
-    bg: '#9E6FF314',
-    hoverBg: '#9E6FF329',
+    color: TEAL,
+    bg: `${TEAL}14`,
+    hoverBg: `${TEAL}29`,
   }
 };
 

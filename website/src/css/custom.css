@@ -1,16 +1,6 @@
 /*
 Guide: https://docusaurus.io/docs/styling-layout
 
-Main color pallette (v0):
-    lilac #9E6FF3
-    suface #170E28
-    raised #0E0918
-
-    void #1A0F2E
-    border #251A38
-    body #BEAEDD
-    error FB7188
-
 Notes:
   - Verify contrast ratio for light/dark themes in https://docusaurus.io/docs/styling-layout
   - Check also "Exhaustive list of stable class names"
@@ -18,37 +8,34 @@ Notes:
 */
 
 /* ===== THEMES =====
-   No attribute is the ORO palette; the site default for new visitors is
-   monokai (set pre-paint by the init script, which defaults the stored
-   choice to 'monokai'). `data-oro-theme` on <html> selects an
-   alternate palette; it is set pre-paint by the inline script injected from
-   docusaurus.config.ts and toggled by the navbar OroThemePicker.
-   Palettes mirror app/imports/client/themes/<name>.js.
+   No attribute is the ORO Moon palette (the site default). `data-oro-theme`
+   on <html> selects an alternate palette; it is set pre-paint by the inline
+   script injected from docusaurus.config.ts and toggled by the navbar
+   OroThemePicker. Palettes mirror app/imports/client/themes/<name>.js.
    The accent scale runs toward MORE contrast against the void: lighter steps
-   on dark themes, darker steps on the light one (rose-pine-dawn). */
-
-/* Brand logo letters: fixed brand colors, not part of any palette. */
-:root { --oro-logo-ink: #F4F1FA; }
-html[data-theme='light'] { --oro-logo-ink: #1A0F2E; }
+   on dark themes, darker steps on the light ones (oro-sun, rose-pine-dawn).
+   On the ORO palettes the scale changes hue: gold is the brand accent (CTA,
+   logo wedge, inline links) and teal carries the softer interactive steps
+   (nav, sidebar, tags), as on the brand canvas. */
 
 :root {
   /* Backgrounds */
-  --oro-color-void: #1A0F2E;
-  --oro-color-surface: #170E28;
-  --oro-color-raised: #0E0918;
+  --oro-color-void: #151824;
+  --oro-color-surface: #1B1F2D;
+  --oro-color-raised: #0F1119;
   /* Borders */
-  --oro-color-border: #251A38;
-  --oro-color-border-strong: #444950;
-  --oro-color-border-muted: #606770;
-  /* Accent scale (ORO lilac) */
-  --oro-color-accent: #9E6FF3;
-  --oro-color-accent-soft: #B896FF;
-  --oro-color-accent-softer: #D4BBFF;
+  --oro-color-border: #2F3546;
+  --oro-color-border-strong: #3D445A;
+  --oro-color-border-muted: #5A6377;
+  /* Accent scale (ORO gold, then teal) */
+  --oro-color-accent: #E0A526;
+  --oro-color-accent-soft: #3FB6C4;
+  --oro-color-accent-softer: #6FCBD6;
   /* Text */
-  --oro-color-text: #E3E3E3;
-  --oro-color-text-muted: #DADDE1;
-  --oro-color-text-faint: #9E9E9E;
-  --oro-color-cream: #FAF0F0;
+  --oro-color-text: #EDF0F6;
+  --oro-color-text-muted: #AEB6C6;
+  --oro-color-text-faint: #909AAE;
+  --oro-color-cream: #EDF0F6;
   /* Interactive */
   --oro-color-white: #FFFFFF;
   --oro-color-hover-bg: rgba(255, 255, 255, 0.05);
@@ -56,12 +43,39 @@ html[data-theme='light'] { --oro-logo-ink: #1A0F2E; }
   /* Illustration ramp (homepage feature SVGs), lightest to darkest.
      Unlike the accent scale this is lightness-ordered on every theme:
      illustrations shade the same way on light and dark pages. */
-  --oro-illo-pale: #EAE4F9;
-  --oro-illo-tint: #D4BBFF;
-  --oro-illo-accent: #9E6FF3;
-  --oro-illo-shade: #5C34A8;
-  --oro-illo-dark: #3C1F7A;
-  --oro-illo-ink: #0E0918;
+  --oro-illo-pale: #F6E7C4;
+  --oro-illo-tint: #EDCB7A;
+  --oro-illo-accent: #E0A526;
+  --oro-illo-shade: #A6741A;
+  --oro-illo-dark: #6B4A0F;
+  --oro-illo-ink: #0F1119;
+}
+
+/* Light theme: pairs with data-theme='light' (the picker sets both). */
+html[data-oro-theme='oro-sun'] {
+  --oro-color-void: #F5F6F8;
+  --oro-color-surface: #FFFFFF;
+  --oro-color-raised: #E8EAEF;
+  --oro-color-border: #D5D9E1;
+  --oro-color-border-strong: #B9C0CC;
+  --oro-color-border-muted: #8A93A5;
+  /* Accent steps darken here: light text on light bg fails contrast.
+     Gold as link text needs the deep AA value; the wedge/CTA keep it too. */
+  --oro-color-accent: #8A6008;
+  --oro-color-accent-soft: #0E7C89;
+  --oro-color-accent-softer: #0A5F6A;
+  --oro-color-text: #171B26;
+  --oro-color-text-muted: #454C5C;
+  --oro-color-text-faint: #5E6777;
+  --oro-color-cream: #171B26;
+  --oro-color-white: #0F1119;
+  --oro-color-hover-bg: rgba(0, 0, 0, 0.05);
+  --oro-illo-pale: #F6E7C4;
+  --oro-illo-tint: #EDCB7A;
+  --oro-illo-accent: #E0A526;
+  --oro-illo-shade: #A6741A;
+  --oro-illo-dark: #6B4A0F;
+  --oro-illo-ink: #171B26;
 }
 
 html[data-oro-theme='monokai'] {
@@ -327,7 +341,7 @@ a[href^="/blog/tags/"]:hover,
   background-color: var(--oro-color-hover-bg);
 }
 
-/* Sidebar active link — lilac + subtle bg */
+/* Sidebar active link — accent + subtle bg */
 .menu__link--active,
 .menu__link--active:hover {
   color: var(--oro-color-accent-softer);
