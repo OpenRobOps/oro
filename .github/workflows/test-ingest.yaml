@@ -46,27 +46,16 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-modules-
 
-      # TODO(iso-sdk-registry): remove once @openrobops/iso21423 is published and the file: link is flipped (Plan 5 Task 8).
-      - name: "Build the ISO 21423 SDK (file: dependency)"
-        env:
-          ISO_SDK_READ_TOKEN: ${{ secrets.ISO_SDK_READ_TOKEN }}
-        run: |
-          # iso21423 is private: read via the ISO_SDK_READ_TOKEN fine-grained PAT (contents: read).
-          git clone --depth 1 "https://x-access-token:${ISO_SDK_READ_TOKEN}@github.com/OpenRobOps/iso21423" ../iso21423
-          cd ../iso21423/ts-sdk
-          npm ci
-          npm run build
-
       - name: Install dependencies [if not cached]
         working-directory: ingest
-        run: npm ci
+        # @openrobops/iso21423 comes from npm.pkg.github.com, which requires
+        # auth even for public packages; GITHUB_TOKEN suffices.
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          npm config set //npm.pkg.github.com/:_authToken="$GH_TOKEN"
+          npm ci
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
-
-      # A cached node_modules may predate the SDK sibling (npm skips a missing file: optionalDependency
-      # silently), so link it explicitly; idempotent when npm ci already created the symlink.
-      - name: Link the ISO SDK into node_modules [cache-safe]
-        working-directory: ingest
-        run: npm install --no-save ../../iso21423/ts-sdk
 
       - name: Import shared code
         working-directory: ingest

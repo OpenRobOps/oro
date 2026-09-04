@@ -364,7 +364,7 @@ export default class ActionDefinitionConfigAPI {
     // TODO: It should be possible to grant access to the actions
     // singleton at robot level, but currently our roles implementation
     // does not support that.
-    if (!await new OroRoles().canAccessSystemElement(
+    if (!isSystemUser(user) && !await new OroRoles().canAccessSystemElement(
       user._id,
       RESOURCE_SINGLETONS.ACTIONS,
       ACCESS_LEVEL_CONFIGURE

@@ -341,6 +341,56 @@ describe('iso-robots integration', () => {
       assert.ok(closeSpy.calledOnce, 'load() must close the client it connected before failing');
     } finally {
       sandbox.restore();
+      await failing.shutdown();
     }
+  });
+});
+
+describe('iso-robots load retry', () => {
+  let broker; let module_; let oroMqtt; let queue;
+
+  beforeEach(async () => {
+    broker = new MemoryBroker();
+    queue = new InMemoryWorkerQueues();
+    await queue.init({});
+    await new AttributesManager().init({ workerQueue: queue });
+    oroMqtt = new MqttMock();
+    oroMqtt.listeners = {};
+    oroMqtt.registerListener = (subtopic, cb) => { oroMqtt.listeners[subtopic] = cb; };
+    module_ = new IsoRobotsModule({ mongo: new MongoManager(), mqtt: oroMqtt, workerQueue: queue });
+  });
+
+  afterEach(async () => {
+    await module_.shutdown();
+  });
+
+  /** A transport whose first `failures` connects fail, as when ingest boots before the broker. */
+  const flakyTransport = (failures) => {
+    const transport = broker.createTransport();
+    const realConnect = transport.connect.bind(transport);
+    transport.connect = async (opts) => {
+      if (failures > 0) {
+        failures -= 1;
+        throw new Error('mqtt connect failed: connect ECONNREFUSED ::1:1883');
+      }
+      return realConnect(opts);
+    };
+    return transport;
+  };
+
+  it('retries load() until the broker comes up', async () => {
+    await module_.load(SETTINGS, { transport: flakyTransport(1), retryMs: 20 });
+    assert.strictEqual((await module_.reportHealth()).status, 'DOWN');
+    await new Promise((r) => setTimeout(r, 200));
+    assert.strictEqual((await module_.reportHealth()).status, 'UP');
+    assert.ok(oroMqtt.listeners['ros/loc/nav_goal'],
+      'the command router must be registered once the retry succeeds');
+  });
+
+  it('shutdown cancels a pending retry', async () => {
+    await module_.load(SETTINGS, { transport: flakyTransport(1), retryMs: 20 });
+    await module_.shutdown();
+    await new Promise((r) => setTimeout(r, 200));
+    assert.strictEqual((await module_.reportHealth()).status, 'DOWN');
   });
 });

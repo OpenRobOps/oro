@@ -165,14 +165,6 @@ const monokai = merge(cloneDeep(oro), {
     point: `${PURPLE}E6`,
     pointOutline: BORDER,
     selected: BLUE,
-    relocalizeDrag: {
-      color: `${GREEN}4D`,
-      stroke: GREEN,
-    },
-    relocalizeRotate: {
-      color: GREEN,
-      stroke: GREEN,
-    },
     relocalizeInnerFrame: GREEN,
     selectedOutline: PURPLE,
     // Green robot pose (purple would read as the default theme)

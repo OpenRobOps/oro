@@ -178,14 +178,6 @@ const rosePineDawn = merge(cloneDeep(oro), {
     point: `${ROSE}E6`,
     pointOutline: HIGHLIGHT_HIGH,
     selected: FOAM,
-    relocalizeDrag: {
-      color: `${FOAM}4D`,
-      stroke: FOAM,
-    },
-    relocalizeRotate: {
-      color: FOAM,
-      stroke: FOAM,
-    },
     relocalizeInnerFrame: ROSE,
     selectedOutline: ROSE,
     robotPoseNormalPrimary: ROSE,

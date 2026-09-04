@@ -98,7 +98,7 @@ export default class NotificationChannelsConfigAPIHandler {
     if (!configObject.metadata) {
       throw new ValidationError('Configuration object must have metadata');
     }
-    if (!await new OroRoles().canAccessSystemElement(
+    if (!isSystemUser(user) && !await new OroRoles().canAccessSystemElement(
       user._id,
       RESOURCE_SINGLETONS.INCIDENTS,
       ACCESS_LEVEL_CONFIGURE)) {

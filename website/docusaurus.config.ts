@@ -6,7 +6,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
   title: 'OpenRobOps',
-  tagline: 'The open source Robot Operations Platform',
+  tagline: 'The Open-Source Robot Operations Platform',
   favicon: 'img/favicon.svg',
 
   // Future flags, see https://docusaurus.io/docs/api/docusaurus-config#future
@@ -48,7 +48,7 @@ const config: Config = {
           preBodyTags: [
             {
               tagName: 'script',
-              innerHTML: `(function(){try{var t=localStorage.getItem('oro-theme');if(t&&t!=='oro'){document.documentElement.setAttribute('data-oro-theme',t);var m=t==='rose-pine-dawn'?'light':'dark';document.documentElement.setAttribute('data-theme',m);document.documentElement.setAttribute('data-theme-choice',m);}}catch(e){}})();`,
+              innerHTML: `(function(){try{var t=localStorage.getItem('oro-theme')||'monokai';if(t!=='oro'){document.documentElement.setAttribute('data-oro-theme',t);var m=t==='rose-pine-dawn'?'light':'dark';document.documentElement.setAttribute('data-theme',m);document.documentElement.setAttribute('data-theme-choice',m);}}catch(e){}})();`,
             },
           ],
         }),
@@ -145,8 +145,8 @@ const config: Config = {
           title: 'Community',
           items: [
             {
-              label: 'Zulip',
-              href: 'https://openrobops.zulipchat.com/',
+              label: 'Discussions',
+              href: 'https://github.com/orgs/OpenRobOps/discussions',
             },
             {
               label: 'Report an issue',

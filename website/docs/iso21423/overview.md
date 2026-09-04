@@ -4,7 +4,7 @@ sidebar_position: 1
 
 # ISO 21423 in OpenRobOps
 
-[ISO 21423](https://www.iso.org/standard/86216.html) — *Industrial mobile robots: communications and interoperability* — is the open standard for how autonomous mobile robots (AMRs, called **IMRs**) and fleet managers (**IMRFMs**) talk to each other: MQTT topics with JSON payloads for identity, status, odometry, battery, paths, and a request protocol for commands such as `move`, `dock`, `pauseImr`.
+[ISO 21423](https://www.iso.org/standard/86749.html) — *Industrial mobile robots: communications and interoperability* — is the open standard for how autonomous mobile robots (AMRs, called **IMRs**) and fleet managers (**IMRFMs**) talk to each other: MQTT topics with JSON payloads for identity, status, odometry, battery, paths, and a request protocol for commands such as `move`, `dock`, `pauseImr`.
 
 OpenRobOps implements the standard natively, on both sides of a fleet manager:
 

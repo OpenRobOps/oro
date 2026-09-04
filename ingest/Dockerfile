@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.7
+# syntax=docker/dockerfile:1.10
 #
 # Multi-stage build for the oro-ingest worker service.
 #
@@ -33,9 +33,16 @@ FROM node:22-bookworm AS deps
 USER node
 WORKDIR /home/node/src
 
-COPY --chown=node:node package.json package-lock.json ./
+COPY --chown=node:node package.json package-lock.json .npmrc ./
 
-RUN npm ci --omit=dev
+# @openrobops/iso21423 comes from npm.pkg.github.com (scope mapped in .npmrc),
+# which requires auth even for public packages. The token arrives as a
+# BuildKit secret so it never lands in a layer; the transient ~/.npmrc auth
+# line is removed in the same RUN.
+RUN --mount=type=secret,id=gh_token,env=GH_TOKEN \
+    npm config set //npm.pkg.github.com/:_authToken="$GH_TOKEN" && \
+    npm ci --omit=dev && \
+    npm config delete //npm.pkg.github.com/:_authToken
 
 # -----------------------------------------------------------------------------
 # Stage 2: runtime

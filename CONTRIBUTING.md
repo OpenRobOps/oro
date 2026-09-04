@@ -35,7 +35,8 @@ Docker Compose, and Terraform.
 Run tests before submitting a pull request:
 
 ```bash
-# Web app tests
+# Web app tests (listens on port 3100 so a dev server on 3000 is not disturbed;
+# override with TEST_PORT=<port> npm test)
 cd app && npm test
 
 # Ingest service tests

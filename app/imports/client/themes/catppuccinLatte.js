@@ -183,14 +183,6 @@ const catppuccinLatte = merge(cloneDeep(oro), {
     point: `${BLUE}E6`,
     pointOutline: OVERLAY2,
     selected: SKY,
-    relocalizeDrag: {
-      color: `${GREEN}4D`,
-      stroke: GREEN,
-    },
-    relocalizeRotate: {
-      color: GREEN,
-      stroke: GREEN,
-    },
     relocalizeInnerFrame: MAUVE,
     selectedOutline: LAVENDER,
     robotPoseNormalPrimary: MAUVE,

@@ -172,14 +172,6 @@ const tokyoNight = merge(cloneDeep(oro), {
     point: `${BLUE}E6`,
     pointOutline: FG_GUTTER,
     selected: CYAN,
-    relocalizeDrag: {
-      color: `${GREEN1}4D`,
-      stroke: GREEN1,
-    },
-    relocalizeRotate: {
-      color: GREEN1,
-      stroke: GREEN1,
-    },
     relocalizeInnerFrame: BLUE,
     // Blue robot pose (magenta would read as the default theme)
     selectedOutline: BLUE,
