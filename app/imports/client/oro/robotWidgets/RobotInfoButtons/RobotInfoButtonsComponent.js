@@ -32,7 +32,7 @@ import { Navigation2, Settings } from 'lucide-react';
 import { useTracker } from 'meteor/react-meteor-data';
 import moment from 'moment';
 // ORO modules
-import { ID_TYPE_ROBOT } from '../../../../shared/constants';
+import { ID_TYPE_ROBOT, HACK_GHOST_UPDATE_STAMP_VALUE } from '../../../../shared/constants';
 import {
   ACTION_TYPES,
   createInternalActionId
@@ -123,7 +123,9 @@ const RobotInfoButtons = (props) => {
    * Returns a string indicating the elapsed time since the robot's
    * last connection.
    */
-  const getLastSeenInterval = () => 'Last seen ' + moment(updateStamp).fromNow();
+  const getLastSeenInterval = () => (updateStamp === HACK_GHOST_UPDATE_STAMP_VALUE
+    ? 'Last seen just now' // HACK: ghost robots, see lib/status.js
+    : 'Last seen ' + moment(updateStamp).fromNow());
 
   /**
    * Returns a string indicating the last seen time for a robot in
