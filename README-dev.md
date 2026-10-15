@@ -67,6 +67,7 @@ The following components are run by the previous scripts:
 | Ingest | Ingest service (`./run.sh` in `/ingest`); connects to MQTT and MongoDB | — |
 | ISO 21423 (optional) | ISO-native robots join the fleet via ingest, disabled by default — see `docs/iso21423-robots.md` | — |
 | Floor plans (optional) | Draw robots on a pretty map: `SpatialAnnotation` + `SpatialTransformation`, fitted with `tools/align_maps.py` — see `docs/map-alignment.md` | — |
+| Ghost robots (optional) | Static demo robots, online with datasources and a pose but no live data: the `Robot` config kind — see `docs/ghost-robots.md` | — |
 
 ## Instance initial setup
 

@@ -91,6 +91,7 @@ const KIND_NOTIFICATION_CHANNEL_GOOGLE_CHAT = 'NotificationChannel.GoogleChat';
 const KIND_TEST = 'Test';
 const KIND_MODULE_STATE = 'ModuleState';
 const KIND_ISO_ROBOT = 'IsoRobot';
+const KIND_ROBOT = 'Robot';
 
 // This constant is the only valid element id to use in apply() or clear() config calls for
 // kinds that represent "singletons", which don't have individual elmeents to configure.
@@ -296,6 +297,7 @@ export {
   KIND_TEST,
   KIND_MODULE_STATE,
   KIND_ISO_ROBOT,
+  KIND_ROBOT,
   keyValueObjectValidator,
   CONFIG_API_GLOBAL_ID,
   ALPHANUMERIC_PATTERN,
