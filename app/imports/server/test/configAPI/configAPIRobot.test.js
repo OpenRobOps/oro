@@ -150,6 +150,18 @@ describe('configAPI:Robot kind', () => {
     expect(await Robots.find({}).countAsync()).to.equal(1);
   });
 
+  it('apply: a ghost re-applied without a pose keeps its old pose until cleared', async () => {
+    const { pose, ...noPose } = GHOST_SPEC;
+    await configApi.apply({ configObject: robotObject('g1', GHOST_SPEC), user: manager });
+    await configApi.apply({ configObject: robotObject('g1', noPose), user: manager });
+    expect((await RobotLocalization.findOneAsync({ _id: 'g1' })).robotPose.x).to.equal(4.2);
+
+    await configApi.clear({ configObject: robotObject('g1'), user: manager });
+    await configApi.apply({ configObject: robotObject('g1', noPose), user: manager });
+    expect(await RobotLocalization.findOneAsync({ _id: 'g1' })).to.equal(undefined);
+    expect((await Robots.findOneAsync({ _id: 'g1' })).updateStamp).to.equal(GHOST_TS);
+  });
+
   it('clear: removes a ghost and all of its static data', async () => {
     await configApi.apply({ configObject: robotObject('g1', GHOST_SPEC), user: manager });
     await configApi.clear({ configObject: robotObject('g1'), user: manager });
