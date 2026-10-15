@@ -15,7 +15,7 @@
  */
 
 /**
- * `Robot` configuration kind: declares a robot by id, with its identity fields (label, tags).
+ * `Robot` configuration kind: declares a robot by id, with its identity fields (label).
  *
  * A real robot can be pre-registered this way before its agent ever connects; ingest owns
  * status, pose and telemetry from then on, and re-applying only touches the identity fields.
@@ -66,7 +66,6 @@ const scalar = { type: 'multi', rules: ['string', 'number', 'boolean'] };
 const RobotSpecSchema = {
   $$strict: true,
   label: { type: 'string', optional: true, empty: false },
-  tags: { type: 'array', items: 'string', optional: true },
   ghost: { type: 'boolean', optional: true },
   pose: {
     type: 'object',
@@ -104,7 +103,7 @@ export class RobotConfigAPIHandler {
   list = async ({ id = null, user, format = LIST_FORMAT_SHORT } = {}) => {
     await assertAuthorized(user);
     const query = id ? { _id: id } : {};
-    const docs = await Robots.find(query, { projection: { name: 1, tags: 1, updateStamp: 1 } })
+    const docs = await Robots.find(query, { projection: { name: 1, updateStamp: 1 } })
       .fetchAsync();
     return docs.map((doc) => ({
       apiVersion: 'v0.1',
@@ -113,7 +112,6 @@ export class RobotConfigAPIHandler {
       ...(format === LIST_FORMAT_SHORT ? {} : {
         spec: {
           label: doc.name,
-          ...(doc.tags ? { tags: doc.tags } : {}),
           ...(doc.updateStamp === GHOST_TS ? { ghost: true } : {}),
         },
       }),
@@ -136,7 +134,6 @@ export class RobotConfigAPIHandler {
     }
     const $set = {};
     if (spec.label) $set.name = spec.label;
-    if (spec.tags) $set.tags = spec.tags;
     if (spec.ghost) {
       Object.assign($set, { updateStamp: GHOST_TS, 'status.agentOnline': true, version: GHOST_VERSION });
     }

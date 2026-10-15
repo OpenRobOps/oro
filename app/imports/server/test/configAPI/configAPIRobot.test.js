@@ -51,7 +51,6 @@ const robotObject = (id, spec) => ({
 const GHOST_SPEC = {
   label: 'Picker 4',
   ghost: true,
-  tags: ['RSMagni'],
   pose: { x: 4.2, y: 1.1, theta: 1.57 },
   attributes: { batteryPercentage: 0.71, missionStatus: 'idle' },
   statuses: { localization: 'OK', cpuLoadPercentage: 'WARN' },
@@ -76,11 +75,10 @@ describe('configAPI:Robot kind', () => {
       .to.be.rejectedWith(AuthorizationError);
   });
 
-  it('apply: creates an offline real robot with name and tags, and nothing else', async () => {
-    await configApi.apply({ configObject: robotObject('r1', { label: 'R1', tags: ['a', 'b'] }), user: manager });
+  it('apply: creates an offline real robot with its name, and nothing else', async () => {
+    await configApi.apply({ configObject: robotObject('r1', { label: 'R1' }), user: manager });
     const doc = await Robots.findOneAsync({ _id: 'r1' });
     expect(doc.name).to.equal('R1');
-    expect(doc.tags).to.deep.equal(['a', 'b']);
     expect(doc.status.agentOnline).to.equal(false);
     expect(doc.updateStamp).to.not.equal(GHOST_TS);
     expect(await AttrValues.findOneAsync({ _id: 'r1' })).to.equal(undefined);
@@ -92,14 +90,13 @@ describe('configAPI:Robot kind', () => {
     expect((await Robots.findOneAsync({ _id: 'r1' })).name).to.equal('r1');
   });
 
-  it('apply: re-applying an existing robot touches only name and tags', async () => {
+  it('apply: re-applying an existing robot touches only the name', async () => {
     await Robots.insertAsync({
       _id: 'r1', name: 'old', version: '4.15.1', status: { agentOnline: true }, updateStamp: 1000,
     });
-    await configApi.apply({ configObject: robotObject('r1', { label: 'new', tags: ['x'] }), user: manager });
+    await configApi.apply({ configObject: robotObject('r1', { label: 'new' }), user: manager });
     const doc = await Robots.findOneAsync({ _id: 'r1' });
     expect(doc).to.include({ name: 'new', version: '4.15.1', updateStamp: 1000 });
-    expect(doc.tags).to.deep.equal(['x']);
     expect(doc.status.agentOnline).to.equal(true);
   });
 
@@ -125,7 +122,6 @@ describe('configAPI:Robot kind', () => {
     const robot = await Robots.findOneAsync({ _id: 'g1' });
     expect(robot).to.include({ name: 'Picker 4', updateStamp: GHOST_TS });
     expect(robot.status.agentOnline).to.equal(true);
-    expect(robot.tags).to.deep.equal(['RSMagni']);
 
     const attrs = await AttrValues.findOneAsync({ _id: 'g1' });
     expect(attrs.batteryPercentage).to.deep.equal({ value: 0.71, ts: GHOST_TS });
@@ -177,12 +173,12 @@ describe('configAPI:Robot kind', () => {
 
   it('list: full format returns re-applicable identity specs, flagging ghosts', async () => {
     await configApi.apply({ configObject: robotObject('g1', GHOST_SPEC), user: manager });
-    await configApi.apply({ configObject: robotObject('r1', { label: 'R1', tags: ['t'] }), user: manager });
+    await configApi.apply({ configObject: robotObject('r1', { label: 'R1' }), user: manager });
     const list = await configApi.list({ user: manager, kind: KIND_ROBOT, format: LIST_FORMAT_FULL });
     const byId = Object.fromEntries(list.map((o) => [o.metadata.id, o]));
     expect(Object.keys(byId).sort()).to.deep.equal(['g1', 'r1']);
-    expect(byId.r1.spec).to.deep.equal({ label: 'R1', tags: ['t'] });
-    expect(byId.g1.spec).to.deep.equal({ label: 'Picker 4', tags: ['RSMagni'], ghost: true });
+    expect(byId.r1.spec).to.deep.equal({ label: 'R1' });
+    expect(byId.g1.spec).to.deep.equal({ label: 'Picker 4', ghost: true });
     const short = await configApi.list({ user: manager, kind: KIND_ROBOT });
     expect(short[0].spec).to.equal(undefined);
   });

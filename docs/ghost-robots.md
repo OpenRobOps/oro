@@ -2,7 +2,7 @@
 
 `Robot` is a configuration kind (`POST /api/configuration/apply`, like every other kind) that
 declares a robot by id with its identity fields. It is **not** a way to feed live data: ingest owns
-status, pose and telemetry, and this kind only ever sets a name and tags on a real robot.
+status, pose and telemetry, and this kind only ever sets a name on a real robot.
 
 ```yaml
 apiVersion: v0.1
@@ -10,11 +10,10 @@ kind: Robot
 metadata: { id: picker-3, scope: "" }
 spec:
   label: Picker 3          # optional, defaults to the id
-  tags: [RSMagni]          # optional free-form labels
 ```
 
 Applying a real robot before its agent connects pre-registers it offline with that name;
-re-applying touches only `label` and `tags`. Clearing it deletes the robot document, and is
+re-applying touches only `label`. Clearing it deletes the robot document, and is
 refused while the robot is online.
 
 ## Ghost robots (demos)
