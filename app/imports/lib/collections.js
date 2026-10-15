@@ -55,6 +55,9 @@ Schemas.robot = new SimpleSchema({
   lock: { type: Object, blackbox: true, optional: true },
   // optional per-robot key. By default the account key is used
   robotKey: { type: String, optional: true },
+  // Free-form labels set through the Robot config kind (no consumer in ORO yet)
+  tags: { type: Array, optional: true },
+  'tags.$': String,
   // ISO 21423 reported footprint (points), merged with configured footprint by resolveFootprint()
   footprint: { type: Object, blackbox: true, optional: true },
 }, { requiredByDefault: true });
