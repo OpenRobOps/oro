@@ -29,7 +29,7 @@ import useRobotsWithStatus from '../../hooks/useRobotsWithStatus';
 import { useMethod } from '../../util/meteorUtils';
 import FleetStatusComponent from './FleetStatusComponent';
 import { UI_AGG_STATUS } from '../fleetFilteringUtil';
-import { AGG_STATUSES_KEY } from '../../../../shared/constants';
+import { AGG_STATUSES_KEY, HACK_GHOST_UPDATE_STAMP_VALUE } from '../../../../shared/constants';
 import { useWidgetData } from '../../contexts/WidgetDataContext';
 
 const FleetStatusWidgetContainer = ({
@@ -91,7 +91,7 @@ const FleetStatusWidgetContainer = ({
       const st = status?.[attributeId];
       if (st?.message) {
         let { message } = st;
-        if (st.ts) {
+        if (st.ts && st.ts !== HACK_GHOST_UPDATE_STAMP_VALUE) { // ghosts: no age, see lib/status.js
           message += ` (Last reported ${moment(st.ts).fromNow()})`;
         }
         return message;

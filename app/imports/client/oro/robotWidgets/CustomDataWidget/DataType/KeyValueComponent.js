@@ -29,6 +29,7 @@ import { Table, TableHead, TableSortLabel } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
 import { AttributeValueFormatter } from '../../../../../shared/attributes';
 import { UNDEFINED_VALUE } from '../../../../../lib/util';
+import { HACK_GHOST_UPDATE_STAMP_VALUE } from '../../../../../shared/constants';
 import {
   StyledTableBody,
   StyledTableCell,
@@ -92,8 +93,9 @@ const KeyValueComponent = ({ customData, staleIndicator = true, now }) => {
       let { ts } = kv;
       const value = kv.value !== undefined ? formatter(kv.value) : UNDEFINED_VALUE;
       // HACK: Timestamps may come a few secs/mins in the future due to clock differences.
-      if (ts > now) ts = now;
-      const isStale = staleIndicator && now - kv.ts > MAX_DATA_AGE;
+      // Ghost robots carry the sentinel timestamp, which must read as current (see lib/status.js).
+      if (ts > now || ts === HACK_GHOST_UPDATE_STAMP_VALUE) ts = now;
+      const isStale = staleIndicator && now - ts > MAX_DATA_AGE;
       return (
         <StyledTableRow
           data-test="mc-keyvalue-widget-tablerow"
