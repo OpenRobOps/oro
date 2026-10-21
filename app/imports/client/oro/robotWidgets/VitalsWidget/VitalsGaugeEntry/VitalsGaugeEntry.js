@@ -80,13 +80,14 @@ const VitalsGaugeEntry = (props) => {
   let { unit } = props;
   let value;
   // Format primary value to display on the center of the gauge.
-  const isInvalid = Number.isNaN(primaryValue)
-    || primaryValue === undefined
-    || primaryValue === naValue;
+  const num = Number(primaryValue);
+  const isInvalid = !Number.isFinite(num) || primaryValue === naValue;
   if (!isInvalid) {
+    // Round up *before* formatting: formatWithUnit returns a locale string
+    // ("16,6" in es-AR, "1,200" in en-US) that Math.ceil would turn into NaN.
     // TODO(herchu) Consolidate number formatting (Use formatWithUnit or AttributeFormatter here)
     // IO-7189. Receive precision as props, and pass it to those functions
-    ({ value, unit } = formatWithUnit(primaryValue, unit, { precision: 1 }));
+    ({ value, unit } = formatWithUnit(Math.ceil(num), unit, { precision: 0 }));
   }
   return (
     <div className={classes.container}>
@@ -109,7 +110,7 @@ const VitalsGaugeEntry = (props) => {
           ) : (
             <>
               <span>
-                {Math.ceil(value)}
+                {value}
               </span>
               {unit && !disabled && (
                 <span className={classes.unitLabel}>
