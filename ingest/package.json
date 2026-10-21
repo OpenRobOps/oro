@@ -19,18 +19,18 @@
     "@babel/preset-env": "^7.29.0",
     "@babel/preset-flow": "^7.27.1",
     "@openrobops/iso21423": "^0.1.0",
-    "axios": "^1.13.6",
+    "axios": "^1.20.0",
     "convert-units": "^2.3.4",
     "expr-eval": "^2.0.2",
-    "image-size": "^2.0.2",
+    "image-size": "^2.0.4",
     "jimp": "^0.22.12",
     "js-yaml": "^4.1.1",
-    "lodash": "^4.17.23",
-    "moment": "^2.30.1",
-    "mongodb": "^7.1.0",
-    "mqtt": "^5.15.0",
+    "lodash": "^4.18.1",
+    "moment": "^2.31.0",
+    "mongodb": "^7.7.0",
+    "mqtt": "^5.16.1",
     "object-hash": "^3.0.0",
-    "protobufjs": "^8.0.0"
+    "protobufjs": "^8.8.1"
   },
   "devDependencies": {
     "chai": "^4.3.7",
@@ -38,7 +38,7 @@
     "mocha": "^11.3.0",
     "mocha-junit-reporter": "^2.2.1",
     "mocha-prepare": "^0.1.0",
-    "mongo-unit": "^3.4.0",
+    "mongo-unit": "^3.5.1",
     "nodemon": "^3.1.14",
     "sinon": "^21.0.0"
   }
