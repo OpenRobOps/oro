@@ -41,6 +41,7 @@ Robot Agent (on-device)
 | **MongoDB** | Primary data store (Meteor-integrated) | 3001 |
 | **MQTT Broker** | Mosquitto with MongoDB-backed auth | 1883 / 9001 (WS) |
 | **Ingest** | Processes robot telemetry via pluggable modules | — |
+| **[CLI](https://github.com/OpenRobOps/oro-cli)** | `oro` command: configuration as code and fleet queries, installed separately | — |
 
 ## Tech Stack
 
@@ -76,7 +77,18 @@ oro/
 
 ## Getting Started
 
-See [Developer's documentation](README-dev.md)
+See [Developer's documentation](README-dev.md), or the
+[Quick Start](https://openrobops.org/docs/getting-started/quick-start) on the docs site.
+
+Dashboards, data sources, actions, robot admissions and the rest of the platform
+configuration are managed as code with the [`oro` CLI](https://github.com/OpenRobOps/oro-cli),
+published separately on PyPI:
+
+```bash
+pipx install oro-cli
+oro context add local --url http://localhost:3000/api --api-key <your-api-key>
+oro apply -f config.yaml
+```
 
 ## Releases & Docker Images
 
