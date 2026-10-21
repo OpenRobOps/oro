@@ -38,7 +38,7 @@ also given on the command line win). Apply the result like any other
 Config API object:
 
 ```bash
-inorbit apply -f warehouse-floor-1.yaml   # or POST /api/configuration/apply
+oro apply -f warehouse-floor-1.yaml   # or POST /api/configuration/apply
 ```
 
 Only PNG images are accepted, capped at 12 MB decoded.

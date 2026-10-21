@@ -69,7 +69,7 @@ Once calibrated (from these reference points, or from an existing entry),
 the ORO map ↔ facility CCS transform lives in the same place as any other
 frame transform: the `system`-scope
 [`SpatialTransformation`](../api/configapikinds.md#spatialtransformation)
-config object, as a `map → <ccs.id>` entry. It's visible with `inorbit list`
+config object, as a `map → <ccs.id>` entry. It's visible with `oro get config --kind SpatialTransformation`
 and editable the same way. A [shared map](../maps.md) drawn directly in the
 facility CCS should declare `frameId: <ccs.id>` — it then lines up with ISO
 robots' poses without needing its own transform.
@@ -99,7 +99,7 @@ spec:
 ```
 
 ```bash
-inorbit apply -f iso-robot.yaml        # or POST /api/configuration/apply
+oro apply -f iso-robot.yaml        # or POST /api/configuration/apply
 ```
 
 Until a robot is admitted ORO ignores it (one log line per process: `IMR <uuid> is publishing on the ISO network but is not admitted`) and refuses it credentials. Clearing the object (`POST /api/configuration/clear`) revokes admission.

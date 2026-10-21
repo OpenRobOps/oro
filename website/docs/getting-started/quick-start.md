@@ -20,6 +20,7 @@ These manual steps work in under 10 minutes. The `start-local-env.sh` helper (st
 | **Docker** | With Compose plugin | `docker compose` command |
 | **Terraform** | Latest | [hashicorp.com](https://developer.hashicorp.com/terraform) |
 | **tmux** | Any | Via your package manager |
+| **pipx** | Any | [pipx.pypa.io](https://pipx.pypa.io/) (installs the ORO CLI, step 6) |
 
 ## 1. Clone the Repository
 
@@ -124,7 +125,33 @@ sign in again, or have an existing admin approve your account.
 
 You now have a running OpenRobOps instance ready to accept robot connections.
 
-## 6. (Optional) Connect a Simulated Robot with Flatland
+## 6. Install and Configure the ORO CLI
+
+Configuration (dashboards, data sources, actions, robot admissions...) is applied
+as code with the [`oro` CLI](https://github.com/OpenRobOps/oro-cli). It talks to
+the Config API on your behalf, so you need it for the next step and for most
+guides in these docs.
+
+Install it with pipx so it gets its own isolated Python environment:
+
+```bash
+pipx install oro-cli
+```
+
+Then create an API key in the web app under **Settings → API keys** (copy it
+when shown, it is displayed only once) and register your local instance as a
+context:
+
+```bash
+oro context add local --url http://localhost:3000/api --api-key <your-api-key>
+oro whoami        # prints the context and "Authenticated as user ..."
+```
+
+The first context you add becomes the current one. You can register other ORO
+instances the same way and switch between them with `oro use <name>`. See the
+[CLI README](https://github.com/OpenRobOps/oro-cli#readme) for all commands.
+
+## 7. (Optional) Connect a Simulated Robot with Flatland
 
 Want to see data flowing without setting up real hardware? The
 [Flatland simulator](https://github.com/OpenRobOps/sim-flatland) is a lightweight
@@ -139,9 +166,9 @@ cd sim-flatland
 # Follow the README to point the simulator at your local MQTT broker
 ```
 
-In addition to starting the simulation, a suitable configuration for OpenRobOps should be 
-created. Configuration files (see Config API) are included in that repository; make sure
-to follow instructions from its README to import them.
+In addition to starting the simulation, a suitable configuration for OpenRobOps should be
+created. Configuration files (see Config API) are included in that repository; apply them
+with the CLI from step 6 (`oro apply -f <file>`) following the instructions in its README.
 
 Once the simulator is running, you should see a robot appear in the fleet view
 at `http://localhost:3000/` with live localization, vitals, and laser data.
