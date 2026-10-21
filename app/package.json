@@ -41,7 +41,7 @@
     "object-hash": "^3.0.0",
     "ol": "10.8.0",
     "ol-rotate-feature": "^3.3.0",
-    "plotly.js-basic-dist": "^3.5.1",
+    "plotly.js-basic-dist": "^4.1.2",
     "proj4": "^2.20.8",
     "prop-types": "^15.8.1",
     "protobufjs": "^8.0.0",
