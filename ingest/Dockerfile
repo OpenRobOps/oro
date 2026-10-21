@@ -23,7 +23,7 @@
 # -----------------------------------------------------------------------------
 # Stage 1: deps
 # -----------------------------------------------------------------------------
-FROM node:22-bookworm AS deps
+FROM node:25-bookworm AS deps
 
 # Switch to the unprivileged `node` user BEFORE WORKDIR so /home/node/src is
 # created node-owned. Otherwise WORKDIR runs as root, --chown only fixes the
@@ -47,7 +47,7 @@ RUN --mount=type=secret,id=gh_token,env=GH_TOKEN \
 # -----------------------------------------------------------------------------
 # Stage 2: runtime
 # -----------------------------------------------------------------------------
-FROM node:22-bookworm-slim AS runtime
+FROM node:25-bookworm-slim AS runtime
 
 # tini  → PID 1, forwards signals to Node so docker stop / pod termination
 #         is fast and graceful (main.js installs SIGTERM handlers).
