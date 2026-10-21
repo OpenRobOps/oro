@@ -13,7 +13,7 @@
 # -----------------------------------------------------------------------------
 # Stage 1: builder
 # -----------------------------------------------------------------------------
-FROM node:22-bookworm AS builder
+FROM node:25-bookworm AS builder
 
 # Pin the Meteor release to match app/.meteor/release.
 ARG METEOR_RELEASE=3.4
@@ -61,7 +61,7 @@ RUN cd /home/node/build/bundle/programs/server \
 # -----------------------------------------------------------------------------
 # Stage 2: runtime
 # -----------------------------------------------------------------------------
-FROM node:22-bookworm-slim AS runtime
+FROM node:25-bookworm-slim AS runtime
 
 # tini  → PID 1, forwards signals to Node so docker stop is fast.
 # curl  → used by HEALTHCHECK below; kept as a runtime dep on purpose.
