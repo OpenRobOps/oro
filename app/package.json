@@ -62,7 +62,7 @@
     "@rsdoctor/rspack-plugin": "^1.2.3",
     "@rspack/cli": "^1.7.1",
     "@rspack/core": "^1.7.1",
-    "@rspack/plugin-react-refresh": "^1.4.3",
+    "@rspack/plugin-react-refresh": "^2.0.2",
     "@svgr/webpack": "^8.1.0",
     "axios-mock-adapter": "^1.21.4",
     "chai": "^4.3.7",
