@@ -55,7 +55,7 @@
     "react-router-dom": "^6.13.0",
     "simpl-schema": "^3.4.6",
     "tss-react": "^4.9.20",
-    "utf-8-validate": "^5.0.10"
+    "utf-8-validate": "^6.0.6"
   },
   "devDependencies": {
     "@meteorjs/rspack": "^1.0.0",
