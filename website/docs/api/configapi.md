@@ -6,6 +6,14 @@ sidebar_position: 5
 
 The ConfigAPI provides declarative "configuration as code" management for OpenRobOps. It allows you to define data sources, status rules, and other platform behaviors through JSON configuration objects.
 
+:::tip[Use the CLI]
+You rarely need to call these endpoints by hand: the
+[`oro` CLI](https://github.com/OpenRobOps/oro-cli) (`pipx install oro-cli`) wraps them
+as `oro apply -f <file>`, `oro get config --kind <Kind>`, `oro delete config` and
+`oro list kinds`, reading YAML or JSON files and showing a diff before applying.
+Setup is covered in [Quick Start step 6](../getting-started/quick-start.md#6-install-and-configure-the-oro-cli).
+:::
+
 ## Concepts
 
 Configuration objects follow a consistent structure:

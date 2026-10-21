@@ -11,7 +11,7 @@ What you get: the robot appears in ORO as an ISO robot with live pose, speed and
 ## Prerequisites
 
 - OpenRobOps running locally ([Quick Start](../getting-started/quick-start.md)), including Mosquitto and ingest.
-- The `inorbit` CLI configured with a user API key (`INORBIT_CLI_API_KEY`, `INORBIT_CLI_URL=http://localhost:3000/api`).
+- The [`oro` CLI](https://github.com/OpenRobOps/oro-cli) installed (`pipx install oro-cli`) with a context pointing at your local instance (`oro context add local --url http://localhost:3000/api --api-key <key>`, see [Quick Start step 6](../getting-started/quick-start.md#6-install-and-configure-the-oro-cli)).
 - Docker, and the simulator repo cloned next to the SDK repo (the ISO agent image builds the SDK from a sibling checkout):
 
 ```bash
@@ -53,8 +53,8 @@ The simulator ships two OpenRobOps configuration profiles with the same object i
 
 ```bash
 cd sim-flatland/oro-config
-inorbit apply -f iso/config.yaml       # data sources, dashboards, actions, statuses, incidents
-inorbit apply -f iso/iso-robot.yaml    # admits robot 7b1a9c3e-1111-4222-8333-444455556666
+oro apply -f iso/config.yaml       # data sources, dashboards, actions, statuses, incidents
+oro apply -f iso/iso-robot.yaml    # admits robot 7b1a9c3e-1111-4222-8333-444455556666
 ```
 
 ## 3. Configure and start the ISO agent
@@ -105,4 +105,4 @@ The sidecar (`sim-flatland/iso-agent/`, ~250 lines of JavaScript) reads ROS 2 th
 | `move` / `dock` requests | nav2 `NavigateToPose` action goal |
 | `customCommand` requests | `/inorbit/custom_command` (`std_msgs/String`) |
 
-Switching back to the ROS2 agent is `docker compose up` (default profile) plus `inorbit apply -f oro-config/ros2/config.yaml`, and `iso21423.robots.enabled: false` in ingest.
+Switching back to the ROS2 agent is `docker compose up` (default profile) plus `oro apply -f oro-config/ros2/config.yaml`, and `iso21423.robots.enabled: false` in ingest.
