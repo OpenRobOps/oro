@@ -37,7 +37,7 @@ jobs:
 
     steps:
       - name: Checkout (with release token so the tag push triggers builds)
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           # Falls back to GITHUB_TOKEN if RELEASE_TOKEN is unset, but then the
