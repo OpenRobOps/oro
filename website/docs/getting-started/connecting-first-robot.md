@@ -65,11 +65,9 @@ container next to your robot's ROS 2 nodes.
    export INORBIT_ID="my-robot"                    # robot id shown in ORO
    export INORBIT_VERSION="4.36.0"                 # match the image tag
    export INORBIT_KEY="<a robot API key from app/settings.json → robotApiKeys>"
-   export INORBIT_URL="http://localdev.com:3000/"  # your ORO web app
+   export INORBIT_URL="http://localhost:3000/"     # your ORO web app
    ```
 
-   For a local setup, `localdev.com` must resolve to the ORO host: add
-   `127.0.0.1 localdev.com` to `/etc/hosts`.
 
 2. Run the agent with host networking, so it discovers your ROS topics, and on the
    same `ROS_DOMAIN_ID` as the robot:
