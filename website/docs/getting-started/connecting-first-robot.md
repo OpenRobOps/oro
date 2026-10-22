@@ -68,7 +68,6 @@ container next to your robot's ROS 2 nodes.
    export INORBIT_URL="http://localhost:3000/"     # your ORO web app
    ```
 
-
 2. Run the agent with host networking, so it discovers your ROS topics, and on the
    same `ROS_DOMAIN_ID` as the robot:
 
