@@ -50,7 +50,53 @@ a different credential: the **robot API key**, one of the values generated into
 `./scripts/generate-settings.sh`).
 :::
 
-## Step 2: Register a Robot
+## Step 2: Run the Agent
+
+There is no command to register a robot: the robot **agent** registers it when it
+first starts. ORO uses the InOrbit agent, published on Docker Hub as
+[`inorbitai/agent`](https://hub.docker.com/r/inorbitai/agent), with one tag per ROS
+distro (e.g. `ros-jazzy-4.36.0`, `ros-humble-4.22.0`). It runs as its own
+container next to your robot's ROS 2 nodes.
+
+1. Create `local/agent.env.sh`:
+
+   ```bash
+   export INORBIT_ROS=0
+   export INORBIT_ID="my-robot"                    # robot id shown in ORO
+   export INORBIT_VERSION="4.36.0"                 # match the image tag
+   export INORBIT_KEY="<a robot API key from app/settings.json → robotApiKeys>"
+   export INORBIT_URL="http://localdev.com:3000/"  # your ORO web app
+   ```
+
+   For a local setup, `localdev.com` must resolve to the ORO host: add
+   `127.0.0.1 localdev.com` to `/etc/hosts`.
+
+2. Run the agent with host networking, so it discovers your ROS topics, and on the
+   same `ROS_DOMAIN_ID` as the robot:
+
+   ```yaml
+   # docker-compose.yml
+   services:
+     agent:
+       image: inorbitai/agent:ros-jazzy-4.36.0
+       hostname: my-robot          # becomes the robot's default name in ORO
+       network_mode: host
+       ipc: host
+       restart: always
+       volumes:
+         - ./local:/root/.inorbit/local/   # agent.env.sh in; logs and credentials out
+   ```
+
+   ```bash
+   docker compose up agent
+   ```
+
+   Agent logs land in `local/inorbit_agent.log`.
+
+For a complete working setup, see the `agent` service in
+[sim-flatland](https://github.com/OpenRobOps/sim-flatland).
+
+### What happens on first start
 
 Robots are registered automatically on their first `/mqtt_config` request —
 before any MQTT connection is made. The registration process:
