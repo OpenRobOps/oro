@@ -17,7 +17,7 @@
 /**
  * Ingest-side implementation of the Localization agent module
  */
-import Jimp from 'jimp';
+import { Jimp, JimpMime } from 'jimp';
 import moment from 'moment';
 import { _ } from 'lodash';
 import Long from 'long';
@@ -525,81 +525,74 @@ export default class RobotLocalizationModule {
       // gradient, restore transparency and convert back to PNG.
       // TODO(Joaker): Perform the same size check performed in onMapV2 to make sure costmap size
       // does not exceed mongo's limit
-      Jimp.read(Buffer.from(decodedMsg.pixels), (err, img) => {
-        img.rgba(true); // Set RGB mode - costmaps are sent greyscale
-        img.scan(0, 0, img.bitmap.width, img.bitmap.height, function (x, y, idx) {
-          // x, y is the position of this pixel on the image
-          // idx is the start position of this rgba tuple in the bitmap Buffer
-          // this is the image
-          // => R is [idx], G is [idx+1], B is [idx+2], A is [idx+3]
-          // rgba values run from 0 - 255
+      const img = await Jimp.read(Buffer.from(decodedMsg.pixels));
+      img.scan(0, 0, img.bitmap.width, img.bitmap.height, function (x, y, idx) {
+        // x, y is the position of this pixel on the image
+        // idx is the start position of this rgba tuple in the bitmap Buffer
+        // this is the image
+        // => R is [idx], G is [idx+1], B is [idx+2], A is [idx+3]
+        // rgba values run from 0 - 255
 
-          // Costmap cell value in the range 0-254
-          const value = this.bitmap.data[idx];
+        // Costmap cell value in the range 0-254
+        const value = this.bitmap.data[idx];
 
-          // The agent sends the alpha channel as 0 for unknown cells.
-          // We represent that always as a transparent pixel.
-          if (this.bitmap.data[idx + 3] == 0) {
-            this.bitmap.data[idx + 3] = 0;
-            // No further processing required
-            return;
-          }
+        // The agent sends the alpha channel as 0 for unknown cells.
+        // We represent that always as a transparent pixel.
+        if (this.bitmap.data[idx + 3] == 0) {
+          this.bitmap.data[idx + 3] = 0;
+          // No further processing required
+          return;
+        }
 
-          // Otherwise, alpha is calculated according to the configuration
-          if (isAlphaGradient) {
-            // Use the color intensity (probability of obstacle) as alpha.
-            // This will make 'no obstacle' zones completely transparent and
-            // 'walls' completely opaque.
-            this.bitmap.data[idx + 3] = value * alphaValue;
-          } else {
-            this.bitmap.data[idx + 3] = 255 * alphaValue;
-          }
+        // Otherwise, alpha is calculated according to the configuration
+        if (isAlphaGradient) {
+          // Use the color intensity (probability of obstacle) as alpha.
+          // This will make 'no obstacle' zones completely transparent and
+          // 'walls' completely opaque.
+          this.bitmap.data[idx + 3] = value * alphaValue;
+        } else {
+          this.bitmap.data[idx + 3] = 255 * alphaValue;
+        }
 
-          // scale values from 0-254 to 0-100 for color ranges
-          const scaledValue = value / 2.54;
-          // Lethal obstacles range
-          if (lethalThreshold && scaledValue >= lethalThreshold) {
-            this.bitmap.data[idx] = lethalColor[0];
-            this.bitmap.data[idx + 1] = lethalColor[1];
-            this.bitmap.data[idx + 2] = lethalColor[2];
-            // Border/edge obstacles range
-          } else if (borderThreshold && scaledValue >= borderThreshold
-            && scaledValue < lethalThreshold) {
-            this.bitmap.data[idx] = borderColor[0];
-            this.bitmap.data[idx + 1] = borderColor[1];
-            this.bitmap.data[idx + 2] = borderColor[2];
-            // Gradient range
-          } else {
-            // Gradient between gradientStartColor and gradientEndColor based on
-            // the value of the occupancy grid cell
-            const p = value / 254;
-            const q = 1 - p;
-            for (let rgb = 0; rgb < 3; rgb++) {
-              this.bitmap.data[idx + rgb] = gradientEndColor[rgb] * p + gradientStartColor[rgb] * q;
-            }
+        // scale values from 0-254 to 0-100 for color ranges
+        const scaledValue = value / 2.54;
+        // Lethal obstacles range
+        if (lethalThreshold && scaledValue >= lethalThreshold) {
+          this.bitmap.data[idx] = lethalColor[0];
+          this.bitmap.data[idx + 1] = lethalColor[1];
+          this.bitmap.data[idx + 2] = lethalColor[2];
+          // Border/edge obstacles range
+        } else if (borderThreshold && scaledValue >= borderThreshold
+          && scaledValue < lethalThreshold) {
+          this.bitmap.data[idx] = borderColor[0];
+          this.bitmap.data[idx + 1] = borderColor[1];
+          this.bitmap.data[idx + 2] = borderColor[2];
+          // Gradient range
+        } else {
+          // Gradient between gradientStartColor and gradientEndColor based on
+          // the value of the occupancy grid cell
+          const p = value / 254;
+          const q = 1 - p;
+          for (let rgb = 0; rgb < 3; rgb++) {
+            this.bitmap.data[idx + rgb] = gradientEndColor[rgb] * p + gradientStartColor[rgb] * q;
           }
-        });
-        // Get the images's buffer and write to DB
-        // NOTE(diegobatt): This callback is not awaiting the db update
-        img.getBuffer(Jimp.MIME_PNG, (err2, buffer) => {
-          if (err2) {
-            console.error('Could not write costmap jimp buffer', err2);
-            return;
-          }
-          const ts = decodedMsg.ts.toNumber();
-          const costmapUpdates = {
-            x: decodedMsg.x,
-            y: decodedMsg.y,
-            theta: decodedMsg.theta,
-            width: decodedMsg.width,
-            height: decodedMsg.height,
-            resolution: decodedMsg.resolution,
-            ts,
-            data: buffer.toString('base64') // it was a node Buffer object
-          };
-          this._doUpdate(robotId, costmapUpdates, LOCALIZATION_SUBOBJECTS.COSTMAP, ts);
-        });
+        }
       });
+      // Get the images's buffer and write to DB
+      // NOTE(diegobatt): Not awaiting the db update
+      const buffer = await img.getBuffer(JimpMime.png);
+      const ts = decodedMsg.ts.toNumber();
+      const costmapUpdates = {
+        x: decodedMsg.x,
+        y: decodedMsg.y,
+        theta: decodedMsg.theta,
+        width: decodedMsg.width,
+        height: decodedMsg.height,
+        resolution: decodedMsg.resolution,
+        ts,
+        data: buffer.toString('base64') // it was a node Buffer object
+      };
+      this._doUpdate(robotId, costmapUpdates, LOCALIZATION_SUBOBJECTS.COSTMAP, ts);
     } catch (error) {
       throw Error('Error handling costmap', error);
     }

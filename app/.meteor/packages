@@ -28,12 +28,11 @@ service-configuration
 
 rspack@1.3.0                  # Integrate Rspack into Meteor for client and server app bundling
 aldeed:collection2
-aldeed:simple-schema
 percolate:migrations
 reywood:publish-composite
 meteortesting:mocha
 lmieulet:meteor-coverage
-http
 
 accounts-passwordless
 email
+aldeed:simple-schema@2.0.0
