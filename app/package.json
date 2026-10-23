@@ -31,7 +31,7 @@
     "js-yaml": "^4.1.1",
     "lodash": "^4.17.23",
     "lucide-react": "^1.7.0",
-    "meteor-node-stubs": "^1.2.12",
+    "meteor-node-stubs": "^1.2.30",
     "moment": "^2.30.1",
     "moment-duration-format": "^2.3.2",
     "moment-timezone": "^0.6.0",
@@ -58,8 +58,8 @@
     "utf-8-validate": "^5.0.10"
   },
   "devDependencies": {
-    "@meteorjs/rspack": "^1.0.0",
-    "@rsdoctor/rspack-plugin": "^1.2.3",
+    "@meteorjs/rspack": "^2.2.0",
+    "@rsdoctor/rspack-plugin": "^1.5.7",
     "@rspack/cli": "^1.7.1",
     "@rspack/core": "^1.7.1",
     "@rspack/plugin-react-refresh": "^1.4.3",

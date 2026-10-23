@@ -1,9 +1,9 @@
 # syntax=docker/dockerfile:1.7
 #
-# Multi-stage build for the oro-app Meteor 3.4 web service.
+# Multi-stage build for the oro-app Meteor 3.5 web service.
 #
 # Stage 1 (builder) installs Meteor and produces a self-contained Node bundle.
-# Stage 2 (runtime) carries only the bundle plus a Node 22 runtime, ca-certs,
+# Stage 2 (runtime) carries only the bundle plus a Node 24 runtime, ca-certs,
 # tini, and curl (used by HEALTHCHECK).
 #
 # Build context: app/
@@ -13,10 +13,10 @@
 # -----------------------------------------------------------------------------
 # Stage 1: builder
 # -----------------------------------------------------------------------------
-FROM node:22-bookworm AS builder
+FROM node:24-bookworm AS builder
 
 # Pin the Meteor release to match app/.meteor/release.
-ARG METEOR_RELEASE=3.4
+ARG METEOR_RELEASE=3.5.3
 # Architecture for `meteor build`. Override to os.linux.aarch64 for arm64.
 ARG METEOR_ARCH=os.linux.x86_64
 
@@ -61,7 +61,7 @@ RUN cd /home/node/build/bundle/programs/server \
 # -----------------------------------------------------------------------------
 # Stage 2: runtime
 # -----------------------------------------------------------------------------
-FROM node:22-bookworm-slim AS runtime
+FROM node:24-bookworm-slim AS runtime
 
 # tini  → PID 1, forwards signals to Node so docker stop is fast.
 # curl  → used by HEALTHCHECK below; kept as a runtime dep on purpose.

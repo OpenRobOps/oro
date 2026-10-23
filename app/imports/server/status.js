@@ -29,6 +29,7 @@ import { isString } from 'lodash';
 // ORO modules
 import { COLLECTIONS } from '../shared/constants';
 import { ACCESS_LEVEL_VIEW } from '../shared/roles';
+import { DiffSequence } from 'meteor/diff-sequence';
 import { matchesStatusFilter } from '../shared/status';
 import { Robots } from '../lib/collections';
 import OroRoles from '../server/roles';
@@ -81,35 +82,51 @@ export default class RobotStatusManager {
     );
     const collectionName = COLLECTIONS.ROBOTS_WITH_STATUS;
 
+    const matchesFilter = (doc) => {
+      const aggStatusValue = calculateAggregatedStatusValue(doc.statuses);
+      return [matchesStatusFilter(statusFilter, aggStatusValue), aggStatusValue];
+    };
+    const toFields = ({ _id, ...fields }, aggStatusValue) => (
+      { ...fields, [AGG_STATUS_FIELD]: aggStatusValue }
+    );
+
     const robotCollHandle = await RobotsWithStatus.find(
       {},
       // This cursor is over a MongoDB *view*: writes happen to the underlying
       // robots/robot_status collections, so the view itself never produces
-      // oplog entries and the oplog observe driver never sees a change (initial
-      // results work, live updates never arrive). Force the poll-and-diff
-      // driver; pollingIntervalMs only applies to it anyway.
+      // oplog entries, and MongoDB rejects `watch()` on a view
+      // (CommandNotSupportedOnView), so neither the oplog nor the change-stream
+      // observe driver ever sees a change (initial results work, live updates
+      // never arrive). Force the poll-and-diff driver: `disableOplog` opts out
+      // of oplog tailing, and the *ordered* observe below (addedAt/changedAt)
+      // opts out of change streams, which only serve unordered observes
+      // (Meteor 3.5 ignores `disableOplog` when picking change streams).
+      // pollingIntervalMs only applies to the polling driver anyway.
       { disableOplog: true, pollingIntervalMs: 3000 }
-    ).observeChangesAsync({
-      added: (id, doc) => {
-        const aggStatusValue = calculateAggregatedStatusValue(doc.statuses);
-        if (matchesStatusFilter(statusFilter, aggStatusValue)) {
-          this.added(collectionName, id, { ...doc, [AGG_STATUS_FIELD]: aggStatusValue });
+    ).observeAsync({
+      addedAt: (doc) => {
+        const [matches, aggStatusValue] = matchesFilter(doc);
+        if (matches) {
+          this.added(collectionName, doc._id, toFields(doc, aggStatusValue));
         }
       },
-      changed: (id, fields) => {
-        if (fields.statuses !== undefined) {
-          const aggStatusValue = calculateAggregatedStatusValue(fields.statuses);
-          if (matchesStatusFilter(statusFilter, aggStatusValue)) {
-            this.changed(collectionName, id, { ...fields, [AGG_STATUS_FIELD]: aggStatusValue });
-          } else {
-            this.removed(collectionName, id);
-          }
-        } else {
-          this.changed(collectionName, id, fields);
+      changedAt: (newDoc, oldDoc) => {
+        const [matches, aggStatusValue] = matchesFilter(newDoc);
+        const [matchedBefore] = matchesFilter(oldDoc);
+        if (matches && matchedBefore) {
+          this.changed(collectionName, newDoc._id, {
+            ...DiffSequence.makeChangedFields(newDoc, oldDoc), [AGG_STATUS_FIELD]: aggStatusValue
+          });
+        } else if (matches) {
+          this.added(collectionName, newDoc._id, toFields(newDoc, aggStatusValue));
+        } else if (matchedBefore) {
+          this.removed(collectionName, newDoc._id);
         }
       },
-      removed: (id) => {
-        this.removed(collectionName, id);
+      removedAt: (oldDoc) => {
+        if (matchesFilter(oldDoc)[0]) {
+          this.removed(collectionName, oldDoc._id);
+        }
       }
     });
 

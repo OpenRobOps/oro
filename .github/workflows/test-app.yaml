@@ -25,7 +25,7 @@ jobs:
         ports:
           - 27017:27017
     env:
-      METEOR_RELEASE: '3.4'
+      METEOR_RELEASE: '3.5.3'
 
     steps:
       - uses: actions/checkout@v7
