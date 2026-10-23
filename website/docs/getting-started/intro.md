@@ -32,7 +32,7 @@ Started by [InOrbit.AI](https://www.inorbit.ai), OpenRobOps brings the same prod
 ## Tech Stack
 
 - **Meteor 3** with React 18 and Material UI
-- **Node.js v22**
+- **Node.js v24**
 - **MongoDB** for persistence
 - **Mosquitto MQTT** broker
 - **Protocol Buffers** for message serialization
