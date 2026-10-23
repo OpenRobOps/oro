@@ -25,7 +25,7 @@
  * math (unary, binary, ternary operators), injecting variables (`args`) and functions (such
  * as `hasTag`, injected from svc-derived-attributes)
  */
-import { Parser } from 'expr-eval';
+import { Parser } from 'expr-eval-fork';
 import { isObject, isString } from 'lodash';
 import { FUNCTIONS_DICT } from './functions';
 

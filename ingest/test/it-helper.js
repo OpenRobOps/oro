@@ -21,7 +21,6 @@
  * Adapted from:
  * https://www.toptal.com/nodejs/integration-and-e2e-tests-nodejs-mongodb
  */
-import prepare from 'mocha-prepare';
 import mongoUnit from 'mongo-unit';
 // NOTE+HACK(herchu) Do NOT do
 //     import MongoManager from '../src/mongo';
@@ -30,15 +29,18 @@ import mongoUnit from 'mongo-unit';
 // changes. Since we use singletons (particularly MongoManager from here), then the module
 // import and initialization of MongoManager must happen for *for every new module loaded*:
 // For this reason doing an `import` on top of this file does not work, and we need to do a
-// "dynamic" require() every time this code runs (see prepare() code below).
+// "dynamic" require() every time this code runs (see mochaGlobalSetup() code below).
 // Note that with the regular import, tests run ok *just once*, but not in `--watch` mode.
 // To test this out, add a `this.rnd = Math.random();` to MongoManager constructor and do
-// a console log of `mongoMgr.rnd` in prepare() and in test cases -- and verify the instance on
-// the tests are different every time, while the instance used in prepare() in this file is always
-// the same.
+// a console log of `mongoMgr.rnd` in mochaGlobalSetup() and in test cases -- and verify the
+// instance on the tests are different every time, while the instance used in
+// mochaGlobalSetup() in this file is always the same.
 // Thanks, Mocha. This is fun.
 
-prepare(done => mongoUnit.start().then(async testMongoUrl => {
+// Mocha "global fixture": runs once before any test file executes.
+// https://mochajs.org/#global-fixtures
+export async function mochaGlobalSetup() {
+  const testMongoUrl = await mongoUnit.start();
   console.info("Initializing mongo with url", testMongoUrl);
   // HACK(herchu): Dynamically importing mongoManager to reload it every time. See comment above.
   try {
@@ -47,11 +49,9 @@ prepare(done => mongoUnit.start().then(async testMongoUrl => {
     await mongoMgr.init({
       url: testMongoUrl
     });
-    done();
   } catch (error) {
     console.error("Failed to initialize mongo-unit. If this was about libcrypto, you need to install libssl1.1. See .github/workflows/test.yml for details.");
     console.error("Error initializing mongo", error);
-    done(error);
+    throw error;
   }
-  run();
-}))
+}

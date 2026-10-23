@@ -24,7 +24,6 @@ import { Meteor } from 'meteor/meteor';
 import { Accounts } from 'meteor/accounts-base';
 import { WebApp } from 'meteor/webapp';
 import bodyParser from 'body-parser';
-import URL from 'url';
 import { isFunction } from 'lodash';
 // ORO modules
 import { Robot } from './model';
@@ -259,8 +258,9 @@ async function validateApiKey(req, res) {
  *      from the URL search string "?..." for convenience
  */
 function routeRequest(req) {
-  const url = URL.parse(req.url);
-  const queryParams = new URLSearchParams(url.query);
+  // Base is irrelevant: req.url is path+query only, and we only read pathname and search
+  const url = new URL(req.url, 'http://localhost');
+  const queryParams = url.searchParams;
   for (const route of routes) {
     const { method, path, accept } = route;
     if (method == req.method) {
