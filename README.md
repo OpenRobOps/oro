@@ -46,7 +46,7 @@ Robot Agent (on-device)
 ## Tech Stack
 
 - **Meteor 3** with React 18 and Material UI
-- **Node.js v22**
+- **Node.js v24**
 - **MongoDB** for persistence
 - **Mosquitto MQTT** broker with go-auth plugin
 - **Protocol Buffers** for message serialization

@@ -5,7 +5,7 @@
 # Stage 1 (deps) installs production npm dependencies on a full Debian image
 # that ships the toolchain a few transitive native modules sometimes fall
 # back to.
-# Stage 2 (runtime) carries only a Node 22 runtime, ca-certs, tini, the
+# Stage 2 (runtime) carries only a Node 24 runtime, ca-certs, tini, the
 # resolved node_modules, and the source tree.
 #
 # The service is run with @babel/node, so the source is shipped as-is —
@@ -23,7 +23,7 @@
 # -----------------------------------------------------------------------------
 # Stage 1: deps
 # -----------------------------------------------------------------------------
-FROM node:22-bookworm AS deps
+FROM node:24-bookworm AS deps
 
 # Switch to the unprivileged `node` user BEFORE WORKDIR so /home/node/src is
 # created node-owned. Otherwise WORKDIR runs as root, --chown only fixes the
@@ -47,7 +47,7 @@ RUN --mount=type=secret,id=gh_token,env=GH_TOKEN \
 # -----------------------------------------------------------------------------
 # Stage 2: runtime
 # -----------------------------------------------------------------------------
-FROM node:22-bookworm-slim AS runtime
+FROM node:24-bookworm-slim AS runtime
 
 # tini  → PID 1, forwards signals to Node so docker stop / pod termination
 #         is fast and graceful (main.js installs SIGTERM handlers).

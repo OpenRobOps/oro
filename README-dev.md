@@ -2,8 +2,8 @@
 
 ## Requirements
 
- * `node` v22 and `nvm`
- * Meteor 3.4
+ * `node` v24 and `nvm`
+ * Meteor 3.5.3
   ```
   npx meteor
   ```

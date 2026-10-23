@@ -12,3 +12,7 @@ _build
 
 # Unit test results. Normally ran on Github actions, but ignored anyway
 unit_server.xml
+
+# Meteor Modern-Tools build context directories
+*/build-assets*
+*/build-chunks*
