@@ -22,7 +22,7 @@
  *
  * Does not require Robot data, just reference to the map.
  */
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import Point from 'ol/geom/Point';
 // ORO Modules
 import theme from '../../../../Styles';
@@ -101,9 +101,13 @@ const WaypointNav = ({
   // - isMultiWaypoint is true
   // As a result, if isMultiWaypoint is false, click only adds a waypoint the
   // first time
-  const clickFn = ([x, y]) => {
+  // The callback must keep its identity across renders: ClickComponent re-creates its map
+  // interaction whenever onClick changes, and robot pose updates re-render this component
+  // all the time. A new interaction misses the pointerdown of a click in progress and then
+  // ignores its pointerup, dropping the click.
+  const clickFn = useCallback(([x, y]) => {
     setWaypoints(w => (isMultiWaypoint || w.length == 0 ? [...w, { x, y }] : w));
-  };
+  }, [isMultiWaypoint]);
 
   // NOTE: This is updating a state element directly without re-setting
   // the state, but things work fine because setInteractionData triggers a
