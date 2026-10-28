@@ -21,6 +21,9 @@ updates:
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
+      # react-calendar-timeline (beta) declares an exact peer on interactjs 1.10.27, so any
+      # bump fails npm ci with ERESOLVE. Drop this once react-calendar-timeline relaxes it.
+      - dependency-name: interactjs
   - package-ecosystem: npm
     directory: /ingest
     schedule:
