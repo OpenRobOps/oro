@@ -151,31 +151,23 @@ The first context you add becomes the current one. You can register other ORO
 instances the same way and switch between them with `oro use <name>`. See the
 [CLI README](https://github.com/OpenRobOps/oro-cli#readme) for all commands.
 
-## 7. (Optional) Connect a Simulated Robot with Flatland
+## 7. (Optional) Connect a Simulated Robot
 
-Want to see data flowing without setting up real hardware? The
-[Flatland simulator](https://github.com/OpenRobOps/sim-flatland) is a lightweight
-2D simulator with a full Nav2 robot. It connects to ORO either through the InOrbit
-ROS2 agent — publishing the same MQTT/protobuf telemetry as a real ORO agent (pose,
-laser, costmap, system stats) — or as an [ISO 21423 robot](../iso21423/flatland-simulator.md),
-so the dashboard lights up exactly as it would with a physical robot.
+Want to see data flowing without setting up real hardware? The [Examples](../examples/overview.md)
+are ready-to-run simulated robots with the InOrbit ROS2 agent, publishing the same MQTT/protobuf
+telemetry as a real ORO agent, plus the ORO config (dashboards, actions) to apply with the CLI
+from step 6:
 
-```bash
-git clone https://github.com/OpenRobOps/sim-flatland.git
-cd sim-flatland
-# Follow the README to point the simulator at your local MQTT broker
-```
-
-In addition to starting the simulation, a suitable configuration for OpenRobOps should be
-created. Configuration files (see Config API) are included in that repository; apply them
-with the CLI from step 6 (`oro apply -f <file>`) following the instructions in its README.
+- [Flatland Nav2](../examples/flatland-nav2-sim.md): a lightweight 2D simulator with a full Nav2 robot.
+- [TurtleBot3 in Gazebo](../examples/turtlebot-gazebo-sim.md): Gazebo, SLAM, waypoints and missions.
 
 Once the simulator is running, you should see a robot appear in the fleet view
 at `http://localhost:3000/` with live localization, vitals, and laser data.
+Flatland can also connect as an [ISO 21423 robot](../iso21423/flatland-simulator.md).
 
 ## Next Steps
 
 - [Core Concepts](./core-concepts.md) — understand robots, telemetry, and dashboards
 - [Connecting Your First Robot](./connecting-first-robot.md) — register a robot and see data flow
-- [Flatland Simulator](https://github.com/OpenRobOps/sim-flatland) — drive the dashboard with a simulated robot
+- [Examples](../examples/overview.md) — drive the dashboard with a simulated robot
 - [Deployment](../guides/deployment.md) — production deployment with Docker Compose
