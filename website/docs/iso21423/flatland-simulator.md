@@ -1,12 +1,12 @@
 ---
-sidebar_position: 3
+sidebar_position: 4
 ---
 
 # Try it with the Flatland simulator
 
 [OpenRobOps/sim-flatland](https://github.com/OpenRobOps/sim-flatland) is a Docker environment with a complete simulated AMR — 2D physics, Nav2 navigation, a battery with charging zones, a camera, diagnostics — that can connect to OpenRobOps in **three modes**: standalone, through the InOrbit ROS2 agent, or as an **ISO 21423 robot** through the [`iso21423_ros`](https://github.com/OpenRobOps/iso21423_ros) connector, a ROS 2 node built on the `iso21423` Python library. This page walks through the ISO mode end to end. The simulator's README ([Connectivity modes](https://github.com/OpenRobOps/sim-flatland#connectivity-modes), [ISO 21423 Connector](https://github.com/OpenRobOps/sim-flatland#iso-21423-connector)) is the authoritative reference; this page mirrors it for convenience.
 
-What you get: the robot appears in ORO as an ISO robot with live pose, speed and battery, Battery/Dock/Message actions, statuses and incidents, and you can send it navigation goals from the map — all over the ISO 21423 wire format. Watch the raw traffic at any time with `mosquitto_sub -t '/ISO_21423/v1/#' -v`.
+What you get: the robot appears in ORO as an ISO robot with live pose, speed and battery, Battery/Dock/Message actions, statuses and incidents, and you can send it navigation goals from the map — all over the ISO 21423 wire format. Watch the raw traffic at any time with `mosquitto_sub -t '/ISO_21423/v1/#' -v`, or follow [How ISO 21423 works](./how-it-works.md) for a guided tour of it.
 
 ## Prerequisites
 
