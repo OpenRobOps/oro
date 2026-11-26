@@ -1665,7 +1665,7 @@ spec:
 - [ ] **Step 2: Self-check the tool**
 
 ```bash
-python3 tools/png2map.py /home/herchu/inorbit/flatland/maps/pretty/sample_map_pretty_400x400.png --id t --from-ros-yaml /home/herchu/inorbit/flatland/maps/sample_map.yaml | head -12
+python3 tools/png2map.py ../flatland/maps/pretty/sample_map_pretty_400x400.png --id t --from-ros-yaml ../flatland/maps/sample_map.yaml | head -12
 ```
 Expected: `resolution: 0.05`, `x: 0.0`, `y: 0.0`, an `image:` line. Then decode round-trip: `… | grep image: | cut -d' ' -f4 | base64 -d | cmp - …/sample_map_pretty_400x400.png` → no output.
 
@@ -1673,7 +1673,7 @@ Expected: `resolution: 0.05`, `x: 0.0`, `y: 0.0`, an `image:` line. Then decode 
 
 The 1600×1600 PNG is a 4× integer upscale of the 400×400 PGM (same extent, rows top-down like the PGM ⇒ `formatVersion 1`):
 ```bash
-python3 tools/png2map.py /home/herchu/inorbit/flatland/maps/pretty/sample_map_pretty_1600x1600.png \
+python3 tools/png2map.py ../flatland/maps/pretty/sample_map_pretty_1600x1600.png \
   --id flatland-pretty --label "Flatland (rendered)" --frame map \
   --resolution 0.0125 --x 0 --y 0 --format-version 1 > app/private/bootstrap/SpatialAnnotation.yaml
 ```

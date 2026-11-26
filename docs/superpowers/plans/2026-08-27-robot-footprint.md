@@ -726,7 +726,7 @@ Constructor: `this._warnedFootprint = new Set();`. In `observe`, add to the `Pro
 
 ### Task 7: Flatland iso-agent publishes a spec-valid identity (sim-flatland repo)
 
-**Repo:** `/home/herchu/inorbit/flatland` — branch off `main` (`feat/iso-identity-footprint`), separate PR.
+**Repo:** `../flatland` — branch off `main` (`feat/iso-identity-footprint`), separate PR.
 **Files:**
 - Modify: `iso-agent/src/mapping.js` (add `circlePolygon(radius, n = 16)` and `imrDetails({ uuid, version })`)
 - Modify: `iso-agent/src/main.js:54` (`details: { model: 'flatland-nav2' }` → `details: imrDetails({...})`)
