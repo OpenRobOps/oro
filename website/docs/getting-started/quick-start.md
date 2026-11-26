@@ -157,7 +157,8 @@ Want to see data flowing without setting up real hardware? The
 [Flatland simulator](https://github.com/OpenRobOps/sim-flatland) is a lightweight
 2D simulator with a full Nav2 robot. It connects to ORO either through the InOrbit
 ROS2 agent — publishing the same MQTT/protobuf telemetry as a real ORO agent (pose,
-laser, costmap, system stats) — or as an [ISO 21423 robot](../iso21423/flatland-simulator.md),
+laser, costmap, system stats) — or as an [ISO 21423 robot](../iso21423/flatland-simulator.md) through the
+[`iso21423_ros`](https://github.com/OpenRobOps/iso21423_ros) ROS 2 connector,
 so the dashboard lights up exactly as it would with a physical robot.
 
 ```bash
