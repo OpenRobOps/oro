@@ -107,6 +107,7 @@ const config: Config = {
           position: 'left',
           label: 'Docs',
         },
+        {to: '/docs/examples', label: 'Examples', position: 'left'},
         {to: '/docs/api/overview', label: 'API', position: 'left'},
         {to: '/docs/iso21423/overview', label: 'ISO 21423', position: 'left'},
         {to: '/blog', label: 'Blog', position: 'left'},
@@ -130,6 +131,10 @@ const config: Config = {
             {
               label: 'Getting Started',
               to: '/docs/getting-started/intro',
+            },
+            {
+              label: 'Examples',
+              to: '/docs/examples',
             },
             {
               label: 'API Reference',

@@ -17,7 +17,7 @@ During this Getting Started guide, all examples assume ORO runs locally (host na
 
 :::tip[Don't have a robot yet?]
 You can drive ORO end-to-end using the
-[Flatland simulator](https://github.com/OpenRobOps/sim-flatland), which publishes
+[Flatland Nav2 example](../examples/flatland-nav2-sim.md), which publishes
 the same MQTT/protobuf telemetry as a real ORO agent. It's the fastest way to
 verify your installation. The same simulator can also connect as an
 [ISO 21423 robot](../iso21423/flatland-simulator.md).
@@ -90,8 +90,8 @@ container next to your robot's ROS 2 nodes.
 
    Agent logs land in `local/inorbit_agent.log`.
 
-For a complete working setup, see the `agent` service in
-[sim-flatland](https://github.com/OpenRobOps/sim-flatland).
+For a complete working setup, see the `agent` service in the
+[examples](../examples/overview.md).
 
 ### What happens on first start
 
