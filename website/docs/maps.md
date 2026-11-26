@@ -124,8 +124,8 @@ ISO 21423 robots populate two paths:
 
 | Path id | Source | Update rate |
 |---------|--------|-------------|
-| `"0"` | ISO `globalPlan` -- e.g. the flatland agent's `/plan` subscription, forwarding nav2's global plan | Ingest writes at most once per second per path (latest wins) |
-| `"1"` | ISO `localTrajectory` -- nav2's `/local_plan` | The agent publishes it at `ISO_LOCAL_TRAJECTORY_HZ` (2 Hz by default); ingest still caps writes to once per second |
+| `"0"` | ISO `globalPlan` -- e.g. the `iso21423_ros` connector forwarding Nav2's `/plan` | Ingest writes at most once per second per path (latest wins) |
+| `"1"` | ISO `localTrajectory` -- nav2's `/local_plan` | The connector throttles it to `sources.localTrajectory.rate_hz` (2 Hz by default); ingest still caps writes to once per second |
 
 Path id `"0"` matches the id the InOrbit ROS2 agent uses for its own `/plan`
 topic, so one `RobotPath` config styles both wire and ISO robots. ISO's

@@ -42,8 +42,10 @@ Not part of ISO 21423 today (and therefore not available from ISO robots): occup
 
 - **ORO ingest — `IsoRobotsModule`** (`ingest/src/server/isoRobots/`): the IMRFM. Admission roster, telemetry ingestion into the attributes pipeline, command translation.
 - **ORO web app**: the `IsoRobot` configuration kind (admission) and the `POST /iso_mqtt_config` endpoint (broker credentials for robots).
-- **`@openrobops/iso21423`** ([OpenRobOps/iso21423](https://github.com/OpenRobOps/iso21423)): the TypeScript SDK that implements the standard — topics, JSON Schema validation, MQTT session with the standard's Last Will semantics, request state machine, fleet gateway. Used by ORO and by the reference robot agent below. Anyone building an ISO 21423 robot or fleet manager in Node.js can use it.
-- **Reference robot agent — `sim-flatland` ISO agent** ([OpenRobOps/sim-flatland](https://github.com/OpenRobOps/sim-flatland)): a small Node.js sidecar that turns the flatland/Nav2 simulated robot into an ISO 21423 IMR. It is the fastest way to see an ISO fleet end to end — see [Try it with the Flatland simulator](./flatland-simulator.md).
+- **`@openrobops/iso21423`** ([OpenRobOps/iso21423](https://github.com/OpenRobOps/iso21423)): the TypeScript SDK that implements the standard — topics, JSON Schema validation, MQTT session with the standard's Last Will semantics, request state machine, fleet gateway. Used by ORO. Anyone building an ISO 21423 robot or fleet manager in Node.js can use it.
+- **`iso21423` Python library** (same repo, `py-sdk/`): the robot (IMR) side of the standard in Python, with no ROS dependency — the same topics, schema validation, Last Will semantics, request state machine and execution policies.
+- **ROS 2 connector — `iso21423_ros`** ([OpenRobOps/iso21423_ros](https://github.com/OpenRobOps/iso21423_ros)): a ROS 2 node, built on the Python library, that turns any ROS 2 robot into an ISO 21423 IMR. A Nav2 robot needs only a YAML file; anything else plugs in with small Python hooks. It works with any ISO 21423 broker and fleet manager, not only ORO.
+- **Simulated robot — `sim-flatland`** ([OpenRobOps/sim-flatland](https://github.com/OpenRobOps/sim-flatland)): the flatland/Nav2 simulator runs the connector as its ISO mode. It is the fastest way to see an ISO fleet end to end — see [Try it with the Flatland simulator](./flatland-simulator.md).
 
 ## Next steps
 
