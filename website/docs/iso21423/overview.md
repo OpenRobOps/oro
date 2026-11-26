@@ -49,6 +49,8 @@ Not part of ISO 21423 today (and therefore not available from ISO robots): occup
 
 ## Next steps
 
+- [How ISO 21423 works](./how-it-works.md): a hands-on tour of the protocol — discovery, telemetry, the Last Will, requests and their state machine — on a live simulated robot.
+- [Connect your own ROS 2 robot](./ros2-connector.md): run the `iso21423_ros` connector on any ROS 2 robot, with configuration only for Nav2 robots and Python hooks for the rest.
 - [ISO Robots — setup guide](./iso-robots-setup.md): enable ISO mode, calibrate the CCS, admit robots, issue credentials, command mapping, limitations.
 - [Try it with the Flatland simulator](./flatland-simulator.md): a complete ISO 21423 fleet on your laptop in a few commands.
 - [ISO 21423 coverage](./coverage.md): clause-by-clause view of what is implemented, what is left, and ORO's extensions over the standard.
