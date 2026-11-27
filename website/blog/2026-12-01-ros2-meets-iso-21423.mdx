@@ -1,0 +1,116 @@
+---
+slug: ros2-meets-iso-21423
+title: "Your ROS 2 Robot, Speaking ISO 21423: Introducing iso21423_ros"
+authors: [herchu]
+tags: [announcement, open-source]
+---
+
+If you've put a ROS 2 robot into a real facility, you know the part nobody demos: the bridge. Your robot speaks Nav2, TF and `sensor_msgs`, and every fleet manager expects its own protocol. So each integration means writing the bridge again, including the hard parts: what happens when a command is cancelled, a robot reboots mid-mission, or the network drops.
+
+**ISO 21423** is the international standard that replaces those bridges with one interface. Today we're releasing **[iso21423_ros](https://github.com/OpenRobOps/iso21423_ros)**: an open-source ROS 2 node that makes any ROS 2 robot an ISO 21423 robot. For a standard Nav2 robot, the setup is a YAML file and nothing else.
+
+Once your robot speaks ISO 21423, it plugs into the wider open ecosystem. [OpenRobOps](/docs/iso21423/overview) takes ISO robots natively for day-to-day operations: maps, dashboards, incidents and remote actions. Through OpenRobOps and its [fleet adapter](https://github.com/OpenRobOps/openrmf-oro-adapter), the same robot can then join [Open-RMF](https://www.open-rmf.org/) for multi-fleet orchestration alongside robots from other vendors.
+
+{/* truncate */}
+
+## ISO 21423 in one paragraph
+
+ISO 21423, *Industrial mobile robots: communications and interoperability*, defines how autonomous mobile robots (*IMRs* in the standard) and fleet managers talk to each other, whoever built them. It runs over MQTT with JSON messages on predictable topics like `/ISO_21423/v1/IMR/<uuid>/status`. A robot announces who it is and what it can do (`identity`), streams its state (`status`, `odometry`, `batteryStatus`, `globalPlan`, `localTrajectory`), and accepts **requests** such as `move`, `dock`, `pauseImr` and `cancelRequest`. Every request moves through a defined lifecycle: RECEIVED → ACCEPTED → EXECUTING → SUCCEEDED, CANCELED or ABORTED. The standard also covers the unglamorous cases: robots disappear through MQTT's Last Will, requests survive crashes as retained messages, and positions are expressed in a shared facility coordinate system instead of each robot's own `map` frame.
+
+The standard is at its final stage (FDIS), and it defines the interface between robots and fleet managers. It doesn't say how a ROS robot should implement that interface. That's the gap this connector fills.
+
+## What iso21423_ros does
+
+It's one node, `iso21423_connector`, and it sits next to your navigation stack:
+
+```
+  ┌──────────── your ROS 2 robot ─────────────┐                ┌───────────────────┐
+  │ Nav2 · TF · /odom · /battery_state · /plan │                │  any ISO 21423    │
+  │                  │                         │  MQTT + JSON   │  fleet manager    │
+  │        iso21423_connector  ────────────────┼───────────────►│  (OpenRobOps or   │
+  │   (YAML config + optional Python hooks)    │◄───────────────┤   anyone else's)  │
+  └────────────────────────────────────────────┘    requests    └───────────────────┘
+```
+
+Out of the box, for a Nav2 robot, it:
+
+- **Publishes the standard telemetry.** It sends the robot's pose from TF in the facility coordinate system (fitted from a few reference points), velocity from `/odom`, `sensor_msgs/BatteryState`, the global plan and the local trajectory. Each goes out with the QoS, retain flag and rate limits the standard requires.
+- **Serves requests through Nav2.** `move` becomes `NavigateToPose` and honours the requested tolerance. `dock` and `undock` use `opennav_docking` when it's available and fall back to navigating to the dock pose when it isn't. `pauseImr` and `resumeImr` stop the current goal and resend it later. `cancelRequest` cancels the goal.
+- **Gets the lifecycle right.** It applies the execution policy you choose for new requests: preempt, queue, reject, priority or parallel. It reports progress (`distanceRemaining`), clears requests once they finish, and after a crash it re-runs work still pending on the broker. The robot's state flags, such as `LOST`, `CHARGING`, `LOW_BATTERY`, `PAUSED` and `DOCKING`, come straight from what the robot is actually doing.
+- **Announces itself honestly.** Its `identity` lists exactly the resources it publishes and the requests it accepts, generated from the same config, so nothing is configured twice.
+
+A minimal config looks like this:
+
+```yaml
+iso21423_connector:
+  ros__parameters:
+    entity_uuid: "6f1c..."            # this robot
+    broker: {url: "mqtt://fleet-broker:1883"}
+    ccs:
+      id: "0b1c..."                   # the facility's coordinate system
+      reference_points: [0.0, 0.0, 12.0, 4.0,  10.0, 0.0, 22.0, 4.0,  0.0, 10.0, 12.0, 14.0]
+    identity: {model: "MyBot", serial_number: "001", height: 0.4, footprint_from_nav2: true}
+    sources:  {odometry: {enabled: true}, batteryStatus: {enabled: true}, globalPlan: {enabled: true}}
+    handlers: {move: {enabled: true}, dock: {enabled: true}, pauseImr: {enabled: true}, resumeImr: {enabled: true}}
+```
+
+```bash
+ros2 launch iso21423_ros connector.launch.py params_file:=robot.yaml
+```
+
+## Not a Nav2 robot? Hooks
+
+Real robots have their own battery topic, their own docking action, and that one vendor command nobody else has. Every source and handler is a small Python class, and the YAML names it. Here's a battery that reports a percentage on a vendor topic:
+
+```python
+from std_msgs.msg import Float32
+
+class VendorBattery:
+    def __init__(self, node, publisher, params):
+        self.pub, self.node = publisher, node
+        node.create_subscription(Float32, params.get("topic", "/vendor/battery_pct"), self._on_msg, 10)
+
+    def _on_msg(self, msg):
+        self.pub.publish_battery_status({"batterySoc": msg.data / 100.0})
+```
+
+```yaml
+    sources:
+      batteryStatus: {class: "/hooks/vendor_battery.py:VendorBattery", topic: /vendor/battery_pct}
+```
+
+A custom request, like a `beep` action, is a handler class with one `execute()` method. It gets the request lifecycle, cancellation and progress reporting for free. The [repo](https://github.com/OpenRobOps/iso21423_ros) includes a complete example in 30 lines.
+
+## Why this matters
+
+**Write the integration once.** A robot that speaks ISO 21423 can join any compliant fleet manager. When the next site or the next customer runs a different one, you change a broker URL, not a codebase.
+
+**Standard semantics for the hard parts.** Pause, cancel, preemption, lost connections and crash recovery behave the same way for every robot in the fleet. Today each vendor bridge improvises them differently, and that's where mixed fleets break.
+
+**Mixed fleets become normal.** Facilities increasingly run robots from several vendors side by side. A common interface is what lets a single system coordinate them all, and lets ROS-based robots, which is most of the robots being built today, take part on equal terms.
+
+**Open all the way down.** The connector is Apache 2.0. It's built on [`iso21423`](https://github.com/OpenRobOps/iso21423), our open ISO 21423 library for Python, which doesn't depend on ROS and also has a TypeScript SDK. It handles schemas, validation, topics and the request state machine, so non-ROS robots and fleet managers can use the same well-tested core.
+
+## Try it without a robot
+
+Our [flatland simulator](https://github.com/OpenRobOps/sim-flatland) is a complete simulated Nav2 robot (map, localization, navigation, battery), and it now ships with the connector as one of its connectivity modes. Start it, subscribe to the broker, and watch real ISO 21423 traffic:
+
+```bash
+mosquitto_sub -h localhost -t '/ISO_21423/v1/#' -v
+```
+
+Then send a robot a `move` by hand and watch the request go through its states. Our tutorial, **[How ISO 21423 works](/docs/iso21423/how-it-works)**, does exactly that, using real captured messages. It covers discovery, telemetry, the Last Will, the request state machine, pause, cancel and preemption, and crash recovery. It's also the most hands-on explanation of the standard we know of. The **[ROS 2 connector guide](/docs/iso21423/ros2-connector)** covers configuration, Docker, hooks and troubleshooting.
+
+To see the simulated robot from the operations side, point the sim at [OpenRobOps](/docs/iso21423/flatland-simulator): it shows up on the map, and you can send it goals from the UI.
+
+## What's next
+
+The connector supports ROS 2 **Jazzy** and **Humble** today. Next we're publishing prebuilt container images, adding a TurtleBot demo on open hardware, and covering more of the standard. Above all, we want to hear about your robot: what it runs, what it needs, and where the connector falls short.
+
+- **Star and try** [iso21423_ros](https://github.com/OpenRobOps/iso21423_ros) on GitHub
+- **Tell us about your robot** on [GitHub Discussions](https://github.com/orgs/OpenRobOps/discussions)
+- **Contribute** hooks, fixes and robot configs. Every vendor integration shared is one nobody has to write again.
+
+Standards only work when people use them. Let's make ISO 21423 something every ROS 2 robot can speak.
+
+— The OpenRobOps team
